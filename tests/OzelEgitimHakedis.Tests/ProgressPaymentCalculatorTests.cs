@@ -1,5 +1,6 @@
 using OzelEgitimHakedis.Core.Models;
 using OzelEgitimHakedis.Core.Services;
+using Xunit;
 
 namespace OzelEgitimHakedis.Tests;
 
