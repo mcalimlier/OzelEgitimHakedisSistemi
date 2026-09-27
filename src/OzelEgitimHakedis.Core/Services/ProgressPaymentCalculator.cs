@@ -9,29 +9,29 @@ public sealed class ProgressPaymentCalculator
     public const decimal StampTaxRate = 0.00948m;
     public const decimal AdditionalGuaranteeRate = 0.06m;
 
-    public ProgressPaymentCalculation Calculate(ProgressPaymentInput input)
+    public static ProgressPaymentCalculation Calculate(ProgressPaymentInput input)
     {
         ArgumentNullException.ThrowIfNull(input);
 
         if (input.WorkDays < 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(input.WorkDays), "İş günü negatif olamaz.");
+            throw new ArgumentOutOfRangeException(nameof(input), "İş günü negatif olamaz.");
         }
 
         if (input.DailyPrice < 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(input.DailyPrice), "Günlük fiyat negatif olamaz.");
+            throw new ArgumentOutOfRangeException(nameof(input), "Günlük fiyat negatif olamaz.");
         }
 
         if (input.ContractAmount < 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(input.ContractAmount), "Sözleşme bedeli negatif olamaz.");
+            throw new ArgumentOutOfRangeException(nameof(input), "Sözleşme bedeli negatif olamaz.");
         }
 
         if (input.InspectionPenaltyRatePerThousand < 0)
         {
             throw new ArgumentOutOfRangeException(
-                nameof(input.InspectionPenaltyRatePerThousand),
+                nameof(input),
                 "Denetim cezası oranı negatif olamaz.");
         }
 
