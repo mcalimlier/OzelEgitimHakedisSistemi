@@ -6,8 +6,6 @@ namespace OzelEgitimHakedis.Tests;
 
 public sealed class ProgressPaymentCalculatorTests
 {
-    private readonly ProgressPaymentCalculator _calculator = new();
-
     [Fact]
     public void ExcelReferenceExample_ShouldMatch()
     {
@@ -22,7 +20,7 @@ public sealed class ProgressPaymentCalculatorTests
             SocialSecurityDebt: 0m,
             MinimumWageSupport: 0m);
 
-        var result = _calculator.Calculate(input);
+        var result = ProgressPaymentCalculator.Calculate(input);
 
         Assert.Equal(154565.00m, result.ServiceAmount);
         Assert.Equal(28327.94m, result.PriceDifferenceExcludingVat);
