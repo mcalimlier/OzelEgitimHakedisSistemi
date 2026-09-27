@@ -49,7 +49,7 @@ public sealed class ProgressPaymentCalculatorTests
             SocialSecurityDebt: 0m,
             MinimumWageSupport: 0m);
 
-        var result = _calculator.Calculate(input);
+        var result = ProgressPaymentCalculator.Calculate(input);
 
         Assert.Equal(10000m, result.TotalAmount);
         Assert.Equal(0m, result.Vat);
@@ -71,6 +71,6 @@ public sealed class ProgressPaymentCalculatorTests
             SocialSecurityDebt: 0m,
             MinimumWageSupport: 0m);
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => _calculator.Calculate(input));
+        Assert.Throws<ArgumentOutOfRangeException>(() => ProgressPaymentCalculator.Calculate(input));
     }
 }
