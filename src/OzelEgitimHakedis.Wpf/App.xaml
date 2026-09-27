@@ -1,0 +1,18 @@
+<Application x:Class="OzelEgitimHakedis.Wpf.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <Color x:Key="Navy900">#031C38</Color>
+        <Color x:Key="Blue600">#2468D8</Color>
+        <Color x:Key="Gold500">#FFB41F</Color>
+        <Color x:Key="Text900">#0B1830</Color>
+        <Color x:Key="Surface">#F7F9FC</Color>
+
+        <SolidColorBrush x:Key="Navy900Brush" Color="{StaticResource Navy900}"/>
+        <SolidColorBrush x:Key="Blue600Brush" Color="{StaticResource Blue600}"/>
+        <SolidColorBrush x:Key="Gold500Brush" Color="{StaticResource Gold500}"/>
+        <SolidColorBrush x:Key="Text900Brush" Color="{StaticResource Text900}"/>
+        <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource Surface}"/>
+    </Application.Resources>
+</Application>

@@ -1,0 +1,64 @@
+<Window x:Class="OzelEgitimHakedis.Wpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Özel Eğitim Hakediş Sistemi (OEHS)"
+        Width="1280"
+        Height="800"
+        MinWidth="1000"
+        MinHeight="650"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource SurfaceBrush}">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Background="{StaticResource Navy900Brush}">
+            <StackPanel Margin="0,24">
+                <TextBlock Text="OEHS"
+                           Foreground="White"
+                           FontSize="30"
+                           FontWeight="Bold"
+                           Margin="24,0,0,4"/>
+                <TextBlock Text="Özel Eğitim Hakediş Sistemi"
+                           Foreground="#B9CBDA"
+                           FontSize="13"
+                           Margin="24,0,0,24"/>
+
+                <Button Content="ANA EKRAN" Margin="12,4" Height="44"/>
+                <Button Content="İHALE / SÖZLEŞME" Margin="12,4" Height="44"/>
+                <Button Content="HATLAR" Margin="12,4" Height="44"/>
+                <Button Content="YÜKLENİCİLER" Margin="12,4" Height="44"/>
+                <Button Content="HAKEDİŞ OLUŞTUR" Margin="12,4" Height="44"/>
+                <Button Content="HAKEDİŞ GEÇMİŞİ" Margin="12,4" Height="44"/>
+                <Button Content="İCMAL" Margin="12,4" Height="44"/>
+                <Button Content="RAPORLAR" Margin="12,4" Height="44"/>
+                <Button Content="AYARLAR" Margin="12,4" Height="44"/>
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Column="1" Margin="32">
+            <StackPanel>
+                <TextBlock Text="Özel Eğitim Hakediş Sistemi"
+                           FontSize="30"
+                           FontWeight="Bold"
+                           Foreground="{StaticResource Text900Brush}"/>
+                <TextBlock Text="Excel iş mantığı analizinden sonra hakediş hesaplama modülü burada geliştirilecektir."
+                           FontSize="16"
+                           Margin="0,8,0,24"/>
+
+                <Border Background="White" CornerRadius="10" Padding="24">
+                    <StackPanel>
+                        <TextBlock Text="Proje başlangıç ekranı"
+                                   FontSize="21"
+                                   FontWeight="SemiBold"/>
+                        <TextBlock Text="Bu iskelet yalnızca mimari başlangıç içindir. Excel kuralları doğrulanmadan hesaplama yapılmaz."
+                                   Margin="0,10,0,0"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

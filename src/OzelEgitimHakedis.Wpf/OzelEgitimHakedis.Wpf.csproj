@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <AssemblyName>OEHS</AssemblyName>
+    <RootNamespace>OzelEgitimHakedis.Wpf</RootNamespace>
+    <UseAppHost>true</UseAppHost>
+    <Product>Özel Eğitim Hakediş Sistemi</Product>
+    <Description>Özel Eğitim Hakediş Sistemi</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OzelEgitimHakedis.Core\OzelEgitimHakedis.Core.csproj" />
+  </ItemGroup>
+</Project>
