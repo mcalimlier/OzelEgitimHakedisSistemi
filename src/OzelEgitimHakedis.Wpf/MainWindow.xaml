@@ -372,7 +372,7 @@
 
                         <!-- Hakediş -->
                         <Grid x:Name="ProgressPanel" Visibility="Collapsed">
-                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <ScrollViewer VerticalScrollBarVisibility="Hidden">
                                 <StackPanel>
                                     <TextBlock Text="HAKEDİŞ OLUŞTUR" Style="{StaticResource PageTitle}"/>
                                     <TextBlock Text="Dönem hesabını girin, sonucu kontrol edin ve ödeme tutarını oluşturun." Style="{StaticResource PageSubtitle}"/>
@@ -468,7 +468,7 @@
 
                         <!-- Hatlar -->
                         <Grid x:Name="LinesPanel" Visibility="Collapsed">
-                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <ScrollViewer VerticalScrollBarVisibility="Hidden">
                                 <StackPanel>
                                     <TextBlock Text="HATLAR" Style="{StaticResource PageTitle}"/>
                                     <TextBlock Text="Sözleşmeye bağlı hizmet hatlarını tanımlayın ve günlük birim fiyatlarını yönetin." Style="{StaticResource PageSubtitle}"/>
@@ -563,7 +563,7 @@
                         </Grid>
 
                         <Grid x:Name="ContractorsPanel" Visibility="Collapsed">
-                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <ScrollViewer VerticalScrollBarVisibility="Hidden">
                                 <StackPanel>
                                     <TextBlock Text="YÜKLENİCİLER" Style="{StaticResource PageTitle}"/>
                                     <TextBlock Text="Sözleşmede görev alan yüklenicileri tek merkezden tanımlayın ve yönetin." Style="{StaticResource PageSubtitle}"/>
