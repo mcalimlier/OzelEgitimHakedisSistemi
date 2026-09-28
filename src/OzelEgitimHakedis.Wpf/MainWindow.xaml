@@ -379,9 +379,9 @@
 
                                     <UniformGrid Columns="4" Margin="0,0,0,16">
                                         <Border Style="{StaticResource MetricCard}" Margin="0,0,8,0"><StackPanel><TextBlock Text="DÖNEM" Style="{StaticResource FieldLabel}"/><TextBlock Text="YENİ HAKEDİŞ" FontSize="22" FontWeight="Bold" Foreground="{StaticResource Blue600Brush}"/><TextBlock Text="Hesaplama hazırlığı" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
-                                        <Border Style="{StaticResource MetricCard}" Margin="4,0"><StackPanel><TextBlock Text="İŞ GÜNÜ" Style="{StaticResource FieldLabel}"/><TextBlock Text="0" FontSize="22" FontWeight="Bold" Foreground="White"/><TextBlock Text="Çalışılan gün" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
-                                        <Border Style="{StaticResource MetricCard}" Margin="4,0"><StackPanel><TextBlock Text="HESAP DURUMU" Style="{StaticResource FieldLabel}"/><TextBlock Text="HAZIR" FontSize="22" FontWeight="Bold" Foreground="{StaticResource Gold600Brush}"/><TextBlock Text="Sonuç bekleniyor" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
-                                        <Border Style="{StaticResource MetricCard}" Margin="8,0,0,0"><StackPanel><TextBlock Text="NET ÖDEME" Style="{StaticResource FieldLabel}"/><TextBlock Text="0,00 ₺" FontSize="22" FontWeight="Bold" Foreground="{StaticResource Blue600Brush}"/><TextBlock Text="Hesap sonrası" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
+                                        <Border Style="{StaticResource MetricCard}" Margin="4,0"><StackPanel><TextBlock Text="İŞ GÜNÜ" Style="{StaticResource FieldLabel}"/><TextBlock x:Name="ProgressWorkDaysSummaryTextBlock" Text="0" FontSize="22" FontWeight="Bold" Foreground="White"/><TextBlock Text="Çalışılan gün" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
+                                        <Border Style="{StaticResource MetricCard}" Margin="4,0"><StackPanel><TextBlock Text="HESAP DURUMU" Style="{StaticResource FieldLabel}"/><TextBlock x:Name="ProgressCalculationSummaryTextBlock" Text="HAZIR" FontSize="22" FontWeight="Bold" Foreground="{StaticResource Gold600Brush}"/><TextBlock Text="Sonuç bekleniyor" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
+                                        <Border Style="{StaticResource MetricCard}" Margin="8,0,0,0"><StackPanel><TextBlock Text="NET ÖDEME" Style="{StaticResource FieldLabel}"/><TextBlock x:Name="ProgressNetSummaryTextBlock" Text="0,00 ₺" FontSize="22" FontWeight="Bold" Foreground="{StaticResource Blue600Brush}"/><TextBlock Text="Hesap sonrası" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
                                     </UniformGrid>
 
                                     <Grid>
@@ -438,7 +438,26 @@
                                                     <TextBlock x:Name="GrossResultTextBlock" Text="0,00 ₺" FontSize="24" FontWeight="Bold" Foreground="White"/>
                                                     <Border Height="1" Background="{StaticResource Line200Brush}" Margin="0,12,0,10"/>
                                                     <TextBlock Text="Net Ödenecek" Style="{StaticResource FieldLabel}"/>
-                                                    <TextBlock Text="Hesap sonucu" Style="{StaticResource CardSubtitle}"/>
+                                                    <TextBlock x:Name="NetControlResultTextBlock" Text="0,00 ₺" FontSize="24" FontWeight="Bold" Foreground="{StaticResource Blue600Brush}"/>
+                                                </StackPanel>
+                                            </Border>
+                                            <Border Style="{StaticResource Card}" Margin="0,14,0,0">
+                                                <StackPanel>
+                                                    <TextBlock Text="KESİNTİ DETAYI" Style="{StaticResource CardTitle}"/>
+                                                    <TextBlock Text="Hesaplanan kesintilerin dağılımı" Style="{StaticResource CardSubtitle}" Margin="0,4,0,12"/>
+                                                    <Grid>
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/>
+                                                        </Grid.RowDefinitions>
+                                                        <TextBlock Grid.Row="0" Text="Tevkifat" Style="{StaticResource FieldLabel}"/>
+                                                        <TextBlock x:Name="WithholdingResultTextBlock" Grid.Row="0" Text="0,00 ₺" HorizontalAlignment="Right" Foreground="{StaticResource Text900Brush}"/>
+                                                        <TextBlock Grid.Row="1" Text="Damga Vergisi" Style="{StaticResource FieldLabel}" Margin="0,8,0,0"/>
+                                                        <TextBlock x:Name="StampTaxResultTextBlock" Grid.Row="1" Text="0,00 ₺" HorizontalAlignment="Right" Foreground="{StaticResource Text900Brush}" Margin="0,8,0,0"/>
+                                                        <TextBlock Grid.Row="2" Text="Denetim Cezası" Style="{StaticResource FieldLabel}" Margin="0,8,0,0"/>
+                                                        <TextBlock x:Name="InspectionPenaltyResultTextBlock" Grid.Row="2" Text="0,00 ₺" HorizontalAlignment="Right" Foreground="{StaticResource Text900Brush}" Margin="0,8,0,0"/>
+                                                        <TextBlock Grid.Row="3" Text="Fiyat Farkı Teminatı" Style="{StaticResource FieldLabel}" Margin="0,8,0,0"/>
+                                                        <TextBlock x:Name="AdditionalGuaranteeResultTextBlock" Grid.Row="3" Text="0,00 ₺" HorizontalAlignment="Right" Foreground="{StaticResource Text900Brush}" Margin="0,8,0,0"/>
+                                                    </Grid>
                                                 </StackPanel>
                                             </Border>
                                         </StackPanel>
