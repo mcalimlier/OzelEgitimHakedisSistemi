@@ -338,7 +338,7 @@
             <Setter Property="BorderBrush" Value="{StaticResource Line200Brush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="5"/>
-            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden"/>
         </Style>
 
         <Style TargetType="ListBoxItem">
