@@ -1,5 +1,7 @@
 using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Interop;
 using OzelEgitimHakedis.Core.Models;
 using OzelEgitimHakedis.Core.Services;
 
@@ -7,19 +9,101 @@ namespace OzelEgitimHakedis.Wpf;
 
 public partial class MainWindow : Window
 {
+    private const double DesignWidth = 1450.0;
+    private const double DesignHeight = 945.0;
+
+    private const int WmGetMinMaxInfo = 0x0024;
+    private const uint MonitorDefaultToNearest = 0x00000002;
+    private HwndSource? _windowSource;
+
     public MainWindow()
     {
         InitializeComponent();
+        ConfigureWindow();
+        SourceInitialized += MainWindow_SourceInitialized;
         StartDatePicker.SelectedDate = DateTime.Today;
         EndDatePicker.SelectedDate = DateTime.Today;
+        UpdateShellText("Ana Ekran");
+    }
+
+    private void ConfigureWindow()
+    {
+        SizeToContent = SizeToContent.Manual;
+        WindowStartupLocation = WindowStartupLocation.Manual;
+        WindowStyle = WindowStyle.None;
+        ResizeMode = ResizeMode.CanResizeWithGrip;
+        ShowInTaskbar = true;
+        Background = System.Windows.Media.Brushes.White;
+        UseLayoutRounding = true;
+        SnapsToDevicePixels = true;
+        ConfigureWindowForCurrentScreen();
+        UpdateMaximizeRestoreButton();
+    }
+
+    private void ConfigureWindowForCurrentScreen()
+    {
+        var workArea = SystemParameters.WorkArea;
+        var maxWidth = Math.Min(DesignWidth, workArea.Width * 0.92);
+        var maxHeight = Math.Min(DesignHeight, workArea.Height * 0.90);
+        var scale = Math.Min(maxWidth / DesignWidth, maxHeight / DesignHeight);
+
+        Width = Math.Round(DesignWidth * scale);
+        Height = Math.Round(DesignHeight * scale);
+        Left = workArea.Left + ((workArea.Width - Width) / 2.0);
+        Top = workArea.Top + ((workArea.Height - Height) / 2.0);
+    }
+
+    private void MainWindow_SourceInitialized(object? sender, EventArgs e)
+    {
+        _windowSource = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
+        _windowSource?.AddHook(WindowMessageHook);
+    }
+
+    private IntPtr WindowMessageHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+    {
+        if (msg != WmGetMinMaxInfo || lParam == IntPtr.Zero)
+            return IntPtr.Zero;
+
+        var minMax = Marshal.PtrToStructure<MinMaxInfo>(lParam);
+        var monitor = MonitorFromWindow(hwnd, MonitorDefaultToNearest);
+
+        if (monitor != IntPtr.Zero)
+        {
+            var monitorInfo = new MonitorInfo
+            {
+                cbSize = Marshal.SizeOf<MonitorInfo>()
+            };
+
+            if (GetMonitorInfo(monitor, ref monitorInfo))
+            {
+                var work = monitorInfo.rcWork;
+                var bounds = monitorInfo.rcMonitor;
+                minMax.ptMaxPosition.x = work.left - bounds.left;
+                minMax.ptMaxPosition.y = work.top - bounds.top;
+                minMax.ptMaxSize.x = work.right - work.left;
+                minMax.ptMaxSize.y = work.bottom - work.top;
+            }
+        }
+
+        Marshal.StructureToPtr(minMax, lParam, false);
+        handled = true;
+        return IntPtr.Zero;
+    }
+
+    private void UpdateMaximizeRestoreButton()
+    {
+        if (MaximizeRestoreButton is null || MaximizeRestoreIcon is null)
+            return;
+
+        var maximized = WindowState == WindowState.Maximized;
+        MaximizeRestoreButton.ToolTip = maximized ? "Geri yükle" : "Tam ekran";
+        MaximizeRestoreIcon.Text = maximized ? "\uE923" : "\uE922";
     }
 
     private void NavigationButton_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not System.Windows.Controls.Button button)
-        {
             return;
-        }
 
         var page = button.Tag?.ToString() ?? "Home";
 
@@ -30,9 +114,34 @@ public partial class MainWindow : Window
             ? Visibility.Collapsed
             : Visibility.Visible;
 
-        if (PlaceholderPanel.Visibility == Visibility.Visible)
+        UpdateShellText(page switch
         {
+            "Contract" => "İhale / Sözleşme",
+            "Progress" => "Hakediş Oluştur",
+            _ when PlaceholderPanel.Visibility == Visibility.Visible => button.Content?.ToString() ?? "Modül",
+            _ => "Ana Ekran"
+        });
+
+        if (PlaceholderPanel.Visibility == Visibility.Visible)
             PlaceholderTitleTextBlock.Text = button.Content?.ToString() ?? "Modül";
+
+        UpdateActiveNavigation(button);
+    }
+
+    private void UpdateShellText(string module)
+    {
+        HeaderModuleText.Text = module;
+    }
+
+    private void UpdateActiveNavigation(System.Windows.Controls.Button activeButton)
+    {
+        foreach (var button in new[]
+        {
+            NavHome, NavContract, NavLines, NavContractors,
+            NavProgress, NavHistory, NavSummary, NavReports, NavSettings
+        })
+        {
+            button.Tag = button == activeButton ? "Active" : null;
         }
     }
 
@@ -114,6 +223,30 @@ public partial class MainWindow : Window
         }
     }
 
+    private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
+
+    private void MaximizeRestore_Click(object sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+        UpdateMaximizeRestoreButton();
+    }
+
+    private void Close_Click(object sender, RoutedEventArgs e) => Close();
+
+    private void Header_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (e.ClickCount == 2)
+        {
+            MaximizeRestore_Click(sender, e);
+            return;
+        }
+
+        if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
+            DragMove();
+    }
+
+    private void Window_StateChanged(object? sender, EventArgs e) => UpdateMaximizeRestoreButton();
+
     private static bool TryParseDecimal(string? text, out decimal value)
     {
         return decimal.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out value) ||
@@ -121,4 +254,46 @@ public partial class MainWindow : Window
     }
 
     private static string FormatMoney(decimal value) => $"{value:N2} ₺";
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
+
+    [DllImport("user32.dll", CharSet = CharSet.Auto)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MonitorInfo lpmi);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativePoint
+    {
+        public int x;
+        public int y;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MinMaxInfo
+    {
+        public NativePoint ptReserved;
+        public NativePoint ptMaxSize;
+        public NativePoint ptMaxPosition;
+        public NativePoint ptMinTrackSize;
+        public NativePoint ptMaxTrackSize;
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+    private struct MonitorInfo
+    {
+        public int cbSize;
+        public NativeRect rcMonitor;
+        public NativeRect rcWork;
+        public uint dwFlags;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativeRect
+    {
+        public int left;
+        public int top;
+        public int right;
+        public int bottom;
+    }
 }
