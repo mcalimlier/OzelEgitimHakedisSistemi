@@ -167,19 +167,19 @@
                                 </Border>
                                 <Grid>
                                     <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-                                    <Border Grid.Column="0" Background="#F7F9FC" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="10" Padding="18" Margin="0,0,8,0">
+                                    <Border Grid.Column="0" Style="{StaticResource CardCompact}" Margin="0,0,8,0">
                                         <StackPanel>
                                             <TextBlock Text="01  SÖZLEŞME" Style="{StaticResource SectionTitle}"/>
                                             <TextBlock Text="İhale ve sözleşme temel bilgilerini girin." Foreground="{StaticResource Text600Brush}" FontSize="13" Margin="0,8,0,0" TextWrapping="Wrap"/>
                                         </StackPanel>
                                     </Border>
-                                    <Border Grid.Column="1" Background="#F7F9FC" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="10" Padding="18" Margin="4,0">
+                                    <Border Grid.Column="1" Style="{StaticResource CardCompact}" Margin="4,0">
                                         <StackPanel>
                                             <TextBlock Text="02  HATLAR" Style="{StaticResource SectionTitle}"/>
                                             <TextBlock Text="Sözleşmeye bağlı hizmet hatlarını tanımlayın." Foreground="{StaticResource Text600Brush}" FontSize="13" Margin="0,8,0,0" TextWrapping="Wrap"/>
                                         </StackPanel>
                                     </Border>
-                                    <Border Grid.Column="2" Background="#F7F9FC" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="10" Padding="18" Margin="8,0,0,0">
+                                    <Border Grid.Column="2" Style="{StaticResource CardCompact}" Margin="8,0,0,0">
                                         <StackPanel>
                                             <TextBlock Text="03  HAKEDİŞ" Style="{StaticResource SectionTitle}"/>
                                             <TextBlock Text="Hesaplama motoruyla dönem tutarını oluşturun." Foreground="{StaticResource Text600Brush}" FontSize="13" Margin="0,8,0,0" TextWrapping="Wrap"/>
@@ -195,7 +195,7 @@
                                 <StackPanel>
                                     <TextBlock Text="İHALE / SÖZLEŞME" Style="{StaticResource PageTitle}"/>
                                     <TextBlock Text="Hakediş hesabının temelini oluşturacak sözleşme bilgileri." Style="{StaticResource PageSubtitle}"/>
-                                    <Border Background="#F7F9FC" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="12" Padding="24">
+                                    <Border Style="{StaticResource Card}">
                                         <StackPanel>
                                             <TextBlock Text="Sözleşme Bilgileri" Style="{StaticResource SectionTitle}" Margin="0,0,0,18"/>
                                             <Grid>
@@ -226,14 +226,14 @@
                                                 <TextBox x:Name="ContractAmountTextBox" Grid.Row="2" Grid.Column="3" Margin="8" Style="{StaticResource FieldTextBox}"/>
 
                                                 <TextBlock Grid.Row="3" Grid.Column="0" Text="Başlangıç Tarihi" Style="{StaticResource FieldLabel}" Margin="0,8"/>
-                                                <DatePicker x:Name="StartDatePicker" Grid.Row="3" Grid.Column="1" Margin="8" Height="42"/>
+                                                <DatePicker x:Name="StartDatePicker" Grid.Row="3" Grid.Column="1" Margin="8" Style="{StaticResource FieldDatePicker}"/>
                                                 <TextBlock Grid.Row="3" Grid.Column="2" Text="Bitiş Tarihi" Style="{StaticResource FieldLabel}" Margin="16,8,0,8"/>
-                                                <DatePicker x:Name="EndDatePicker" Grid.Row="3" Grid.Column="3" Margin="8" Height="42"/>
+                                                <DatePicker x:Name="EndDatePicker" Grid.Row="3" Grid.Column="3" Margin="8" Style="{StaticResource FieldDatePicker}"/>
                                             </Grid>
                                             <CheckBox x:Name="VatExemptCheckBox" Content="KDV istisnası uygulanacak" Margin="8,14,8,0" FontFamily="Segoe UI" FontSize="14"/>
                                             <StackPanel Orientation="Horizontal" Margin="0,22,0,0">
                                                 <Button Content="KAYDET" Click="SaveContractButton_Click" Style="{StaticResource ModernButton}" Width="130"/>
-                                                <Button Content="TEMİZLE" Click="ClearContractButton_Click" Width="110" Height="42" Margin="10,0,0,0" Background="{StaticResource Gold500Brush}" BorderThickness="0" FontFamily="Segoe UI" FontWeight="SemiBold"/>
+                                                <Button Content="TEMİZLE" Click="ClearContractButton_Click" Style="{StaticResource SecondaryButton}" Width="110" Margin="10,0,0,0"/>
                                             </StackPanel>
                                             <TextBlock x:Name="ContractStatusTextBlock" Margin="0,14,0,0" Foreground="{StaticResource Blue600Brush}"/>
                                         </StackPanel>
@@ -276,7 +276,7 @@
                                             <TextBlock x:Name="CalculationStatusTextBlock" Margin="0,14,0,0" Foreground="{StaticResource Gold500Brush}"/>
                                         </StackPanel>
                                     </Border>
-                                    <Border Background="#F7F9FC" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="12" Padding="24" Margin="0,20,0,0">
+                                    <Border Style="{StaticResource Card}" Margin="0,20,0,0">
                                         <StackPanel>
                                             <TextBlock Text="Hesap Sonucu" Style="{StaticResource SectionTitle}" Margin="0,0,0,14"/>
                                             <Grid>
