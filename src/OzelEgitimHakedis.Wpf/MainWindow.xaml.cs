@@ -119,7 +119,12 @@ public partial class MainWindow : Window
         ProgressPanel.Visibility = page == "Progress" ? Visibility.Visible : Visibility.Collapsed;
         LinesPanel.Visibility = page == "Lines" ? Visibility.Visible : Visibility.Collapsed;
         ContractorsPanel.Visibility = page == "Contractors" ? Visibility.Visible : Visibility.Collapsed;
+        HistoryPanel.Visibility = page == "History" ? Visibility.Visible : Visibility.Collapsed;
+        SummaryPanel.Visibility = page == "Summary" ? Visibility.Visible : Visibility.Collapsed;
+        ReportsPanel.Visibility = page == "Reports" ? Visibility.Visible : Visibility.Collapsed;
+        SettingsPanel.Visibility = page == "Settings" ? Visibility.Visible : Visibility.Collapsed;
         PlaceholderPanel.Visibility = page is "Home" or "Contract" or "Progress" or "Lines" or "Contractors"
+            or "History" or "Summary" or "Reports" or "Settings"
             ? Visibility.Collapsed
             : Visibility.Visible;
 
