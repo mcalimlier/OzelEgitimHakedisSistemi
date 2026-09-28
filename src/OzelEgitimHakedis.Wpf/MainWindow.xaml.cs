@@ -559,6 +559,38 @@ public partial class MainWindow : Window
         ReportCountTextBlock.Text = _progressHistory.Count.ToString(CultureInfo.CurrentCulture);
         ReportGrossTextBlock.Text = FormatMoney(_progressHistory.Sum(x => x.Calculation.GrossAmount));
         ReportNetTextBlock.Text = FormatMoney(_progressHistory.Sum(x => x.Calculation.NetPayable));
+
+        var latest = _progressHistory
+            .OrderByDescending(x => x.PeriodDate ?? DateOnly.MinValue)
+            .ThenByDescending(x => x.CreatedAt)
+            .FirstOrDefault();
+
+        if (latest is null)
+        {
+            ReportDetailTitleTextBlock.Text = "Henüz kayıt yok";
+            ReportDetailGrossTextBlock.Text = FormatMoney(0);
+            ReportDetailNetTextBlock.Text = FormatMoney(0);
+            ReportDetailMetaTextBlock.Text = "Hakediş ekranından bir hesaplama kaydedildiğinde son kayıt burada gösterilir.";
+        }
+        else
+        {
+            var title = latest.ProgressPaymentNumber.HasValue
+                ? $"Hakediş No {latest.ProgressPaymentNumber.Value}"
+                : "Hakediş Hesaplama";
+
+            var period = latest.PeriodDate.HasValue
+                ? $"Dönem: {latest.PeriodDate.Value:dd.MM.yyyy}"
+                : $"Kayıt: {latest.CreatedAt:dd.MM.yyyy HH:mm}";
+
+            var vatText = latest.Input.IsVatExempt ? "KDV istisnası uygulanıyor" : "KDV uygulanıyor";
+            var deductionText = $"Toplam kesinti: {FormatMoney(latest.Calculation.TotalDeductions)}";
+
+            ReportDetailTitleTextBlock.Text = title;
+            ReportDetailGrossTextBlock.Text = FormatMoney(latest.Calculation.GrossAmount);
+            ReportDetailNetTextBlock.Text = FormatMoney(latest.Calculation.NetPayable);
+            ReportDetailMetaTextBlock.Text = $"{period} • {vatText} • {deductionText}";
+        }
+
         ReportEmptyStateBorder.Visibility = _reportRows.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 
