@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - feature/wpf-contract-entry-v0.5
   pull_request:
     branches:
       - main
