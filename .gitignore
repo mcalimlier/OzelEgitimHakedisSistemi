@@ -399,3 +399,8 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# OEHS local diagnostics
+OEHS_DERLEME_LOG.txt
+OEHS_DERLEME_LOG.binlog
+OEHS_CALISMA_LOG.txt
