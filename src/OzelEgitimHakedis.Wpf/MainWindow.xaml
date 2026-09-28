@@ -16,49 +16,221 @@
 
         <Border Grid.Column="0" Background="{StaticResource Navy900Brush}">
             <StackPanel Margin="0,24">
-                <TextBlock Text="OEHS"
-                           Foreground="White"
-                           FontSize="30"
-                           FontWeight="Bold"
-                           Margin="24,0,0,4"/>
-                <TextBlock Text="Özel Eğitim Hakediş Sistemi"
-                           Foreground="#B9CBDA"
-                           FontSize="13"
-                           Margin="24,0,0,24"/>
+                <TextBlock Text="OEHS" Foreground="White" FontSize="30" FontWeight="Bold" Margin="24,0,0,4"/>
+                <TextBlock Text="Özel Eğitim Hakediş Sistemi" Foreground="#B9CBDA" FontSize="13" Margin="24,0,0,24"/>
 
-                <Button Content="ANA EKRAN" Margin="12,4" Height="44"/>
-                <Button Content="İHALE / SÖZLEŞME" Margin="12,4" Height="44"/>
-                <Button Content="HATLAR" Margin="12,4" Height="44"/>
-                <Button Content="YÜKLENİCİLER" Margin="12,4" Height="44"/>
-                <Button Content="HAKEDİŞ OLUŞTUR" Margin="12,4" Height="44"/>
-                <Button Content="HAKEDİŞ GEÇMİŞİ" Margin="12,4" Height="44"/>
-                <Button Content="İCMAL" Margin="12,4" Height="44"/>
-                <Button Content="RAPORLAR" Margin="12,4" Height="44"/>
-                <Button Content="AYARLAR" Margin="12,4" Height="44"/>
+                <Button Content="ANA EKRAN" Tag="Home" Click="NavigationButton_Click" Margin="12,4" Height="44"/>
+                <Button Content="İHALE / SÖZLEŞME" Tag="Contract" Click="NavigationButton_Click" Margin="12,4" Height="44"/>
+                <Button Content="HATLAR" Tag="Lines" Click="NavigationButton_Click" Margin="12,4" Height="44"/>
+                <Button Content="YÜKLENİCİLER" Tag="Contractors" Click="NavigationButton_Click" Margin="12,4" Height="44"/>
+                <Button Content="HAKEDİŞ OLUŞTUR" Tag="Progress" Click="NavigationButton_Click" Margin="12,4" Height="44"/>
+                <Button Content="HAKEDİŞ GEÇMİŞİ" Tag="History" Click="NavigationButton_Click" Margin="12,4" Height="44"/>
+                <Button Content="İCMAL" Tag="Summary" Click="NavigationButton_Click" Margin="12,4" Height="44"/>
+                <Button Content="RAPORLAR" Tag="Reports" Click="NavigationButton_Click" Margin="12,4" Height="44"/>
+                <Button Content="AYARLAR" Tag="Settings" Click="NavigationButton_Click" Margin="12,4" Height="44"/>
             </StackPanel>
         </Border>
 
         <Grid Grid.Column="1" Margin="32">
-            <StackPanel>
-                <TextBlock Text="Özel Eğitim Hakediş Sistemi"
-                           FontSize="30"
-                           FontWeight="Bold"
-                           Foreground="{StaticResource Text900Brush}"/>
-                <TextBlock Text="Excel iş mantığı analizinden sonra hakediş hesaplama modülü burada geliştirilecektir."
-                           FontSize="16"
-                           Margin="0,8,0,24"/>
+            <!-- Ana ekran -->
+            <Grid x:Name="HomePanel">
+                <StackPanel>
+                    <TextBlock Text="Özel Eğitim Hakediş Sistemi" FontSize="30" FontWeight="Bold" Foreground="{StaticResource Text900Brush}"/>
+                    <TextBlock Text="Hakediş sürecini sözleşmeden hesaplamaya kadar tek akışta yönetin." FontSize="16" Margin="0,8,0,24"/>
 
-                <Border Background="White" CornerRadius="10" Padding="24">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" Background="White" CornerRadius="10" Padding="20" Margin="0,0,12,0">
+                            <StackPanel>
+                                <TextBlock Text="01" FontSize="14" Foreground="{StaticResource Blue600Brush}" FontWeight="Bold"/>
+                                <TextBlock Text="İhale / Sözleşme" FontSize="20" FontWeight="SemiBold" Margin="0,8,0,4"/>
+                                <TextBlock Text="Temel sözleşme bilgilerini tanımlayın." TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="1" Background="White" CornerRadius="10" Padding="20" Margin="6,0">
+                            <StackPanel>
+                                <TextBlock Text="02" FontSize="14" Foreground="{StaticResource Blue600Brush}" FontWeight="Bold"/>
+                                <TextBlock Text="Hatlar" FontSize="20" FontWeight="SemiBold" Margin="0,8,0,4"/>
+                                <TextBlock Text="Sözleşmeye bağlı hizmet hatlarını yönetin." TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="2" Background="White" CornerRadius="10" Padding="20" Margin="12,0,0,0">
+                            <StackPanel>
+                                <TextBlock Text="03" FontSize="14" Foreground="{StaticResource Blue600Brush}" FontWeight="Bold"/>
+                                <TextBlock Text="Hakediş" FontSize="20" FontWeight="SemiBold" Margin="0,8,0,4"/>
+                                <TextBlock Text="Hesaplama motoru ile dönem hakedişi oluşturun." TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <Border Background="White" CornerRadius="10" Padding="24" Margin="0,24,0,0">
+                        <StackPanel>
+                            <TextBlock Text="Başlangıç" FontSize="21" FontWeight="SemiBold"/>
+                            <TextBlock Text="Önce İhale / Sözleşme ekranından bir sözleşme tanımlayalım. Ardından hatları ekleyip hakediş hesabına geçeceğiz."
+                                       Margin="0,10,0,0" TextWrapping="Wrap"/>
+                            <Button Content="İHALE / SÖZLEŞME TANIMLA" Tag="Contract" Click="NavigationButton_Click"
+                                    Width="220" Height="42" HorizontalAlignment="Left" Margin="0,18,0,0"
+                                    Background="{StaticResource Blue600Brush}" Foreground="White"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+
+            <!-- İhale / Sözleşme -->
+            <Grid x:Name="ContractPanel" Visibility="Collapsed">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel>
-                        <TextBlock Text="Proje başlangıç ekranı"
-                                   FontSize="21"
-                                   FontWeight="SemiBold"/>
-                        <TextBlock Text="Bu iskelet yalnızca mimari başlangıç içindir. Excel kuralları doğrulanmadan hesaplama yapılmaz."
-                                   Margin="0,10,0,0"
-                                   TextWrapping="Wrap"/>
+                        <TextBlock Text="İhale / Sözleşme" FontSize="30" FontWeight="Bold" Foreground="{StaticResource Text900Brush}"/>
+                        <TextBlock Text="Hakediş hesabının temelini oluşturacak sözleşme bilgileri." FontSize="16" Margin="0,8,0,20"/>
+
+                        <Border Background="White" CornerRadius="10" Padding="24">
+                            <StackPanel>
+                                <TextBlock Text="Sözleşme Bilgileri" FontSize="21" FontWeight="SemiBold" Margin="0,0,0,18"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="220"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="220"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="İhale / Dosya No" VerticalAlignment="Center" Margin="0,8"/>
+                                    <TextBox x:Name="TenderNumberTextBox" Grid.Row="0" Grid.Column="1" Margin="8"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="Sözleşme No" VerticalAlignment="Center" Margin="16,8,0,8"/>
+                                    <TextBox x:Name="ContractNumberTextBox" Grid.Row="0" Grid.Column="3" Margin="8"/>
+
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="İşin Adı" VerticalAlignment="Center" Margin="0,8"/>
+                                    <TextBox x:Name="WorkNameTextBox" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="8"/>
+
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Yüklenici" VerticalAlignment="Center" Margin="0,8"/>
+                                    <TextBox x:Name="ContractorTextBox" Grid.Row="2" Grid.Column="1" Margin="8"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="2" Text="Sözleşme Bedeli" VerticalAlignment="Center" Margin="16,8,0,8"/>
+                                    <TextBox x:Name="ContractAmountTextBox" Grid.Row="2" Grid.Column="3" Margin="8"/>
+
+                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Başlangıç Tarihi" VerticalAlignment="Center" Margin="0,8"/>
+                                    <DatePicker x:Name="StartDatePicker" Grid.Row="3" Grid.Column="1" Margin="8"/>
+                                    <TextBlock Grid.Row="3" Grid.Column="2" Text="Bitiş Tarihi" VerticalAlignment="Center" Margin="16,8,0,8"/>
+                                    <DatePicker x:Name="EndDatePicker" Grid.Row="3" Grid.Column="3" Margin="8"/>
+                                </Grid>
+
+                                <CheckBox x:Name="VatExemptCheckBox" Content="KDV istisnası uygulanacak" Margin="8,14,8,0"/>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,22,0,0">
+                                    <Button Content="KAYDET" Click="SaveContractButton_Click" Width="130" Height="42"
+                                            Background="{StaticResource Blue600Brush}" Foreground="White"/>
+                                    <Button Content="TEMİZLE" Click="ClearContractButton_Click" Width="110" Height="42" Margin="10,0,0,0"/>
+                                </StackPanel>
+                                <TextBlock x:Name="ContractStatusTextBlock" Margin="0,14,0,0" Foreground="{StaticResource Blue600Brush}"/>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
-                </Border>
-            </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- Hakediş hesaplama -->
+            <Grid x:Name="ProgressPanel" Visibility="Collapsed">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="Hakediş Oluştur" FontSize="30" FontWeight="Bold" Foreground="{StaticResource Text900Brush}"/>
+                        <TextBlock Text="Mevcut hesaplama motorunu doğrudan WPF ekranında çalıştıran ilk sürüm." FontSize="16" Margin="0,8,0,20"/>
+
+                        <Border Background="White" CornerRadius="10" Padding="24">
+                            <StackPanel>
+                                <TextBlock Text="Dönem Hesap Bilgileri" FontSize="21" FontWeight="SemiBold" Margin="0,0,0,18"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="220"/>
+                                        <ColumnDefinition Width="220"/>
+                                        <ColumnDefinition Width="220"/>
+                                        <ColumnDefinition Width="220"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="İş Günü" VerticalAlignment="Center" Margin="0,8"/>
+                                    <TextBox x:Name="WorkDaysTextBox" Grid.Row="0" Grid.Column="1" Margin="8"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="Günlük Fiyat" VerticalAlignment="Center" Margin="16,8,0,8"/>
+                                    <TextBox x:Name="DailyPriceTextBox" Grid.Row="0" Grid.Column="3" Margin="8"/>
+
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="İskonto" VerticalAlignment="Center" Margin="0,8"/>
+                                    <TextBox x:Name="DiscountTextBox" Grid.Row="1" Grid.Column="1" Margin="8"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="2" Text="Fiyat Farkı" VerticalAlignment="Center" Margin="16,8,0,8"/>
+                                    <TextBox x:Name="PriceDifferenceTextBox" Grid.Row="1" Grid.Column="3" Margin="8"/>
+
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Sözleşme Bedeli" VerticalAlignment="Center" Margin="0,8"/>
+                                    <TextBox x:Name="ProgressContractAmountTextBox" Grid.Row="2" Grid.Column="1" Margin="8"/>
+                                    <CheckBox x:Name="ProgressVatExemptCheckBox" Grid.Row="2" Grid.Column="2"
+                                              Content="KDV istisnası" VerticalAlignment="Center" Margin="16,8,0,8"/>
+                                    <CheckBox x:Name="InspectionPenaltyCheckBox" Grid.Row="2" Grid.Column="3"
+                                              Content="Denetim cezası uygula" VerticalAlignment="Center" Margin="8"/>
+                                </Grid>
+
+                                <Button Content="HAKEDİŞİ HESAPLA" Click="CalculateProgressButton_Click"
+                                        Width="180" Height="44" HorizontalAlignment="Left" Margin="0,20,0,0"
+                                        Background="{StaticResource Blue600Brush}" Foreground="White"/>
+
+                                <TextBlock x:Name="CalculationStatusTextBlock" Margin="0,14,0,0" Foreground="{StaticResource Blue600Brush}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Background="White" CornerRadius="10" Padding="24" Margin="0,20,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Hesap Sonucu" FontSize="21" FontWeight="SemiBold" Margin="0,0,0,14"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Hizmet Tutarı"/>
+                                        <TextBlock x:Name="ServiceAmountResultTextBlock" Text="0,00 ₺" FontSize="22" FontWeight="Bold" Margin="0,4,0,14"/>
+                                        <TextBlock Text="Toplam Tutar"/>
+                                        <TextBlock x:Name="TotalAmountResultTextBlock" Text="0,00 ₺" FontSize="22" FontWeight="Bold"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="KDV"/>
+                                        <TextBlock x:Name="VatResultTextBlock" Text="0,00 ₺" FontSize="22" FontWeight="Bold" Margin="0,4,0,14"/>
+                                        <TextBlock Text="Toplam Kesinti"/>
+                                        <TextBlock x:Name="DeductionsResultTextBlock" Text="0,00 ₺" FontSize="22" FontWeight="Bold"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="Brüt"/>
+                                        <TextBlock x:Name="GrossResultTextBlock" Text="0,00 ₺" FontSize="22" FontWeight="Bold" Margin="0,4,0,14"/>
+                                        <TextBlock Text="Net Ödenecek"/>
+                                        <TextBlock x:Name="NetResultTextBlock" Text="0,00 ₺" FontSize="22" FontWeight="Bold" Foreground="{StaticResource Blue600Brush}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- Diğer modüller -->
+            <Grid x:Name="PlaceholderPanel" Visibility="Collapsed">
+                <StackPanel>
+                    <TextBlock x:Name="PlaceholderTitleTextBlock" Text="Modül" FontSize="30" FontWeight="Bold" Foreground="{StaticResource Text900Brush}"/>
+                    <TextBlock Text="Bu bölüm sonraki geliştirme adımında aktif hale getirilecek." FontSize="16" Margin="0,8,0,20"/>
+                    <Border Background="White" CornerRadius="10" Padding="24">
+                        <TextBlock Text="Önce sözleşme → hatlar → hakediş akışını tamamlıyoruz. Bu modül mevcut mimariye bağlanacak."
+                                   TextWrapping="Wrap" FontSize="16"/>
+                    </Border>
+                </StackPanel>
+            </Grid>
         </Grid>
     </Grid>
 </Window>
