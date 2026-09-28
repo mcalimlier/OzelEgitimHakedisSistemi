@@ -46,7 +46,7 @@
 
         <Style TargetType="TextBox">
             <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="15.5"/>
+            <Setter Property="FontSize" Value="16.5"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Padding" Value="10,0"/>
         </Style>
@@ -61,7 +61,7 @@
             <Setter Property="Height" Value="42"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontSize" Value="14.5"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="ClickMode" Value="Release"/>
@@ -342,6 +342,41 @@
             <Setter Property="Margin" Value="4"/>
         </Style>
 
+        <Style x:Key="PremiumCheckBox" TargetType="CheckBox">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="15.5"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Grid MinHeight="38">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="34"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                            <Border x:Name="Box" Width="27" Height="27" HorizontalAlignment="Left" VerticalAlignment="Center"
+                                    CornerRadius="6" Background="#123B5E" BorderBrush="#6F8DA7" BorderThickness="2"/>
+                            <Path x:Name="CheckMark" Grid.Column="0" Width="15" Height="15" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                  Stroke="{StaticResource Gold500Brush}" StrokeThickness="2.6" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                  Data="M 2,8 L 6,12 L 14,3" Visibility="Collapsed"/>
+                            <ContentPresenter Grid.Column="1" VerticalAlignment="Center" Margin="9,0,0,0" RecognizesAccessKey="True"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Box" Property="Background" Value="#173F67"/>
+                                <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource Gold500Brush}"/>
+                                <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource Gold500Brush}"/></Trigger>
+                            <Trigger Property="IsEnabled" Value="False"><Setter TargetName="Box" Property="Opacity" Value="0.55"/></Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style x:Key="LightCheckBox" TargetType="CheckBox">
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontSize" Value="15.5"/>
@@ -354,13 +389,13 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="CheckBox">
-                        <Grid MinHeight="34">
+                        <Grid MinHeight="38">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="32"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <Border x:Name="Box"
-                                    Width="25" Height="25"
+                                    Width="27" Height="27"
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Center"
                                     CornerRadius="6"
