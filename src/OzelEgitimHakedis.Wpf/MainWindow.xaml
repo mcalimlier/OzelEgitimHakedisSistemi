@@ -265,8 +265,7 @@
 
                         <!-- İhale / Sözleşme -->
                         <Grid x:Name="ContractPanel" Visibility="Collapsed">
-                            <ScrollViewer VerticalScrollBarVisibility="Hidden">
-                                <StackPanel>
+                            <StackPanel>
                                     <TextBlock Text="İHALE / SÖZLEŞME" Style="{StaticResource PageTitle}"/>
                                     <TextBlock Text="Sözleşme, yüklenici ve dönem bilgilerini tek ekrandan yönetin." Style="{StaticResource PageSubtitle}"/>
 
@@ -367,13 +366,11 @@
                                         </StackPanel>
                                     </Grid>
                                 </StackPanel>
-                            </ScrollViewer>
                         </Grid>
 
                         <!-- Hakediş -->
                         <Grid x:Name="ProgressPanel" Visibility="Collapsed">
-                            <ScrollViewer VerticalScrollBarVisibility="Hidden">
-                                <StackPanel>
+                            <StackPanel>
                                     <TextBlock Text="HAKEDİŞ OLUŞTUR" Style="{StaticResource PageTitle}"/>
                                     <TextBlock Text="Dönem hesabını girin, sonucu kontrol edin ve ödeme tutarını oluşturun." Style="{StaticResource PageSubtitle}"/>
 
@@ -463,13 +460,11 @@
                                         </StackPanel>
                                     </Grid>
                                 </StackPanel>
-                            </ScrollViewer>
                         </Grid>
 
                         <!-- Hatlar -->
                         <Grid x:Name="LinesPanel" Visibility="Collapsed">
-                            <ScrollViewer VerticalScrollBarVisibility="Hidden">
-                                <StackPanel>
+                            <StackPanel>
                                     <TextBlock Text="HATLAR" Style="{StaticResource PageTitle}"/>
                                     <TextBlock Text="Sözleşmeye bağlı hizmet hatlarını tanımlayın ve günlük birim fiyatlarını yönetin." Style="{StaticResource PageSubtitle}"/>
 
@@ -529,7 +524,7 @@
                                             <StackPanel>
                                                 <TextBlock Text="TANIMLI HATLAR" Style="{StaticResource CardTitle}"/>
                                                 <TextBlock Text="Bu oturumda oluşturulan hat taslakları" Style="{StaticResource CardSubtitle}" Margin="0,0,0,12"/>
-                                                <ListBox x:Name="RoutesListBox" Height="300" Style="{StaticResource ModernListBox}">
+                                                <ItemsControl x:Name="RoutesListBox">
                                                     <ListBox.ItemTemplate>
                                                         <DataTemplate>
                                                             <Grid Margin="4">
@@ -549,8 +544,8 @@
                                                                         Style="{StaticResource SecondaryButton}" Height="34" Margin="10,0,0,0"/>
                                                             </Grid>
                                                         </DataTemplate>
-                                                    </ListBox.ItemTemplate>
-                                                </ListBox>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
                                                 <Border Style="{StaticResource StatusBanner}" Margin="0,12,0,0">
                                                     <TextBlock Text="Not: Hat kayıtları şu aşamada oturum içi taslaktır; kalıcı veri saklama katmanı ayrıca bağlanacaktır."
                                                                Foreground="{StaticResource Text600Brush}" TextWrapping="Wrap"/>
@@ -559,12 +554,10 @@
                                         </Border>
                                     </Grid>
                                 </StackPanel>
-                            </ScrollViewer>
                         </Grid>
 
                         <Grid x:Name="ContractorsPanel" Visibility="Collapsed">
-                            <ScrollViewer VerticalScrollBarVisibility="Hidden">
-                                <StackPanel>
+                            <StackPanel>
                                     <TextBlock Text="YÜKLENİCİLER" Style="{StaticResource PageTitle}"/>
                                     <TextBlock Text="Sözleşmede görev alan yüklenicileri tek merkezden tanımlayın ve yönetin." Style="{StaticResource PageSubtitle}"/>
 
@@ -626,7 +619,7 @@
                                             <StackPanel>
                                                 <TextBlock Text="TANIMLI YÜKLENİCİLER" Style="{StaticResource CardTitle}"/>
                                                 <TextBlock Text="Bu oturumda oluşturulan yüklenici taslakları" Style="{StaticResource CardSubtitle}" Margin="0,0,0,12"/>
-                                                <ListBox x:Name="ContractorsListBox" Height="300" Style="{StaticResource ModernListBox}">
+                                                <ItemsControl x:Name="ContractorsListBox">
                                                     <ListBox.ItemTemplate>
                                                         <DataTemplate>
                                                             <Grid Margin="4">
@@ -654,7 +647,6 @@
                                         </Border>
                                     </Grid>
                                 </StackPanel>
-                            </ScrollViewer>
                         </Grid>
 
                         <Grid x:Name="HistoryPanel" Visibility="Collapsed"><StackPanel>
