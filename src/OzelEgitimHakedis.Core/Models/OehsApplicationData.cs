@@ -31,4 +31,6 @@ public sealed record ProgressPaymentHistoryData(
     ProgressPaymentInput Input,
     ProgressPaymentCalculation Calculation,
     int? ProgressPaymentNumber = null,
-    DateOnly? PeriodDate = null);
+    DateOnly? PeriodDate = null,
+    string? RouteNumber = null,
+    string? RouteName = null);
