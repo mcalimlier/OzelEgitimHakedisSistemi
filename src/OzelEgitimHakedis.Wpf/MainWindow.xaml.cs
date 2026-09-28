@@ -105,19 +105,7 @@ public partial class MainWindow : Window
         if (sender is not System.Windows.Controls.Button button)
             return;
 
-        var page = button.Name switch
-        {
-            "NavHome" => "Home",
-            "NavContract" => "Contract",
-            "NavLines" => "Lines",
-            "NavContractors" => "Contractors",
-            "NavProgress" => "Progress",
-            "NavHistory" => "History",
-            "NavSummary" => "Summary",
-            "NavReports" => "Reports",
-            "NavSettings" => "Settings",
-            _ => button.Tag?.ToString() ?? "Home"
-        };
+        var page = button.Tag?.ToString() ?? "Home";
 
         HomePanel.Visibility = page == "Home" ? Visibility.Visible : Visibility.Collapsed;
         ContractPanel.Visibility = page == "Contract" ? Visibility.Visible : Visibility.Collapsed;
@@ -126,18 +114,25 @@ public partial class MainWindow : Window
             ? Visibility.Collapsed
             : Visibility.Visible;
 
-        UpdateShellText(page switch
+        var module = page switch
         {
             "Contract" => "İhale / Sözleşme",
             "Progress" => "Hakediş Oluştur",
-            _ when PlaceholderPanel.Visibility == Visibility.Visible => button.Content?.ToString() ?? "Modül",
+            "Lines" => "Hatlar",
+            "Contractors" => "Yükleniciler",
+            "History" => "Hakediş Geçmişi",
+            "Summary" => "İcmal",
+            "Reports" => "Raporlar",
+            "Settings" => "Ayarlar",
             _ => "Ana Ekran"
-        });
+        };
+
+        UpdateShellText(module);
 
         if (PlaceholderPanel.Visibility == Visibility.Visible)
-            PlaceholderTitleTextBlock.Text = button.Content?.ToString() ?? "Modül";
+            PlaceholderTitleTextBlock.Text = module;
 
-        UpdateActiveNavigation(button);
+        UpdateActiveNavigation(page);
     }
 
     private void UpdateShellText(string module)
@@ -145,7 +140,7 @@ public partial class MainWindow : Window
         HeaderModuleText.Text = module;
     }
 
-    private void UpdateActiveNavigation(System.Windows.Controls.Button activeButton)
+    private void UpdateActiveNavigation(string page)
     {
         foreach (var button in new[]
         {
@@ -153,7 +148,7 @@ public partial class MainWindow : Window
             NavProgress, NavHistory, NavSummary, NavReports, NavSettings
         })
         {
-            button.Tag = button == activeButton ? "Active" : null;
+            button.Uid = button.Tag?.ToString() == page ? "Active" : string.Empty;
         }
     }
 
