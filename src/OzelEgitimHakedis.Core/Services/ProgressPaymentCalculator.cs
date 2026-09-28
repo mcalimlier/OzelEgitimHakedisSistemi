@@ -53,8 +53,9 @@ public sealed class ProgressPaymentCalculator
         var stampTax =
             Round(Math.Max(totalAmount, 0m) * StampTaxRate);
 
-        var inspectionPenalty =
-            Round(input.ContractAmount * input.InspectionPenaltyRatePerThousand / 1000m);
+        var inspectionPenalty = input.HasInspectionPenalty
+            ? Round(input.ContractAmount * input.InspectionPenaltyRatePerThousand / 1000m)
+            : 0m;
 
         var additionalGuarantee =
             Round(Math.Max(priceDifferenceExcludingVat, 0m) * AdditionalGuaranteeRate);
