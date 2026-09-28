@@ -794,6 +794,92 @@ public partial class MainWindow : Window
         }
     }
 
+    private void PrintAcceptanceButton_Click(object sender, RoutedEventArgs e)
+    {
+        var latest = _progressHistory
+            .OrderByDescending(x => x.PeriodDate ?? DateOnly.MinValue)
+            .ThenByDescending(x => x.CreatedAt)
+            .FirstOrDefault();
+
+        if (latest is null)
+        {
+            MessageBox.Show("Tutanak oluşturmak için önce en az bir hakediş kaydı oluşturun.", "OEHS", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var document = new FlowDocument
+        {
+            PagePadding = new Thickness(40),
+            FontFamily = new System.Windows.Media.FontFamily("Segoe UI"),
+            FontSize = 10.5,
+            ColumnWidth = 720
+        };
+
+        var header = new Paragraph { TextAlignment = TextAlignment.Center, Margin = new Thickness(0, 0, 0, 18) };
+        header.Inlines.Add(new Run("KABUL TUTANAĞI") { FontSize = 20, FontWeight = FontWeights.Bold });
+        header.Inlines.Add(new LineBreak());
+        header.Inlines.Add(new Run("ÖZEL EĞİTİM HAKEDİŞ SİSTEMİ") { FontSize = 12, FontWeight = FontWeights.SemiBold });
+        document.Blocks.Add(header);
+
+        Table CreateTable(params (string Label, string Value)[] rows)
+        {
+            var table = new Table { CellSpacing = 0, BorderBrush = System.Windows.Media.Brushes.DarkGray, BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 0, 14) };
+            table.Columns.Add(new TableColumn { Width = new GridLength(250) });
+            table.Columns.Add(new TableColumn { Width = new GridLength(430) });
+            var group = new TableRowGroup();
+            foreach (var (label, value) in rows)
+            {
+                var row = new TableRow();
+                row.Cells.Add(new TableCell(new Paragraph(new Run(label))) { Padding = new Thickness(7), FontWeight = FontWeights.Bold });
+                row.Cells.Add(new TableCell(new Paragraph(new Run(value ?? "-"))) { Padding = new Thickness(7) });
+                group.Rows.Add(row);
+            }
+            table.RowGroups.Add(group);
+            return table;
+        }
+
+        var period = latest.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-";
+        document.Blocks.Add(new Paragraph(new Run("1. SÖZLEŞME BİLGİLERİ")) { FontSize = 12.5, FontWeight = FontWeights.Bold });
+        document.Blocks.Add(CreateTable(
+            ("İhale No", TenderNumberTextBox.Text),
+            ("Sözleşme No", ContractNumberTextBox.Text),
+            ("İşin Adı", WorkNameTextBox.Text),
+            ("Yüklenici", ContractorTextBox.Text),
+            ("Sözleşme Bedeli", TryParseDecimal(ContractAmountTextBox.Text, out var amount) ? FormatMoney(amount) : "-"),
+            ("Başlangıç", StartDatePicker.SelectedDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
+            ("Bitiş", EndDatePicker.SelectedDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-")
+        ));
+
+        document.Blocks.Add(new Paragraph(new Run("2. HAKEDİŞ / KAYIT BİLGİLERİ")) { FontSize = 12.5, FontWeight = FontWeights.Bold });
+        document.Blocks.Add(CreateTable(
+            ("Hakediş No", latest.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"),
+            ("Dönem Tarihi", period),
+            ("Kayıt Tarihi", latest.CreatedAt.ToString("dd.MM.yyyy HH:mm", CultureInfo.CurrentCulture)),
+            ("Brüt Tutar", FormatMoney(latest.Calculation.GrossAmount)),
+            ("Net Ödeme", FormatMoney(latest.Calculation.NetPayable)),
+            ("Toplam Kesinti", FormatMoney(latest.Calculation.TotalDeductions))
+        ));
+
+        document.Blocks.Add(new Paragraph(new Run("3. TUTANAK NOTU")) { FontSize = 12.5, FontWeight = FontWeights.Bold });
+        document.Blocks.Add(new Paragraph(new Run("Bu çıktı, OEHS içinde kayıtlı sözleşme ve hakediş verilerinin tutanak önizlemesidir. Resmî kabul metni, tarih ve imza alanları kurum tarafından doğrulanarak tamamlanmalıdır."))
+        {
+            Margin = new Thickness(0, 4, 0, 30)
+        });
+
+        var signTable = CreateTable(
+            ("Düzenleyen", "........................................................"),
+            ("Kontrol / Kabul", "........................................................"),
+            ("Tarih", "........................................................"),
+            ("İmza", "........................................................")
+        );
+        document.Blocks.Add(signTable);
+        document.Blocks.Add(new Paragraph(new Run("Created by Aşkın KESKİNBALTA")) { FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 10, 0, 0) });
+
+        var dialog = new System.Windows.Controls.PrintDialog();
+        if (dialog.ShowDialog() == true)
+            dialog.PrintDocument(((IDocumentPaginatorSource)document).DocumentPaginator, "Kabul Tutanağı");
+    }
+
     private void ReportActionButton_Click(object sender, RoutedEventArgs e)
     {
         if (sender is System.Windows.Controls.Button button && button.Tag is string page)
