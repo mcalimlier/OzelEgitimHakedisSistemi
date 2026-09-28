@@ -543,6 +543,101 @@
                             </ScrollViewer>
                         </Grid>
 
+                        <Grid x:Name="ContractorsPanel" Visibility="Collapsed">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel>
+                                    <TextBlock Text="YÜKLENİCİLER" Style="{StaticResource PageTitle}"/>
+                                    <TextBlock Text="Sözleşmede görev alan yüklenicileri tek merkezden tanımlayın ve yönetin." Style="{StaticResource PageSubtitle}"/>
+
+                                    <Grid Margin="0,0,0,14">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Style="{StaticResource CardCompact}" Margin="0,0,8,0">
+                                            <StackPanel>
+                                                <TextBlock Text="KAYITLI YÜKLENİCİ" Style="{StaticResource CardTitle}"/>
+                                                <TextBlock x:Name="ContractorCountTextBlock" Text="0" Foreground="White" FontSize="28" FontWeight="Bold" Margin="0,7,0,0"/>
+                                                <TextBlock Text="Bu oturumdaki taslak kayıtlar" Style="{StaticResource CardSubtitle}" Margin="0,2,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Grid.Column="1" Style="{StaticResource CardCompact}" Margin="4,0">
+                                            <StackPanel>
+                                                <TextBlock Text="AKIŞ" Style="{StaticResource CardTitle}"/>
+                                                <TextBlock Text="SÖZLEŞME → YÜKLENİCİ → HAKEDİŞ" Foreground="White" FontSize="15" FontWeight="SemiBold" Margin="0,10,0,0"/>
+                                                <TextBlock Text="Tanımlar aynı lacivert kart yapısında ilerler." Style="{StaticResource CardSubtitle}" Margin="0,3,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Grid.Column="2" Style="{StaticResource CardCompact}" Margin="8,0,0,0">
+                                            <StackPanel>
+                                                <TextBlock Text="DURUM" Style="{StaticResource CardTitle}"/>
+                                                <TextBlock Text="HAZIR" Foreground="{StaticResource Gold500Brush}" FontSize="20" FontWeight="Bold" Margin="0,8,0,0"/>
+                                                <TextBlock Text="Kalıcı veri katmanı sonraki adımda bağlanacak." Style="{StaticResource CardSubtitle}" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="0.92*"/>
+                                            <ColumnDefinition Width="1.08*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0">
+                                            <StackPanel>
+                                                <TextBlock Text="YENİ YÜKLENİCİ" Style="{StaticResource CardTitle}"/>
+                                                <TextBlock Text="Yüklenici bilgilerini tanımlayın." Style="{StaticResource CardSubtitle}" Margin="0,0,0,16"/>
+
+                                                <TextBlock Text="YÜKLENİCİ ADI / UNVANI" Style="{StaticResource FieldLabel}"/>
+                                                <TextBox x:Name="ContractorNameTextBox" Style="{StaticResource FieldTextBox}" Margin="0,7,0,16"/>
+
+                                                <TextBlock Text="VERGİ / T.C. KİMLİK NO" Style="{StaticResource FieldLabel}"/>
+                                                <TextBox x:Name="ContractorTaxNumberTextBox" Style="{StaticResource FieldTextBox}" Margin="0,7,0,20"/>
+
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Button Content="YÜKLENİCİ EKLE" Click="AddContractorButton_Click" Style="{StaticResource ModernButton}" Width="155"/>
+                                                    <Button Content="TEMİZLE" Click="ClearContractorButton_Click" Style="{StaticResource SecondaryButton}" Width="105" Margin="10,0,0,0"/>
+                                                </StackPanel>
+                                                <TextBlock x:Name="ContractorStatusTextBlock" Margin="0,14,0,0" Foreground="{StaticResource Blue600Brush}" TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Grid.Column="1" Style="{StaticResource Card}" Margin="10,0,0,0">
+                                            <StackPanel>
+                                                <TextBlock Text="TANIMLI YÜKLENİCİLER" Style="{StaticResource CardTitle}"/>
+                                                <TextBlock Text="Bu oturumda oluşturulan yüklenici taslakları" Style="{StaticResource CardSubtitle}" Margin="0,0,0,12"/>
+                                                <ListBox x:Name="ContractorsListBox" Height="300" Style="{StaticResource ModernListBox}">
+                                                    <ListBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Grid Margin="4">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="185"/>
+                                                                    <ColumnDefinition Width="90"/>
+                                                                </Grid.ColumnDefinitions>
+                                                                <StackPanel Grid.Column="0">
+                                                                    <TextBlock Text="{Binding Name}" Style="{StaticResource GridCellText}" FontWeight="SemiBold"/>
+                                                                    <TextBlock Text="Yüklenici" Style="{StaticResource CardSubtitle}"/>
+                                                                </StackPanel>
+                                                                <TextBlock Grid.Column="1" Text="{Binding TaxOrIdentityNumber}" Style="{StaticResource GridCellText}" HorizontalAlignment="Right"/>
+                                                                <Button Grid.Column="2" Content="SİL" Tag="{Binding}" Click="RemoveContractorButton_Click"
+                                                                        Style="{StaticResource SecondaryButton}" Height="34" Margin="10,0,0,0"/>
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </ListBox.ItemTemplate>
+                                                </ListBox>
+                                                <Border Style="{StaticResource StatusBanner}" Margin="0,12,0,0">
+                                                    <TextBlock Text="Not: Yüklenici kayıtları şu aşamada oturum içi taslaktır; kalıcı veri saklama katmanı ayrıca bağlanacaktır."
+                                                               Foreground="{StaticResource Text600Brush}" TextWrapping="Wrap"/>
+                                                </Border>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Grid>
+
                         <Grid x:Name="PlaceholderPanel" Visibility="Collapsed">
                             <StackPanel>
                                 <TextBlock x:Name="PlaceholderTitleTextBlock" Text="Modül" Style="{StaticResource PageTitle}"/>
