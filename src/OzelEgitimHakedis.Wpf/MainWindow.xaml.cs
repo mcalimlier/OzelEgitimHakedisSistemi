@@ -20,6 +20,7 @@ public partial class MainWindow : Window
     private readonly ObservableCollection<ContractorDraft> _contractors = new();
     private readonly ObservableCollection<ProgressPaymentHistoryData> _progressHistory = new();
     private readonly ObservableCollection<HistoryRow> _historyRows = new();
+    private readonly ObservableCollection<SummaryRow> _summaryRows = new();
     private readonly OehsApplicationDataStore _dataStore = new();
 
     public MainWindow()
@@ -33,10 +34,12 @@ public partial class MainWindow : Window
         RoutesListBox.ItemsSource = _routes;
         ContractorsListBox.ItemsSource = _contractors;
         HistoryItemsControl.ItemsSource = _historyRows;
+        SummaryItemsControl.ItemsSource = _summaryRows;
         LoadPersistedData();
         UpdateRouteSummary();
         UpdateContractorSummary();
         UpdateHistoryView();
+        UpdateSummaryView();
     }
 
     private void ConfigureWindow()
@@ -440,6 +443,7 @@ public partial class MainWindow : Window
                 periodDate));
             SavePersistedData();
             UpdateHistoryView();
+            UpdateSummaryView();
 
             CalculationStatusTextBlock.Text = "Hesaplama başarıyla tamamlandı ve geçmişe kaydedildi.";
         }
@@ -475,6 +479,54 @@ public partial class MainWindow : Window
         HistoryNetTotalTextBlock.Text = FormatMoney(_progressHistory.Sum(x => x.Calculation.NetPayable));
         HistoryStatusTextBlock.Text = _progressHistory.Count == 0 ? "HAZIR" : "GÜNCEL";
         HistoryEmptyStateBorder.Visibility = _progressHistory.Count == 0
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+    }
+
+    private void UpdateSummaryView()
+    {
+        _summaryRows.Clear();
+
+        var ordered = _progressHistory
+            .OrderBy(x => x.PeriodDate ?? DateOnly.MaxValue)
+            .ThenBy(x => x.ProgressPaymentNumber ?? int.MaxValue)
+            .ThenBy(x => x.CreatedAt)
+            .ToArray();
+
+        foreach (var item in ordered)
+        {
+            var title = item.ProgressPaymentNumber.HasValue
+                ? $"Hakediş No {item.ProgressPaymentNumber.Value}"
+                : "Hakediş Hesaplama";
+
+            var period = item.PeriodDate.HasValue
+                ? $"Dönem: {item.PeriodDate.Value:dd.MM.yyyy}"
+                : $"Kayıt: {item.CreatedAt:dd.MM.yyyy HH:mm}";
+
+            _summaryRows.Add(new SummaryRow(
+                title,
+                period,
+                FormatMoney(item.Calculation.GrossAmount),
+                FormatMoney(item.Calculation.NetPayable)));
+        }
+
+        var latest = _progressHistory
+            .Where(x => x.PeriodDate.HasValue)
+            .OrderByDescending(x => x.PeriodDate)
+            .FirstOrDefault();
+
+        SummaryLatestPeriodTextBlock.Text = latest?.PeriodDate?.ToString("MM.yyyy", CultureInfo.CurrentCulture) ?? "—";
+        SummaryCountTextBlock.Text = $"{_progressHistory.Count.ToString(CultureInfo.CurrentCulture)} hakediş";
+        SummaryGrossTotalTextBlock.Text = FormatMoney(_progressHistory.Sum(x => x.Calculation.GrossAmount));
+        SummaryNetTotalTextBlock.Text = FormatMoney(_progressHistory.Sum(x => x.Calculation.NetPayable));
+        SummaryWithholdingTextBlock.Text = FormatMoney(_progressHistory.Sum(x => x.Calculation.Deductions.Withholding));
+        SummaryStampTextBlock.Text = FormatMoney(_progressHistory.Sum(x => x.Calculation.Deductions.StampTax));
+        SummaryOtherDeductionsTextBlock.Text = FormatMoney(_progressHistory.Sum(x =>
+            x.Calculation.TotalDeductions
+            - x.Calculation.Deductions.Withholding
+            - x.Calculation.Deductions.StampTax));
+
+        SummaryEmptyStateBorder.Visibility = _summaryRows.Count == 0
             ? Visibility.Visible
             : Visibility.Collapsed;
     }
@@ -523,6 +575,12 @@ public partial class MainWindow : Window
         string CreatedAtText,
         string TotalAmountText,
         string NetPayableText);
+
+    private sealed record SummaryRow(
+        string Title,
+        string PeriodText,
+        string GrossText,
+        string NetText);
 
     [DllImport("user32.dll")]
     private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
