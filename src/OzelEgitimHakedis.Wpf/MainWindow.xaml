@@ -447,12 +447,108 @@
                             </ScrollViewer>
                         </Grid>
 
+                        <!-- Hatlar -->
+                        <Grid x:Name="LinesPanel" Visibility="Collapsed">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel>
+                                    <TextBlock Text="HATLAR" Style="{StaticResource PageTitle}"/>
+                                    <TextBlock Text="Sözleşmeye bağlı hizmet hatlarını tanımlayın ve günlük birim fiyatlarını yönetin." Style="{StaticResource PageSubtitle}"/>
+
+                                    <UniformGrid Columns="3" Margin="0,0,0,16">
+                                        <Border Style="{StaticResource MetricCard}" Margin="0,0,8,0">
+                                            <StackPanel>
+                                                <TextBlock Text="KAYITLI HAT" Style="{StaticResource FieldLabel}"/>
+                                                <TextBlock x:Name="RouteCountTextBlock" Text="0" FontSize="25" FontWeight="Bold" Foreground="{StaticResource Blue600Brush}"/>
+                                                <TextBlock Text="Bu sözleşme için" Style="{StaticResource CardSubtitle}"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource MetricCard}" Margin="4,0">
+                                            <StackPanel>
+                                                <TextBlock Text="TOPLAM GÜNLÜK BEDEL" Style="{StaticResource FieldLabel}"/>
+                                                <TextBlock x:Name="RouteTotalDailyPriceTextBlock" Text="0,00 ₺" FontSize="25" FontWeight="Bold" Foreground="{StaticResource Text900Brush}"/>
+                                                <TextBlock Text="Tanımlı hatların toplamı" Style="{StaticResource CardSubtitle}"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource PremiumPanel}" Margin="8,0,0,0" Padding="16">
+                                            <StackPanel>
+                                                <TextBlock Text="AKIŞ" Foreground="{StaticResource Gold500Brush}" FontSize="11" FontWeight="Bold"/>
+                                                <TextBlock Text="Sözleşme → Hat → Hakediş" Foreground="White" FontSize="16" FontWeight="SemiBold" Margin="0,6,0,0"/>
+                                                <TextBlock Text="Hatlar sonraki hakediş hesabında kullanılacak." Foreground="#C5D7E7" FontSize="12.5" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </UniformGrid>
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="1.05*"/>
+                                            <ColumnDefinition Width="1.65*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0">
+                                            <StackPanel>
+                                                <TextBlock Text="YENİ HAT" Style="{StaticResource CardTitle}"/>
+                                                <TextBlock Text="Hat bilgilerini girin" Style="{StaticResource CardSubtitle}" Margin="0,0,0,18"/>
+
+                                                <TextBlock Text="Hat No" Style="{StaticResource FieldLabel}"/>
+                                                <TextBox x:Name="RouteNumberTextBox" Style="{StaticResource FieldTextBox}" Margin="0,7,0,14"/>
+
+                                                <TextBlock Text="Hat Adı" Style="{StaticResource FieldLabel}"/>
+                                                <TextBox x:Name="RouteNameTextBox" Style="{StaticResource FieldTextBox}" Margin="0,7,0,14"/>
+
+                                                <TextBlock Text="Günlük Birim Fiyat" Style="{StaticResource FieldLabel}"/>
+                                                <TextBox x:Name="RouteDailyPriceTextBox" Style="{StaticResource FieldTextBox}" Margin="0,7,0,18"/>
+
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Button Content="HAT EKLE" Click="AddRouteButton_Click" Style="{StaticResource ModernButton}" Width="130"/>
+                                                    <Button Content="TEMİZLE" Click="ClearRouteButton_Click" Style="{StaticResource SecondaryButton}" Width="105" Margin="10,0,0,0"/>
+                                                </StackPanel>
+                                                <TextBlock x:Name="RouteStatusTextBlock" Margin="0,14,0,0" Foreground="{StaticResource Blue600Brush}" TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Grid.Column="1" Style="{StaticResource Card}" Margin="10,0,0,0">
+                                            <StackPanel>
+                                                <TextBlock Text="TANIMLI HATLAR" Style="{StaticResource CardTitle}"/>
+                                                <TextBlock Text="Bu oturumda oluşturulan hat taslakları" Style="{StaticResource CardSubtitle}" Margin="0,0,0,12"/>
+                                                <ListBox x:Name="RoutesListBox" Height="300" Style="{StaticResource ModernListBox}">
+                                                    <ListBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Grid Margin="4">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="72"/>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="130"/>
+                                                                    <ColumnDefinition Width="90"/>
+                                                                </Grid.ColumnDefinitions>
+                                                                <TextBlock Grid.Column="0" Text="{Binding RouteNumber}" Style="{StaticResource GridCellText}" FontWeight="SemiBold"/>
+                                                                <StackPanel Grid.Column="1" Margin="8,0">
+                                                                    <TextBlock Text="{Binding Name}" Style="{StaticResource GridCellText}"/>
+                                                                    <TextBlock Text="Hizmet hattı" Style="{StaticResource CardSubtitle}"/>
+                                                                </StackPanel>
+                                                                <TextBlock Grid.Column="2" Text="{Binding DailyPriceText}" Style="{StaticResource GridCellText}" HorizontalAlignment="Right"/>
+                                                                <Button Grid.Column="3" Content="SİL" Tag="{Binding}" Click="RemoveRouteButton_Click"
+                                                                        Style="{StaticResource SecondaryButton}" Height="34" Margin="10,0,0,0"/>
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </ListBox.ItemTemplate>
+                                                </ListBox>
+                                                <Border Style="{StaticResource StatusBanner}" Margin="0,12,0,0">
+                                                    <TextBlock Text="Not: Hat kayıtları şu aşamada oturum içi taslaktır; kalıcı veri saklama katmanı ayrıca bağlanacaktır."
+                                                               Foreground="{StaticResource Text600Brush}" TextWrapping="Wrap"/>
+                                                </Border>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Grid>
+
                         <Grid x:Name="PlaceholderPanel" Visibility="Collapsed">
                             <StackPanel>
                                 <TextBlock x:Name="PlaceholderTitleTextBlock" Text="Modül" Style="{StaticResource PageTitle}"/>
                                 <TextBlock Text="Bu bölüm sonraki geliştirme adımında aktif hale getirilecek." Style="{StaticResource PageSubtitle}"/>
                                 <Border Background="#F7F9FC" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="12" Padding="24">
-                                    <TextBlock Text="Önce sözleşme → hatlar → hakediş akışını tamamlıyoruz. Bu modül mevcut mimariye bağlanacak."
+                                    <TextBlock Text="Bu modül mevcut mimariye bağlanacak. Önce sözleşme → hatlar → hakediş akışının veri katmanı tamamlanıyor."
                                                TextWrapping="Wrap" FontSize="16" Foreground="{StaticResource Text600Brush}"/>
                                 </Border>
                             </StackPanel>
