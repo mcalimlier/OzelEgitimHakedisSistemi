@@ -450,13 +450,13 @@
                                                             <RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/>
                                                         </Grid.RowDefinitions>
                                                         <TextBlock Grid.Row="0" Text="Tevkifat" Style="{StaticResource FieldLabel}"/>
-                                                        <TextBlock x:Name="WithholdingResultTextBlock" Grid.Row="0" Text="0,00 ₺" HorizontalAlignment="Right" Foreground="{StaticResource Text900Brush}"/>
+                                                        <TextBlock x:Name="WithholdingResultTextBlock" Grid.Row="0" Text="0,00 ₺" HorizontalAlignment="Right" Foreground="White"/>
                                                         <TextBlock Grid.Row="1" Text="Damga Vergisi" Style="{StaticResource FieldLabel}" Margin="0,8,0,0"/>
-                                                        <TextBlock x:Name="StampTaxResultTextBlock" Grid.Row="1" Text="0,00 ₺" HorizontalAlignment="Right" Foreground="{StaticResource Text900Brush}" Margin="0,8,0,0"/>
+                                                        <TextBlock x:Name="StampTaxResultTextBlock" Grid.Row="1" Text="0,00 ₺" HorizontalAlignment="Right" Foreground="White" Margin="0,8,0,0"/>
                                                         <TextBlock Grid.Row="2" Text="Denetim Cezası" Style="{StaticResource FieldLabel}" Margin="0,8,0,0"/>
-                                                        <TextBlock x:Name="InspectionPenaltyResultTextBlock" Grid.Row="2" Text="0,00 ₺" HorizontalAlignment="Right" Foreground="{StaticResource Text900Brush}" Margin="0,8,0,0"/>
+                                                        <TextBlock x:Name="InspectionPenaltyResultTextBlock" Grid.Row="2" Text="0,00 ₺" HorizontalAlignment="Right" Foreground="White" Margin="0,8,0,0"/>
                                                         <TextBlock Grid.Row="3" Text="Fiyat Farkı Teminatı" Style="{StaticResource FieldLabel}" Margin="0,8,0,0"/>
-                                                        <TextBlock x:Name="AdditionalGuaranteeResultTextBlock" Grid.Row="3" Text="0,00 ₺" HorizontalAlignment="Right" Foreground="{StaticResource Text900Brush}" Margin="0,8,0,0"/>
+                                                        <TextBlock x:Name="AdditionalGuaranteeResultTextBlock" Grid.Row="3" Text="0,00 ₺" HorizontalAlignment="Right" Foreground="White" Margin="0,8,0,0"/>
                                                     </Grid>
                                                 </StackPanel>
                                             </Border>
