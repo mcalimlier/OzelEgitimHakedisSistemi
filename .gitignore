@@ -404,3 +404,6 @@ FodyWeavers.xsd
 OEHS_DERLEME_LOG.txt
 OEHS_DERLEME_LOG.binlog
 OEHS_CALISMA_LOG.txt
+
+# Local friend test packages
+dist/
