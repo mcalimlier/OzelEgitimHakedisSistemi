@@ -120,6 +120,48 @@ public partial class MainWindow : Window
         MaximizeRestoreIcon.Text = maximized ? "\uE923" : "\uE922";
     }
 
+    private void UpdateAcceptanceView()
+    {
+        if (_dataStore is null)
+            return;
+
+        if (AcceptanceContractTextBlock is null)
+            return;
+
+        if (_progressHistory.Count == 0)
+        {
+            AcceptanceContractTextBlock.Text = "Kayıt yok";
+            AcceptanceProgressTextBlock.Text = "Kayıt yok";
+            AcceptanceNetTextBlock.Text = FormatMoney(0);
+            AcceptanceDetailTextBlock.Text = "Sözleşme ve hakediş kaydı oluşturulduğunda bilgiler burada görünür.";
+            return;
+        }
+
+        var latest = _progressHistory
+            .OrderByDescending(x => x.PeriodDate ?? DateOnly.MinValue)
+            .ThenByDescending(x => x.CreatedAt)
+            .First();
+
+        AcceptanceContractTextBlock.Text = string.IsNullOrWhiteSpace(ContractorNameTextBox.Text)
+            ? "Sözleşme bilgisi"
+            : ContractorNameTextBox.Text.Trim();
+
+        AcceptanceProgressTextBlock.Text = latest.ProgressPaymentNumber.HasValue
+            ? $"Hakediş No {latest.ProgressPaymentNumber.Value}"
+            : "Son hakediş";
+
+        AcceptanceNetTextBlock.Text = FormatMoney(latest.Calculation.NetPayable);
+
+        var period = latest.PeriodDate.HasValue
+            ? latest.PeriodDate.Value.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture)
+            : "-";
+
+        AcceptanceDetailTextBlock.Text =
+            $"Dönem: {period} • Brüt: {FormatMoney(latest.Calculation.GrossAmount)} • " +
+            $"Net: {FormatMoney(latest.Calculation.NetPayable)} • " +
+            $"Toplam kesinti: {FormatMoney(latest.Calculation.TotalDeductions)}";
+    }
+
     private void NavigationButton_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not System.Windows.Controls.Button button)
