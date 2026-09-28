@@ -29,4 +29,6 @@ public sealed record ProgressPaymentHistoryData(
     Guid Id,
     DateTime CreatedAt,
     ProgressPaymentInput Input,
-    ProgressPaymentCalculation Calculation);
+    ProgressPaymentCalculation Calculation,
+    int? ProgressPaymentNumber = null,
+    DateOnly? PeriodDate = null);
