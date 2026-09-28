@@ -802,11 +802,26 @@
 </StackPanel></Border>
 <Border Grid.Column="1" Style="{StaticResource Card}" Margin="10,0,0,0"><StackPanel>
 <TextBlock Text="RAPOR ÇIKTILARI" Style="{StaticResource CardTitle}"/>
-<TextBlock Text="Şimdilik veri önizlemesi hazır. PDF / yazdırma bir sonraki çıktı adımıdır." Style="{StaticResource CardSubtitle}" TextWrapping="Wrap" Margin="0,0,0,14"/>
+<TextBlock Text="Son kayıt üzerinden detaylı rapor önizlemesi" Style="{StaticResource CardSubtitle}" TextWrapping="Wrap" Margin="0,0,0,12"/>
 <Button Content="HAKEDİŞ RAPORU" Style="{StaticResource ModernButton}" Height="42" Click="ReportActionButton_Click" Tag="Progress"/>
 <Button Content="İCMAL RAPORU" Style="{StaticResource SecondaryButton}" Height="42" Margin="0,8,0,0" Click="ReportActionButton_Click" Tag="Summary"/>
 <Button Content="SÖZLEŞME RAPORU" Style="{StaticResource SecondaryButton}" Height="42" Margin="0,8,0,0" Click="ReportActionButton_Click" Tag="Contract"/>
-<Border Style="{StaticResource StatusBanner}" Margin="0,14,0,0" Padding="12,10"><TextBlock Text="Bu ekran mevcut veriyi kullanır; henüz PDF dosyası üretmez." Foreground="{StaticResource Text900Brush}" FontSize="13.5" FontWeight="SemiBold" TextWrapping="Wrap"/></Border>
+<Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,14,0,0">
+<StackPanel>
+<TextBlock Text="SON HAKEDİŞ DETAYI" Foreground="{StaticResource Blue700Brush}" FontSize="12.5" FontWeight="Bold"/>
+<TextBlock x:Name="ReportDetailTitleTextBlock" Text="Henüz kayıt yok" Foreground="{StaticResource Text900Brush}" FontSize="16" FontWeight="Bold" Margin="0,4,0,8"/>
+<Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="120"/></Grid.ColumnDefinitions>
+<StackPanel>
+<TextBlock Text="TOPLAM + KDV" Foreground="{StaticResource Text600Brush}" FontSize="12.5"/>
+<TextBlock x:Name="ReportDetailGrossTextBlock" Text="0,00 ₺" Foreground="{StaticResource Text900Brush}" FontSize="16" FontWeight="Bold"/>
+</StackPanel>
+<StackPanel Grid.Column="1">
+<TextBlock Text="NET ÖDEME" Foreground="{StaticResource Text600Brush}" FontSize="12.5"/>
+<TextBlock x:Name="ReportDetailNetTextBlock" Text="0,00 ₺" Foreground="{StaticResource Blue700Brush}" FontSize="16" FontWeight="Bold"/>
+</StackPanel></Grid>
+<TextBlock x:Name="ReportDetailMetaTextBlock" Text="Kayıt ayrıntıları burada gösterilir." Foreground="{StaticResource Text600Brush}" FontSize="12.5" TextWrapping="Wrap" Margin="0,8,0,0"/>
+</StackPanel></Border>
+<Border Style="{StaticResource StatusBanner}" Margin="0,10,0,0" Padding="12,10"><TextBlock Text="Bu aşama önizlemedir. PDF / yazdırma çıktısı sonraki rapor adımında eklenecektir." Foreground="{StaticResource Text900Brush}" FontSize="13" FontWeight="SemiBold" TextWrapping="Wrap"/></Border>
 </StackPanel></Border>
 </Grid></StackPanel></Grid>
 
