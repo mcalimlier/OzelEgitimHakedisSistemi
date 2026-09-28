@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
@@ -23,7 +23,7 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Restore
-        run: dotnet restore ".\\src\\OzelEgitimHakedis.Wpf\\OzelEgitimHakedis.Wpf.csproj"
+        run: dotnet restore ".\src\OzelEgitimHakedis.Wpf\OzelEgitimHakedis.Wpf.csproj"
 
       - name: Test Core
         run: dotnet test ".\tests\OzelEgitimHakedis.Tests\OzelEgitimHakedis.Tests.csproj" --configuration Release
