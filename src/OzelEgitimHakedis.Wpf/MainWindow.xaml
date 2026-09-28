@@ -189,7 +189,7 @@
                                 <TextBlock Text="RAPORLAR" FontSize="16.5" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
-                        <Button Content="Kabul Tutanağı" Tag="Acceptance" Style="{StaticResource NavButton}" Click="NavigationButton_Click"/>
+                        <Button Content="KABUL TUTANAĞI" Tag="Acceptance" Style="{StaticResource NavButton}" Click="NavigationButton_Click"/>
                         <Button x:Name="NavSettings" Style="{StaticResource NavButton}" Tag="Settings" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE713;" FontSize="23" Width="42"/>
