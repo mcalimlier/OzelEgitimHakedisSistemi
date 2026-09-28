@@ -105,7 +105,19 @@ public partial class MainWindow : Window
         if (sender is not System.Windows.Controls.Button button)
             return;
 
-        var page = button.Tag?.ToString() ?? "Home";
+        var page = button.Name switch
+        {
+            "NavHome" => "Home",
+            "NavContract" => "Contract",
+            "NavLines" => "Lines",
+            "NavContractors" => "Contractors",
+            "NavProgress" => "Progress",
+            "NavHistory" => "History",
+            "NavSummary" => "Summary",
+            "NavReports" => "Reports",
+            "NavSettings" => "Settings",
+            _ => button.Tag?.ToString() ?? "Home"
+        };
 
         HomePanel.Visibility = page == "Home" ? Visibility.Visible : Visibility.Collapsed;
         ContractPanel.Visibility = page == "Contract" ? Visibility.Visible : Visibility.Collapsed;
