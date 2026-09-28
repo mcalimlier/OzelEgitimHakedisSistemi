@@ -746,15 +746,31 @@
 </Grid>
 
 <Grid x:Name="SummaryPanel" Visibility="Collapsed"><StackPanel>
-<TextBlock Text="İCMAL" Style="{StaticResource PageTitle}"/><TextBlock Text="Dönemsel hakedişlerin toplu görünümünü ve ödeme özetini izleyin." Style="{StaticResource PageSubtitle}"/>
+<TextBlock Text="İCMAL" Style="{StaticResource PageTitle}"/>
+<TextBlock Text="Kaydedilmiş hakedişlerin toplu ödeme ve kesinti görünümünü izleyin." Style="{StaticResource PageSubtitle}"/>
 <Grid Margin="0,0,0,14"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-<Border Grid.Column="0" Style="{StaticResource CardCompact}" Margin="0,0,8,0"><StackPanel><TextBlock Text="DÖNEM" Style="{StaticResource CardTitle}"/><TextBlock Text="—" Foreground="White" FontSize="28" FontWeight="Bold" Margin="0,7,0,0"/><TextBlock Text="Aktif icmal dönemi" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
-<Border Grid.Column="1" Style="{StaticResource CardCompact}" Margin="4,0"><StackPanel><TextBlock Text="BRÜT TOPLAM" Style="{StaticResource CardTitle}"/><TextBlock Text="0,00 ₺" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,7,0,0"/><TextBlock Text="Seçili dönem toplamı" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
-<Border Grid.Column="2" Style="{StaticResource CardCompact}" Margin="8,0,0,0"><StackPanel><TextBlock Text="NET TOPLAM" Style="{StaticResource CardTitle}"/><TextBlock Text="0,00 ₺" Foreground="{StaticResource Gold500Brush}" FontSize="24" FontWeight="Bold" Margin="0,7,0,0"/><TextBlock Text="Kesintiler sonrası" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
+<Border Grid.Column="0" Style="{StaticResource CardCompact}" Margin="0,0,8,0"><StackPanel><TextBlock Text="SON DÖNEM" Style="{StaticResource CardTitle}"/><TextBlock x:Name="SummaryLatestPeriodTextBlock" Text="—" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,7,0,0"/><TextBlock x:Name="SummaryCountTextBlock" Text="0 hakediş" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
+<Border Grid.Column="1" Style="{StaticResource CardCompact}" Margin="4,0"><StackPanel><TextBlock Text="BRÜT TOPLAM" Style="{StaticResource CardTitle}"/><TextBlock x:Name="SummaryGrossTotalTextBlock" Text="0,00 ₺" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,7,0,0"/><TextBlock Text="Kayıtlı hesaplamalar" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
+<Border Grid.Column="2" Style="{StaticResource CardCompact}" Margin="8,0,0,0"><StackPanel><TextBlock Text="NET TOPLAM" Style="{StaticResource CardTitle}"/><TextBlock x:Name="SummaryNetTotalTextBlock" Text="0,00 ₺" Foreground="{StaticResource Gold500Brush}" FontSize="24" FontWeight="Bold" Margin="0,7,0,0"/><TextBlock Text="Kesintiler sonrası" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
 </Grid>
 <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-<Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0"><StackPanel><TextBlock Text="DÖNEMSEL DAĞILIM" Style="{StaticResource CardTitle}"/><TextBlock Text="Hakedişlerin dönem bazlı toplamları" Style="{StaticResource CardSubtitle}" Margin="0,0,0,12"/><Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="9" Padding="18" Height="150"><StackPanel VerticalAlignment="Center"><TextBlock Text="İCMAL VERİSİ BEKLENİYOR" Foreground="{StaticResource Gold500Brush}" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center"/><TextBlock Text="Kalıcı hakediş kayıtları bağlandığında dönemler burada görselleştirilecek." Foreground="#C5D7E7" TextWrapping="Wrap" TextAlignment="Center" Margin="0,8,0,0"/></StackPanel></Border></StackPanel></Border>
-<Border Grid.Column="1" Style="{StaticResource Card}" Margin="10,0,0,0"><StackPanel><TextBlock Text="KESİNTİ ÖZETİ" Style="{StaticResource CardTitle}"/><TextBlock Text="Dönem toplam kesintileri" Style="{StaticResource CardSubtitle}" Margin="0,0,0,12"/><Border Background="#0A2A49" CornerRadius="8" Padding="12" Margin="0,0,0,8"><TextBlock Text="Tevkifat                                      0,00 ₺" Foreground="White"/></Border><Border Background="#0A2A49" CornerRadius="8" Padding="12" Margin="0,0,0,8"><TextBlock Text="Damga Vergisi                           0,00 ₺" Foreground="White"/></Border><Border Background="#0A2A49" CornerRadius="8" Padding="12"><TextBlock Text="Diğer Kesintiler                          0,00 ₺" Foreground="White"/></Border></StackPanel></Border>
+<Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0"><StackPanel><TextBlock Text="HAKEDİŞ DAĞILIMI" Style="{StaticResource CardTitle}"/><TextBlock Text="Kaydedilmiş hakedişlerin dönem ve tutar özeti" Style="{StaticResource CardSubtitle}" Margin="0,0,0,12"/>
+<ItemsControl x:Name="SummaryItemsControl">
+<ItemsControl.ItemTemplate><DataTemplate>
+<Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="12,9" Margin="0,0,0,7">
+<Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="145"/><ColumnDefinition Width="145"/></Grid.ColumnDefinitions>
+<StackPanel><TextBlock Text="{Binding Title}" Foreground="White" FontSize="14.5" FontWeight="SemiBold"/><TextBlock Text="{Binding PeriodText}" Foreground="#B9CBDA" FontSize="12.5" Margin="0,2,0,0"/></StackPanel>
+<TextBlock Grid.Column="1" Text="{Binding GrossText}" Foreground="White" FontSize="14" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+<TextBlock Grid.Column="2" Text="{Binding NetText}" Foreground="{StaticResource Gold500Brush}" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+</Grid></Border></DataTemplate></ItemsControl.ItemTemplate>
+</ItemsControl>
+<Border x:Name="SummaryEmptyStateBorder" Style="{StaticResource InfoNote}" Margin="0,4,0,0" Padding="14,12"><TextBlock Text="Henüz kaydedilmiş hakediş yok. Hakediş ekranından ilk hesaplamayı oluşturduğunuzda bu alan otomatik dolacak." Foreground="{StaticResource Text900Brush}" FontSize="14.5" FontWeight="SemiBold" TextWrapping="Wrap"/></Border>
+</StackPanel></Border>
+<Border Grid.Column="1" Style="{StaticResource Card}" Margin="10,0,0,0"><StackPanel><TextBlock Text="KESİNTİ ÖZETİ" Style="{StaticResource CardTitle}"/><TextBlock Text="Kaydedilmiş hakedişlerdeki toplam kesintiler" Style="{StaticResource CardSubtitle}" Margin="0,0,0,12"/>
+<Border Background="#0A2A49" CornerRadius="8" Padding="12" Margin="0,0,0,8"><Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="Tevkifat" Foreground="White"/><TextBlock x:Name="SummaryWithholdingTextBlock" Grid.Column="1" Text="0,00 ₺" Foreground="White"/></Grid></Border>
+<Border Background="#0A2A49" CornerRadius="8" Padding="12" Margin="0,0,0,8"><Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="Damga Vergisi" Foreground="White"/><TextBlock x:Name="SummaryStampTextBlock" Grid.Column="1" Text="0,00 ₺" Foreground="White"/></Grid></Border>
+<Border Background="#0A2A49" CornerRadius="8" Padding="12"><Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="Diğer Kesintiler" Foreground="White"/><TextBlock x:Name="SummaryOtherDeductionsTextBlock" Grid.Column="1" Text="0,00 ₺" Foreground="White"/></Grid></Border>
+</StackPanel></Border>
 </Grid></StackPanel></Grid>
 
 <Grid x:Name="ReportsPanel" Visibility="Collapsed"><StackPanel>
