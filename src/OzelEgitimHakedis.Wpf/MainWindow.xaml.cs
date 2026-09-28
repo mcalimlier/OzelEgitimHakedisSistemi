@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
+using System.Windows.Documents;
 using OzelEgitimHakedis.Core.Models;
 using OzelEgitimHakedis.Core.Services;
 
@@ -592,6 +593,82 @@ public partial class MainWindow : Window
         }
 
         ReportEmptyStateBorder.Visibility = _reportRows.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void PrintReportButton_Click(object sender, RoutedEventArgs e)
+    {
+        var latest = _progressHistory
+            .OrderByDescending(x => x.PeriodDate ?? DateOnly.MinValue)
+            .ThenByDescending(x => x.CreatedAt)
+            .FirstOrDefault();
+
+        if (latest is null)
+        {
+            MessageBox.Show("Yazdırmak için önce en az bir hakediş kaydı oluşturun.", "OEHS", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var title = latest.ProgressPaymentNumber.HasValue
+            ? $"Hakediş No {latest.ProgressPaymentNumber.Value}"
+            : "Hakediş Hesaplama";
+
+        var period = latest.PeriodDate.HasValue
+            ? latest.PeriodDate.Value.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture)
+            : "-";
+
+        var document = new FlowDocument
+        {
+            PagePadding = new Thickness(45),
+            FontFamily = new System.Windows.Media.FontFamily("Segoe UI"),
+            FontSize = 12
+        };
+
+        document.Blocks.Add(new Paragraph(new Run("ÖZEL EĞİTİM HAKEDİŞ SİSTEMİ"))
+        {
+            FontSize = 20,
+            FontWeight = FontWeights.Bold
+        });
+        document.Blocks.Add(new Paragraph(new Run(title))
+        {
+            FontSize = 16,
+            FontWeight = FontWeights.Bold
+        });
+
+        var table = new Table { CellSpacing = 0 };
+        table.Columns.Add(new TableColumn { Width = new GridLength(260) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(260) });
+        var group = new TableRowGroup();
+
+        void AddRow(string label, string value)
+        {
+            var row = new TableRow();
+            row.Cells.Add(new TableCell(new Paragraph(new Run(label))) { FontWeight = FontWeights.Bold });
+            row.Cells.Add(new TableCell(new Paragraph(new Run(value))));
+            group.Rows.Add(row);
+        }
+
+        AddRow("Dönem", period);
+        AddRow("Brüt Tutar", FormatMoney(latest.Calculation.GrossAmount));
+        AddRow("Net Ödeme", FormatMoney(latest.Calculation.NetPayable));
+        AddRow("Tevkifat", FormatMoney(latest.Calculation.Withholding));
+        AddRow("Damga Vergisi", FormatMoney(latest.Calculation.StampTax));
+        AddRow("Toplam Kesinti", FormatMoney(latest.Calculation.TotalDeductions));
+        AddRow("KDV Durumu", latest.Input.IsVatExempt ? "KDV istisnası uygulanıyor" : "KDV uygulanıyor");
+
+        table.RowGroups.Add(group);
+        document.Blocks.Add(table);
+        document.Blocks.Add(new Paragraph(new Run("Created by Aşkın KESKİNBALTA"))
+        {
+            Margin = new Thickness(0, 25, 0, 0),
+            FontWeight = FontWeights.SemiBold
+        });
+
+        var dialog = new System.Windows.Controls.PrintDialog();
+        if (dialog.ShowDialog() == true)
+        {
+            var paginator = ((IDocumentPaginatorSource)document).DocumentPaginator;
+            dialog.PrintDocument(paginator, title);
+        }
     }
 
     private void ReportActionButton_Click(object sender, RoutedEventArgs e)
