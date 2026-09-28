@@ -154,7 +154,7 @@
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="{StaticResource Text600Brush}"/>
+            <Setter Property="Foreground" Value="#D8E4EF"/>
         </Style>
 
         <Style x:Key="FieldTextBox" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
@@ -234,9 +234,9 @@
              ============================================================ -->
 
         <Style x:Key="Card" TargetType="Border">
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="BorderBrush" Value="{StaticResource Line200Brush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="{StaticResource PremiumPanelBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PremiumGoldBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1.25"/>
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Padding" Value="20"/>
             <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -249,12 +249,14 @@
 
         <Style x:Key="CardTitle" TargetType="TextBlock" BasedOn="{StaticResource SectionTitle}">
             <Setter Property="FontSize" Value="18"/>
+            <Setter Property="Foreground" Value="White"/>
             <Setter Property="Margin" Value="0,0,0,4"/>
         </Style>
 
         <Style x:Key="CardSubtitle" TargetType="TextBlock" BasedOn="{StaticResource PageSubtitle}">
             <Setter Property="Margin" Value="0"/>
             <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="Foreground" Value="#C5D7E7"/>
         </Style>
 
         <Style x:Key="MetricCard" TargetType="Border" BasedOn="{StaticResource Card}">
