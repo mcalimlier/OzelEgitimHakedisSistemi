@@ -525,7 +525,7 @@
                                                 <TextBlock Text="TANIMLI HATLAR" Style="{StaticResource CardTitle}"/>
                                                 <TextBlock Text="Bu oturumda oluşturulan hat taslakları" Style="{StaticResource CardSubtitle}" Margin="0,0,0,12"/>
                                                 <ItemsControl x:Name="RoutesListBox">
-                                                    <ListBox.ItemTemplate>
+                                                    <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
                                                             <Grid Margin="4">
                                                                 <Grid.ColumnDefinitions>
@@ -637,8 +637,8 @@
                                                                         Style="{StaticResource SecondaryButton}" Height="34" Margin="10,0,0,0"/>
                                                             </Grid>
                                                         </DataTemplate>
-                                                    </ListBox.ItemTemplate>
-                                                </ListBox>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
                                                 <Border Style="{StaticResource StatusBanner}" Margin="0,12,0,0">
                                                     <TextBlock Text="Not: Yüklenici kayıtları şu aşamada oturum içi taslaktır; kalıcı veri saklama katmanı ayrıca bağlanacaktır."
                                                                Foreground="{StaticResource Text600Brush}" TextWrapping="Wrap"/>
