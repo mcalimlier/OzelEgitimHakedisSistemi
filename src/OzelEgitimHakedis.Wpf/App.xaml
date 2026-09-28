@@ -3,16 +3,191 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
+        <!-- DoğruTemin görsel dili: lacivert + mavi + altın, Segoe UI, yuvarlatılmış kontroller -->
         <Color x:Key="Navy900">#031C38</Color>
+        <Color x:Key="Navy950">#00152D</Color>
         <Color x:Key="Blue600">#2468D8</Color>
+        <Color x:Key="Blue700">#1756B8</Color>
         <Color x:Key="Gold500">#FFB41F</Color>
+        <Color x:Key="Gold600">#E99B00</Color>
+        <Color x:Key="Danger500">#E53935</Color>
         <Color x:Key="Text900">#0B1830</Color>
+        <Color x:Key="Text600">#526277</Color>
+        <Color x:Key="Line200">#DCE3EC</Color>
         <Color x:Key="Surface">#F7F9FC</Color>
 
         <SolidColorBrush x:Key="Navy900Brush" Color="{StaticResource Navy900}"/>
+        <SolidColorBrush x:Key="Navy950Brush" Color="{StaticResource Navy950}"/>
         <SolidColorBrush x:Key="Blue600Brush" Color="{StaticResource Blue600}"/>
+        <SolidColorBrush x:Key="Blue700Brush" Color="{StaticResource Blue700}"/>
         <SolidColorBrush x:Key="Gold500Brush" Color="{StaticResource Gold500}"/>
+        <SolidColorBrush x:Key="Gold600Brush" Color="{StaticResource Gold600}"/>
+        <SolidColorBrush x:Key="Danger500Brush" Color="{StaticResource Danger500}"/>
         <SolidColorBrush x:Key="Text900Brush" Color="{StaticResource Text900}"/>
+        <SolidColorBrush x:Key="Text600Brush" Color="{StaticResource Text600}"/>
+        <SolidColorBrush x:Key="Line200Brush" Color="{StaticResource Line200}"/>
         <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource Surface}"/>
+
+        <LinearGradientBrush x:Key="PremiumPanelBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#082744" Offset="0"/>
+            <GradientStop Color="#0A3154" Offset="0.58"/>
+            <GradientStop Color="#0B365C" Offset="1"/>
+        </LinearGradientBrush>
+        <SolidColorBrush x:Key="PremiumInputBrush" Color="#082744"/>
+        <SolidColorBrush x:Key="PremiumInputBorderBrush" Color="#365874"/>
+        <SolidColorBrush x:Key="PremiumMutedTextBrush" Color="#B9CBDA"/>
+        <SolidColorBrush x:Key="PremiumGoldBorderBrush" Color="#C88B09"/>
+
+        <Style TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <Style TargetType="TextBox">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="17"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="10,0"/>
+        </Style>
+
+        <Style TargetType="ComboBox">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="17"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="StandardButtonBase" TargetType="Button">
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <Style x:Key="ModernButton" TargetType="Button" BasedOn="{StaticResource StandardButtonBase}">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="{StaticResource Blue600Brush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Root" Background="{TemplateBinding Background}"
+                                CornerRadius="7" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Root" Property="Opacity" Value="0.88"/></Trigger>
+                            <Trigger Property="IsPressed" Value="True"><Setter TargetName="Root" Property="Opacity" Value="0.72"/></Trigger>
+                            <Trigger Property="IsEnabled" Value="False"><Setter TargetName="Root" Property="Opacity" Value="0.45"/></Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="NavButton" TargetType="Button">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Height" Value="56"/>
+            <Setter Property="Padding" Value="18,0"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="14.5"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid Background="{TemplateBinding Background}">
+                            <Border x:Name="Accent" Width="4" HorizontalAlignment="Left" Background="Transparent"/>
+                            <ContentPresenter Margin="8,0,0,0" VerticalAlignment="Center"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="Tag" Value="Active">
+                                <Setter Property="Background" Value="#1D4E91"/>
+                                <Setter TargetName="Accent" Property="Background" Value="{StaticResource Gold500Brush}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#123B6C"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SubNavButton" TargetType="Button" BasedOn="{StaticResource NavButton}">
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="Padding" Value="30,0,8,0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="#E5EDF6"/>
+        </Style>
+
+        <Style x:Key="PageTitle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="29"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{StaticResource Text900Brush}"/>
+            <Setter Property="Margin" Value="2,0,0,3"/>
+        </Style>
+
+        <Style x:Key="PageSubtitle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Foreground" Value="{StaticResource Text600Brush}"/>
+            <Setter Property="Margin" Value="2,0,0,12"/>
+        </Style>
+
+        <Style x:Key="SectionTitle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="19"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource Text900Brush}"/>
+        </Style>
+
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource Text600Brush}"/>
+        </Style>
+
+        <Style x:Key="FieldTextBox" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="{StaticResource Text900Brush}"/>
+            <Setter Property="BorderBrush" Value="#D2DBE7"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="Border" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost" Padding="{TemplateBinding Padding}"
+                                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          Focusable="False"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource Blue600Brush}"/>
+                                <Setter TargetName="Border" Property="BorderThickness" Value="1.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PremiumPanel" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource PremiumPanelBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PremiumGoldBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1.25"/>
+            <Setter Property="CornerRadius" Value="12"/>
+        </Style>
     </Application.Resources>
 </Application>
