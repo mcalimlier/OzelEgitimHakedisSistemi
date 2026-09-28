@@ -654,55 +654,136 @@ public partial class MainWindow : Window
             ? $"Hakediş No {latest.ProgressPaymentNumber.Value}"
             : "Hakediş Hesaplama";
 
-        var period = latest.PeriodDate.HasValue
-            ? latest.PeriodDate.Value.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture)
-            : "-";
-
+        var period = latest.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-";
         var document = new FlowDocument
         {
-            PagePadding = new Thickness(45),
+            PagePadding = new Thickness(40),
             FontFamily = new System.Windows.Media.FontFamily("Segoe UI"),
-            FontSize = 12
+            FontSize = 10.5,
+            ColumnWidth = 720
         };
 
-        document.Blocks.Add(new Paragraph(new Run("ÖZEL EĞİTİM HAKEDİŞ SİSTEMİ"))
+        var header = new Paragraph
         {
-            FontSize = 20,
-            FontWeight = FontWeights.Bold
-        });
-        document.Blocks.Add(new Paragraph(new Run(title))
-        {
-            FontSize = 16,
-            FontWeight = FontWeights.Bold
-        });
+            TextAlignment = TextAlignment.Center,
+            Margin = new Thickness(0, 0, 0, 14)
+        };
+        header.Inlines.Add(new Run("ÖZEL EĞİTİM HAKEDİŞ SİSTEMİ") { FontSize = 20, FontWeight = FontWeights.Bold });
+        header.Inlines.Add(new LineBreak());
+        header.Inlines.Add(new Run(title) { FontSize = 15, FontWeight = FontWeights.Bold });
+        header.Inlines.Add(new LineBreak());
+        header.Inlines.Add(new Run($"Dönem: {period}") { FontSize = 11 });
+        document.Blocks.Add(header);
 
-        var table = new Table { CellSpacing = 0 };
-        table.Columns.Add(new TableColumn { Width = new GridLength(260) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(260) });
-        var group = new TableRowGroup();
-
-        void AddRow(string label, string value)
+        Table CreateTable(params (string Label, string Value)[] rows)
         {
-            var row = new TableRow();
-            row.Cells.Add(new TableCell(new Paragraph(new Run(label))) { FontWeight = FontWeights.Bold });
-            row.Cells.Add(new TableCell(new Paragraph(new Run(value))));
-            group.Rows.Add(row);
+            var table = new Table
+            {
+                CellSpacing = 0,
+                BorderBrush = System.Windows.Media.Brushes.DarkGray,
+                BorderThickness = new Thickness(1),
+                Margin = new Thickness(0, 0, 0, 12)
+            };
+            table.Columns.Add(new TableColumn { Width = new GridLength(250) });
+            table.Columns.Add(new TableColumn { Width = new GridLength(430) });
+            var group = new TableRowGroup();
+            foreach (var (label, value) in rows)
+            {
+                var row = new TableRow();
+                row.Cells.Add(new TableCell(new Paragraph(new Run(label))) { Padding = new Thickness(7), FontWeight = FontWeights.Bold });
+                row.Cells.Add(new TableCell(new Paragraph(new Run(value ?? "-"))) { Padding = new Thickness(7) });
+                group.Rows.Add(row);
+            }
+            table.RowGroups.Add(group);
+            return table;
         }
 
-        AddRow("Dönem", period);
-        AddRow("Brüt Tutar", FormatMoney(latest.Calculation.GrossAmount));
-        AddRow("Net Ödeme", FormatMoney(latest.Calculation.NetPayable));
-        AddRow("Tevkifat", FormatMoney(latest.Calculation.Withholding));
-        AddRow("Damga Vergisi", FormatMoney(latest.Calculation.StampTax));
-        AddRow("Toplam Kesinti", FormatMoney(latest.Calculation.TotalDeductions));
-        AddRow("KDV Durumu", latest.Input.IsVatExempt ? "KDV istisnası uygulanıyor" : "KDV uygulanıyor");
+        Table CreateAmountTable(params (string Label, decimal Value)[] rows)
+        {
+            var table = new Table
+            {
+                CellSpacing = 0,
+                BorderBrush = System.Windows.Media.Brushes.DarkGray,
+                BorderThickness = new Thickness(1),
+                Margin = new Thickness(0, 0, 0, 12)
+            };
+            table.Columns.Add(new TableColumn { Width = new GridLength(430) });
+            table.Columns.Add(new TableColumn { Width = new GridLength(250) });
+            var group = new TableRowGroup();
+            foreach (var (label, value) in rows)
+            {
+                var row = new TableRow();
+                row.Cells.Add(new TableCell(new Paragraph(new Run(label))) { Padding = new Thickness(7), FontWeight = FontWeights.SemiBold });
+                row.Cells.Add(new TableCell(new Paragraph(new Run(FormatMoney(value))))
+                {
+                    Padding = new Thickness(7),
+                    TextAlignment = TextAlignment.Right
+                });
+                group.Rows.Add(row);
+            }
+            table.RowGroups.Add(group);
+            return table;
+        }
 
-        table.RowGroups.Add(group);
-        document.Blocks.Add(table);
+        document.Blocks.Add(new Paragraph(new Run("1. SÖZLEŞME / YÜKLENİCİ BİLGİLERİ"))
+        {
+            FontSize = 12.5,
+            FontWeight = FontWeights.Bold,
+            Margin = new Thickness(0, 4, 0, 6)
+        });
+        document.Blocks.Add(CreateTable(
+            ("İhale No", TenderNumberTextBox.Text),
+            ("Sözleşme No", ContractNumberTextBox.Text),
+            ("İşin Adı", WorkNameTextBox.Text),
+            ("Yüklenici", ContractorTextBox.Text),
+            ("Sözleşme Bedeli", FormatMoney(TryParseDecimal(ContractAmountTextBox.Text, out var contractAmount) ? contractAmount : 0)),
+            ("Başlangıç Tarihi", StartDatePicker.SelectedDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
+            ("Bitiş Tarihi", EndDatePicker.SelectedDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
+            ("KDV Durumu", latest.Input.IsVatExempt ? "KDV istisnası uygulanıyor" : "KDV uygulanıyor")
+        ));
+
+        document.Blocks.Add(new Paragraph(new Run("2. HAKEDİŞ HESAPLAMA ÖZETİ"))
+        {
+            FontSize = 12.5, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 4, 0, 6)
+        });
+        document.Blocks.Add(CreateAmountTable(
+            ("Çalışma / Hizmet Tutarı", latest.Calculation.ServiceAmount),
+            ("Fiyat Farkı / İndirim", latest.Calculation.PriceDifferenceExcludingVat),
+            ("KDV Matrahı / Toplam Tutar", latest.Calculation.TotalAmount),
+            ("KDV", latest.Calculation.Vat),
+            ("Brüt Tutar", latest.Calculation.GrossAmount),
+            ("Tevkifat", latest.Calculation.Withholding),
+            ("Damga Vergisi", latest.Calculation.StampTax),
+            ("Vergi Borcu", latest.Calculation.Deductions.TaxDebt),
+            ("SGK Borcu", latest.Calculation.Deductions.SocialSecurityDebt),
+            ("Asgari Ücret Desteği", latest.Calculation.Deductions.MinimumWageSupport),
+            ("Denetim Cezası", latest.Calculation.Deductions.InspectionPenalty),
+            ("Ek Teminat", latest.Calculation.AdditionalGuarantee),
+            ("TOPLAM KESİNTİ", latest.Calculation.TotalDeductions),
+            ("NET ÖDENECEK", latest.Calculation.NetPayable)
+        ));
+
+        document.Blocks.Add(new Paragraph(new Run("3. HAKEDİŞ BİLGİLERİ"))
+        {
+            FontSize = 12.5, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 4, 0, 6)
+        });
+        document.Blocks.Add(CreateTable(
+            ("Hakediş No", latest.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"),
+            ("Dönem Tarihi", period),
+            ("Kayıt Tarihi", latest.CreatedAt.ToString("dd.MM.yyyy HH:mm", CultureInfo.CurrentCulture)),
+            ("KDV İstisnası", latest.Input.IsVatExempt ? "Evet" : "Hayır"),
+            ("Denetim Cezası", latest.Input.HasInspectionPenalty ? "Uygulanıyor" : "Uygulanmıyor")
+        ));
+
+        document.Blocks.Add(new Paragraph(new Run("Not: Bu çıktı mevcut OEHS hesaplama kayıtlarının rapor önizlemesidir. Resmî belge formatı ve hukuki metinler ayrıca doğrulanmalıdır."))
+        {
+            FontSize = 9.5,
+            Margin = new Thickness(0, 8, 0, 4)
+        });
         document.Blocks.Add(new Paragraph(new Run("Created by Aşkın KESKİNBALTA"))
         {
-            Margin = new Thickness(0, 25, 0, 0),
-            FontWeight = FontWeights.SemiBold
+            FontWeight = FontWeights.SemiBold,
+            Margin = new Thickness(0, 8, 0, 0)
         });
 
         var dialog = new System.Windows.Controls.PrintDialog();
