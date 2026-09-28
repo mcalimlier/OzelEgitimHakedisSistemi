@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -15,6 +16,7 @@ public partial class MainWindow : Window
     private const int WmGetMinMaxInfo = 0x0024;
     private const uint MonitorDefaultToNearest = 0x00000002;
     private HwndSource? _windowSource;
+    private readonly ObservableCollection<RouteDraft> _routes = new();
 
     public MainWindow()
     {
@@ -24,6 +26,8 @@ public partial class MainWindow : Window
         StartDatePicker.SelectedDate = DateTime.Today;
         EndDatePicker.SelectedDate = DateTime.Today;
         UpdateShellText("Ana Ekran");
+        RoutesListBox.ItemsSource = _routes;
+        UpdateRouteSummary();
     }
 
     private void ConfigureWindow()
@@ -110,7 +114,8 @@ public partial class MainWindow : Window
         HomePanel.Visibility = page == "Home" ? Visibility.Visible : Visibility.Collapsed;
         ContractPanel.Visibility = page == "Contract" ? Visibility.Visible : Visibility.Collapsed;
         ProgressPanel.Visibility = page == "Progress" ? Visibility.Visible : Visibility.Collapsed;
-        PlaceholderPanel.Visibility = page is "Home" or "Contract" or "Progress"
+        LinesPanel.Visibility = page == "Lines" ? Visibility.Visible : Visibility.Collapsed;
+        PlaceholderPanel.Visibility = page is "Home" or "Contract" or "Progress" or "Lines"
             ? Visibility.Collapsed
             : Visibility.Visible;
 
@@ -150,6 +155,64 @@ public partial class MainWindow : Window
         {
             button.Uid = button.Tag?.ToString() == page ? "Active" : string.Empty;
         }
+    }
+
+    private void AddRouteButton_Click(object sender, RoutedEventArgs e)
+    {
+        var routeNumber = RouteNumberTextBox.Text.Trim();
+        var routeName = RouteNameTextBox.Text.Trim();
+
+        if (string.IsNullOrWhiteSpace(routeNumber))
+        {
+            RouteStatusTextBlock.Text = "Hat No alanı boş bırakılamaz.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(routeName))
+        {
+            RouteStatusTextBlock.Text = "Hat Adı alanı boş bırakılamaz.";
+            return;
+        }
+
+        if (!TryParseDecimal(RouteDailyPriceTextBox.Text, out var dailyPrice) || dailyPrice < 0)
+        {
+            RouteStatusTextBlock.Text = "Günlük Birim Fiyat geçerli bir tutar olmalıdır.";
+            return;
+        }
+
+        if (_routes.Any(x => string.Equals(x.RouteNumber, routeNumber, StringComparison.CurrentCultureIgnoreCase)))
+        {
+            RouteStatusTextBlock.Text = "Bu Hat No zaten tanımlı.";
+            return;
+        }
+
+        _routes.Add(new RouteDraft(routeNumber, routeName, dailyPrice));
+        UpdateRouteSummary();
+        ClearRouteButton_Click(sender, e);
+        RouteStatusTextBlock.Text = $"Hat eklendi: {routeNumber} — {routeName}.";
+    }
+
+    private void RemoveRouteButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is System.Windows.Controls.Button { Tag: RouteDraft route })
+        {
+            _routes.Remove(route);
+            UpdateRouteSummary();
+            RouteStatusTextBlock.Text = $"Hat silindi: {route.RouteNumber}.";
+        }
+    }
+
+    private void ClearRouteButton_Click(object sender, RoutedEventArgs e)
+    {
+        RouteNumberTextBox.Clear();
+        RouteNameTextBox.Clear();
+        RouteDailyPriceTextBox.Clear();
+    }
+
+    private void UpdateRouteSummary()
+    {
+        RouteCountTextBlock.Text = _routes.Count.ToString(CultureInfo.CurrentCulture);
+        RouteTotalDailyPriceTextBlock.Text = FormatMoney(_routes.Sum(x => x.DailyPrice));
     }
 
     private void SaveContractButton_Click(object sender, RoutedEventArgs e)
@@ -261,6 +324,11 @@ public partial class MainWindow : Window
     }
 
     private static string FormatMoney(decimal value) => $"{value:N2} ₺";
+
+    private sealed record RouteDraft(string RouteNumber, string Name, decimal DailyPrice)
+    {
+        public string DailyPriceText => $"{DailyPrice:N2} ₺";
+    }
 
     [DllImport("user32.dll")]
     private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
