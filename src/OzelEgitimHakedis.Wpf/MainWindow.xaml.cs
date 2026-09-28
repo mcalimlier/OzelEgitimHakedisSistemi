@@ -21,6 +21,7 @@ public partial class MainWindow : Window
     private readonly ObservableCollection<ProgressPaymentHistoryData> _progressHistory = new();
     private readonly ObservableCollection<HistoryRow> _historyRows = new();
     private readonly ObservableCollection<SummaryRow> _summaryRows = new();
+    private readonly ObservableCollection<ReportRow> _reportRows = new();
     private readonly OehsApplicationDataStore _dataStore = new();
 
     public MainWindow()
@@ -35,11 +36,13 @@ public partial class MainWindow : Window
         ContractorsListBox.ItemsSource = _contractors;
         HistoryItemsControl.ItemsSource = _historyRows;
         SummaryItemsControl.ItemsSource = _summaryRows;
+        ReportItemsControl.ItemsSource = _reportRows;
         LoadPersistedData();
         UpdateRouteSummary();
         UpdateContractorSummary();
         UpdateHistoryView();
         UpdateSummaryView();
+        UpdateReportView();
     }
 
     private void ConfigureWindow()
@@ -444,6 +447,7 @@ public partial class MainWindow : Window
             SavePersistedData();
             UpdateHistoryView();
             UpdateSummaryView();
+            UpdateReportView();
 
             CalculationStatusTextBlock.Text = "Hesaplama başarıyla tamamlandı ve geçmişe kaydedildi.";
         }
@@ -531,6 +535,39 @@ public partial class MainWindow : Window
             : Visibility.Collapsed;
     }
 
+    private void UpdateReportView()
+    {
+        _reportRows.Clear();
+
+        foreach (var item in _progressHistory.OrderByDescending(x => x.PeriodDate ?? DateOnly.MinValue).ThenByDescending(x => x.CreatedAt))
+        {
+            var title = item.ProgressPaymentNumber.HasValue
+                ? $"Hakediş No {item.ProgressPaymentNumber.Value}"
+                : "Hakediş Hesaplama";
+
+            var period = item.PeriodDate.HasValue
+                ? $"Dönem: {item.PeriodDate.Value:dd.MM.yyyy}"
+                : $"Kayıt: {item.CreatedAt:dd.MM.yyyy HH:mm}";
+
+            _reportRows.Add(new ReportRow(
+                title,
+                period,
+                FormatMoney(item.Calculation.GrossAmount),
+                FormatMoney(item.Calculation.NetPayable)));
+        }
+
+        ReportCountTextBlock.Text = _progressHistory.Count.ToString(CultureInfo.CurrentCulture);
+        ReportGrossTextBlock.Text = FormatMoney(_progressHistory.Sum(x => x.Calculation.GrossAmount));
+        ReportNetTextBlock.Text = FormatMoney(_progressHistory.Sum(x => x.Calculation.NetPayable));
+        ReportEmptyStateBorder.Visibility = _reportRows.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void ReportActionButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is System.Windows.Controls.Button button && button.Tag is string page)
+            NavigationButton_Click(button, e);
+    }
+
     private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
 
     private void MaximizeRestore_Click(object sender, RoutedEventArgs e)
@@ -577,6 +614,12 @@ public partial class MainWindow : Window
         string NetPayableText);
 
     private sealed record SummaryRow(
+        string Title,
+        string PeriodText,
+        string GrossText,
+        string NetText);
+
+    private sealed record ReportRow(
         string Title,
         string PeriodText,
         string GrossText,
