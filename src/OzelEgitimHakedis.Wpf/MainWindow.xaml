@@ -49,7 +49,6 @@
                     <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="25,0,0,0">
                         <TextBlock Text="OEHS" Foreground="White" FontSize="29" FontWeight="Bold"/>
                         <TextBlock Text="ÖZEL EĞİTİM HAKEDİŞ" Foreground="#B9CBDA" FontSize="10.5" FontWeight="SemiBold" Margin="1,1,0,0"/>
-                        <TextBlock Text="Created by Aşkın KESKİNBALTA" Foreground="#7F9BB4" FontSize="9.5" FontWeight="SemiBold" Margin="1,3,0,0"/>
                     </StackPanel>
                     <Border Grid.Column="1"
                             Width="188"
@@ -200,7 +199,10 @@
                     <Border Grid.Row="1" Margin="18,7,18,10" Padding="14,9" CornerRadius="9" Background="#082845" BorderBrush="#73581E" BorderThickness="1">
                         <StackPanel>
                             <TextBlock Text="Created by" Foreground="#A8BCD0" FontSize="11" FontWeight="SemiBold"/>
-                            <TextBlock Text="OEHS" Foreground="{StaticResource Gold500Brush}" FontSize="19" FontWeight="Bold" Margin="0,2,0,0"/>
+                            <StackPanel VerticalAlignment="Center" Margin="22,0,0,0">
+                            <TextBlock Text="OEHS" Foreground="White" FontSize="25" FontWeight="Bold"/>
+                            <TextBlock Text="Created by Aşkın KESKİNBALTA" Foreground="{StaticResource Gold500Brush}" FontSize="13.5" FontWeight="Bold" Margin="0,3,0,0"/>
+                        </StackPanel>
                             <Border Height="2" Width="74" Background="{StaticResource Gold500Brush}" HorizontalAlignment="Left" Margin="0,6,0,0" CornerRadius="1"/>
                         </StackPanel>
                     </Border>
