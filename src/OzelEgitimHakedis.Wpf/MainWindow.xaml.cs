@@ -18,6 +18,8 @@ public partial class MainWindow : Window
     private HwndSource? _windowSource;
     private readonly ObservableCollection<RouteDraft> _routes = new();
     private readonly ObservableCollection<ContractorDraft> _contractors = new();
+    private readonly ObservableCollection<ProgressPaymentHistoryData> _progressHistory = new();
+    private readonly ObservableCollection<HistoryRow> _historyRows = new();
     private readonly OehsApplicationDataStore _dataStore = new();
 
     public MainWindow()
@@ -30,9 +32,11 @@ public partial class MainWindow : Window
         UpdateShellText("Ana Ekran");
         RoutesListBox.ItemsSource = _routes;
         ContractorsListBox.ItemsSource = _contractors;
+        HistoryItemsControl.ItemsSource = _historyRows;
         LoadPersistedData();
         UpdateRouteSummary();
         UpdateContractorSummary();
+        UpdateHistoryView();
     }
 
     private void ConfigureWindow()
@@ -311,6 +315,10 @@ public partial class MainWindow : Window
         foreach (var contractor in data.Contractors)
             _contractors.Add(new ContractorDraft(contractor.Name, contractor.TaxOrIdentityNumber));
 
+        _progressHistory.Clear();
+        foreach (var history in data.ProgressPayments ?? Array.Empty<ProgressPaymentHistoryData>())
+            _progressHistory.Add(history);
+
         if (data.Contract is not null)
         {
             TenderNumberTextBox.Text = data.Contract.TenderNumber;
@@ -342,7 +350,8 @@ public partial class MainWindow : Window
         var data = new OehsApplicationData(
             contract,
             _routes.Select(x => new RouteData(x.RouteNumber, x.Name, x.DailyPrice)).ToArray(),
-            _contractors.Select(x => new Contractor(x.Name, x.TaxOrIdentityNumber)).ToArray());
+            _contractors.Select(x => new Contractor(x.Name, x.TaxOrIdentityNumber)).ToArray(),
+            _progressHistory.ToArray());
 
         _dataStore.Save(data);
     }
@@ -381,18 +390,19 @@ public partial class MainWindow : Window
 
         try
         {
-            var result = ProgressPaymentCalculator.Calculate(
-                new ProgressPaymentInput(
-                    workDays,
-                    dailyPrice,
-                    discount,
-                    priceDifference,
-                    contractAmount,
-                    ProgressVatExemptCheckBox.IsChecked == true,
-                    0m,
-                    0m,
-                    0m,
-                    InspectionPenaltyCheckBox.IsChecked == true));
+            var input = new ProgressPaymentInput(
+                workDays,
+                dailyPrice,
+                discount,
+                priceDifference,
+                contractAmount,
+                ProgressVatExemptCheckBox.IsChecked == true,
+                0m,
+                0m,
+                0m,
+                InspectionPenaltyCheckBox.IsChecked == true);
+
+            var result = ProgressPaymentCalculator.Calculate(input);
 
             ServiceAmountResultTextBlock.Text = FormatMoney(result.ServiceAmount);
             TotalAmountResultTextBlock.Text = FormatMoney(result.TotalAmount);
@@ -408,13 +418,44 @@ public partial class MainWindow : Window
             ProgressWorkDaysSummaryTextBlock.Text = workDays.ToString(CultureInfo.CurrentCulture);
             ProgressNetSummaryTextBlock.Text = FormatMoney(result.NetPayable);
             ProgressCalculationSummaryTextBlock.Text = "TAMAM";
-            CalculationStatusTextBlock.Text = "Hesaplama başarıyla tamamlandı.";
+
+            _progressHistory.Add(new ProgressPaymentHistoryData(
+                Guid.NewGuid(),
+                DateTime.Now,
+                input,
+                result));
+            SavePersistedData();
+            UpdateHistoryView();
+
+            CalculationStatusTextBlock.Text = "Hesaplama başarıyla tamamlandı ve geçmişe kaydedildi.";
         }
         catch (ArgumentOutOfRangeException ex)
         {
             ProgressCalculationSummaryTextBlock.Text = "KONTROL";
             CalculationStatusTextBlock.Text = ex.Message;
         }
+    }
+
+    private void UpdateHistoryView()
+    {
+        _historyRows.Clear();
+
+        for (var index = 0; index < _progressHistory.Count; index++)
+        {
+            var item = _progressHistory[index];
+            _historyRows.Add(new HistoryRow(
+                $"Hakediş Hesaplama {index + 1}",
+                item.CreatedAt.ToString("dd.MM.yyyy HH:mm", CultureInfo.CurrentCulture),
+                FormatMoney(item.Calculation.TotalAmount),
+                FormatMoney(item.Calculation.NetPayable)));
+        }
+
+        HistoryCountTextBlock.Text = _progressHistory.Count.ToString(CultureInfo.CurrentCulture);
+        HistoryNetTotalTextBlock.Text = FormatMoney(_progressHistory.Sum(x => x.Calculation.NetPayable));
+        HistoryStatusTextBlock.Text = _progressHistory.Count == 0 ? "HAZIR" : "GÜNCEL";
+        HistoryEmptyStateBorder.Visibility = _progressHistory.Count == 0
+            ? Visibility.Visible
+            : Visibility.Collapsed;
     }
 
     private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
@@ -455,6 +496,12 @@ public partial class MainWindow : Window
     }
 
     private sealed record ContractorDraft(string Name, string TaxOrIdentityNumber);
+
+    private sealed record HistoryRow(
+        string DisplayTitle,
+        string CreatedAtText,
+        string TotalAmountText,
+        string NetPayableText);
 
     [DllImport("user32.dll")]
     private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
