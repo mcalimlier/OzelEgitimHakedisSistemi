@@ -366,7 +366,8 @@ public partial class MainWindow : Window
         StartDatePicker.SelectedDate = DateTime.Today;
         EndDatePicker.SelectedDate = DateTime.Today;
         VatExemptCheckBox.IsChecked = false;
-        ContractStatusTextBlock.Text = string.Empty;
+        SavePersistedData();
+        ContractStatusTextBlock.Text = "Sözleşme taslağı temizlendi.";
     }
 
     private void CalculateProgressButton_Click(object sender, RoutedEventArgs e)
