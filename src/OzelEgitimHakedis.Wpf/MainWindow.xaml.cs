@@ -10,8 +10,8 @@ namespace OzelEgitimHakedis.Wpf;
 
 public partial class MainWindow : Window
 {
-    private const double DesignWidth = 1450.0;
-    private const double DesignHeight = 945.0;
+    private const double DesignWidth = 1522.5;
+    private const double DesignHeight = 992.25;
 
     private const int WmGetMinMaxInfo = 0x0024;
     private const uint MonitorDefaultToNearest = 0x00000002;
@@ -51,7 +51,7 @@ public partial class MainWindow : Window
     {
         var workArea = SystemParameters.WorkArea;
         var maxWidth = Math.Min(DesignWidth, workArea.Width * 0.92);
-        var maxHeight = Math.Min(DesignHeight, workArea.Height * 0.90);
+        var maxHeight = Math.Min(DesignHeight, workArea.Height * 0.945);
         var scale = Math.Min(maxWidth / DesignWidth, maxHeight / DesignHeight);
 
         Width = Math.Round(DesignWidth * scale);
