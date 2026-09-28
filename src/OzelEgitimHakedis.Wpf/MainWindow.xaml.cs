@@ -420,11 +420,24 @@ public partial class MainWindow : Window
             ProgressNetSummaryTextBlock.Text = FormatMoney(result.NetPayable);
             ProgressCalculationSummaryTextBlock.Text = "TAMAM";
 
+            int? progressNumber = null;
+            if (int.TryParse(ProgressNumberTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var parsedProgressNumber) &&
+                parsedProgressNumber > 0)
+            {
+                progressNumber = parsedProgressNumber;
+            }
+
+            var periodDate = ProgressPeriodDatePicker.SelectedDate is DateTime selectedPeriodDate
+                ? DateOnly.FromDateTime(selectedPeriodDate)
+                : (DateOnly?)null;
+
             _progressHistory.Add(new ProgressPaymentHistoryData(
                 Guid.NewGuid(),
                 DateTime.Now,
                 input,
-                result));
+                result,
+                progressNumber,
+                periodDate));
             SavePersistedData();
             UpdateHistoryView();
 
@@ -444,9 +457,16 @@ public partial class MainWindow : Window
         for (var index = 0; index < _progressHistory.Count; index++)
         {
             var item = _progressHistory[index];
+            var displayNumber = item.ProgressPaymentNumber.HasValue
+                ? $"Hakediş No {item.ProgressPaymentNumber.Value}"
+                : $"Hesaplama {index + 1}";
+            var periodText = item.PeriodDate.HasValue
+                ? $"Dönem: {item.PeriodDate.Value:dd.MM.yyyy} • Kayıt: {item.CreatedAt:dd.MM.yyyy HH:mm}"
+                : $"Kayıt: {item.CreatedAt:dd.MM.yyyy HH:mm}";
+
             _historyRows.Add(new HistoryRow(
-                $"Hakediş Hesaplama {index + 1}",
-                item.CreatedAt.ToString("dd.MM.yyyy HH:mm", CultureInfo.CurrentCulture),
+                displayNumber,
+                periodText,
                 FormatMoney(item.Calculation.TotalAmount),
                 FormatMoney(item.Calculation.NetPayable)));
         }
