@@ -33,7 +33,7 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="255"/>
+                    <ColumnDefinition Width="270"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
@@ -42,7 +42,7 @@
                       Background="{StaticResource Navy900Brush}"
                       MouseLeftButtonDown="Header_MouseLeftButtonDown">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="255"/>
+                        <ColumnDefinition Width="270"/>
                         <ColumnDefinition Width="220"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
@@ -142,57 +142,57 @@
                         <Button x:Name="NavHome" Tag="Active" Style="{StaticResource NavButton}" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE80F;" FontSize="21" Width="42"/>
-                                <TextBlock Text="ANA EKRAN"/>
+                                <TextBlock Text="ANA EKRAN" FontSize="14" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                         <Border Height="3" Background="#557A9D" Margin="16,10" CornerRadius="1.5"/>
                         <Button x:Name="NavContract" Style="{StaticResource NavButton}" Tag="Contract" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8D2;" FontSize="21" Width="42"/>
-                                <TextBlock Text="İHALE / SÖZLEŞME"/>
+                                <TextBlock Text="İHALE / SÖZLEŞME" FontSize="14" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                         <Button x:Name="NavLines" Style="{StaticResource NavButton}" Tag="Lines" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8A5;" FontSize="21" Width="42"/>
-                                <TextBlock Text="HATLAR"/>
+                                <TextBlock Text="HATLAR" FontSize="14" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                         <Button x:Name="NavContractors" Style="{StaticResource NavButton}" Tag="Contractors" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE77B;" FontSize="21" Width="42"/>
-                                <TextBlock Text="YÜKLENİCİLER"/>
+                                <TextBlock Text="YÜKLENİCİLER" FontSize="14" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                         <Border Height="3" Background="#557A9D" Margin="16,10" CornerRadius="1.5"/>
                         <Button x:Name="NavProgress" Style="{StaticResource NavButton}" Tag="Progress" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE9D2;" FontSize="21" Width="42"/>
-                                <TextBlock Text="HAKEDİŞ OLUŞTUR"/>
+                                <TextBlock Text="HAKEDİŞ OLUŞTUR" FontSize="14" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                         <Button x:Name="NavHistory" Style="{StaticResource NavButton}" Tag="History" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE81C;" FontSize="21" Width="42"/>
-                                <TextBlock Text="HAKEDİŞ GEÇMİŞİ"/>
+                                <TextBlock Text="HAKEDİŞ GEÇMİŞİ" FontSize="14" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                         <Button x:Name="NavSummary" Style="{StaticResource NavButton}" Tag="Summary" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE9D5;" FontSize="21" Width="42"/>
-                                <TextBlock Text="İCMAL"/>
+                                <TextBlock Text="İCMAL" FontSize="14" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                         <Button x:Name="NavReports" Style="{StaticResource NavButton}" Tag="Reports" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE9D2;" FontSize="21" Width="42"/>
-                                <TextBlock Text="RAPORLAR"/>
+                                <TextBlock Text="RAPORLAR" FontSize="14" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                         <Button x:Name="NavSettings" Style="{StaticResource NavButton}" Tag="Settings" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE713;" FontSize="21" Width="42"/>
-                                <TextBlock Text="AYARLAR"/>
+                                <TextBlock Text="AYARLAR" FontSize="14" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                     </StackPanel>
@@ -225,7 +225,7 @@
                                             <TextBlock Text="Önce sözleşmeyi tanımlayın" Foreground="White" FontSize="23" FontWeight="SemiBold" Margin="0,8,0,0"/>
                                             <TextBlock Text="Sözleşme → Hatlar → Hakediş akışı burada ilerleyecek." Foreground="#C5D7E7" FontSize="13" Margin="0,5,0,0"/>
                                             <Button Content="İHALE / SÖZLEŞME TANIMLA" Tag="Contract" Click="NavigationButton_Click"
-                                                    Style="{StaticResource ModernButton}" Width="230" Height="42"
+                                                    Style="{StaticResource ModernButton}" Width="250" Height="42"
                                                     HorizontalAlignment="Left" Margin="0,18,0,0"/>
                                         </StackPanel>
                                         <Border Grid.Column="1" Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="11" Padding="15,12" VerticalAlignment="Center">
@@ -406,7 +406,7 @@
                                                     <CheckBox x:Name="ProgressVatExemptCheckBox" Grid.Row="2" Grid.Column="2" Content="KDV istisnası" Foreground="White" FontFamily="Segoe UI" FontSize="14" VerticalAlignment="Center" Margin="16,8,0,8"/>
                                                     <CheckBox x:Name="InspectionPenaltyCheckBox" Grid.Row="2" Grid.Column="3" Content="Denetim cezası uygula" Foreground="White" FontFamily="Segoe UI" FontSize="14" VerticalAlignment="Center" Margin="8"/>
                                                 </Grid>
-                                                <Button Content="HAKEDİŞİ HESAPLA" Click="CalculateProgressButton_Click" Style="{StaticResource ModernButton}" Width="205" Margin="8,20,0,0" HorizontalAlignment="Left"/>
+                                                <Button Content="HAKEDİŞİ HESAPLA" Click="CalculateProgressButton_Click" Style="{StaticResource ModernButton}" Width="220" Margin="8,20,0,0" HorizontalAlignment="Left"/>
                                                 <TextBlock x:Name="CalculationStatusTextBlock" Margin="8,14,8,0" Foreground="{StaticResource Gold500Brush}"/>
                                             </StackPanel>
                                         </Border>
