@@ -17,6 +17,7 @@ public partial class MainWindow : Window
     private const uint MonitorDefaultToNearest = 0x00000002;
     private HwndSource? _windowSource;
     private readonly ObservableCollection<RouteDraft> _routes = new();
+    private readonly ObservableCollection<ContractorDraft> _contractors = new();
 
     public MainWindow()
     {
@@ -27,7 +28,9 @@ public partial class MainWindow : Window
         EndDatePicker.SelectedDate = DateTime.Today;
         UpdateShellText("Ana Ekran");
         RoutesListBox.ItemsSource = _routes;
+        ContractorsListBox.ItemsSource = _contractors;
         UpdateRouteSummary();
+        UpdateContractorSummary();
     }
 
     private void ConfigureWindow()
@@ -115,7 +118,8 @@ public partial class MainWindow : Window
         ContractPanel.Visibility = page == "Contract" ? Visibility.Visible : Visibility.Collapsed;
         ProgressPanel.Visibility = page == "Progress" ? Visibility.Visible : Visibility.Collapsed;
         LinesPanel.Visibility = page == "Lines" ? Visibility.Visible : Visibility.Collapsed;
-        PlaceholderPanel.Visibility = page is "Home" or "Contract" or "Progress" or "Lines"
+        ContractorsPanel.Visibility = page == "Contractors" ? Visibility.Visible : Visibility.Collapsed;
+        PlaceholderPanel.Visibility = page is "Home" or "Contract" or "Progress" or "Lines" or "Contractors"
             ? Visibility.Collapsed
             : Visibility.Visible;
 
@@ -155,6 +159,56 @@ public partial class MainWindow : Window
         {
             button.Uid = button.Tag?.ToString() == page ? "Active" : string.Empty;
         }
+    }
+
+    private void AddContractorButton_Click(object sender, RoutedEventArgs e)
+    {
+        var name = ContractorNameTextBox.Text.Trim();
+        var taxOrIdentityNumber = ContractorTaxNumberTextBox.Text.Trim();
+
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            ContractorStatusTextBlock.Text = "Yüklenici Adı / Unvanı alanı boş bırakılamaz.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(taxOrIdentityNumber))
+        {
+            ContractorStatusTextBlock.Text = "Vergi / T.C. Kimlik No alanı boş bırakılamaz.";
+            return;
+        }
+
+        if (_contractors.Any(x => string.Equals(x.TaxOrIdentityNumber, taxOrIdentityNumber, StringComparison.CurrentCultureIgnoreCase)))
+        {
+            ContractorStatusTextBlock.Text = "Bu Vergi / T.C. Kimlik No zaten tanımlı.";
+            return;
+        }
+
+        _contractors.Add(new ContractorDraft(name, taxOrIdentityNumber));
+        UpdateContractorSummary();
+        ClearContractorButton_Click(sender, e);
+        ContractorStatusTextBlock.Text = $"Yüklenici eklendi: {name}.";
+    }
+
+    private void RemoveContractorButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is System.Windows.Controls.Button { Tag: ContractorDraft contractor })
+        {
+            _contractors.Remove(contractor);
+            UpdateContractorSummary();
+            ContractorStatusTextBlock.Text = $"Yüklenici silindi: {contractor.Name}.";
+        }
+    }
+
+    private void ClearContractorButton_Click(object sender, RoutedEventArgs e)
+    {
+        ContractorNameTextBox.Clear();
+        ContractorTaxNumberTextBox.Clear();
+    }
+
+    private void UpdateContractorSummary()
+    {
+        ContractorCountTextBlock.Text = _contractors.Count.ToString(CultureInfo.CurrentCulture);
     }
 
     private void AddRouteButton_Click(object sender, RoutedEventArgs e)
@@ -329,6 +383,8 @@ public partial class MainWindow : Window
     {
         public string DailyPriceText => $"{DailyPrice:N2} ₺";
     }
+
+    private sealed record ContractorDraft(string Name, string TaxOrIdentityNumber);
 
     [DllImport("user32.dll")]
     private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
