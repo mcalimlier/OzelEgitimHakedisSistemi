@@ -2,9 +2,10 @@
 setlocal EnableExtensions
 cd /d "%~dp0"
 
-set "PROJECT=.srcOzelEgitimHakedis.WpfOzelEgitimHakedis.Wpf.csproj"
-set "OUT=.distOEHS-Test-Paketi"
-set "ZIP=.distOEHS-Test-Paketi.zip"
+set "PROJECT=.\src\OzelEgitimHakedis.Wpf\OzelEgitimHakedis.Wpf.csproj"
+set "DIST=.\dist"
+set "OUT=%DIST%\OEHS-Test-Paketi"
+set "ZIP=%DIST%\OEHS-Test-Paketi.zip"
 
 echo.
 echo ==========================================
@@ -14,7 +15,7 @@ echo.
 
 if exist "%OUT%" rmdir /s /q "%OUT%"
 if exist "%ZIP%" del /q "%ZIP%"
-if not exist ".dist" mkdir ".dist"
+if not exist "%DIST%" mkdir "%DIST%"
 
 echo [1/2] Windows x64 test surumu hazirlaniyor...
 dotnet publish "%PROJECT%" --configuration Release --runtime win-x64 --self-contained true ^
@@ -31,7 +32,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-if not exist "%OUT%OEHS.exe" (
+if not exist "%OUT%\OEHS.exe" (
     echo.
     echo [HATA] OEHS.exe bulunamadi.
     pause
@@ -40,7 +41,7 @@ if not exist "%OUT%OEHS.exe" (
 
 echo.
 echo [2/2] ZIP paketi olusturuluyor...
-powershell -NoProfile -ExecutionPolicy Bypass -Command "Compress-Archive -Path '%OUT%OEHS.exe' -DestinationPath '%ZIP%' -Force"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Compress-Archive -Path '%OUT%\OEHS.exe' -DestinationPath '%ZIP%' -Force"
 
 if errorlevel 1 (
     echo.
