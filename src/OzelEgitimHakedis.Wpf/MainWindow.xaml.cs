@@ -18,6 +18,7 @@ public partial class MainWindow : Window
     private HwndSource? _windowSource;
     private readonly ObservableCollection<RouteDraft> _routes = new();
     private readonly ObservableCollection<ContractorDraft> _contractors = new();
+    private readonly OehsApplicationDataStore _dataStore = new();
 
     public MainWindow()
     {
@@ -29,6 +30,7 @@ public partial class MainWindow : Window
         UpdateShellText("Ana Ekran");
         RoutesListBox.ItemsSource = _routes;
         ContractorsListBox.ItemsSource = _contractors;
+        LoadPersistedData();
         UpdateRouteSummary();
         UpdateContractorSummary();
     }
@@ -190,6 +192,7 @@ public partial class MainWindow : Window
         }
 
         _contractors.Add(new ContractorDraft(name, taxOrIdentityNumber));
+        SavePersistedData();
         UpdateContractorSummary();
         ClearContractorButton_Click(sender, e);
         ContractorStatusTextBlock.Text = $"Yüklenici eklendi: {name}.";
@@ -200,6 +203,7 @@ public partial class MainWindow : Window
         if (sender is System.Windows.Controls.Button { Tag: ContractorDraft contractor })
         {
             _contractors.Remove(contractor);
+            SavePersistedData();
             UpdateContractorSummary();
             ContractorStatusTextBlock.Text = $"Yüklenici silindi: {contractor.Name}.";
         }
@@ -246,6 +250,7 @@ public partial class MainWindow : Window
         }
 
         _routes.Add(new RouteDraft(routeNumber, routeName, dailyPrice));
+        SavePersistedData();
         UpdateRouteSummary();
         ClearRouteButton_Click(sender, e);
         RouteStatusTextBlock.Text = $"Hat eklendi: {routeNumber} — {routeName}.";
@@ -256,6 +261,7 @@ public partial class MainWindow : Window
         if (sender is System.Windows.Controls.Button { Tag: RouteDraft route })
         {
             _routes.Remove(route);
+            SavePersistedData();
             UpdateRouteSummary();
             RouteStatusTextBlock.Text = $"Hat silindi: {route.RouteNumber}.";
         }
@@ -288,8 +294,57 @@ public partial class MainWindow : Window
             return;
         }
 
+        SavePersistedData();
         ContractStatusTextBlock.Text =
-            $"Taslak hazır: {WorkNameTextBox.Text.Trim()} — {contractAmount:N2} ₺. Kalıcı kayıt katmanı bir sonraki adımda eklenecek.";
+            $"Sözleşme taslağı kaydedildi: {WorkNameTextBox.Text.Trim()} — {contractAmount:N2} ₺.";
+    }
+
+    private void LoadPersistedData()
+    {
+        var data = _dataStore.Load();
+
+        _routes.Clear();
+        foreach (var route in data.Routes)
+            _routes.Add(new RouteDraft(route.RouteNumber, route.Name, route.DailyPrice));
+
+        _contractors.Clear();
+        foreach (var contractor in data.Contractors)
+            _contractors.Add(new ContractorDraft(contractor.Name, contractor.TaxOrIdentityNumber));
+
+        if (data.Contract is not null)
+        {
+            TenderNumberTextBox.Text = data.Contract.TenderNumber;
+            ContractNumberTextBox.Text = data.Contract.ContractNumber;
+            WorkNameTextBox.Text = data.Contract.WorkName;
+            ContractorTextBox.Text = data.Contract.ContractorName;
+            ContractAmountTextBox.Text = data.Contract.ContractAmount.ToString("N2", CultureInfo.CurrentCulture);
+            StartDatePicker.SelectedDate = data.Contract.StartDate.ToDateTime(TimeOnly.MinValue);
+            EndDatePicker.SelectedDate = data.Contract.EndDate.ToDateTime(TimeOnly.MinValue);
+            VatExemptCheckBox.IsChecked = data.Contract.VatExempt;
+            ContractStatusTextBlock.Text = "Kaydedilmiş sözleşme taslağı yüklendi.";
+        }
+    }
+
+    private void SavePersistedData()
+    {
+        var contract = string.IsNullOrWhiteSpace(WorkNameTextBox.Text)
+            ? null
+            : new ContractDraftData(
+                TenderNumberTextBox.Text.Trim(),
+                ContractNumberTextBox.Text.Trim(),
+                WorkNameTextBox.Text.Trim(),
+                ContractorTextBox.Text.Trim(),
+                TryParseDecimal(ContractAmountTextBox.Text, out var amount) ? amount : 0m,
+                DateOnly.FromDateTime(StartDatePicker.SelectedDate ?? DateTime.Today),
+                DateOnly.FromDateTime(EndDatePicker.SelectedDate ?? DateTime.Today),
+                VatExemptCheckBox.IsChecked == true);
+
+        var data = new OehsApplicationData(
+            contract,
+            _routes.Select(x => new RouteData(x.RouteNumber, x.Name, x.DailyPrice)).ToArray(),
+            _contractors.Select(x => new Contractor(x.Name, x.TaxOrIdentityNumber)).ToArray());
+
+        _dataStore.Save(data);
     }
 
     private void ClearContractButton_Click(object sender, RoutedEventArgs e)
