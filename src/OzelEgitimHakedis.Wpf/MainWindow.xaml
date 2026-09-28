@@ -49,6 +49,7 @@
                     <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="25,0,0,0">
                         <TextBlock Text="OEHS" Foreground="White" FontSize="29" FontWeight="Bold"/>
                         <TextBlock Text="ÖZEL EĞİTİM HAKEDİŞ" Foreground="#B9CBDA" FontSize="10.5" FontWeight="SemiBold" Margin="1,1,0,0"/>
+                        <TextBlock Text="Created by Aşkın KESKİNBALTA" Foreground="#7F9BB4" FontSize="9.5" FontWeight="SemiBold" Margin="1,3,0,0"/>
                     </StackPanel>
                     <Border Grid.Column="1"
                             Width="188"
