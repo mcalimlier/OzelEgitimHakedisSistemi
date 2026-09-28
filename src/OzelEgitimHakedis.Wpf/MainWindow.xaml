@@ -774,14 +774,40 @@
 </Grid></StackPanel></Grid>
 
 <Grid x:Name="ReportsPanel" Visibility="Collapsed"><StackPanel>
-<TextBlock Text="RAPORLAR" Style="{StaticResource PageTitle}"/><TextBlock Text="Hakediş, ödeme ve sözleşme verilerini raporlamaya hazırlayın." Style="{StaticResource PageSubtitle}"/>
+<TextBlock Text="RAPORLAR" Style="{StaticResource PageTitle}"/>
+<TextBlock Text="Kaydedilmiş hakediş verilerini rapor görünümünde hazırlayın ve sonraki PDF / yazdırma adımına taşıyın." Style="{StaticResource PageSubtitle}"/>
 <Grid Margin="0,0,0,14"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-<Border Grid.Column="0" Style="{StaticResource CardCompact}" Margin="0,0,8,0"><StackPanel><TextBlock Text="HAKEDİŞ RAPORU" Style="{StaticResource CardTitle}"/><TextBlock Text="PDF / yazdırma" Foreground="White" FontSize="18" FontWeight="Bold" Margin="0,8,0,0"/><TextBlock Text="Detaylı hakediş çıktısı" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
-<Border Grid.Column="1" Style="{StaticResource CardCompact}" Margin="4,0"><StackPanel><TextBlock Text="İCMAL RAPORU" Style="{StaticResource CardTitle}"/><TextBlock Text="Dönem özeti" Foreground="White" FontSize="18" FontWeight="Bold" Margin="0,8,0,0"/><TextBlock Text="Toplu ödeme görünümü" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
-<Border Grid.Column="2" Style="{StaticResource CardCompact}" Margin="8,0,0,0"><StackPanel><TextBlock Text="SÖZLEŞME RAPORU" Style="{StaticResource CardTitle}"/><TextBlock Text="Sözleşme özeti" Foreground="White" FontSize="18" FontWeight="Bold" Margin="0,8,0,0"/><TextBlock Text="Temel sözleşme bilgileri" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
+<Border Grid.Column="0" Style="{StaticResource CardCompact}" Margin="0,0,8,0"><StackPanel><TextBlock Text="HAKEDİŞ KAYDI" Style="{StaticResource CardTitle}"/><TextBlock x:Name="ReportCountTextBlock" Text="0" Foreground="White" FontSize="28" FontWeight="Bold" Margin="0,7,0,0"/><TextBlock Text="Raporlanabilir hesaplama" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
+<Border Grid.Column="1" Style="{StaticResource CardCompact}" Margin="4,0"><StackPanel><TextBlock Text="BRÜT TOPLAM" Style="{StaticResource CardTitle}"/><TextBlock x:Name="ReportGrossTextBlock" Text="0,00 ₺" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,7,0,0"/><TextBlock Text="Kayıtlı hakedişler" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
+<Border Grid.Column="2" Style="{StaticResource CardCompact}" Margin="8,0,0,0"><StackPanel><TextBlock Text="NET TOPLAM" Style="{StaticResource CardTitle}"/><TextBlock x:Name="ReportNetTextBlock" Text="0,00 ₺" Foreground="{StaticResource Gold500Brush}" FontSize="24" FontWeight="Bold" Margin="0,7,0,0"/><TextBlock Text="Ödeme özeti" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
 </Grid>
-<Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="RAPOR MERKEZİ" Style="{StaticResource CardTitle}"/><TextBlock Text="Hazır rapor şablonları veri katmanı bağlandıktan sonra aktif hale gelecek." Style="{StaticResource CardSubtitle}" Margin="0,0,0,16"/><Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions><Button Grid.Column="0" Content="HAKEDİŞ RAPORU" Style="{StaticResource ModernButton}" Height="42" Margin="0,0,8,0"/><Button Grid.Column="1" Content="İCMAL RAPORU" Style="{StaticResource SecondaryButton}" Height="42" Margin="4,0"/><Button Grid.Column="2" Content="SÖZLEŞME RAPORU" Style="{StaticResource SecondaryButton}" Height="42" Margin="8,0,0,0"/></Grid></StackPanel></Border>
-</StackPanel></Grid>
+<Grid><Grid.ColumnDefinitions><ColumnDefinition Width="1.35*"/><ColumnDefinition Width="1*"/></Grid.ColumnDefinitions>
+<Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0"><StackPanel>
+<TextBlock Text="HAKEDİŞ RAPOR ÖNİZLEMESİ" Style="{StaticResource CardTitle}"/>
+<TextBlock Text="Kayıtlı hesaplamaların raporlanabilir özeti" Style="{StaticResource CardSubtitle}" Margin="0,0,0,12"/>
+<Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="120"/><ColumnDefinition Width="135"/></Grid.ColumnDefinitions>
+<TextBlock Text="HAKEDİŞ / DÖNEM" Foreground="{StaticResource Text600Brush}" FontWeight="Bold"/>
+<TextBlock Grid.Column="1" Text="BRÜT" Foreground="{StaticResource Text600Brush}" FontWeight="Bold" HorizontalAlignment="Right"/>
+<TextBlock Grid.Column="2" Text="NET" Foreground="{StaticResource Text600Brush}" FontWeight="Bold" HorizontalAlignment="Right"/>
+</Grid>
+<ItemsControl x:Name="ReportItemsControl" Margin="0,6,0,0"><ItemsControl.ItemTemplate><DataTemplate>
+<Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="7" Padding="11,8" Margin="0,2">
+<Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="120"/><ColumnDefinition Width="135"/></Grid.ColumnDefinitions>
+<StackPanel><TextBlock Text="{Binding Title}" Foreground="{StaticResource Text900Brush}" FontSize="14" FontWeight="SemiBold"/><TextBlock Text="{Binding PeriodText}" Foreground="{StaticResource Text600Brush}" FontSize="12.5" Margin="0,2,0,0"/></StackPanel>
+<TextBlock Grid.Column="1" Text="{Binding GrossText}" Foreground="{StaticResource Text900Brush}" FontSize="14" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+<TextBlock Grid.Column="2" Text="{Binding NetText}" Foreground="{StaticResource Blue700Brush}" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+</Grid></Border></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+<Border x:Name="ReportEmptyStateBorder" Style="{StaticResource InfoNote}" Margin="0,8,0,0" Padding="14,12"><TextBlock Text="Rapor oluşturmak için önce Hakediş ekranından en az bir hesaplama kaydedin." Foreground="{StaticResource Text900Brush}" FontSize="14.5" FontWeight="SemiBold" TextWrapping="Wrap"/></Border>
+</StackPanel></Border>
+<Border Grid.Column="1" Style="{StaticResource Card}" Margin="10,0,0,0"><StackPanel>
+<TextBlock Text="RAPOR ÇIKTILARI" Style="{StaticResource CardTitle}"/>
+<TextBlock Text="Şimdilik veri önizlemesi hazır. PDF / yazdırma bir sonraki çıktı adımıdır." Style="{StaticResource CardSubtitle}" TextWrapping="Wrap" Margin="0,0,0,14"/>
+<Button Content="HAKEDİŞ RAPORU" Style="{StaticResource ModernButton}" Height="42" Click="ReportActionButton_Click" Tag="Progress"/>
+<Button Content="İCMAL RAPORU" Style="{StaticResource SecondaryButton}" Height="42" Margin="0,8,0,0" Click="ReportActionButton_Click" Tag="Summary"/>
+<Button Content="SÖZLEŞME RAPORU" Style="{StaticResource SecondaryButton}" Height="42" Margin="0,8,0,0" Click="ReportActionButton_Click" Tag="Contract"/>
+<Border Style="{StaticResource StatusBanner}" Margin="0,14,0,0" Padding="12,10"><TextBlock Text="Bu ekran mevcut veriyi kullanır; henüz PDF dosyası üretmez." Foreground="{StaticResource Text900Brush}" FontSize="13.5" FontWeight="SemiBold" TextWrapping="Wrap"/></Border>
+</StackPanel></Border>
+</Grid></StackPanel></Grid>
 
 <Grid x:Name="SettingsPanel" Visibility="Collapsed"><StackPanel>
 <TextBlock Text="AYARLAR" Style="{StaticResource PageTitle}"/><TextBlock Text="OEHS uygulamasının temel çalışma tercihlerini yönetin." Style="{StaticResource PageSubtitle}"/>
