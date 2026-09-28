@@ -319,6 +319,7 @@ public partial class MainWindow : Window
             !TryParseDecimal(PriceDifferenceTextBox.Text, out var priceDifference) ||
             !TryParseDecimal(ProgressContractAmountTextBox.Text, out var contractAmount) || contractAmount < 0)
         {
+            ProgressCalculationSummaryTextBlock.Text = "BEKLENİYOR";
             CalculationStatusTextBlock.Text = "Tutar alanlarını geçerli sayılarla doldurun.";
             return;
         }
@@ -344,10 +345,19 @@ public partial class MainWindow : Window
             DeductionsResultTextBlock.Text = FormatMoney(result.TotalDeductions);
             GrossResultTextBlock.Text = FormatMoney(result.GrossAmount);
             NetResultTextBlock.Text = FormatMoney(result.NetPayable);
+            NetControlResultTextBlock.Text = FormatMoney(result.NetPayable);
+            WithholdingResultTextBlock.Text = FormatMoney(result.Withholding);
+            StampTaxResultTextBlock.Text = FormatMoney(result.StampTax);
+            InspectionPenaltyResultTextBlock.Text = FormatMoney(result.Deductions.InspectionPenalty);
+            AdditionalGuaranteeResultTextBlock.Text = FormatMoney(result.AdditionalGuarantee);
+            ProgressWorkDaysSummaryTextBlock.Text = workDays.ToString(CultureInfo.CurrentCulture);
+            ProgressNetSummaryTextBlock.Text = FormatMoney(result.NetPayable);
+            ProgressCalculationSummaryTextBlock.Text = "TAMAM";
             CalculationStatusTextBlock.Text = "Hesaplama başarıyla tamamlandı.";
         }
         catch (ArgumentOutOfRangeException ex)
         {
+            ProgressCalculationSummaryTextBlock.Text = "KONTROL";
             CalculationStatusTextBlock.Text = ex.Message;
         }
     }
