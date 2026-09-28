@@ -2,16 +2,31 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Özel Eğitim Hakediş Sistemi (OEHS)"
-        Width="1920"
-        Height="1080"
-        MinWidth="1280"
-        MinHeight="720"
-        WindowStartupLocation="CenterScreen"
-        Background="{StaticResource SurfaceBrush}"
+        Width="1280"
+        Height="834"
+        MinWidth="760"
+        MinHeight="520"
+        SizeToContent="Manual"
+        ResizeMode="CanResizeWithGrip"
+        WindowStartupLocation="Manual"
+        WindowStyle="None"
+        ShowInTaskbar="True"
+        Background="White"
         UseLayoutRounding="True"
-        SnapsToDevicePixels="True">
-    <Grid Margin="8">
-        <Border CornerRadius="15" BorderBrush="#35546F" BorderThickness="1" Background="{StaticResource Navy900Brush}">
+        SnapsToDevicePixels="True"
+        StateChanged="Window_StateChanged">
+    <Viewbox x:Name="AppScaleViewbox"
+             Stretch="Uniform"
+             StretchDirection="DownOnly"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch">
+        <Border Width="1450"
+                Height="945"
+                CornerRadius="15"
+                BorderBrush="#35546F"
+                BorderThickness="1"
+                Background="{StaticResource Navy900Brush}"
+                Margin="8">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="82"/>
@@ -23,21 +38,45 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- ÜST BAR -->
-                <Grid Grid.Row="0" Grid.ColumnSpan="2" Background="{StaticResource Navy900Brush}">
+                <Grid Grid.Row="0" Grid.ColumnSpan="2"
+                      Background="{StaticResource Navy900Brush}"
+                      MouseLeftButtonDown="Header_MouseLeftButtonDown">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="255"/>
+                        <ColumnDefinition Width="220"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="25,0,0,0">
                         <TextBlock Text="OEHS" Foreground="White" FontSize="29" FontWeight="Bold"/>
                         <TextBlock Text="ÖZEL EĞİTİM HAKEDİŞ" Foreground="#B9CBDA" FontSize="10.5" FontWeight="SemiBold" Margin="1,1,0,0"/>
                     </StackPanel>
-                    <Grid Grid.Column="1" VerticalAlignment="Center" Margin="8,0,18,0">
+                    <Border Grid.Column="1"
+                            Width="188"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Background="#092746"
+                            CornerRadius="9"
+                            BorderBrush="#24496B"
+                            BorderThickness="1"
+                            Padding="13,8"
+                            Margin="18,0,0,0">
+                        <StackPanel>
+                            <TextBlock Text="KAYIT DURUMU" Foreground="#8FA8C0" FontSize="10" FontWeight="SemiBold"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+                                <Ellipse Width="9" Height="9" Fill="#43C77A" VerticalAlignment="Center" Margin="0,0,7,0"/>
+                                <TextBlock Text="Hazır" Foreground="#DDF6E7" FontSize="13" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                    <Grid Grid.Column="2" VerticalAlignment="Center" Margin="8,0,14,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="170"/>
+                            <ColumnDefinition Width="140"/>
                             <ColumnDefinition Width="10"/>
-                            <ColumnDefinition Width="108"/>
+                            <ColumnDefinition Width="104"/>
+                            <ColumnDefinition Width="44"/>
+                            <ColumnDefinition Width="44"/>
+                            <ColumnDefinition Width="44"/>
                         </Grid.ColumnDefinitions>
                         <Border Grid.Column="0" Background="#082744" BorderBrush="#24496B" BorderThickness="1" CornerRadius="9" Padding="12,7">
                             <StackPanel>
@@ -45,16 +84,51 @@
                                 <TextBlock x:Name="HeaderModuleText" Text="Ana Ekran" Foreground="White" FontSize="13" FontWeight="SemiBold" Margin="0,2,0,0"/>
                             </StackPanel>
                         </Border>
-                        <Border Grid.Column="1" Background="#092746" BorderBrush="#24496B" BorderThickness="1" CornerRadius="9" Padding="12,7">
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <StackPanel VerticalAlignment="Center" Margin="0,0,7,0">
+                                <TextBlock Text="HAZIRLIK" Foreground="#8FA8C0" FontSize="9.5" FontWeight="SemiBold" HorizontalAlignment="Right"/>
+                                <TextBlock Text="DURUMU" Foreground="#C3CFDC" FontSize="10.5" HorizontalAlignment="Right"/>
+                            </StackPanel>
+                            <Grid Width="48" Height="48">
+                                <Ellipse Stroke="#29445F" StrokeThickness="5"/>
+                                <Path x:Name="HeaderReadinessArc"
+                                      Stroke="#FFB41F"
+                                      StrokeThickness="5"
+                                      StrokeStartLineCap="Round"
+                                      StrokeEndLineCap="Round"
+                                      Data="M24,4 A20,20 0 1 1 4,24"/>
+                                <TextBlock x:Name="HeaderReadinessText"
+                                           Text="%0"
+                                           Foreground="White"
+                                           FontSize="11.5"
+                                           FontWeight="Bold"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </Grid>
+                        </StackPanel>
+                        <Border Grid.Column="3"
+                                Background="#082744"
+                                BorderBrush="#24496B"
+                                BorderThickness="1"
+                                CornerRadius="9"
+                                Padding="12,7">
                             <StackPanel>
                                 <TextBlock Text="KAYIT DURUMU" Foreground="#8FA8C0" FontSize="10" FontWeight="SemiBold"/>
-                                <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
-                                    <Ellipse Width="9" Height="9" Fill="#43C77A" VerticalAlignment="Center" Margin="0,0,7,0"/>
-                                    <TextBlock Text="Hazır" Foreground="#DDF6E7" FontSize="13" FontWeight="SemiBold"/>
-                                </StackPanel>
+                                <TextBlock Text="Hazır" Foreground="#DDF6E7" FontSize="13" FontWeight="SemiBold" Margin="0,2,0,0"/>
                             </StackPanel>
                         </Border>
-                        <Button Grid.Column="3" Content="KAYDET" Style="{StaticResource ModernButton}" Width="108" Height="40"/>
+                        <Button Grid.Column="4" Content="—" ToolTip="Küçült" FontSize="21" FontWeight="SemiBold"
+                                Foreground="White" Background="Transparent" BorderThickness="0" Width="44" Height="48"
+                                Cursor="Hand" Click="Minimize_Click"/>
+                        <Button x:Name="MaximizeRestoreButton" Grid.Column="5" ToolTip="Tam ekran"
+                                Foreground="White" Background="Transparent" BorderThickness="0" Width="44" Height="48"
+                                Cursor="Hand" Click="MaximizeRestore_Click">
+                            <TextBlock x:Name="MaximizeRestoreIcon" FontFamily="Segoe MDL2 Assets"
+                                       Text="&#xE922;" FontSize="15" FontWeight="SemiBold"/>
+                        </Button>
+                        <Button Grid.Column="6" Content="×" ToolTip="Kapat" FontSize="25" Foreground="White"
+                                Background="Transparent" BorderThickness="0" Width="44" Height="48"
+                                Cursor="Hand" Click="Close_Click"/>
                     </Grid>
                 </Grid>
 
@@ -388,4 +462,5 @@
             </Grid>
         </Border>
     </Grid>
+    </Viewbox>
 </Window>
