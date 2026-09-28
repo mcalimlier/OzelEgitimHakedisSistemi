@@ -330,6 +330,7 @@
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="0"/>
             <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden"/>
         </Style>
 
         <Style x:Key="ModernListBox" TargetType="ListBox" BasedOn="{StaticResource {x:Type ListBox}}">
