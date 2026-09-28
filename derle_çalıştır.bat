@@ -1,11 +1,10 @@
 @echo off
-setlocal
+setlocal EnableExtensions
 cd /d "%~dp0"
 
 set "PROJECT=.\src\OzelEgitimHakedis.Wpf\OzelEgitimHakedis.Wpf.csproj"
-set "BUILD_LOG=%~dp0OEHS_DERLEME_LOG.txt"
-set "RUN_LOG=%~dp0OEHS_CALISMA_LOG.txt"
-set "BIN_LOG=%~dp0OEHS_DERLEME_LOG.binlog"
+set "APP=.\src\OzelEgitimHakedis.Wpf\bin\Debug\net8.0-windows\OEHS.exe"
+set "LOG=%~dp0OEHS_CALISMA_LOG.txt"
 
 echo.
 echo ==========================================
@@ -13,36 +12,47 @@ echo   OEHS - DERLE VE CALISTIR
 echo ==========================================
 echo.
 
-echo [%date% %time%] Derleme basliyor... > "%BUILD_LOG%"
-dotnet build "%PROJECT%" --configuration Debug --no-restore -v:diagnostic -bl:"%BIN_LOG%" >> "%BUILD_LOG%" 2>&1
+echo [%date% %time%] OEHS baslatma kaydi > "%LOG%"
 
+echo [1/2] Paketler kontrol ediliyor...
+dotnet restore "%PROJECT%"
 if errorlevel 1 (
     echo.
-    echo [HATA] Derleme basarisiz.
-    echo [INFO] Ayrinti: OEHS_DERLEME_LOG.txt
-    echo.
+    echo [HATA] Restore basarisiz.
+    echo Ayrinti: OEHS_CALISMA_LOG.txt
+    echo [%date% %time%] RESTORE BASARISIZ >> "%LOG%"
     pause
     exit /b 1
 )
 
-echo [%date% %time%] Program baslatiliyor... > "%RUN_LOG%"
+echo.
+echo [2/2] Program derleniyor...
+dotnet build "%PROJECT%" --configuration Debug --no-restore
+if errorlevel 1 (
+    echo.
+    echo [HATA] Derleme basarisiz.
+    echo Ayrinti: OEHS_CALISMA_LOG.txt
+    echo [%date% %time%] BUILD BASARISIZ >> "%LOG%"
+    pause
+    exit /b 1
+)
+
 echo.
 echo [OK] Derleme tamamlandi.
 echo [OK] OEHS baslatiliyor...
-echo.
+echo [%date% %time%] BUILD BASARILI >> "%LOG%"
+echo [%date% %time%] PROGRAM BASLATILIYOR >> "%LOG%"
 
-dotnet run --project "%PROJECT%" --configuration Debug --no-build >> "%RUN_LOG%" 2>&1
-set "EXIT_CODE=%errorlevel%"
+if not exist "%APP%" (
+    echo [HATA] OEHS.exe bulunamadi: %APP%
+    echo [%date% %time%] EXE BULUNAMADI >> "%LOG%"
+    pause
+    exit /b 1
+)
 
-echo. >> "%RUN_LOG%"
-echo [%date% %time%] Program cikis kodu: %EXIT_CODE% >> "%RUN_LOG%"
+start "" "%APP%"
 
 echo.
-echo ==========================================
-echo   OEHS SONLANDI - CIKIS KODU: %EXIT_CODE%
-echo ==========================================
+echo [OK] OEHS baslatildi.
 echo.
-echo [INFO] Calisma logu: OEHS_CALISMA_LOG.txt
-echo.
-pause
-exit /b %EXIT_CODE%
+exit /b 0
