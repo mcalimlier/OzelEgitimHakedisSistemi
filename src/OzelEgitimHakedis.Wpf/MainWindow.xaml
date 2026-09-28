@@ -189,6 +189,7 @@
                                 <TextBlock Text="RAPORLAR" FontSize="16.5" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
+                        <Button Content="Kabul Tutanağı" Tag="Acceptance" Style="{StaticResource NavButton}" Click="NavigationButton_Click"/>
                         <Button x:Name="NavSettings" Style="{StaticResource NavButton}" Tag="Settings" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE713;" FontSize="23" Width="42"/>
@@ -199,9 +200,9 @@
                     <Border Grid.Row="1" Margin="18,7,18,10" Padding="14,9" CornerRadius="9" Background="#082845" BorderBrush="#73581E" BorderThickness="1">
                         <StackPanel>
                             <TextBlock Text="Created by" Foreground="#A8BCD0" FontSize="11" FontWeight="SemiBold"/>
-                            <StackPanel VerticalAlignment="Center" Margin="22,0,0,0">
-                            <TextBlock Text="OEHS" Foreground="White" FontSize="25" FontWeight="Bold"/>
-                            <TextBlock Text="Created by Aşkın KESKİNBALTA" Foreground="{StaticResource Gold500Brush}" FontSize="13.5" FontWeight="Bold" Margin="0,3,0,0"/>
+                            <StackPanel VerticalAlignment="Center" Margin="18,0,0,0">
+                            <TextBlock Text="Created by" Foreground="#AFC3D4" FontSize="12" FontWeight="SemiBold"/>
+                            <TextBlock Text="Aşkın KESKİNBALTA" Foreground="{StaticResource Gold500Brush}" FontSize="16" FontWeight="Bold" Margin="0,2,0,0"/>
                         </StackPanel>
                             <Border Height="2" Width="74" Background="{StaticResource Gold500Brush}" HorizontalAlignment="Left" Margin="0,6,0,0" CornerRadius="1"/>
                         </StackPanel>
@@ -775,6 +776,25 @@
 <Border Background="#0A2A49" CornerRadius="8" Padding="12"><Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="Diğer Kesintiler" Foreground="White"/><TextBlock x:Name="SummaryOtherDeductionsTextBlock" Grid.Column="1" Text="0,00 ₺" Foreground="White"/></Grid></Border>
 </StackPanel></Border>
 </Grid></StackPanel></Grid>
+
+<Grid x:Name="AcceptancePanel" Visibility="Collapsed"><StackPanel>
+<TextBlock Text="KABUL TUTANAĞI" Style="{StaticResource PageTitle}"/>
+<TextBlock Text="Mevcut sözleşme ve son hakediş verilerinden tutanak önizleme alanı." Style="{StaticResource PageSubtitle}"/>
+<Grid Margin="0,0,0,14"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+<Border Grid.Column="0" Style="{StaticResource CardCompact}" Margin="0,0,8,0"><StackPanel><TextBlock Text="SÖZLEŞME" Style="{StaticResource CardTitle}"/><TextBlock x:Name="AcceptanceContractTextBlock" Text="Kayıt yok" Foreground="White" FontSize="17" FontWeight="Bold" Margin="0,7,0,0"/></StackPanel></Border>
+<Border Grid.Column="1" Style="{StaticResource CardCompact}" Margin="4,0"><StackPanel><TextBlock Text="SON HAKEDİŞ" Style="{StaticResource CardTitle}"/><TextBlock x:Name="AcceptanceProgressTextBlock" Text="Kayıt yok" Foreground="White" FontSize="17" FontWeight="Bold" Margin="0,7,0,0"/></StackPanel></Border>
+<Border Grid.Column="2" Style="{StaticResource CardCompact}" Margin="8,0,0,0"><StackPanel><TextBlock Text="NET ÖDEME" Style="{StaticResource CardTitle}"/><TextBlock x:Name="AcceptanceNetTextBlock" Text="0,00 ₺" Foreground="{StaticResource Gold500Brush}" FontSize="21" FontWeight="Bold" Margin="0,7,0,0"/></StackPanel></Border>
+</Grid>
+<Border Style="{StaticResource Card}"><StackPanel>
+<TextBlock Text="TUTANAK ÖNİZLEMESİ" Style="{StaticResource CardTitle}"/>
+<TextBlock Text="Resmî metin ve imza alanları henüz tanımlanmadı; bu ekran yalnızca mevcut veriyi gösterir." Style="{StaticResource CardSubtitle}" TextWrapping="Wrap" Margin="0,0,0,14"/>
+<Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="8" Padding="14">
+<StackPanel>
+<TextBlock x:Name="AcceptanceDetailTextBlock" Text="Sözleşme ve hakediş kaydı oluşturulduğunda bilgiler burada görünür." Foreground="{StaticResource Text900Brush}" FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap"/>
+<Button Content="HAKEDİŞ RAPORUNA GİT" Style="{StaticResource ModernButton}" Height="42" Margin="0,14,0,0" Click="ReportActionButton_Click" Tag="Reports"/>
+</StackPanel></Border>
+</StackPanel></Border>
+</StackPanel></Grid>
 
 <Grid x:Name="ReportsPanel" Visibility="Collapsed"><StackPanel>
 <TextBlock Text="RAPORLAR" Style="{StaticResource PageTitle}"/>
