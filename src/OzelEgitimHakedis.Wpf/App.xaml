@@ -94,10 +94,10 @@
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Height" Value="58"/>
+            <Setter Property="Height" Value="62"/>
             <Setter Property="Padding" Value="18,0"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="14.5"/>
+            <Setter Property="FontSize" Value="16.5"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="ClickMode" Value="Release"/>
             <Setter Property="Template">
