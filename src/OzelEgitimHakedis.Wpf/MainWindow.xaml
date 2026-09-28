@@ -620,7 +620,7 @@
                                                 <TextBlock Text="TANIMLI YÜKLENİCİLER" Style="{StaticResource CardTitle}"/>
                                                 <TextBlock Text="Bu oturumda oluşturulan yüklenici taslakları" Style="{StaticResource CardSubtitle}" Margin="0,0,0,12"/>
                                                 <ItemsControl x:Name="ContractorsListBox">
-                                                    <ListBox.ItemTemplate>
+                                                    <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
                                                             <Grid Margin="4">
                                                                 <Grid.ColumnDefinitions>
