@@ -342,6 +342,23 @@
             <Setter Property="Margin" Value="4"/>
         </Style>
 
+        <Style x:Key="LightCheckBox" TargetType="CheckBox">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource Text900Brush}"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0"/>
+        </Style>
+
+        <Style x:Key="InfoNote" TargetType="Border">
+            <Setter Property="Background" Value="#F3F7FC"/>
+            <Setter Property="BorderBrush" Value="#C9D9EA"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="9"/>
+            <Setter Property="Padding" Value="12,10"/>
+        </Style>
+
         <Style TargetType="ListBox">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
