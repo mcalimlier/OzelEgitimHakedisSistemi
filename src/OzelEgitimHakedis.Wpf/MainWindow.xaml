@@ -806,6 +806,7 @@
 <TextBlock Text="RAPOR ÇIKTILARI" Style="{StaticResource CardTitle}"/>
 <TextBlock Text="Son kayıt üzerinden detaylı rapor önizlemesi" Style="{StaticResource CardSubtitle}" TextWrapping="Wrap" Margin="0,0,0,12"/>
 <Button Content="HAKEDİŞ RAPORU" Style="{StaticResource ModernButton}" Height="42" Click="ReportActionButton_Click" Tag="Progress"/>
+<Button Content="YAZDIR / PDF" Style="{StaticResource SecondaryButton}" Height="42" Margin="0,8,0,0" Click="PrintReportButton_Click"/>
 <Button Content="İCMAL RAPORU" Style="{StaticResource SecondaryButton}" Height="42" Margin="0,8,0,0" Click="ReportActionButton_Click" Tag="Summary"/>
 <Button Content="SÖZLEŞME RAPORU" Style="{StaticResource SecondaryButton}" Height="42" Margin="0,8,0,0" Click="ReportActionButton_Click" Tag="Contract"/>
 <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,14,0,0">
