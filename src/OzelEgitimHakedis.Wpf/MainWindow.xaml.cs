@@ -726,6 +726,14 @@ public partial class MainWindow : Window
         return true;
     }
 
+    private void ReportActionButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is System.Windows.Controls.Button button && button.Tag is string page)
+        {
+            NavigationButton_Click(button, e);
+        }
+    }
+
     private void PrintRoutePaymentReportButton_Click(object sender, RoutedEventArgs e)
     {
         if (!EnsureRouteForOutput()) return;
