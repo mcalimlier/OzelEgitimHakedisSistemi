@@ -18,7 +18,8 @@ public sealed class ProgressPaymentCalculatorTests
             IsVatExempt: false,
             TaxDebt: 0m,
             SocialSecurityDebt: 0m,
-            MinimumWageSupport: 0m);
+            MinimumWageSupport: 0m,
+            HasInspectionPenalty: true);
 
         var result = ProgressPaymentCalculator.Calculate(input);
 
@@ -54,7 +55,28 @@ public sealed class ProgressPaymentCalculatorTests
         Assert.Equal(10000m, result.TotalAmount);
         Assert.Equal(0m, result.Vat);
         Assert.Equal(0m, result.Withholding);
+        Assert.Equal(0m, result.Deductions.InspectionPenalty);
         Assert.Equal(9905.20m, result.NetPayable);
+    }
+
+    [Fact]
+    public void InspectionPenalty_WhenPresent_ShouldBeCalculated()
+    {
+        var input = new ProgressPaymentInput(
+            WorkDays: 10,
+            DailyPrice: 1000m,
+            DiscountAmount: 0m,
+            PriceDifference: 0m,
+            ContractAmount: 10000m,
+            IsVatExempt: false,
+            TaxDebt: 0m,
+            SocialSecurityDebt: 0m,
+            MinimumWageSupport: 0m,
+            HasInspectionPenalty: true);
+
+        var result = ProgressPaymentCalculator.Calculate(input);
+
+        Assert.Equal(20m, result.Deductions.InspectionPenalty);
     }
 
     [Fact]
