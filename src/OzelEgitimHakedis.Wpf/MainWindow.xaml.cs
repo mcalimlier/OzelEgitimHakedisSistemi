@@ -142,9 +142,9 @@ public partial class MainWindow : Window
             .ThenByDescending(x => x.CreatedAt)
             .First();
 
-        AcceptanceContractTextBlock.Text = string.IsNullOrWhiteSpace(ContractorNameTextBox.Text)
+        AcceptanceContractTextBlock.Text = string.IsNullOrWhiteSpace(ContractorTextBox.Text)
             ? "Sözleşme bilgisi"
-            : ContractorNameTextBox.Text.Trim();
+            : ContractorTextBox.Text.Trim();
 
         AcceptanceProgressTextBlock.Text = latest.ProgressPaymentNumber.HasValue
             ? $"Hakediş No {latest.ProgressPaymentNumber.Value}"
