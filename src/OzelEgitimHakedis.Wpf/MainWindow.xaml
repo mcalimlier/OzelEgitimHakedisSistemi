@@ -260,6 +260,13 @@
                                         </StackPanel>
                                     </Border>
                                 </Grid>
+                                <Grid Margin="0,14,0,0">
+                                    <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Style="{StaticResource CardCompact}" Margin="0,0,6,0"><StackPanel><TextBlock Text="SÖZLEŞME" Style="{StaticResource CardTitle}"/><TextBlock Text="Hazır" Foreground="{StaticResource Gold500Brush}" FontSize="18" FontWeight="Bold" Margin="0,4,0,0"/><TextBlock Text="Ana kayıt" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
+                                    <Border Grid.Column="1" Style="{StaticResource CardCompact}" Margin="2,0,4,0"><StackPanel><TextBlock Text="HAT" Style="{StaticResource CardTitle}"/><TextBlock Text="0" Foreground="White" FontSize="18" FontWeight="Bold" Margin="0,4,0,0"/><TextBlock Text="Tanımlı hat" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
+                                    <Border Grid.Column="2" Style="{StaticResource CardCompact}" Margin="4,0,2,0"><StackPanel><TextBlock Text="YÜKLENİCİ" Style="{StaticResource CardTitle}"/><TextBlock Text="0" Foreground="White" FontSize="18" FontWeight="Bold" Margin="0,4,0,0"/><TextBlock Text="Tanımlı kayıt" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
+                                    <Border Grid.Column="3" Style="{StaticResource CardCompact}" Margin="6,0,0,0"><StackPanel><TextBlock Text="HAKEDİŞ" Style="{StaticResource CardTitle}"/><TextBlock Text="0,00 ₺" Foreground="{StaticResource Blue600Brush}" FontSize="18" FontWeight="Bold" Margin="0,4,0,0"/><TextBlock Text="Net ödeme" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
+                                </Grid>
                             </StackPanel>
                         </Grid>
 
