@@ -5,7 +5,9 @@ on:
   push:
     branches:
       - main
-      - "feature/**"
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
@@ -19,6 +21,9 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore ".\\src\\OzelEgitimHakedis.Wpf\\OzelEgitimHakedis.Wpf.csproj"
 
       - name: Test Core
         run: dotnet test ".\tests\OzelEgitimHakedis.Tests\OzelEgitimHakedis.Tests.csproj" --configuration Release
