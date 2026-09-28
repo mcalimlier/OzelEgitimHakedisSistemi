@@ -64,6 +64,7 @@
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="ClickMode" Value="Release"/>
         </Style>
 
         <Style x:Key="ModernButton" TargetType="Button" BasedOn="{StaticResource StandardButtonBase}">
@@ -93,10 +94,10 @@
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Height" Value="56"/>
-            <Setter Property="Padding" Value="18,0"/>
+            <Setter Property="Height" Value="54"/>
+            <Setter Property="Padding" Value="14,0"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="14.5"/>
+            <Setter Property="FontSize" Value="14"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
