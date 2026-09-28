@@ -461,6 +461,5 @@
                 </Border>
             </Grid>
         </Border>
-    </Grid>
     </Viewbox>
 </Window>
