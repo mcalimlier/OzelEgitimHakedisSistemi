@@ -530,7 +530,7 @@
                                         <Border Grid.Column="1" Style="{StaticResource Card}" Margin="10,0,0,0">
                                             <StackPanel>
                                                 <TextBlock Text="TANIMLI HATLAR" Style="{StaticResource CardTitle}"/>
-                                                <TextBlock Text="Bu oturumda oluşturulan hat taslakları" Style="{StaticResource CardSubtitle}" Margin="0,0,0,12"/>
+                                                <TextBlock Text="Kaydedilmiş ve bu oturumda oluşturulan hizmet hatları" Style="{StaticResource CardSubtitle}" Margin="0,0,0,12"/>
                                                 <ItemsControl x:Name="RoutesListBox">
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
@@ -625,7 +625,7 @@
                                         <Border Grid.Column="1" Style="{StaticResource Card}" Margin="10,0,0,0">
                                             <StackPanel>
                                                 <TextBlock Text="TANIMLI YÜKLENİCİLER" Style="{StaticResource CardTitle}"/>
-                                                <TextBlock Text="Bu oturumda oluşturulan yüklenici taslakları" Style="{StaticResource CardSubtitle}" Margin="0,0,0,12"/>
+                                                <TextBlock Text="Kaydedilmiş ve bu oturumda oluşturulan yükleniciler" Style="{StaticResource CardSubtitle}" Margin="0,0,0,12"/>
                                                 <ItemsControl x:Name="ContractorsListBox">
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
@@ -662,7 +662,7 @@
 <Grid Margin="0,0,0,14"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
 <Border Grid.Column="0" Style="{StaticResource CardCompact}" Margin="0,0,8,0"><StackPanel><TextBlock Text="TOPLAM HAKEDİŞ" Style="{StaticResource CardTitle}"/><TextBlock Text="0" Foreground="White" FontSize="28" FontWeight="Bold" Margin="0,7,0,0"/><TextBlock Text="Kayıtlı dönem" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
 <Border Grid.Column="1" Style="{StaticResource CardCompact}" Margin="4,0"><StackPanel><TextBlock Text="TOPLAM NET" Style="{StaticResource CardTitle}"/><TextBlock Text="0,00 ₺" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,7,0,0"/><TextBlock Text="Ödenecek toplam" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
-<Border Grid.Column="2" Style="{StaticResource CardCompact}" Margin="8,0,0,0"><StackPanel><TextBlock Text="AKIŞ" Style="{StaticResource CardTitle}"/><TextBlock Text="HAZIR" Foreground="{StaticResource Gold500Brush}" FontSize="20" FontWeight="Bold" Margin="0,8,0,0"/><TextBlock Text="Hakediş kayıt katmanı bağlanacak." Style="{StaticResource CardSubtitle}" TextWrapping="Wrap"/></StackPanel></Border>
+<Border Grid.Column="2" Style="{StaticResource CardCompact}" Margin="8,0,0,0"><StackPanel><TextBlock Text="AKIŞ" Style="{StaticResource CardTitle}"/><TextBlock Text="HAZIR" Foreground="{StaticResource Gold500Brush}" FontSize="20" FontWeight="Bold" Margin="0,8,0,0"/><TextBlock Text="Hakediş kayıtları hesaplandıkça burada izlenecek." Style="{StaticResource CardSubtitle}" TextWrapping="Wrap"/></StackPanel></Border>
 </Grid>
 <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="HAKEDİŞ KAYITLARI" Style="{StaticResource CardTitle}"/><TextBlock Text="Dönemsel hakediş geçmişi burada listelenecek." Style="{StaticResource CardSubtitle}" Margin="0,0,0,14"/><Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="9" Padding="18"><Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="160"/><ColumnDefinition Width="160"/><ColumnDefinition Width="120"/></Grid.ColumnDefinitions><TextBlock Text="DÖNEM / HAKEDİŞ NO" Foreground="#C5D7E7" FontWeight="Bold"/><TextBlock Grid.Column="1" Text="TUTAR" Foreground="#C5D7E7" FontWeight="Bold"/><TextBlock Grid.Column="2" Text="NET ÖDEME" Foreground="#C5D7E7" FontWeight="Bold"/><TextBlock Grid.Column="3" Text="DURUM" Foreground="#C5D7E7" FontWeight="Bold"/></Grid></Border><Border Style="{StaticResource StatusBanner}" Margin="0,12,0,0" Padding="18,14"><StackPanel HorizontalAlignment="Center"><TextBlock Text="HENÜZ HAKEDİŞ KAYDI YOK" Foreground="{StaticResource Blue700Brush}" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center"/><TextBlock Text="İlk hakedişi oluşturduğunuzda dönem ve ödeme bilgileri burada listelenecek." Foreground="{StaticResource Text600Brush}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,5,0,0"/><Button Content="HAKEDİŞ OLUŞTUR" Tag="Progress" Click="NavigationButton_Click" Style="{StaticResource ModernButton}" Width="170" Height="38" Margin="0,10,0,0"/></StackPanel></Border></StackPanel></Border>
 </StackPanel></Grid>
@@ -701,7 +701,7 @@
                                 <TextBlock x:Name="PlaceholderTitleTextBlock" Text="Modül" Style="{StaticResource PageTitle}"/>
                                 <TextBlock Text="Bu bölüm sonraki geliştirme adımında aktif hale getirilecek." Style="{StaticResource PageSubtitle}"/>
                                 <Border Background="#F7F9FC" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="12" Padding="24">
-                                    <TextBlock Text="Bu modül mevcut mimariye bağlanacak. Önce sözleşme → hatlar → hakediş akışının veri katmanı tamamlanıyor."
+                                    <TextBlock Text="Bu modül sözleşme → hatlar → hakediş akışındaki kalıcı veri katmanını kullanır."
                                                TextWrapping="Wrap" FontSize="16" Foreground="{StaticResource Text600Brush}"/>
                                 </Border>
                             </StackPanel>
