@@ -1204,8 +1204,8 @@ public partial class MainWindow : Window
 
         var mainRows = new List<(string, string, string)>
         {
-            ("A", "Sözleşme Fiyatları İle Yapılan İş", FormatMoney(latest.Calculation.ServiceAmount)),
-            ("B", "Fiyat Farkı Tutarı", FormatMoney(latest.Calculation.PriceDifferenceExcludingVat)),
+            ("A", "Sözleşme Fiyatları İle Yapılan İş", FormatMoney(latest.Calculation.CombinedServiceAmount)),
+            ("B", "Fiyat Farkı Tutarı", FormatMoney(latest.Calculation.CombinedPriceDifferenceExcludingVat)),
             ("C", "Toplam Tutar  ( A + B )", FormatMoney(latest.Calculation.TotalAmount)),
             ("D", "Bir Önceki Hakedişlerin Toplam Tutarı", FormatMoney(previousTotal)),
             ("E", "Bu Hakedişin Tutarı  ( C - D )", FormatMoney(currentDifference)),
@@ -1413,8 +1413,8 @@ public partial class MainWindow : Window
                 x.PeriodDate.Value.Year == month.Year &&
                 x.PeriodDate.Value.Month == month.Month);
 
-            var a = monthPayment?.Calculation.ServiceAmount ?? 0m;
-            var b = monthPayment?.Calculation.PriceDifferenceExcludingVat ?? 0m;
+            var a = monthPayment?.Calculation.TotalAmount ?? 0m;
+            var b = monthPayment?.Calculation.CombinedPriceDifferenceExcludingVat ?? 0m;
             var monthlyTotal = a + b;
             totalA += a;
             totalB += b;
