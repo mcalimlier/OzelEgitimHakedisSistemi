@@ -962,22 +962,14 @@ public partial class MainWindow : Window
             var item = rows[i];
             var row = new TableRow();
 
-            if (i < deductionItemCount)
-                row.Cells.Add(i == 0 ? verticalCell : new TableCell
-                {
-                    Padding = new Thickness(0),
-                    BorderBrush = System.Windows.Media.Brushes.Black,
-                    BorderThickness = new Thickness(0.5)
-                });
+            if (i == 0)
+                row.Cells.Add(verticalCell);
 
             var shaded = item.A is "H" or "I";
 
-            if (i < deductionItemCount)
-            {
-                row.Cells.Add(CreateCell(item.A, false, false, true, false));
-                row.Cells.Add(CreateCell(item.B));
-                row.Cells.Add(CreateCell(item.C, false, true));
-            }
+            row.Cells.Add(CreateCell(item.A, item.A is "H" or "I", false, true, shaded));
+            row.Cells.Add(CreateCell(item.B, item.A is "H" or "I", false, false, shaded));
+            row.Cells.Add(CreateCell(item.C, item.A is "H" or "I", true, false, shaded));
             else
             {
                 row.Cells.Add(CreateCell(item.A, true, false, true, true));
