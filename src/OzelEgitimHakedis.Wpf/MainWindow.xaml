@@ -366,11 +366,11 @@
                                                     <Grid>
                                                         <Grid.RowDefinitions><RowDefinition/><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
                                                         <TextBlock Grid.Row="0" Text="İhale bilgisi" Foreground="#91ABC0"/>
-                                                        <TextBlock Grid.Row="0" Text="Bekleniyor" Foreground="White" HorizontalAlignment="Right"/>
+                                                        <TextBlock x:Name="ContractSummaryTenderTextBlock" Grid.Row="0" Text="Bekleniyor" Foreground="White" HorizontalAlignment="Right"/>
                                                         <TextBlock Grid.Row="1" Text="Yüklenici" Foreground="#91ABC0" Margin="0,12,0,0"/>
-                                                        <TextBlock Grid.Row="1" Text="Bekleniyor" Foreground="White" HorizontalAlignment="Right" Margin="0,12,0,0"/>
+                                                        <TextBlock x:Name="ContractSummaryContractorTextBlock" Grid.Row="1" Text="Bekleniyor" Foreground="White" HorizontalAlignment="Right" Margin="0,12,0,0"/>
                                                         <TextBlock Grid.Row="2" Text="KDV durumu" Foreground="#91ABC0" Margin="0,12,0,0"/>
-                                                        <TextBlock Grid.Row="2" Text="Standart" Foreground="{StaticResource Gold500Brush}" HorizontalAlignment="Right" Margin="0,12,0,0"/>
+                                                        <TextBlock x:Name="ContractSummaryVatTextBlock" Grid.Row="2" Text="Standart" Foreground="{StaticResource Gold500Brush}" HorizontalAlignment="Right" Margin="0,12,0,0"/>
                                                     </Grid>
                                                 </StackPanel>
                                             </Border>
