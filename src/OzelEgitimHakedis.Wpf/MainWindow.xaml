@@ -600,7 +600,7 @@
                                                 <TextBox x:Name="RouteTransportWorkDaysTextBox"
                                                          Style="{StaticResource FieldTextBox}"
                                                          Margin="0,7,0,14"
-                                                         TextChanged="RouteTransportCalculation_TextChanged"/>
+                                                         />
 
 
 
