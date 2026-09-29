@@ -30,8 +30,11 @@ public sealed class ProgressPaymentCalculatorTests
         Assert.Equal(182892.94m, result.TotalAmount);
         Assert.Equal(18289.29m, result.Vat);
         Assert.Equal(9144.65m, result.Withholding);
+        Assert.Equal(192037.58m, result.InvoiceAmountAfterWithholding);
         Assert.Equal(201182.23m, result.GrossAmount);
         Assert.Equal(1733.83m, result.StampTax);
+        Assert.Equal(9144.65m, result.Deductions.Withholding);
+        Assert.Equal(1733.83m, result.Deductions.StampTax);
         Assert.Equal(2277.80m, result.Deductions.InspectionPenalty);
         Assert.Equal(1699.68m, result.AdditionalGuarantee);
         Assert.Equal(14855.96m, result.TotalDeductions);
