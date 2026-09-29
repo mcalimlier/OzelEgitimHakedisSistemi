@@ -49,6 +49,10 @@ public partial class MainWindow : Window
         SocialSecurityDebtTextBox.Text = "0";
         MinimumWageSupportTextBox.Text = "0";
         InspectionPenaltyTextBox.Text = "0";
+        GuideWorkDaysTextBox.Text = "0";
+        GuideDailyPriceTextBox.Text = "0";
+        GuideDiscountTextBox.Text = "0";
+        GuidePriceDifferenceTextBox.Text = "0";
         UpdateShellText("Ana Ekran");
         RoutesListBox.ItemsSource = _routes;
         ContractorsListBox.ItemsSource = _contractors;
@@ -447,6 +451,10 @@ public partial class MainWindow : Window
             VatExemptCheckBox.IsChecked = data.Contract.VatExempt;
             ContractStatusTextBlock.Text = "Kaydedilmiş sözleşme taslağı yüklendi.";
         }
+
+        UpdateContractSummaryView();
+        UpdateHomeSummaryView();
+        }
     }
 
     private void SavePersistedData()
@@ -749,6 +757,29 @@ public partial class MainWindow : Window
         }
 
         ReportEmptyStateBorder.Visibility = _reportRows.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void ProgressRouteComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!IsInitialized)
+            return;
+
+        UpdateProgressRouteDefaults();
+    }
+
+    private void UpdateProgressRouteDefaults()
+    {
+        if (ProgressRouteComboBox.SelectedItem is not RouteDraft route)
+            return;
+
+        DailyPriceTextBox.Text = route.DailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+        GuideDailyPriceTextBox.Text = route.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+
+        if (string.IsNullOrWhiteSpace(WorkDaysTextBox.Text))
+            WorkDaysTextBox.Text = "0";
+
+        if (string.IsNullOrWhiteSpace(GuideWorkDaysTextBox.Text))
+            GuideWorkDaysTextBox.Text = "0";
     }
 
     private void ReportRouteComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -1513,9 +1544,17 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
 
     private static string FormatMoney(decimal value) => $"{value:N2} ₺";
 
-    private sealed record RouteDraft(string RouteNumber, string Name, decimal DailyPrice)
+    private sealed record RouteDraft(
+        string RouteNumber,
+        string Name,
+        decimal DailyPrice,
+        int GuideWorkDays = 0,
+        decimal GuideDailyPrice = 0m)
     {
-        public string DailyPriceText => $"{DailyPrice:N2} ₺";
+        public string DailyPriceText => $"Taşıma: {DailyPrice:N2} ₺";
+        public string GuideDailyPriceText => $"Rehber: {GuideDailyPrice:N2} ₺";
+        public string ServiceSummaryText =>
+            $"Hizmet hattı • Rehber {GuideWorkDays} yıllık gün";
         public string DisplayText => $"Hat {RouteNumber} — {Name}";
     }
 
