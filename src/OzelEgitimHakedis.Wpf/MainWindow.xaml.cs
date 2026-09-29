@@ -1330,8 +1330,8 @@ public partial class MainWindow : Window
             BorderThickness = new Thickness(1),
             Margin = new Thickness(0, 0, 0, 8)
         };
-        table.Columns.Add(new TableColumn { Width = new GridLength(410) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(130) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(500) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(218.11) });
 
         var group = new TableRowGroup();
         var left = CreateCell(route.Name, true);
@@ -1359,8 +1359,8 @@ public partial class MainWindow : Window
             BorderThickness = new Thickness(1),
             Margin = new Thickness(0, 0, 0, 8)
         };
-        table.Columns.Add(new TableColumn { Width = new GridLength(410) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(130) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(500) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(218.11) });
 
         var group = new TableRowGroup();
         var left = CreateCell(route.Name, true);
