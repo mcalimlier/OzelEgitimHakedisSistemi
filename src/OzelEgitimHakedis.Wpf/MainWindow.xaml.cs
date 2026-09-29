@@ -984,8 +984,7 @@ public partial class MainWindow : Window
         UpdateRouteTransportAnnualAmount();
         GuideDailyPriceTextBox.Text = route.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
 
-        if (string.IsNullOrWhiteSpace(WorkDaysTextBox.Text))
-            WorkDaysTextBox.Text = "0";
+        WorkDaysTextBox.Text = route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
 
         if (string.IsNullOrWhiteSpace(GuideWorkDaysTextBox.Text) || GuideWorkDaysTextBox.Text == "0")
             GuideWorkDaysTextBox.Text = route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
