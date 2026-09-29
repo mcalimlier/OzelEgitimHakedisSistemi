@@ -783,7 +783,7 @@
 
 <Grid x:Name="AcceptancePanel" Visibility="Collapsed"><StackPanel>
 <TextBlock Text="KABUL TUTANAĞI" Style="{StaticResource PageTitle}"/>
-<TextBlock Text="Mevcut sözleşme ve son hakediş verilerinden tutanak önizleme alanı." Style="{StaticResource PageSubtitle}"/>
+<TextBlock Text="Seçilen son hakediş verilerinden kurum formatına uygun kabul tutanağı hazırlayın." Style="{StaticResource PageSubtitle}"/>
 <Grid Margin="0,0,0,14"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
 <Border Grid.Column="0" Style="{StaticResource CardCompact}" Margin="0,0,8,0"><StackPanel><TextBlock Text="SÖZLEŞME" Style="{StaticResource CardTitle}"/><TextBlock x:Name="AcceptanceContractTextBlock" Text="Kayıt yok" Foreground="White" FontSize="17" FontWeight="Bold" Margin="0,7,0,0"/></StackPanel></Border>
 <Border Grid.Column="1" Style="{StaticResource CardCompact}" Margin="4,0"><StackPanel><TextBlock Text="SON HAKEDİŞ" Style="{StaticResource CardTitle}"/><TextBlock x:Name="AcceptanceProgressTextBlock" Text="Kayıt yok" Foreground="White" FontSize="17" FontWeight="Bold" Margin="0,7,0,0"/></StackPanel></Border>
@@ -791,11 +791,11 @@
 </Grid>
 <Border Style="{StaticResource Card}"><StackPanel>
 <TextBlock Text="TUTANAK ÖNİZLEMESİ" Style="{StaticResource CardTitle}"/>
-<TextBlock Text="Resmî metin ve imza alanları henüz tanımlanmadı; bu ekran yalnızca mevcut veriyi gösterir." Style="{StaticResource CardSubtitle}" TextWrapping="Wrap" Margin="0,0,0,14"/>
+<TextBlock Text="Kurum formatındaki metin, dönem bilgileri ve imza alanları çıktı sırasında otomatik doldurulur." Style="{StaticResource CardSubtitle}" TextWrapping="Wrap" Margin="0,0,0,14"/>
 <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="8" Padding="14">
 <StackPanel>
 <TextBlock x:Name="AcceptanceDetailTextBlock" Text="Sözleşme ve hakediş kaydı oluşturulduğunda bilgiler burada görünür." Foreground="{StaticResource Text900Brush}" FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap"/>
-<Button Content="HAKEDİŞ RAPORUNA GİT" Style="{StaticResource ModernButton}" Height="42" Margin="0,14,0,0" Click="ReportActionButton_Click" Tag="Reports"/>
+<Button Content="RAPORLARA GİT" Style="{StaticResource ModernButton}" Height="42" Margin="0,14,0,0" Click="ReportActionButton_Click" Tag="Reports"/>
 </StackPanel></Border>
 </StackPanel></Border>
 </StackPanel></Grid>
