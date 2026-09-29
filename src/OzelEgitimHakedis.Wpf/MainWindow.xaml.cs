@@ -915,12 +915,15 @@ public partial class MainWindow : Window
         var tabs = new System.Windows.Controls.TabControl();
         foreach (var item in documents)
         {
-            var viewer = new System.Windows.Controls.DocumentViewer
+            var viewer = new System.Windows.Controls.FlowDocumentScrollViewer
             {
                 Document = item.Document,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
                 HorizontalContentAlignment = HorizontalAlignment.Center,
                 VerticalContentAlignment = VerticalAlignment.Top,
-                Margin = new Thickness(4)
+                Margin = new Thickness(4),
+                IsToolBarVisible = true
             };
             tabs.Items.Add(new System.Windows.Controls.TabItem
             {
