@@ -149,7 +149,7 @@
                         <Button x:Name="NavContract" Style="{StaticResource NavButton}" Tag="Contract" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8D2;" FontSize="23" Width="42"/>
-                                <TextBlock Text="İHALE / SÖZLEŞME" FontSize="16.5" FontWeight="SemiBold"/>
+                                <TextBlock Text="İHALE BİLGİLERİ" FontSize="16.5" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                         <Button x:Name="NavLines" Style="{StaticResource NavButton}" Tag="Lines" Click="NavigationButton_Click">
@@ -230,7 +230,7 @@
                                             </StackPanel>
                                             <TextBlock Text="Önce sözleşmeyi tanımlayın" Foreground="White" FontSize="23" FontWeight="SemiBold" Margin="0,5,0,0"/>
                                             <TextBlock Text="Sözleşme → Hatlar → Hakediş akışı burada ilerleyecek." Foreground="#C5D7E7" FontSize="13" Margin="0,5,0,0"/>
-                                            <Button Content="İHALE / SÖZLEŞME TANIMLA" Tag="Contract" Click="NavigationButton_Click"
+                                            <Button Content="İHALE BİLGİLERİ TANIMLA" Tag="Contract" Click="NavigationButton_Click"
                                                     Style="{StaticResource ModernButton}" Width="250" Height="42"
                                                     HorizontalAlignment="Left" Margin="0,18,0,0"/>
                                         </StackPanel>
@@ -279,7 +279,7 @@
                         <!-- İhale / Sözleşme -->
                         <Grid x:Name="ContractPanel" Visibility="Collapsed">
                             <StackPanel>
-                                    <TextBlock Text="İHALE / SÖZLEŞME" Style="{StaticResource PageTitle}"/>
+                                    <TextBlock Text="İHALE BİLGİLERİ" Style="{StaticResource PageTitle}"/>
                                     <TextBlock Text="Sözleşme, yüklenici ve dönem bilgilerini tek ekrandan yönetin." Style="{StaticResource PageSubtitle}"/>
 
                                     <UniformGrid Columns="4" Margin="0,0,0,12">
@@ -569,8 +569,29 @@
                                                 <TextBlock Text="Hat Adı" Style="{StaticResource FieldLabel}"/>
                                                 <TextBox x:Name="RouteNameTextBox" Style="{StaticResource FieldTextBox}" Margin="0,7,0,14"/>
 
+                                                <TextBlock Text="Taşıma İş Günü" Style="{StaticResource FieldLabel}"/>
+                                                <TextBox x:Name="RouteTransportWorkDaysTextBox"
+                                                         Style="{StaticResource FieldTextBox}"
+                                                         Margin="0,7,0,14"
+                                                         TextChanged="RouteTransportCalculation_TextChanged"/>
+
                                                 <TextBlock Text="Taşıma Günlük Birim Fiyat" Style="{StaticResource FieldLabel}"/>
-                                                <TextBox x:Name="RouteDailyPriceTextBox" Style="{StaticResource FieldTextBox}" Margin="0,7,0,12"/>
+                                                <TextBox x:Name="RouteDailyPriceTextBox"
+                                                         Style="{StaticResource FieldTextBox}"
+                                                         Margin="0,7,0,10"
+                                                         TextChanged="RouteTransportCalculation_TextChanged"/>
+
+                                                <Border Background="#F3F7FA" BorderBrush="#D5E1EA" BorderThickness="1"
+                                                        CornerRadius="7" Padding="10,8" Margin="0,0,0,12">
+                                                    <Grid>
+                                                        <TextBlock Text="Taşıma Yıllık Tutarı" Style="{StaticResource FieldLabel}"/>
+                                                        <TextBlock x:Name="RouteTransportAnnualAmountTextBlock"
+                                                                   Text="0,00 ₺"
+                                                                   HorizontalAlignment="Right"
+                                                                   Foreground="{StaticResource Blue700Brush}"
+                                                                   FontWeight="Bold"/>
+                                                    </Grid>
+                                                </Border>
 
                                                 <TextBlock Text="Rehber Yıllık İş Günü" Style="{StaticResource FieldLabel}"/>
                                                 <TextBox x:Name="RouteGuideWorkDaysTextBox" Style="{StaticResource FieldTextBox}" Margin="0,7,0,12"/>
@@ -606,7 +627,9 @@
                                                                     <TextBlock Text="{Binding ServiceSummaryText}" Foreground="#B9CBDA" FontSize="12.5" TextWrapping="Wrap"/>
                                                                 </StackPanel>
                                                                 <StackPanel Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                                    <TextBlock Text="{Binding TransportWorkDaysText}" Foreground="#B9CBDA" FontSize="12.5" HorizontalAlignment="Right"/>
                                                                     <TextBlock Text="{Binding DailyPriceText}" Foreground="White" FontSize="14.5" FontWeight="SemiBold" HorizontalAlignment="Right"/>
+                                                                    <TextBlock Text="{Binding TransportAnnualPriceText}" Foreground="#B9CBDA" FontSize="12.5" HorizontalAlignment="Right"/>
                                                                     <TextBlock Text="{Binding GuideDailyPriceText}" Foreground="#B9CBDA" FontSize="12.5" HorizontalAlignment="Right"/>
                                                                 </StackPanel>
                                                                 <Button Grid.Column="3" Content="SİL" Tag="{Binding}" Click="RemoveRouteButton_Click"
