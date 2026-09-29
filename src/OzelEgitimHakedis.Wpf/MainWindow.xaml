@@ -856,7 +856,7 @@
                     <TextBlock Text="4 BELGELİ RAPOR ÇIKTISI" Style="{StaticResource CardTitle}" FontSize="17"/>
                     <TextBlock Text="Seçilen hat için dört gerçek kurum belgesi sırayla hazırlanır." Style="{StaticResource CardSubtitle}" FontSize="13.5" TextWrapping="Wrap" Margin="0,0,0,12"/>
                     <TextBlock Text="HAT SEÇİMİ" Style="{StaticResource FieldLabel}" FontSize="12.5"/>
-                    <ComboBox x:Name="ReportRouteComboBox" DisplayMemberPath="DisplayText" Height="44" Margin="0,7,0,12" Style="{StaticResource FieldComboBox}"/>
+                    <ComboBox x:Name="ReportRouteComboBox" DisplayMemberPath="DisplayText" Height="44" Margin="0,7,0,12" Style="{StaticResource FieldComboBox}" SelectionChanged="ReportRouteComboBox_SelectionChanged"/>
                     <Grid Margin="0,0,0,2">
                         <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
                         <Button Grid.Column="0" Content="BELGELERİ ÖNİZLE" Style="{StaticResource ModernButton}" Height="54" FontSize="14.5" FontWeight="SemiBold" Margin="0,0,6,0" Click="PreviewAllRouteDocumentsButton_Click"/>
