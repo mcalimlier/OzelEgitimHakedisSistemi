@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.IO;
+using System.Text.Json;
 using System.Runtime.InteropServices;
 using System.Printing;
 using System.Windows;
@@ -318,6 +320,21 @@ public partial class MainWindow : Window
         HomeVatWithholdingTextBlock.Text = latest is null
             ? "0,00 / 0,00 ₺"
             : $"{FormatMoney(latest.Calculation.Vat)} / {FormatMoney(latest.Calculation.Withholding)}";
+
+        HomeTransportServiceTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.ServiceAmount);
+        HomeTransportPriceDifferenceTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.PriceDifferenceExcludingVat);
+        HomeTransportNetTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.TransportNetAmount);
+        HomeGuideServiceTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.GuideServiceAmount);
+        HomeGuideNetTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.GuideNetAmount);
+        HomeTotalAmountTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.TotalAmount);
+        HomeVatTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.Vat);
+        HomeWithholdingTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.Withholding);
+        HomeInvoiceTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.InvoiceAmountAfterWithholding);
+        HomeGuaranteeTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.AdditionalGuarantee);
+        HomeStampTaxTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.StampTax);
+        HomeGrossTextBlock2.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.GrossAmount);
+        HomeDeductionsTextBlock2.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.TotalDeductions);
+        HomeNetPayableTextBlock2.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.NetPayable);
     }
 
     private void UpdateContractSummaryView()
@@ -624,6 +641,74 @@ public partial class MainWindow : Window
         ContractStatusTextBlock.Text = "Sözleşme taslağı temizlendi.";
     }
 
+    private static string OehsDesktopRoot =>
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "OzelEgitimHakedisSistemi");
+
+    private static string SafeFileName(string value)
+    {
+        foreach (var invalid in Path.GetInvalidFileNameChars())
+            value = value.Replace(invalid, '_');
+
+        return string.IsNullOrWhiteSpace(value) ? "OEHS" : value;
+    }
+
+    private static string BuildArchiveKey(ProgressPaymentHistoryData item)
+    {
+        var route = SafeFileName(string.IsNullOrWhiteSpace(item.RouteNumber) ? "Hat" : item.RouteNumber);
+        var progress = item.ProgressPaymentNumber?.ToString(CultureInfo.InvariantCulture) ?? "Yeni";
+        var period = item.PeriodDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "Donemsiz";
+        return $"{item.Id:N}_{route}_Hakedis-{progress}_{period}";
+    }
+
+    private static void SaveProgressArchive(ProgressPaymentHistoryData item)
+    {
+        var archiveFolder = Path.Combine(OehsDesktopRoot, "Arsiv", "Hakedisler");
+        Directory.CreateDirectory(archiveFolder);
+
+        var filePath = Path.Combine(archiveFolder, BuildArchiveKey(item) + ".json");
+        var json = JsonSerializer.Serialize(item, new JsonSerializerOptions { WriteIndented = true });
+        File.WriteAllText(filePath, json);
+    }
+
+    private static void SaveFlowDocumentAsRtf(FlowDocument document, string filePath)
+    {
+        var range = new TextRange(document.ContentStart, document.ContentEnd);
+        using var stream = File.Create(filePath);
+        range.Save(stream, DataFormats.Rtf);
+    }
+
+    private static string SaveRouteDocumentsArchive(
+        RouteDraft route,
+        ProgressPaymentHistoryData latest,
+        IReadOnlyList<(FlowDocument Document, string Title)> documents)
+    {
+        var folderName = BuildArchiveKey(latest);
+        var documentFolder = Path.Combine(OehsDesktopRoot, "Belgeler", folderName);
+        Directory.CreateDirectory(documentFolder);
+
+        foreach (var item in documents)
+        {
+            var fileName = SafeFileName(item.Title) + ".rtf";
+            SaveFlowDocumentAsRtf(item.Document, Path.Combine(documentFolder, fileName));
+        }
+
+        var metadataPath = Path.Combine(documentFolder, "OEHS_Hakediş_Bilgi.json");
+        var metadata = JsonSerializer.Serialize(new
+        {
+            latest.Id,
+            latest.ProgressPaymentNumber,
+            latest.PeriodDate,
+            latest.RouteNumber,
+            latest.RouteName,
+            latest.WorkName,
+            latest.ContractorName,
+            SavedAt = DateTime.Now
+        }, new JsonSerializerOptions { WriteIndented = true });
+        File.WriteAllText(metadataPath, metadata);
+
+        return documentFolder;
+    }
+
     private void CalculateProgressButton_Click(object sender, RoutedEventArgs e)
     {
         ClearProgressValidationVisuals();
@@ -787,6 +872,7 @@ public partial class MainWindow : Window
             }
 
             SavePersistedData();
+            SaveProgressArchive(historyItem);
             UpdateHistoryView();
             UpdateSummaryView();
             UpdateReportView();
@@ -1988,6 +2074,20 @@ public partial class MainWindow : Window
             (BuildKabulTutanağı(route, latest), "Hizmet İşleri Kabul Tutanağı"),
             (BuildHakedişIcmali(route, latest), "Hakediş İcmali")
         };
+
+        try
+        {
+            var savedFolder = SaveRouteDocumentsArchive(route, latest, documents);
+            CalculationStatusTextBlock.Text = $"4 belge otomatik arşivlendi: {savedFolder}";
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Belgeler arşivlenirken hata oluştu. Yazdırma işlemi yine devam edecek.\n\n{ex.Message}",
+                "OEHS Arşiv Uyarısı",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
 
         foreach (var item in documents)
         {
