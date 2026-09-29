@@ -2,8 +2,8 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Özel Eğitim Hakediş Sistemi (OEHS)"
-        Width="1344"
-        Height="894"
+        Width="1411"
+        Height="912"
         MinWidth="760"
         MinHeight="520"
         SizeToContent="Manual"
@@ -20,8 +20,8 @@
              StretchDirection="DownOnly"
              HorizontalAlignment="Stretch"
              VerticalAlignment="Stretch">
-        <Border Width="1522.5"
-                Height="1012.1"
+        <Border Width="1598.6"
+                Height="1032.3"
                 CornerRadius="15"
                 BorderBrush="#35546F"
                 BorderThickness="1"
@@ -212,7 +212,7 @@
                 </Grid>
 
                 <!-- İÇERİK -->
-                <Border Grid.Row="1" Grid.Column="1" Background="White" CornerRadius="13,0,13,0" Padding="24">
+                <Border Grid.Row="1" Grid.Column="1" Background="White" CornerRadius="13,0,13,0" Padding="18">
                     <Grid>
                         <Grid x:Name="HomePanel">
                             <StackPanel>
@@ -393,6 +393,7 @@
 
                         <!-- Hakediş -->
                         <Grid x:Name="ProgressPanel" Visibility="Collapsed">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0">
                             <StackPanel>
                                     <TextBlock Text="HAKEDİŞ OLUŞTUR" Style="{StaticResource PageTitle}"/>
                                     <TextBlock Text="Dönem hesabını girin, sonucu kontrol edin ve ödeme tutarını oluşturun." Style="{StaticResource PageSubtitle}"/>
