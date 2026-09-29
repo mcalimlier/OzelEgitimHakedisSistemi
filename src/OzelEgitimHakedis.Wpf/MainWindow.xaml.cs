@@ -244,7 +244,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (_contractors.Any(x => string.Equals(x.TaxOrIdentityNumber, taxOrIdentityNumber, StringComparison.CurrentCultureIgnoreCase)))
+        if (_contractors.Any(x => string.Equals(x.TaxOrIdentityNumber, taxOrIdentityNumber, StringComparison.OrdinalIgnoreCase)))
         {
             ContractorStatusTextBlock.Text = "Bu Vergi / T.C. Kimlik No zaten tanımlı.";
             return;
@@ -663,7 +663,7 @@ public partial class MainWindow : Window
             .FirstOrDefault();
     }
 
-    private IReadOnlyList<ProgressPaymentHistoryData> GetSelectedRoutePayments()
+    private List<ProgressPaymentHistoryData> GetSelectedRoutePayments()
     {
         var route = ReportRouteComboBox.SelectedItem as RouteDraft;
         IEnumerable<ProgressPaymentHistoryData> query = _progressHistory;
@@ -682,7 +682,7 @@ public partial class MainWindow : Window
             ReportRouteComboBox.SelectedIndex = 0;
     }
 
-    private TableCell CreateCell(string text, bool bold = false, bool right = false, bool center = false, bool shaded = false)
+    private static TableCell CreateCell(string text, bool bold = false, bool right = false, bool center = false, bool shaded = false)
     {
         return new TableCell(new Paragraph(new Run(text ?? "-")))
         {
@@ -695,7 +695,7 @@ public partial class MainWindow : Window
         };
     }
 
-    private Table CreateDocumentTable(params (string Label, string Value)[] rows)
+    private static Table CreateDocumentTable(params (string Label, string Value)[] rows)
     {
         var table = new Table { CellSpacing = 0, BorderBrush = System.Windows.Media.Brushes.Black, BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 0, 10) };
         table.Columns.Add(new TableColumn { Width = new GridLength(235) });
@@ -712,7 +712,7 @@ public partial class MainWindow : Window
         return table;
     }
 
-    private Table CreateThreeColumnTable((string A, string B, string C)[] rows, string[] headers)
+    private static Table CreateThreeColumnTable((string A, string B, string C)[] rows, string[] headers)
     {
         var table = new Table { CellSpacing = 0, BorderBrush = System.Windows.Media.Brushes.Black, BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 0, 10) };
         table.Columns.Add(new TableColumn { Width = new GridLength(70) });
@@ -735,7 +735,7 @@ public partial class MainWindow : Window
         return table;
     }
 
-    private Table CreateThreeValueTable(params (string A, string B, string C)[] rows)
+    private static Table CreateThreeValueTable(params (string A, string B, string C)[] rows)
     {
         var table = new Table
         {
@@ -745,7 +745,7 @@ public partial class MainWindow : Window
             Margin = new Thickness(0, 0, 0, 10)
         };
 
-        foreach (var width in new[] { 70d, 500d, 170d })
+        foreach (var width in new[] { 55d, 470d, 155d })
             table.Columns.Add(new TableColumn { Width = new GridLength(width) });
 
         var group = new TableRowGroup();
@@ -762,7 +762,7 @@ public partial class MainWindow : Window
         return table;
     }
 
-    private Table CreateFourColumnTable(IEnumerable<(string A, string B, string C, string D)> rows, string[] headers)
+    private static Table CreateFourColumnTable(IEnumerable<(string A, string B, string C, string D)> rows, string[] headers)
     {
         var table = new Table { CellSpacing = 0, BorderBrush = System.Windows.Media.Brushes.Black, BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 0, 10) };
         foreach (var width in new[] { 60d, 310d, 155d, 155d })
@@ -788,7 +788,7 @@ public partial class MainWindow : Window
         return table;
     }
 
-    private Table CreateFiveColumnTable(IEnumerable<(string A, string B, string C, string D, string E)> rows, string[] headers)
+    private static Table CreateFiveColumnTable(IEnumerable<(string A, string B, string C, string D, string E)> rows, string[] headers)
     {
         var table = new Table
         {
@@ -798,7 +798,7 @@ public partial class MainWindow : Window
             Margin = new Thickness(0, 0, 0, 10)
         };
 
-        foreach (var width in new[] { 48d, 285d, 135d, 135d, 135d })
+        foreach (var width in new[] { 45d, 255d, 126d, 126d, 128d })
             table.Columns.Add(new TableColumn { Width = new GridLength(width) });
 
         var group = new TableRowGroup();
@@ -822,14 +822,77 @@ public partial class MainWindow : Window
         return table;
     }
 
-    private FlowDocument CreateBaseDocument(string title, string subtitle)
+    private static Table CreateSignatureTable(
+        string leftTitle, string leftName, string leftRole,
+        string rightTitle, string rightName, string rightRole)
     {
+        var table = new Table
+        {
+            CellSpacing = 0,
+            BorderThickness = new Thickness(0),
+            Margin = new Thickness(0, 18, 0, 8)
+        };
+
+        table.Columns.Add(new TableColumn { Width = new GridLength(340) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(340) });
+
+        var group = new TableRowGroup();
+        var row = new TableRow();
+
+        row.Cells.Add(CreateSignatureCell(leftTitle, leftName, leftRole));
+        row.Cells.Add(CreateSignatureCell(rightTitle, rightName, rightRole));
+
+        group.Rows.Add(row);
+        table.RowGroups.Add(group);
+        return table;
+    }
+
+    private static TableCell CreateSignatureCell(string title, string name, string role)
+    {
+        var cell = new TableCell
+        {
+            BorderThickness = new Thickness(0),
+            Padding = new Thickness(12, 2, 12, 2)
+        };
+
+        cell.Blocks.Add(new Paragraph(new Run(title))
+        {
+            TextAlignment = TextAlignment.Center,
+            FontWeight = FontWeights.Bold,
+            Margin = new Thickness(0, 0, 0, 14)
+        });
+
+        cell.Blocks.Add(new Paragraph(new Run(name))
+        {
+            TextAlignment = TextAlignment.Center,
+            FontWeight = FontWeights.SemiBold,
+            Margin = new Thickness(0, 0, 0, 4)
+        });
+
+        cell.Blocks.Add(new Paragraph(new Run(role))
+        {
+            TextAlignment = TextAlignment.Center,
+            Margin = new Thickness(0)
+        });
+
+        return cell;
+    }
+
+    private static FlowDocument CreateBaseDocument(string title, string subtitle)
+    {
+        const double a4Width = 794;
+        const double a4Height = 1123;
+        const double contentWidth = 680;
+
         var document = new FlowDocument
         {
-            PagePadding = new Thickness(28),
+            PageWidth = a4Width,
+            PageHeight = a4Height,
+            PagePadding = new Thickness(40, 32, 40, 32),
             FontFamily = new System.Windows.Media.FontFamily("Arial"),
             FontSize = 9,
-            ColumnWidth = 680
+            ColumnWidth = contentWidth,
+            IsOptimalParagraphEnabled = true
         };
 
         var header = new Paragraph
@@ -848,7 +911,7 @@ public partial class MainWindow : Window
         return document;
     }
 
-    private Paragraph SectionHeading(string text)
+    private static Paragraph SectionHeading(string text)
     {
         return new Paragraph(new Run(text))
         {
@@ -858,7 +921,7 @@ public partial class MainWindow : Window
         };
     }
 
-    private bool TryShowDocument(FlowDocument document, string title)
+    private static bool TryShowDocument(FlowDocument document, string title)
     {
         var dialog = new System.Windows.Controls.PrintDialog();
         if (dialog.ShowDialog() != true)
@@ -1024,11 +1087,29 @@ public partial class MainWindow : Window
         doc.Blocks.Add(CreateThreeColumnTable(hRows.ToArray(), new[] { "", "KESİNTİLER VE MAHSUPLAR", "Tutar" }));
 
         doc.Blocks.Add(CreateDocumentTable(
-            ("Yüklenici", ContractorTextBox.Text),
-            ("Düzenleyen", "Aşkın KESKİNBALTA — Memur"),
-            ("Kontrol Eden", "Halil ÖZENÇ — İlçe Milli Eğitim Şube Müdürü"),
-            ("Onaylayan", "Özgür BAYSAL — İlçe Milli Eğitim Müdürü"),
-            ("Tarih", DateTime.Today.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture))));
+            ("Yüklenici", ContractorTextBox.Text)));
+
+        doc.Blocks.Add(CreateSignatureTable(
+            "Düzenleyen", "Aşkın KESKİNBALTA", "Memur",
+            "Kontrol Eden", "Halil ÖZENÇ", "İlçe Milli Eğitim Şube Müdürü"));
+
+        doc.Blocks.Add(new Paragraph(new Run(DateTime.Today.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture)))
+        {
+            TextAlignment = TextAlignment.Center,
+            FontWeight = FontWeights.Bold,
+            Margin = new Thickness(0, 10, 0, 10)
+        });
+
+        doc.Blocks.Add(new Paragraph(new Run("Özgür BAYSAL"))
+        {
+            TextAlignment = TextAlignment.Center,
+            FontWeight = FontWeights.SemiBold,
+            Margin = new Thickness(0, 0, 0, 3)
+        });
+        doc.Blocks.Add(new Paragraph(new Run("İlçe Milli Eğitim Müdürü"))
+        {
+            TextAlignment = TextAlignment.Center
+        });
         doc.Blocks.Add(new Paragraph(new Run("M.Y.H.B.Y. Örnek No : 4/10"))
         {
             FontSize = 8,
@@ -1074,21 +1155,9 @@ public partial class MainWindow : Window
                     ("", "................", "................", "................") },
             new[] { "Tarih", "Sayısı", "Verilen Süre", "İş Bitim Tarihi" }));
 
-        doc.Blocks.Add(new Paragraph(new Run("Düzenleyen                                      Kontrol Eden"))
-        {
-            TextAlignment = TextAlignment.Center,
-            Margin = new Thickness(0, 12, 0, 2),
-            FontWeight = FontWeights.Bold
-        });
-        doc.Blocks.Add(new Paragraph(new Run("Aşkın KESKİNBALTA                         Halil ÖZENÇ"))
-        {
-            TextAlignment = TextAlignment.Center,
-            Margin = new Thickness(0, 2, 0, 2)
-        });
-        doc.Blocks.Add(new Paragraph(new Run("Memur                                      İlçe Milli Eğitim Şube Müdürü"))
-        {
-            TextAlignment = TextAlignment.Center
-        });
+        doc.Blocks.Add(CreateSignatureTable(
+            "Düzenleyen", "Aşkın KESKİNBALTA", "Memur",
+            "Kontrol Eden", "Halil ÖZENÇ", "İlçe Milli Eğitim Şube Müdürü"));
         doc.Blocks.Add(new Paragraph(new Run("M.Y.H.B.Y. Örnek No: 4"))
         {
             FontSize = 8,
@@ -1154,22 +1223,9 @@ public partial class MainWindow : Window
             Margin = new Thickness(0, 0, 0, 58)
         });
 
-        doc.Blocks.Add(new Paragraph(new Run("Düzenleyen                                      Kontrol Eden"))
-        {
-            TextAlignment = TextAlignment.Center,
-            FontWeight = FontWeights.Bold,
-            Margin = new Thickness(0, 0, 0, 8)
-        });
-        doc.Blocks.Add(new Paragraph(new Run("Aşkın KESKİNBALTA                         Halil ÖZENÇ"))
-        {
-            TextAlignment = TextAlignment.Center,
-            Margin = new Thickness(0, 0, 0, 3)
-        });
-        doc.Blocks.Add(new Paragraph(new Run("Memur                                      İlçe Milli Eğitim Şube Müdürü"))
-        {
-            TextAlignment = TextAlignment.Center,
-            Margin = new Thickness(0, 0, 0, 22)
-        });
+        doc.Blocks.Add(CreateSignatureTable(
+            "Düzenleyen", "Aşkın KESKİNBALTA", "Memur",
+            "Kontrol Eden", "Halil ÖZENÇ", "İlçe Milli Eğitim Şube Müdürü"));
         doc.Blocks.Add(new Paragraph(new Run(DateTime.Today.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture)))
         {
             TextAlignment = TextAlignment.Center,
@@ -1250,22 +1306,9 @@ public partial class MainWindow : Window
             ("B", "Toplam Kesinti Tutarı", FormatMoney(totalDeduction)),
             ("C", "Toplam Hakediş Tutarı : ( A - B )", FormatMoney(net))));
 
-        doc.Blocks.Add(new Paragraph(new Run("Düzenleyen                                      Kontrol Eden"))
-        {
-            TextAlignment = TextAlignment.Center,
-            FontWeight = FontWeights.Bold,
-            Margin = new Thickness(0, 18, 0, 8)
-        });
-        doc.Blocks.Add(new Paragraph(new Run("Aşkın KESKİNBALTA                         Halil ÖZENÇ"))
-        {
-            TextAlignment = TextAlignment.Center,
-            Margin = new Thickness(0, 0, 0, 3)
-        });
-        doc.Blocks.Add(new Paragraph(new Run("Memur                                      İlçe Milli Eğitim Şube Müdürü"))
-        {
-            TextAlignment = TextAlignment.Center,
-            Margin = new Thickness(0, 0, 0, 20)
-        });
+        doc.Blocks.Add(CreateSignatureTable(
+            "Düzenleyen", "Aşkın KESKİNBALTA", "Memur",
+            "Kontrol Eden", "Halil ÖZENÇ", "İlçe Milli Eğitim Şube Müdürü"));
         doc.Blocks.Add(new Paragraph(new Run(DateTime.Today.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture)))
         {
             TextAlignment = TextAlignment.Center,
