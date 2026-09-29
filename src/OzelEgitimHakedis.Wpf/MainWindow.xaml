@@ -233,110 +233,66 @@
                                         </Border>
                                     </Grid>
                                 </Border>
-                                <Grid>
-                                    <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-                                    <Border Grid.Column="0" Style="{StaticResource CardCompact}" Margin="0,0,8,0">
-                                        <StackPanel>
-                                            <TextBlock Text="01  SÖZLEŞME" Style="{StaticResource CardTitle}"/>
-                                            <TextBlock Text="İhale ve sözleşme temel bilgilerini girin." Foreground="#C5D7E7" FontSize="13" Margin="0,5,0,0" TextWrapping="Wrap"/>
-                                        </StackPanel>
-                                    </Border>
-                                    <Border Grid.Column="1" Style="{StaticResource CardCompact}" Margin="4,0">
-                                        <StackPanel>
-                                            <TextBlock Text="02  HATLAR" Style="{StaticResource CardTitle}"/>
-                                            <TextBlock Text="Sözleşmeye bağlı hizmet hatlarını tanımlayın." Foreground="#C5D7E7" FontSize="13" Margin="0,5,0,0" TextWrapping="Wrap"/>
-                                        </StackPanel>
-                                    </Border>
-                                    <Border Grid.Column="2" Style="{StaticResource CardCompact}" Margin="8,0,0,0">
-                                        <StackPanel>
-                                            <TextBlock Text="03  HAKEDİŞ" Style="{StaticResource CardTitle}"/>
-                                            <TextBlock Text="Hesaplama motoruyla dönem tutarını oluşturun." Foreground="#C5D7E7" FontSize="13" Margin="0,8,0,0" TextWrapping="Wrap"/>
-                                        </StackPanel>
-                                    </Border>
-                                </Grid>
-                                <Grid Margin="0,14,0,0">
-                                    <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-                                    <Border Grid.Column="0" Style="{StaticResource CardCompact}" Margin="0,0,6,0"><StackPanel><TextBlock Text="SÖZLEŞME" Style="{StaticResource CardTitle}"/><TextBlock x:Name="HomeContractStatusTextBlock" Text="Bekleniyor" Foreground="{StaticResource Gold500Brush}" FontSize="18" FontWeight="Bold" Margin="0,4,0,0"/><TextBlock Text="Ana kayıt" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
-                                    <Border Grid.Column="1" Style="{StaticResource CardCompact}" Margin="2,0,4,0"><StackPanel><TextBlock Text="HAT" Style="{StaticResource CardTitle}"/><TextBlock x:Name="HomeRouteCountTextBlock" Text="0" Foreground="White" FontSize="18" FontWeight="Bold" Margin="0,4,0,0"/><TextBlock Text="Tanımlı hat" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
-                                    <Border Grid.Column="2" Style="{StaticResource CardCompact}" Margin="4,0,2,0"><StackPanel><TextBlock Text="YÜKLENİCİ" Style="{StaticResource CardTitle}"/><TextBlock x:Name="HomeContractorCountTextBlock" Text="0" Foreground="White" FontSize="18" FontWeight="Bold" Margin="0,4,0,0"/><TextBlock Text="Tanımlı kayıt" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
-                                    <Border Grid.Column="3" Style="{StaticResource CardCompact}" Margin="6,0,0,0"><StackPanel><TextBlock Text="HAKEDİŞ" Style="{StaticResource CardTitle}"/><TextBlock x:Name="HomeNetPayableTextBlock" Text="0,00 ₺" Foreground="{StaticResource Blue600Brush}" FontSize="18" FontWeight="Bold" Margin="0,4,0,0"/><TextBlock Text="Net ödeme" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
-                                </Grid>
-                                <UniformGrid Columns="4" Margin="0,14,0,0">
-                                    <Border Style="{StaticResource MetricCard}" Margin="0,0,8,0">
-                                        <StackPanel>
-                                            <TextBlock Text="İŞİN ADI" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/>
-                                            <TextBlock x:Name="HomeWorkNameTextBlock" Text="—" Foreground="White" FontSize="15" FontWeight="Bold" Margin="0,5,0,0" TextWrapping="Wrap"/>
-                                        </StackPanel>
-                                    </Border>
-                                    <Border Style="{StaticResource MetricCard}" Margin="4,0">
-                                        <StackPanel>
-                                            <TextBlock Text="YÜKLENİCİ" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/>
-                                            <TextBlock x:Name="HomeContractorTextBlock" Text="—" Foreground="White" FontSize="15" FontWeight="Bold" Margin="0,5,0,0" TextWrapping="Wrap"/>
-                                        </StackPanel>
-                                    </Border>
-                                    <Border Style="{StaticResource MetricCard}" Margin="4,0">
-                                        <StackPanel>
-                                            <TextBlock Text="SON HAKEDİŞ" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/>
-                                            <TextBlock x:Name="HomeProgressTextBlock" Text="—" Foreground="{StaticResource Gold500Brush}" FontSize="15" FontWeight="Bold" Margin="0,5,0,0"/>
-                                        </StackPanel>
-                                    </Border>
-                                    <Border Style="{StaticResource MetricCard}" Margin="8,0,0,0">
-                                        <StackPanel>
-                                            <TextBlock Text="DÖNEM" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/>
-                                            <TextBlock x:Name="HomePeriodTextBlock" Text="—" Foreground="White" FontSize="15" FontWeight="Bold" Margin="0,5,0,0"/>
-                                        </StackPanel>
-                                    </Border>
-                                </UniformGrid>
-                                <UniformGrid Columns="4" Margin="0,14,0,0">
-                                    <Border Style="{StaticResource MetricCard}" Margin="0,0,8,0">
-                                        <StackPanel>
-                                            <TextBlock Text="TOPLAM HAKEDİŞ" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/>
-                                            <TextBlock x:Name="HomeGrossTextBlock" Text="0,00 ₺" Foreground="White" FontSize="17" FontWeight="Bold" Margin="0,5,0,0"/>
-                                        </StackPanel>
-                                    </Border>
-                                    <Border Style="{StaticResource MetricCard}" Margin="4,0">
-                                        <StackPanel>
-                                            <TextBlock Text="TOPLAM KESİNTİ" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/>
-                                            <TextBlock x:Name="HomeDeductionsTextBlock" Text="0,00 ₺" Foreground="{StaticResource Gold500Brush}" FontSize="17" FontWeight="Bold" Margin="0,5,0,0"/>
-                                        </StackPanel>
-                                    </Border>
-                                    <Border Style="{StaticResource MetricCard}" Margin="4,0">
-                                        <StackPanel>
-                                            <TextBlock Text="NET ELE GEÇEN" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/>
-                                            <TextBlock x:Name="HomeLatestNetTextBlock" Text="0,00 ₺" Foreground="{StaticResource Blue600Brush}" FontSize="18" FontWeight="Bold" Margin="0,5,0,0"/>
-                                        </StackPanel>
-                                    </Border>
-                                    <Border Style="{StaticResource MetricCard}" Margin="8,0,0,0">
-                                        <StackPanel>
-                                            <TextBlock Text="KDV / TEVKİFAT" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/>
-                                            <TextBlock x:Name="HomeVatWithholdingTextBlock" Text="0,00 / 0,00 ₺" Foreground="White" FontSize="14" FontWeight="Bold" Margin="0,5,0,0" TextWrapping="Wrap"/>
-                                        </StackPanel>
-                                    </Border>
-                                </UniformGrid>
-                                <UniformGrid Columns="4" Margin="0,14,0,0">
-                                    <Border Style="{StaticResource MetricCard}" Margin="0,0,8,0"><StackPanel><TextBlock Text="TAŞIMA HİZMET" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock x:Name="HomeTransportServiceTextBlock" Text="0,00 ₺" Foreground="White" FontSize="17" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel></Border>
-                                    <Border Style="{StaticResource MetricCard}" Margin="4,0"><StackPanel><TextBlock Text="TAŞIMA FİYAT FARKI" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock x:Name="HomeTransportPriceDifferenceTextBlock" Text="0,00 ₺" Foreground="White" FontSize="17" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel></Border>
-                                    <Border Style="{StaticResource MetricCard}" Margin="4,0"><StackPanel><TextBlock Text="TAŞIMA HAKEDİŞ" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock x:Name="HomeTransportNetTextBlock" Text="0,00 ₺" Foreground="White" FontSize="17" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel></Border>
-                                    <Border Style="{StaticResource MetricCard}" Margin="8,0,0,0"><StackPanel><TextBlock Text="REHBER HİZMET" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock x:Name="HomeGuideServiceTextBlock" Text="0,00 ₺" Foreground="White" FontSize="17" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel></Border>
-                                </UniformGrid>
-                                <UniformGrid Columns="4" Margin="0,14,0,0">
-                                    <Border Style="{StaticResource MetricCard}" Margin="0,0,8,0"><StackPanel><TextBlock Text="REHBER HAKEDİŞ" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock x:Name="HomeGuideNetTextBlock" Text="0,00 ₺" Foreground="White" FontSize="17" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel></Border>
-                                    <Border Style="{StaticResource MetricCard}" Margin="4,0"><StackPanel><TextBlock Text="TOPLAM TUTAR" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock x:Name="HomeTotalAmountTextBlock" Text="0,00 ₺" Foreground="White" FontSize="17" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel></Border>
-                                    <Border Style="{StaticResource MetricCard}" Margin="4,0"><StackPanel><TextBlock Text="KDV" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock x:Name="HomeVatTextBlock" Text="0,00 ₺" Foreground="White" FontSize="17" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel></Border>
-                                    <Border Style="{StaticResource MetricCard}" Margin="8,0,0,0"><StackPanel><TextBlock Text="TEVKİFAT" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock x:Name="HomeWithholdingTextBlock" Text="0,00 ₺" Foreground="{StaticResource Gold500Brush}" FontSize="17" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel></Border>
-                                </UniformGrid>
-                                <UniformGrid Columns="4" Margin="0,14,0,0">
-                                    <Border Style="{StaticResource MetricCard}" Margin="0,0,8,0"><StackPanel><TextBlock Text="FATURA TUTARI" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock x:Name="HomeInvoiceTextBlock" Text="0,00 ₺" Foreground="White" FontSize="17" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel></Border>
-                                    <Border Style="{StaticResource MetricCard}" Margin="4,0"><StackPanel><TextBlock Text="FİYAT FARKI TEMİNATI" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock x:Name="HomeGuaranteeTextBlock" Text="0,00 ₺" Foreground="White" FontSize="17" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel></Border>
-                                    <Border Style="{StaticResource MetricCard}" Margin="4,0"><StackPanel><TextBlock Text="DAMGA VERGİSİ" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock x:Name="HomeStampTaxTextBlock" Text="0,00 ₺" Foreground="White" FontSize="17" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel></Border>
-                                    <Border Style="{StaticResource MetricCard}" Margin="8,0,0,0"><StackPanel><TextBlock Text="BRÜT TUTAR" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock x:Name="HomeGrossTextBlock2" Text="0,00 ₺" Foreground="White" FontSize="17" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel></Border>
-                                </UniformGrid>
-                                <UniformGrid Columns="4" Margin="0,14,0,0">
-                                    <Border Style="{StaticResource MetricCard}" Margin="0,0,8,0"><StackPanel><TextBlock Text="TOPLAM KESİNTİ" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock x:Name="HomeDeductionsTextBlock2" Text="0,00 ₺" Foreground="{StaticResource Gold500Brush}" FontSize="17" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel></Border>
-                                    <Border Style="{StaticResource MetricCard}" Margin="4,0"><StackPanel><TextBlock Text="NET ÖDENECEK" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock x:Name="HomeNetPayableTextBlock2" Text="0,00 ₺" Foreground="{StaticResource Blue600Brush}" FontSize="18" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel></Border>
-                                    <Border Style="{StaticResource MetricCard}" Margin="4,0"><StackPanel><TextBlock Text="KONTROL" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock Text="Excel karşılaştırma alanı" Foreground="White" FontSize="14" FontWeight="Bold" Margin="0,5,0,0" TextWrapping="Wrap"/></StackPanel></Border>
-                                    <Border Style="{StaticResource MetricCard}" Margin="8,0,0,0"><StackPanel><TextBlock Text="ARŞİV" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock Text="Otomatik kaydediliyor" Foreground="White" FontSize="14" FontWeight="Bold" Margin="0,5,0,0" TextWrapping="Wrap"/></StackPanel></Border>
-                                </UniformGrid>
+                                <Border Style="{StaticResource PremiumPanel}" Padding="16" Margin="0,0,0,0">
+                                    <StackPanel>
+                                        <Grid Margin="0,0,0,10">
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="2.2*"/><ColumnDefinition Width="1.3*"/><ColumnDefinition Width="1.3*"/></Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                                <TextBlock Text="İŞ / YÜKLENİCİ" Foreground="#D9E9F6" FontSize="11" FontWeight="Bold"/>
+                                                <TextBlock x:Name="HomeWorkNameTextBlock" Text="—" Foreground="White" FontSize="16" FontWeight="Bold" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                                                <TextBlock x:Name="HomeContractorTextBlock" Text="—" Foreground="#C5D7E7" FontSize="12.5" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" Margin="6,0">
+                                                <TextBlock Text="SON HAKEDİŞ" Foreground="#D9E9F6" FontSize="11" FontWeight="Bold"/>
+                                                <TextBlock x:Name="HomeProgressTextBlock" Text="—" Foreground="{StaticResource Gold500Brush}" FontSize="16" FontWeight="Bold" Margin="0,3,0,0"/>
+                                                <TextBlock x:Name="HomePeriodTextBlock" Text="—" Foreground="#C5D7E7" FontSize="12.5" Margin="0,2,0,0"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2" HorizontalAlignment="Right">
+                                                <TextBlock Text="NET ÖDENECEK" Foreground="#D9E9F6" FontSize="11" FontWeight="Bold" HorizontalAlignment="Right"/>
+                                                <TextBlock x:Name="HomeNetPayableTextBlock" Text="0,00 ₺" Foreground="{StaticResource Blue600Brush}" FontSize="20" FontWeight="Bold" Margin="0,3,0,0"/>
+                                                <TextBlock Text="Son hesaplama" Foreground="#C5D7E7" FontSize="11.5" HorizontalAlignment="Right"/>
+                                            </StackPanel>
+                                        </Grid>
+                                        <Border Background="#082744" BorderBrush="#315371" BorderThickness="1" CornerRadius="9" Padding="12,10">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
+                                                <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,12,9">
+                                                    <TextBlock Text="TAŞIMA" Foreground="#91ABC0" FontSize="10" FontWeight="Bold"/>
+                                                    <TextBlock Text="Hizmet" Foreground="#C5D7E7" FontSize="10.5"/>
+                                                    <TextBlock x:Name="HomeTransportServiceTextBlock" Text="0,00 ₺" Foreground="White" FontSize="15" FontWeight="Bold"/>
+                                                    <TextBlock Text="Fiyat farkı / Hakediş" Foreground="#C5D7E7" FontSize="10.5" Margin="0,3,0,0"/>
+                                                    <TextBlock x:Name="HomeTransportPriceDifferenceTextBlock" Text="0,00 ₺" Foreground="White" FontSize="13" FontWeight="SemiBold"/>
+                                                    <TextBlock x:Name="HomeTransportNetTextBlock" Text="0,00 ₺" Foreground="{StaticResource Gold500Brush}" FontSize="14" FontWeight="Bold"/>
+                                                </StackPanel>
+                                                <StackPanel Grid.Row="0" Grid.Column="1" Margin="6,0,12,9">
+                                                    <TextBlock Text="REHBER" Foreground="#91ABC0" FontSize="10" FontWeight="Bold"/>
+                                                    <TextBlock Text="Hizmet" Foreground="#C5D7E7" FontSize="10.5"/>
+                                                    <TextBlock x:Name="HomeGuideServiceTextBlock" Text="0,00 ₺" Foreground="White" FontSize="15" FontWeight="Bold"/>
+                                                    <TextBlock Text="Hakediş" Foreground="#C5D7E7" FontSize="10.5" Margin="0,3,0,0"/>
+                                                    <TextBlock x:Name="HomeGuideNetTextBlock" Text="0,00 ₺" Foreground="{StaticResource Gold500Brush}" FontSize="14" FontWeight="Bold"/>
+                                                </StackPanel>
+                                                <StackPanel Grid.Row="0" Grid.Column="2" Margin="6,0,0,9">
+                                                    <TextBlock Text="TOPLAM" Foreground="#91ABC0" FontSize="10" FontWeight="Bold"/>
+                                                    <TextBlock x:Name="HomeTotalAmountTextBlock" Text="0,00 ₺" Foreground="White" FontSize="16" FontWeight="Bold"/>
+                                                    <TextBlock Text="KDV / Tevkifat" Foreground="#C5D7E7" FontSize="10.5" Margin="0,3,0,0"/>
+                                                    <TextBlock x:Name="HomeVatTextBlock" Text="0,00 ₺" Foreground="White" FontSize="13" FontWeight="SemiBold"/>
+                                                    <TextBlock x:Name="HomeWithholdingTextBlock" Text="0,00 ₺" Foreground="{StaticResource Gold500Brush}" FontSize="13" FontWeight="SemiBold"/>
+                                                </StackPanel>
+                                                <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,12,9"><TextBlock Text="FATURA" Foreground="#91ABC0" FontSize="10" FontWeight="Bold"/><TextBlock x:Name="HomeInvoiceTextBlock" Text="0,00 ₺" Foreground="White" FontSize="15" FontWeight="Bold"/></StackPanel>
+                                                <StackPanel Grid.Row="1" Grid.Column="1" Margin="6,0,12,9"><TextBlock Text="TEMİNAT" Foreground="#91ABC0" FontSize="10" FontWeight="Bold"/><TextBlock x:Name="HomeGuaranteeTextBlock" Text="0,00 ₺" Foreground="White" FontSize="15" FontWeight="Bold"/></StackPanel>
+                                                <StackPanel Grid.Row="1" Grid.Column="2" Margin="6,0,0,9"><TextBlock Text="DAMGA VERGİSİ" Foreground="#91ABC0" FontSize="10" FontWeight="Bold"/><TextBlock x:Name="HomeStampTaxTextBlock" Text="0,00 ₺" Foreground="White" FontSize="15" FontWeight="Bold"/></StackPanel>
+                                                <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,12,9"><TextBlock Text="BRÜT TUTAR" Foreground="#91ABC0" FontSize="10" FontWeight="Bold"/><TextBlock x:Name="HomeGrossTextBlock" Text="0,00 ₺" Foreground="White" FontSize="15" FontWeight="Bold"/><TextBlock x:Name="HomeGrossTextBlock2" Text="0,00 ₺" Visibility="Collapsed"/></StackPanel>
+                                                <StackPanel Grid.Row="2" Grid.Column="1" Margin="6,0,12,9"><TextBlock Text="TOPLAM KESİNTİ" Foreground="#91ABC0" FontSize="10" FontWeight="Bold"/><TextBlock x:Name="HomeDeductionsTextBlock" Text="0,00 ₺" Foreground="{StaticResource Gold500Brush}" FontSize="15" FontWeight="Bold"/><TextBlock x:Name="HomeDeductionsTextBlock2" Text="0,00 ₺" Visibility="Collapsed"/></StackPanel>
+                                                <StackPanel Grid.Row="2" Grid.Column="2" Margin="6,0,0,9"><TextBlock Text="KDV / TEVKİFAT" Foreground="#91ABC0" FontSize="10" FontWeight="Bold"/><TextBlock x:Name="HomeVatWithholdingTextBlock" Text="0,00 / 0,00 ₺" Foreground="White" FontSize="12.5" FontWeight="SemiBold"/></StackPanel>
+                                                <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal" Margin="0,2,0,0"><TextBlock Text="SONUÇ  " Foreground="#91ABC0" FontSize="10" FontWeight="Bold"/><TextBlock Text="Brüt " Foreground="#C5D7E7" FontSize="10.5"/><TextBlock x:Name="HomeGrossTextBlock3" Text="0,00 ₺" Foreground="White" FontSize="14" FontWeight="Bold" Margin="4,0,18,0"/><TextBlock Text="Net Ödenecek " Foreground="#C5D7E7" FontSize="10.5"/><TextBlock x:Name="HomeLatestNetTextBlock" Text="0,00 ₺" Foreground="{StaticResource Blue600Brush}" FontSize="17" FontWeight="Bold" Margin="4,0,18,0"/><TextBlock Text="Arşiv: otomatik" Foreground="#91ABC0" FontSize="10.5"/></StackPanel>
+                                                <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal" Margin="0,5,0,0"><TextBlock Text="DURUM  " Foreground="#91ABC0" FontSize="10" FontWeight="Bold"/><TextBlock x:Name="HomeContractStatusTextBlock" Text="Bekleniyor" Foreground="{StaticResource Gold500Brush}" FontSize="12" FontWeight="Bold"/><TextBlock Text="  •  Hat: " Foreground="#C5D7E7" FontSize="11"/><TextBlock x:Name="HomeRouteCountTextBlock" Text="0" Foreground="White" FontSize="11" FontWeight="Bold"/><TextBlock Text="  •  Yüklenici kaydı: " Foreground="#C5D7E7" FontSize="11"/><TextBlock x:Name="HomeContractorCountTextBlock" Text="0" Foreground="White" FontSize="11" FontWeight="Bold"/></StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
                             </StackPanel>
                         </Grid>
 
@@ -413,7 +369,8 @@
 
                                                     <TextBlock Grid.Row="6" Grid.Column="0" Text="Sözleşme İş Günü" Style="{StaticResource FieldLabel}" Margin="0,8"/>
                                                     <TextBox x:Name="ContractWorkDaysTextBox" Grid.Row="6" Grid.Column="1" Margin="8" Style="{StaticResource FieldTextBox}"/>
-                                                    <TextBlock Grid.Row="6" Grid.Column="2" Text="Excel: İhale Verileri" Foreground="{StaticResource Text600Brush}" FontSize="11" Margin="18,8,0,8"/>
+                                                    <TextBlock Grid.Row="6" Grid.Column="2" Text="Taşıma Günlük Fiyatı" Style="{StaticResource FieldLabel}" Margin="18,8,0,8"/>
+                                                    <TextBox x:Name="RouteDailyPriceTextBox" Grid.Row="6" Grid.Column="3" Margin="8" Style="{StaticResource FieldTextBox}" ToolTip="Excel İhale Verileri'ndeki Günlük Fiyatı. Hakedişte tekrar girilmez."/>
                                                 </Grid>
                                                 <Border Style="{StaticResource StatusBanner}" Margin="8,14,8,0" Padding="14,11">
                                                     <Grid>
@@ -645,23 +602,7 @@
                                                          Margin="0,7,0,14"
                                                          TextChanged="RouteTransportCalculation_TextChanged"/>
 
-                                                <TextBlock Text="Taşıma Günlük Birim Fiyat" Foreground="White" FontSize="15" FontWeight="Bold"/>
-                                                <TextBox x:Name="RouteDailyPriceTextBox"
-                                                         Style="{StaticResource FieldTextBox}"
-                                                         Margin="0,7,0,10"
-                                                         TextChanged="RouteTransportCalculation_TextChanged"/>
 
-                                                <Border Background="#F3F7FA" BorderBrush="#D5E1EA" BorderThickness="1"
-                                                        CornerRadius="7" Padding="10,8" Margin="0,0,0,12">
-                                                    <Grid>
-                                                        <TextBlock Text="Taşıma Yıllık Tutarı" Foreground="{StaticResource Text900Brush}" FontWeight="SemiBold"/>
-                                                        <TextBlock x:Name="RouteTransportAnnualAmountTextBlock"
-                                                                   Text="0,00 ₺"
-                                                                   HorizontalAlignment="Right"
-                                                                   Foreground="{StaticResource Blue700Brush}"
-                                                                   FontWeight="Bold"/>
-                                                    </Grid>
-                                                </Border>
 
                                                 <TextBlock Text="Rehber Yıllık İş Günü" Foreground="White" FontSize="15" FontWeight="Bold"/>
                                                 <TextBox x:Name="RouteGuideWorkDaysTextBox" Style="{StaticResource FieldTextBox}" Margin="0,7,0,12"/>
