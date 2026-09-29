@@ -363,29 +363,53 @@ public partial class MainWindow : Window
 
     private void AddRouteButton_Click(object sender, RoutedEventArgs e)
     {
+        ClearRouteValidationVisuals();
+
         var routeNumber = RouteNumberTextBox.Text.Trim();
         var routeName = RouteNameTextBox.Text.Trim();
+        var errors = new List<string>();
 
         if (string.IsNullOrWhiteSpace(routeNumber))
         {
-            RouteStatusTextBlock.Text = "Hat No alanı boş bırakılamaz.";
-            return;
+            errors.Add("Hat No");
+            MarkInvalid(RouteNumberTextBox);
         }
 
         if (string.IsNullOrWhiteSpace(routeName))
         {
-            RouteStatusTextBlock.Text = "Hat Adı alanı boş bırakılamaz.";
-            return;
+            errors.Add("Hat Adı");
+            MarkInvalid(RouteNameTextBox);
         }
 
         if (!int.TryParse(RouteTransportWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var transportWorkDays) ||
-            transportWorkDays < 0 ||
-            !TryParseDecimal(RouteDailyPriceTextBox.Text, out var dailyPrice) || dailyPrice < 0 ||
-            !int.TryParse(RouteGuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var guideWorkDays) ||
-            guideWorkDays < 0 ||
-            !TryParseDecimal(RouteGuideDailyPriceTextBox.Text, out var guideDailyPrice) || guideDailyPrice < 0)
+            transportWorkDays < 0)
         {
-            RouteStatusTextBlock.Text = "Taşıma iş günü, taşıma fiyatı ve rehber personel iş günü/fiyat bilgileri geçerli olmalıdır.";
+            errors.Add("Taşıma İş Günü");
+            MarkInvalid(RouteTransportWorkDaysTextBox);
+        }
+
+        if (!TryParseDecimal(RouteDailyPriceTextBox.Text, out var dailyPrice) || dailyPrice < 0)
+        {
+            errors.Add("Taşıma Günlük Birim Fiyat");
+            MarkInvalid(RouteDailyPriceTextBox);
+        }
+
+        if (!int.TryParse(RouteGuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var guideWorkDays) ||
+            guideWorkDays < 0)
+        {
+            errors.Add("Rehber Yıllık İş Günü");
+            MarkInvalid(RouteGuideWorkDaysTextBox);
+        }
+
+        if (!TryParseDecimal(RouteGuideDailyPriceTextBox.Text, out var guideDailyPrice) || guideDailyPrice < 0)
+        {
+            errors.Add("Rehber Personel Günlük Fiyat");
+            MarkInvalid(RouteGuideDailyPriceTextBox);
+        }
+
+        if (errors.Count > 0)
+        {
+            ShowRouteValidation("Lütfen kırmızı işaretli alanları tamamlayın: " + string.Join(", ", errors) + ".");
             return;
         }
 
@@ -400,7 +424,33 @@ public partial class MainWindow : Window
         UpdateRouteSummary();
         UpdateHomeSummaryView();
         ClearRouteButton_Click(sender, e);
+        ClearRouteValidationVisuals();
         RouteStatusTextBlock.Text = $"Hat eklendi: {routeNumber} — {routeName}.";
+    }
+
+    private void ShowRouteValidation(string message)
+    {
+        RouteValidationMessageTextBlock.Text = message;
+        RouteValidationBanner.Visibility = Visibility.Visible;
+        RouteStatusTextBlock.Text = "Hat kaydedilmedi. Kırmızı işaretli alanları kontrol edin.";
+        RouteStatusTextBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(198, 40, 40));
+    }
+
+    private void ClearRouteValidationVisuals()
+    {
+        foreach (var control in new Control[]
+        {
+            RouteNumberTextBox,
+            RouteNameTextBox,
+            RouteTransportWorkDaysTextBox,
+            RouteDailyPriceTextBox,
+            RouteGuideWorkDaysTextBox,
+            RouteGuideDailyPriceTextBox
+        })
+            ClearInvalid(control);
+
+        RouteValidationBanner.Visibility = Visibility.Collapsed;
+        RouteValidationMessageTextBlock.Text = string.Empty;
     }
 
     private void RemoveRouteButton_Click(object sender, RoutedEventArgs e)
