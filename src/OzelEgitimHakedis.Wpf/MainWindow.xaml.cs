@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Documents;
 using OzelEgitimHakedis.Core.Models;
@@ -1206,7 +1207,7 @@ public partial class MainWindow : Window
 
             var a = monthPayment?.Calculation.ServiceAmount ?? 0m;
             var b = monthPayment?.Calculation.PriceDifferenceExcludingVat ?? 0m;
-            var total = a + b;
+            var monthlyTotal = a + b;
             totalA += a;
             totalB += b;
 
@@ -1216,7 +1217,7 @@ public partial class MainWindow : Window
                 $"Hizmet Alımı İşi {monthName}",
                 FormatMoney(a),
                 FormatMoney(b),
-                FormatMoney(total)));
+                FormatMoney(monthlyTotal)));
         }
 
         var doc = CreateBaseDocument("HAKEDİŞ İCMALİ", route.Name);
