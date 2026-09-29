@@ -54,6 +54,13 @@ public partial class MainWindow : Window
         ProgressRouteComboBox.ItemsSource = _routes;
         ReportRouteComboBox.ItemsSource = _routes;
         LoadPersistedData();
+
+        if (_routes.Count > 0)
+        {
+            ProgressRouteComboBox.SelectedIndex = 0;
+            ReportRouteComboBox.SelectedIndex = 0;
+        }
+
         UpdateRouteSummary();
         UpdateContractorSummary();
         UpdateHistoryView();
