@@ -1364,16 +1364,9 @@ public partial class MainWindow : Window
         if (dialog.ShowDialog() != true)
             return false;
 
-        // Yazıcı sürücüsünün A4 yazdırılabilir alanı A4 sayfasından daha küçük olabilir.
-        // Belgeyi güvenli 600 DIP içerik genişliğinde tutuyoruz; ayrıca gerçek yazıcı
-        // alanı biliniyorsa FlowDocument sayfa boyutunu yazdırma alanına göre sınırlandırıyoruz.
-        var printableWidth = dialog.PrintableAreaWidth;
-        var printableHeight = dialog.PrintableAreaHeight;
-        if (printableWidth > 0 && printableHeight > 0)
-        {
-            document.PageWidth = Math.Min(document.PageWidth, printableWidth);
-            document.PageHeight = Math.Min(document.PageHeight, printableHeight);
-        }
+        // Belge tabloları A4 içinde güvenli 600 DIP genişliğe sınırlandırılmıştır.
+        // Sayfa boyutu A4 olarak bırakılır; yazıcı sürücüsünün kenar boşlukları
+        // içerikle çakışmayacak kadar geniş güvenlik payı zaten PagePadding'e dahildir.
 
         dialog.PrintDocument(((IDocumentPaginatorSource)document).DocumentPaginator, title);
         return true;
