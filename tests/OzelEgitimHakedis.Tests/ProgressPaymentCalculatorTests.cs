@@ -75,10 +75,36 @@ public sealed class ProgressPaymentCalculatorTests
         Assert.Equal(121014.24m, result.TotalAmount);
         Assert.Equal(16488.89m, result.Vat);
         Assert.Equal(11754.42m, result.Withholding);
-        Assert.Equal(180m, result.AdditionalGuarantee);
+        // Excel AC = (Taşıma Toplam Tutarı × %6) + (Rehber Fiyat Farkı × %6)
+        // = (77.139,54 × %6) + (1.500 × %6) = 4.718,37.
+        Assert.Equal(4718.37m, result.AdditionalGuarantee);
         Assert.Equal(1147.21m, result.StampTax);
-        Assert.Equal(13081.64m, result.TotalDeductions);
-        Assert.Equal(124421.50m, result.NetPayable);
+        Assert.Equal(17620.01m, result.TotalDeductions);
+        Assert.Equal(119883.12m, result.NetPayable);
+    }
+
+    [Fact]
+    public void ExpandedExcelAdditionalGuarantee_ShouldUseTransportTotalPlusGuidePriceDifference()
+    {
+        var input = new ProgressPaymentInput(
+            WorkDays: 10,
+            DailyPrice: 1000m,
+            DiscountAmount: 0m,
+            PriceDifference: 500m,
+            ContractAmount: 10000m,
+            IsVatExempt: false,
+            TaxDebt: 0m,
+            SocialSecurityDebt: 0m,
+            MinimumWageSupport: 0m,
+            GuideWorkDays: 5,
+            GuideDailyPrice: 500m,
+            GuideDiscountAmount: 0m,
+            GuidePriceDifference: 100m);
+
+        var result = ProgressPaymentCalculator.Calculate(input);
+
+        // Excel AC: =(I*6/100)+(R*6/100) = (10500*6%) + (100*6%).
+        Assert.Equal(636m, result.AdditionalGuarantee);
     }
 
     [Fact]
