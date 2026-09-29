@@ -11,8 +11,9 @@
 7. WPF arayüzü — **TAMAMLANDI / kullanılabilirlik iyileştirmeleri sürüyor**
 8. İcmal ve raporlama — **TAMAMLANDI / gerçek belge eşleştirmesi sürüyor**
 9. Excel karşılaştırma testleri — **AKTİF**
-10. Gerçek senaryo testleri — **SONRAKİ AŞAMA**
-11. Release ve kurulum paketi — **SON AŞAMA**
+10. Gerçek senaryo testleri — **AKTİF**
+11. PDF/çıktı son karşılaştırması — **AKTİF**
+12. Release ve kurulum paketi — **SON AŞAMA**
 
 ## Mevcut çalışma sırası
 
@@ -49,6 +50,8 @@ Her hat için:
 Bu aşamanın son doğrulaması gerçek üretilen PDF'lerin referanslarla karşılaştırılmasıdır.
 
 ### 5. Gerçek senaryo testi
+Otomatik hesap regresyon testleri genişletildi. Şimdi UI üzerinden gerçek iki hatlı senaryo ile doğrulanacak.
+
 Test sırası:
 - Hat 1 oluştur
 - Hat 2 oluştur
@@ -58,7 +61,13 @@ Test sırası:
 - Hatların birbirine karışmadığını kontrol et
 - İcmal aylarının ve önceki hakediş toplamlarının doğru taşındığını kontrol et
 
-### 6. Release
+### 6. PDF ve çıktı son kontrolü
+- Dört belge ayrı ayrı önizlenecek.
+- A4 portre ve taşma kontrolü yapılacak.
+- Kabul tutanağı metni ve imza yerleşimi referansla karşılaştırılacak.
+- İcmal A/B/C toplamları kontrol edilecek.
+
+### 7. Release
 - Error = 0
 - Core testleri başarılı
 - WPF Rebuild başarılı
