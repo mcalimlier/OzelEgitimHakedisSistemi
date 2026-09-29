@@ -297,6 +297,7 @@ public partial class MainWindow : Window
         _contractors.Add(new ContractorDraft(name, taxOrIdentityNumber));
         SavePersistedData();
         UpdateContractorSummary();
+        UpdateHomeSummaryView();
         ClearContractorButton_Click(sender, e);
         ContractorStatusTextBlock.Text = $"Yüklenici eklendi: {name}.";
     }
@@ -308,6 +309,7 @@ public partial class MainWindow : Window
             _contractors.Remove(contractor);
             SavePersistedData();
             UpdateContractorSummary();
+            UpdateHomeSummaryView();
             ContractorStatusTextBlock.Text = $"Yüklenici silindi: {contractor.Name}.";
         }
     }
@@ -386,6 +388,7 @@ public partial class MainWindow : Window
         _routes.Add(new RouteDraft(routeNumber, routeName, dailyPrice, guideWorkDays, guideDailyPrice));
         SavePersistedData();
         UpdateRouteSummary();
+        UpdateHomeSummaryView();
         ClearRouteButton_Click(sender, e);
         RouteStatusTextBlock.Text = $"Hat eklendi: {routeNumber} — {routeName}.";
     }
@@ -397,6 +400,7 @@ public partial class MainWindow : Window
             _routes.Remove(route);
             SavePersistedData();
             UpdateRouteSummary();
+            UpdateHomeSummaryView();
             RouteStatusTextBlock.Text = $"Hat silindi: {route.RouteNumber}.";
         }
     }
