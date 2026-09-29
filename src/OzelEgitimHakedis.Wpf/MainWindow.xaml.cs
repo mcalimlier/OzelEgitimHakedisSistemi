@@ -1489,6 +1489,16 @@ public partial class MainWindow : Window
         return doc;
     }
 
+    private static int CalculateContractDurationDays(ProgressPaymentHistoryData latest)
+    {
+        if (!latest.ContractStartDate.HasValue || !latest.ContractEndDate.HasValue)
+            return 0;
+
+        var start = latest.ContractStartDate.Value.ToDateTime(TimeOnly.MinValue);
+        var end = latest.ContractEndDate.Value.ToDateTime(TimeOnly.MinValue);
+        return Math.Max(0, (end - start).Days);
+    }
+
     private FlowDocument BuildHizmetIsleriHakedisRaporu(RouteDraft route, ProgressPaymentHistoryData latest)
     {
         var doc = CreateBaseDocument("HİZMET İŞLERİ HAK EDİŞ RAPORU", "");
@@ -1505,7 +1515,7 @@ public partial class MainWindow : Window
             ("Sözleşmenin Sayıştayca Tescil Tarihi ve No'su", "Tescile Dahil Değil"),
             ("Tescilin Yükleniciye Tebliğ Tarihi", "Tescile Dahil Değil"),
             ("İşyeri Teslim Tarihi", latest.ContractStartDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? StartDatePicker.SelectedDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
-            ("Sözleşmeye Göre İşin Süresi", $"{Math.Max(0, (latest.ContractEndDate - latest.ContractStartDate)?.Days ?? 0)} Gün"),
+            ("Sözleşmeye Göre İşin Süresi", $"{CalculateContractDurationDays(latest)} Gün"),
             ("Sözleşmeye Göre İş Bitim Tarihi", latest.ContractEndDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? EndDatePicker.SelectedDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
             ("Verilen Avanslar Toplamı", "Avans verilmeyecektir."),
             ("Mahsubu Yapılan Avansın Toplam Tutarı", "Yoktur.")
