@@ -476,13 +476,11 @@ public partial class MainWindow : Window
         RouteDailyPriceTextBox.Text = "0";
         RouteGuideWorkDaysTextBox.Text = "0";
         ClearRouteValidationVisuals();
-        UpdateRouteTransportAnnualAmount();
     }
 
     private void UpdateRouteSummary()
     {
         RouteCountTextBlock.Text = _routes.Count.ToString(CultureInfo.CurrentCulture);
-        RouteTotalDailyPriceTextBlock.Text = FormatMoney(_routes.Sum(x => x.DailyPrice + x.GuideDailyPrice));
     }
 
     private void SaveContractButton_Click(object sender, RoutedEventArgs e)
