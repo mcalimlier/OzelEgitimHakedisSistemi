@@ -21,7 +21,7 @@ public sealed class ProgressPaymentCalculatorTests
             TaxDebt: 0m,
             SocialSecurityDebt: 0m,
             MinimumWageSupport: 0m,
-            HasInspectionPenalty: true);
+            InspectionPenalty: 2277.80m);
 
         var result = ProgressPaymentCalculator.Calculate(input);
 
@@ -77,7 +77,7 @@ public sealed class ProgressPaymentCalculatorTests
             TaxDebt: 0m,
             SocialSecurityDebt: 0m,
             MinimumWageSupport: 0m,
-            HasInspectionPenalty: true);
+            InspectionPenalty: 20m);
 
         var result = ProgressPaymentCalculator.Calculate(input);
 
@@ -97,7 +97,7 @@ public sealed class ProgressPaymentCalculatorTests
             TaxDebt: 1200m,
             SocialSecurityDebt: 800m,
             MinimumWageSupport: 300m,
-            HasInspectionPenalty: true);
+            InspectionPenalty: 2277.80m);
 
         var result = ProgressPaymentCalculator.Calculate(input);
 
