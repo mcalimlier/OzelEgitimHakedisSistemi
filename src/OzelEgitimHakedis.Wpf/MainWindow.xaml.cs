@@ -443,6 +443,13 @@ public partial class MainWindow : Window
             return;
         }
 
+        if (!int.TryParse(ContractWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var contractWorkDays) ||
+            contractWorkDays < 0)
+        {
+            ContractStatusTextBlock.Text = "Sözleşme İş Günü 0 veya daha büyük tam sayı olmalıdır.";
+            return;
+        }
+
         SavePersistedData();
         UpdateContractSummaryView();
         UpdateHomeSummaryView();
@@ -474,6 +481,9 @@ public partial class MainWindow : Window
             WorkNameTextBox.Text = data.Contract.WorkName;
             ContractorTextBox.Text = data.Contract.ContractorName;
             ContractAmountTextBox.Text = data.Contract.ContractAmount.ToString("N2", CultureInfo.CurrentCulture);
+            ContractorIdentityNumberTextBox.Text = data.Contract.ContractorTaxOrIdentityNumber;
+            BankAccountNumberTextBox.Text = data.Contract.BankAccountNumber;
+            ContractWorkDaysTextBox.Text = data.Contract.ContractWorkDays.ToString(CultureInfo.CurrentCulture);
             StartDatePicker.SelectedDate = data.Contract.StartDate.ToDateTime(TimeOnly.MinValue);
             EndDatePicker.SelectedDate = data.Contract.EndDate.ToDateTime(TimeOnly.MinValue);
             TenderDatePicker.SelectedDate = data.Contract.TenderDate?.ToDateTime(TimeOnly.MinValue);
@@ -500,7 +510,10 @@ public partial class MainWindow : Window
                 DateOnly.FromDateTime(EndDatePicker.SelectedDate ?? DateTime.Today),
                 VatExemptCheckBox.IsChecked == true,
                 TenderDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(TenderDatePicker.SelectedDate.Value) : null,
-                ContractDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(ContractDatePicker.SelectedDate.Value) : null);
+                ContractDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(ContractDatePicker.SelectedDate.Value) : null,
+                ContractorIdentityNumberTextBox.Text.Trim(),
+                BankAccountNumberTextBox.Text.Trim(),
+                int.TryParse(ContractWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var contractWorkDays) ? contractWorkDays : 0);
 
         var data = new OehsApplicationData(
             contract,
@@ -517,6 +530,9 @@ public partial class MainWindow : Window
         ContractNumberTextBox.Clear();
         WorkNameTextBox.Clear();
         ContractorTextBox.Clear();
+        ContractorIdentityNumberTextBox.Clear();
+        BankAccountNumberTextBox.Clear();
+        ContractWorkDaysTextBox.Clear();
         ContractAmountTextBox.Clear();
         StartDatePicker.SelectedDate = DateTime.Today;
         EndDatePicker.SelectedDate = DateTime.Today;
