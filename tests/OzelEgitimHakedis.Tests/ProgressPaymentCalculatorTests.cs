@@ -41,6 +41,71 @@ public sealed class ProgressPaymentCalculatorTests
         Assert.Equal(186326.27m, result.NetPayable);
     }
 
+
+    [Fact]
+    public void ExcelTransportAndGuideExample_ShouldMatch()
+    {
+        // Orijinal XLSM Hesaplama!4 satırındaki senaryo:
+        // Taşıma 29 gün x 2608,26 + 1.500 fiyat farkı
+        // Rehber 30 gün x 1362,49 + 1.500 fiyat farkı
+        // Taşıma KDV %10, rehber KDV %20, tevkifat sırasıyla %5 ve %18.
+        var input = new ProgressPaymentInput(
+            WorkDays: 29,
+            DailyPrice: 2608.26m,
+            DiscountAmount: 0m,
+            PriceDifference: 1500m,
+            ContractAmount: 816805.03m,
+            IsVatExempt: false,
+            TaxDebt: 0m,
+            SocialSecurityDebt: 0m,
+            MinimumWageSupport: 0m,
+            InspectionPenalty: 0m,
+            GuideWorkDays: 30,
+            GuideDailyPrice: 1362.49m,
+            GuideDiscountAmount: 0m,
+            GuidePriceDifference: 1500m);
+
+        var result = ProgressPaymentCalculator.Calculate(input);
+
+        Assert.Equal(75639.54m, result.ServiceAmount);
+        Assert.Equal(42374.70m, result.GuideServiceAmount);
+        Assert.Equal(1500m, result.PriceDifferenceExcludingVat);
+        Assert.Equal(1500m, result.GuidePriceDifferenceExcludingVat);
+        Assert.Equal(3000m, result.CombinedPriceDifferenceExcludingVat);
+        Assert.Equal(119514.24m, result.TotalAmount);
+        Assert.Equal(16188.89m, result.Vat);
+        Assert.Equal(11484.42m, result.Withholding);
+        Assert.Equal(180m, result.AdditionalGuarantee);
+        Assert.Equal(1132.99m, result.StampTax);
+        Assert.Equal(12797.42m, result.TotalDeductions);
+        Assert.Equal(122905.72m, result.NetPayable);
+    }
+
+    [Fact]
+    public void Discount_ShouldBeSubtractedFromTransportAndGuideBases()
+    {
+        var input = new ProgressPaymentInput(
+            WorkDays: 10,
+            DailyPrice: 1000m,
+            DiscountAmount: 100m,
+            PriceDifference: 200m,
+            ContractAmount: 10000m,
+            IsVatExempt: false,
+            TaxDebt: 0m,
+            SocialSecurityDebt: 0m,
+            MinimumWageSupport: 0m,
+            GuideWorkDays: 5,
+            GuideDailyPrice: 500m,
+            GuideDiscountAmount: 50m,
+            GuidePriceDifference: 100m);
+
+        var result = ProgressPaymentCalculator.Calculate(input);
+
+        Assert.Equal(10100m, result.TransportNetAmount);
+        Assert.Equal(2550m, result.GuideNetAmount);
+        Assert.Equal(12650m, result.TotalAmount);
+    }
+
     [Fact]
     public void VatExempt_ShouldNotCalculateVatOrWithholding()
     {
