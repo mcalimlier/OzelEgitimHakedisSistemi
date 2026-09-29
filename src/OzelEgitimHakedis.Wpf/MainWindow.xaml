@@ -476,16 +476,22 @@
                                                     <TextBlock Text="Hesaplanan kesintilerin dağılımı" Style="{StaticResource CardSubtitle}" Margin="0,2,0,6"/>
                                                     <Grid>
                                                         <Grid.RowDefinitions>
-                                                            <RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/>
+                                                            <RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/>
                                                         </Grid.RowDefinitions>
                                                         <TextBlock Grid.Row="0" Text="Tevkifat" Style="{StaticResource FieldLabel}"/>
                                                         <TextBlock x:Name="WithholdingResultTextBlock" Grid.Row="0" Text="0,00 ₺" HorizontalAlignment="Right" Foreground="White"/>
                                                         <TextBlock Grid.Row="1" Text="Damga Vergisi" Style="{StaticResource FieldLabel}" Margin="0,5,0,0"/>
                                                         <TextBlock x:Name="StampTaxResultTextBlock" Grid.Row="1" Text="0,00 ₺" HorizontalAlignment="Right" Foreground="White" Margin="0,5,0,0"/>
-                                                        <TextBlock Grid.Row="2" Text="Denetim Cezası" Style="{StaticResource FieldLabel}" Margin="0,5,0,0"/>
-                                                        <TextBlock x:Name="InspectionPenaltyResultTextBlock" Grid.Row="2" Text="0,00 ₺" HorizontalAlignment="Right" Foreground="White" Margin="0,5,0,0"/>
-                                                        <TextBlock Grid.Row="3" Text="Fiyat Farkı Teminatı" Style="{StaticResource FieldLabel}" Margin="0,5,0,0"/>
-                                                        <TextBlock x:Name="AdditionalGuaranteeResultTextBlock" Grid.Row="3" Text="0,00 ₺" HorizontalAlignment="Right" Foreground="White" Margin="0,5,0,0"/>
+                                                        <TextBlock Grid.Row="2" Text="Vergi Borcu" Style="{StaticResource FieldLabel}" Margin="0,5,0,0"/>
+                                                        <TextBlock x:Name="TaxDebtResultTextBlock" Grid.Row="2" Text="0,00 ₺" HorizontalAlignment="Right" Foreground="White" Margin="0,5,0,0"/>
+                                                        <TextBlock Grid.Row="3" Text="SGK Borcu" Style="{StaticResource FieldLabel}" Margin="0,5,0,0"/>
+                                                        <TextBlock x:Name="SocialSecurityDebtResultTextBlock" Grid.Row="3" Text="0,00 ₺" HorizontalAlignment="Right" Foreground="White" Margin="0,5,0,0"/>
+                                                        <TextBlock Grid.Row="4" Text="Asgari Ücret Desteği" Style="{StaticResource FieldLabel}" Margin="0,5,0,0"/>
+                                                        <TextBlock x:Name="MinimumWageSupportResultTextBlock" Grid.Row="4" Text="0,00 ₺" HorizontalAlignment="Right" Foreground="White" Margin="0,5,0,0"/>
+                                                        <TextBlock Grid.Row="5" Text="Denetim Cezası" Style="{StaticResource FieldLabel}" Margin="0,5,0,0"/>
+                                                        <TextBlock x:Name="InspectionPenaltyResultTextBlock" Grid.Row="5" Text="0,00 ₺" HorizontalAlignment="Right" Foreground="White" Margin="0,5,0,0"/>
+                                                        <TextBlock Grid.Row="6" Text="Fiyat Farkı Teminatı" Style="{StaticResource FieldLabel}" Margin="0,5,0,0"/>
+                                                        <TextBlock x:Name="AdditionalGuaranteeResultTextBlock" Grid.Row="6" Text="0,00 ₺" HorizontalAlignment="Right" Foreground="White" Margin="0,5,0,0"/>
                                                     </Grid>
                                                 </StackPanel>
                                             </Border>
