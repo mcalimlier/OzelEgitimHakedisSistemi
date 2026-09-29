@@ -519,6 +519,7 @@
                                         </StackPanel>
                                     </Grid>
                                 </StackPanel>
+                            </ScrollViewer>
                         </Grid>
 
                         <!-- Hatlar -->
