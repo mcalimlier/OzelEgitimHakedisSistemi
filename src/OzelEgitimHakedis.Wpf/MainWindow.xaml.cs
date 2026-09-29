@@ -734,6 +734,33 @@ public partial class MainWindow : Window
         return table;
     }
 
+    private Table CreateThreeValueTable(params (string A, string B, string C)[] rows)
+    {
+        var table = new Table
+        {
+            CellSpacing = 0,
+            BorderBrush = System.Windows.Media.Brushes.Black,
+            BorderThickness = new Thickness(1),
+            Margin = new Thickness(0, 0, 0, 10)
+        };
+
+        foreach (var width in new[] { 70d, 500d, 170d })
+            table.Columns.Add(new TableColumn { Width = new GridLength(width) });
+
+        var group = new TableRowGroup();
+        foreach (var item in rows)
+        {
+            var row = new TableRow();
+            row.Cells.Add(CreateCell(item.A, true, false, true));
+            row.Cells.Add(CreateCell(item.B, true));
+            row.Cells.Add(CreateCell(item.C, true, true));
+            group.Rows.Add(row);
+        }
+
+        table.RowGroups.Add(group);
+        return table;
+    }
+
     private Table CreateFourColumnTable(IEnumerable<(string A, string B, string C, string D)> rows, string[] headers)
     {
         var table = new Table { CellSpacing = 0, BorderBrush = System.Windows.Media.Brushes.Black, BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 0, 10) };
@@ -1203,7 +1230,7 @@ public partial class MainWindow : Window
             new[] { "Sıra No", "İşin Cinsi", "İş Tutarı (a)", "Fiyat Farkı Tutarı (b)", "Toplam (a+b)" }));
 
         var total = totalA + totalB;
-        doc.Blocks.Add(CreateDocumentTable(
+        doc.Blocks.Add(CreateThreeValueTable(
             ("A", "T O P L A M", FormatMoney(total))));
 
         var previousDeduction = payments
@@ -1213,7 +1240,7 @@ public partial class MainWindow : Window
         var totalDeduction = previousDeduction + currentDeduction;
         var net = total - totalDeduction;
 
-        doc.Blocks.Add(CreateDocumentTable(
+        doc.Blocks.Add(CreateThreeValueTable(
             ("a)", "Bir Evvelki Hakedişten Yapılan Kesinti", FormatMoney(previousDeduction)),
             ("b)", "Bu Hakedişten Yapılan Kesinti", FormatMoney(currentDeduction)),
             ("B", "Toplam Kesinti Tutarı", FormatMoney(totalDeduction)),
