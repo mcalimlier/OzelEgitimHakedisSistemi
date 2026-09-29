@@ -95,15 +95,16 @@ public sealed class ProgressPaymentCalculator
         var grossAmount = totalAmount + vat;
         // Excel'deki hücreler ara sonuçları tam hassasiyetle toplar; son tutar
         // ekranda iki ondalığa yuvarlanır.
-        var totalDeductions = Round(
+        var exactTotalDeductions =
             withholding
             + stampTax
             + input.TaxDebt
             + inspectionPenalty
             + input.SocialSecurityDebt
             + input.MinimumWageSupport
-            + additionalGuarantee);
-        var netPayable = grossAmount - totalDeductions;
+            + additionalGuarantee;
+        var totalDeductions = Round(exactTotalDeductions);
+        var netPayable = grossAmount - exactTotalDeductions;
 
         return new ProgressPaymentCalculation(
             Round(transportServiceAmount),
