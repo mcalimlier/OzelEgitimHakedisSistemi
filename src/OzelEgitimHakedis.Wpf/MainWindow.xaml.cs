@@ -314,7 +314,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (_routes.Any(x => string.Equals(x.RouteNumber, routeNumber, StringComparison.CurrentCultureIgnoreCase)))
+        if (_routes.Any(x => string.Equals(x.RouteNumber, routeNumber, StringComparison.OrdinalIgnoreCase)))
         {
             RouteStatusTextBlock.Text = "Bu Hat No zaten tanımlı.";
             return;
@@ -606,7 +606,16 @@ public partial class MainWindow : Window
     {
         _reportRows.Clear();
 
-        foreach (var item in _progressHistory.OrderByDescending(x => x.PeriodDate ?? DateOnly.MinValue).ThenByDescending(x => x.CreatedAt))
+        var selectedRoute = ReportRouteComboBox.SelectedItem as RouteDraft;
+        var routePayments = selectedRoute is null
+            ? _progressHistory.ToArray()
+            : _progressHistory
+                .Where(x => string.Equals(x.RouteNumber, selectedRoute.RouteNumber, StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+
+        foreach (var item in routePayments
+                     .OrderByDescending(x => x.PeriodDate ?? DateOnly.MinValue)
+                     .ThenByDescending(x => x.CreatedAt))
         {
             var title = item.ProgressPaymentNumber.HasValue
                 ? $"Hakediş No {item.ProgressPaymentNumber.Value}"
@@ -623,11 +632,11 @@ public partial class MainWindow : Window
                 FormatMoney(item.Calculation.NetPayable)));
         }
 
-        ReportCountTextBlock.Text = _progressHistory.Count.ToString(CultureInfo.CurrentCulture);
-        ReportGrossTextBlock.Text = FormatMoney(_progressHistory.Sum(x => x.Calculation.GrossAmount));
-        ReportNetTextBlock.Text = FormatMoney(_progressHistory.Sum(x => x.Calculation.NetPayable));
+        ReportCountTextBlock.Text = routePayments.Length.ToString(CultureInfo.CurrentCulture);
+        ReportGrossTextBlock.Text = FormatMoney(routePayments.Sum(x => x.Calculation.GrossAmount));
+        ReportNetTextBlock.Text = FormatMoney(routePayments.Sum(x => x.Calculation.NetPayable));
 
-        var latest = _progressHistory
+        var latest = routePayments
             .OrderByDescending(x => x.PeriodDate ?? DateOnly.MinValue)
             .ThenByDescending(x => x.CreatedAt)
             .FirstOrDefault();
@@ -637,7 +646,9 @@ public partial class MainWindow : Window
             ReportDetailTitleTextBlock.Text = "Henüz kayıt yok";
             ReportDetailGrossTextBlock.Text = FormatMoney(0);
             ReportDetailNetTextBlock.Text = FormatMoney(0);
-            ReportDetailMetaTextBlock.Text = "Hakediş ekranından bir hesaplama kaydedildiğinde son kayıt burada gösterilir.";
+            ReportDetailMetaTextBlock.Text = selectedRoute is null
+                ? "Hakediş ekranından bir hesaplama kaydedildiğinde son kayıt burada gösterilir."
+                : "Seçilen hat için henüz hakediş kaydı yok.";
         }
         else
         {
@@ -659,6 +670,14 @@ public partial class MainWindow : Window
         }
 
         ReportEmptyStateBorder.Visibility = _reportRows.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void ReportRouteComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!IsInitialized)
+            return;
+
+        UpdateReportView();
     }
 
     private ProgressPaymentHistoryData? GetSelectedRouteLatestPayment()
