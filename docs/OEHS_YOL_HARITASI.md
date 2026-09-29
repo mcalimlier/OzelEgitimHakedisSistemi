@@ -109,3 +109,14 @@ Kullanıcı ekranında **KDV HESAPLA / DAHİL ET** seçeneği bulunur.
 - İşaretsiz → KDV ve buna bağlı tevkifat uygulanmaz.
 
 Excel'in orijinal Hesaplama sayfasındaki “KDV'den Muafmı?” alanı ile mevcut formüller ayrıca karşılaştırılmıştır; OEHS kullanıcı arayüzünde seçim davranışı açık ve anlaşılır olacak şekilde sunulmuştur.
+
+### Excel v2 ikinci tarama — tamamlandı / uygulanıyor
+- `vbaProject.bin` içindeki Module1 VBA kaynak kodu çıkarıldı ve makro aktarım akışları doğrulandı.
+- Rehber personel hakediş hesabı eklendi.
+- Taşıma ve rehber personel fiyat farkları ayrı alanlara ayrıldı.
+- Taşıma %10 / rehber %20 KDV ve 5/10 + 9/10 tevkifat ayrımı eklendi.
+- Ek kesin teminat, iki fiyat farkının toplamı üzerinden %6 olarak bağlandı.
+- İhale tarihi ve sözleşme tarihi veri akışına eklendi.
+- Panel kartlarının sabit/placeholder metinleri yerine kayıtlı verileri göstermesi için bağlantılar genişletildi.
+- PDF raporlarında kesinti başlığının düşey yerleşimi ve referans tablo düzenleri iyileştirildi.
+- Orijinal Excel'de Hakediş Raporu D28 ile Hesaplama AG arasında fiyat farkı kaynaklı formül tutarsızlığı ayrıca belgelendi; PDF birebir eşleştirme aşamasında karar verilecek.
