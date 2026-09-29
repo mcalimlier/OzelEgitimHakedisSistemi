@@ -78,3 +78,34 @@ Test sırası:
 - Dört belge son karşılaştırmadan geçti
 - Test paketi oluştur
 - Windows kurulum / dağıtım paketi hazırlan
+
+## 12.09.2026 Orijinal Excel doğrulaması
+
+Kullanıcının yeniden yüklediği orijinal `Özel Eğitim Hakediş Ödeme Programı.xlsm` doğrudan incelendi.
+
+- Çalışma sayfaları: Anasayfa, İhale Verileri, Hesaplama, Hakediş Raporu, Hizmetişleri Hakediş Raporu, Hizmet İşleri K. Tutanağı, Hakediş İcmali, İcmal Verileri.
+- Dosyada `xl/vbaProject.bin` bulundu; yani bu workbook sürümünde VBA projesi gerçekten mevcut.
+- VBA içindeki metinlerde hakediş kontrolü, fiyat farkı aktarımı, rehber personel fiyat farkı aktarımı, kesinti aktarımı, icmal/hakediş toplam aktarımı ve kabul tutanağı kontrolü gibi işlemlere ait makro izleri bulundu.
+- Bu nedenle önceki “aktif VBA tespit edilmedi” notu bu yüklenen orijinal dosya için geçerli değildir ve düzeltilmiştir.
+
+### Kullanıcı tarafından girilecek hakediş değerleri
+
+Hakediş ekranında dönem bazında kullanıcı tarafından girilecek alanlar:
+
+- İskonto
+- Fiyat Farkı
+- Vergi Borcu
+- SGK Borcu
+- Asgari Ücret Desteği
+- Denetim Cezası
+
+Bu alanlar hesap motoruna doğrudan aktarılır; sabit bir mevzuat tutarı olarak üretilmez.
+
+### KDV seçimi
+
+Kullanıcı ekranında **KDV HESAPLA / DAHİL ET** seçeneği bulunur.
+
+- İşaretli → KDV hesaplanır ve toplam/brüt/net zincirine dahil edilir; buna bağlı tevkifat da hesaplanır.
+- İşaretsiz → KDV ve buna bağlı tevkifat uygulanmaz.
+
+Excel'in orijinal Hesaplama sayfasındaki “KDV'den Muafmı?” alanı ile mevcut formüller ayrıca karşılaştırılmıştır; OEHS kullanıcı arayüzünde seçim davranışı açık ve anlaşılır olacak şekilde sunulmuştur.
