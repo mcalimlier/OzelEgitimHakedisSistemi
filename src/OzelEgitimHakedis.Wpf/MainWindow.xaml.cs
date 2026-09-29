@@ -1245,8 +1245,8 @@ public partial class MainWindow : Window
             Margin = new Thickness(0, 18, 0, 8)
         };
 
-        table.Columns.Add(new TableColumn { Width = new GridLength(340) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(340) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(300) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(300) });
 
         var group = new TableRowGroup();
         var row = new TableRow();
