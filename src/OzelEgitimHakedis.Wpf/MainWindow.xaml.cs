@@ -1174,7 +1174,7 @@ public partial class MainWindow : Window
     {
         var table = new Table { CellSpacing = 0, BorderBrush = System.Windows.Media.Brushes.Black, BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 0, 10) };
         table.Columns.Add(new TableColumn { Width = new GridLength(270) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(300) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(270) });
         var group = new TableRowGroup();
         foreach (var (label, value) in rows)
         {
