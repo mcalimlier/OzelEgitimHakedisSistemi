@@ -563,13 +563,6 @@
                                                 <TextBlock Text="Bu sözleşme için" Style="{StaticResource CardSubtitle}"/>
                                             </StackPanel>
                                         </Border>
-                                        <Border Style="{StaticResource MetricCard}" Margin="4,0">
-                                            <StackPanel>
-                                                <TextBlock Text="TOPLAM GÜNLÜK BEDEL" Foreground="White" FontWeight="Bold" FontSize="14"/>
-                                                <TextBlock x:Name="RouteTotalDailyPriceTextBlock" Text="0,00 ₺" FontSize="25" FontWeight="Bold" Foreground="White"/>
-                                                <TextBlock Text="Tanımlı hatların toplamı" Style="{StaticResource CardSubtitle}"/>
-                                            </StackPanel>
-                                        </Border>
                                         <Border Style="{StaticResource PremiumPanel}" Margin="8,0,0,0" Padding="16">
                                             <StackPanel>
                                                 <TextBlock Text="AKIŞ" Foreground="{StaticResource Gold500Brush}" FontSize="11" FontWeight="Bold"/>
