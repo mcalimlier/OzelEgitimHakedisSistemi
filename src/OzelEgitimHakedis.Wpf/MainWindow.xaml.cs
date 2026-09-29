@@ -472,7 +472,11 @@ public partial class MainWindow : Window
         RouteTransportWorkDaysTextBox.Clear();
         RouteDailyPriceTextBox.Clear();
         RouteGuideWorkDaysTextBox.Clear();
-        RouteGuideDailyPriceTextBox.Clear();
+        RouteGuideDailyPriceTextBox.Text = "0";
+        RouteTransportWorkDaysTextBox.Text = "0";
+        RouteDailyPriceTextBox.Text = "0";
+        RouteGuideWorkDaysTextBox.Text = "0";
+        ClearRouteValidationVisuals();
         UpdateRouteTransportAnnualAmount();
     }
 
@@ -639,18 +643,19 @@ public partial class MainWindow : Window
 
     private void CalculateProgressButton_Click(object sender, RoutedEventArgs e)
     {
-        if (!int.TryParse(WorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var workDays) ||
-            workDays < 0 ||
-            !int.TryParse(GuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var guideWorkDays) ||
-            guideWorkDays < 0)
-        {
-            CalculationStatusTextBlock.Text = "Taşıma ve rehber iş günleri 0 veya daha büyük tam sayılar olmalıdır.";
-            return;
-        }
-
         ClearProgressValidationVisuals();
+        ProgressValidationBanner.Visibility = Visibility.Collapsed;
+        ProgressValidationMessageTextBlock.Text = string.Empty;
 
         var invalidFields = new List<(Control Control, string Name)>();
+
+        if (!int.TryParse(WorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var workDays) ||
+            workDays < 0)
+            invalidFields.Add((WorkDaysTextBox, "Taşıma İş Günü"));
+
+        if (!int.TryParse(GuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var guideWorkDays) ||
+            guideWorkDays < 0)
+            invalidFields.Add((GuideWorkDaysTextBox, "Rehber İş Günü"));
 
         if (!TryParseDecimal(DailyPriceTextBox.Text, out var dailyPrice) || dailyPrice < 0)
             invalidFields.Add((DailyPriceTextBox, "Taşıma Günlük Fiyat"));
@@ -680,9 +685,14 @@ public partial class MainWindow : Window
             foreach (var (control, _) in invalidFields)
                 MarkProgressInvalid(control);
 
+            var message = "Lütfen kırmızı işaretli alanları tamamlayın/düzeltin: " +
+                          string.Join(", ", invalidFields.Select(x => x.Name)) + ".";
+            ProgressValidationMessageTextBlock.Text = message;
+            ProgressValidationBanner.Visibility = Visibility.Visible;
             ProgressCalculationSummaryTextBlock.Text = "KONTROL GEREKLİ";
-            CalculationStatusTextBlock.Text = "Kırmızı işaretli alanları doldurun/düzeltin: " +
-                                              string.Join(", ", invalidFields.Select(x => x.Name)) + ".";
+            CalculationStatusTextBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(198, 40, 40));
+            CalculationStatusTextBlock.FontWeight = FontWeights.Bold;
+            CalculationStatusTextBlock.Text = message;
             return;
         }
 
@@ -783,6 +793,9 @@ public partial class MainWindow : Window
             UpdateHomeSummaryView();
             UpdateAcceptanceView();
 
+            ProgressValidationBanner.Visibility = Visibility.Collapsed;
+            CalculationStatusTextBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(36, 104, 216));
+            CalculationStatusTextBlock.FontWeight = FontWeights.SemiBold;
             CalculationStatusTextBlock.Text = wasEditing
                 ? "Hakediş kaydı güncellendi."
                 : "Hesaplama başarıyla tamamlandı ve geçmişe kaydedildi.";
