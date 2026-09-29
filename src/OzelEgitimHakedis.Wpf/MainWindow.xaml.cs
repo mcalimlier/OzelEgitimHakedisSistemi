@@ -25,6 +25,17 @@ public partial class MainWindow : Window
     private readonly ObservableCollection<SummaryRow> _summaryRows = new();
     private readonly ObservableCollection<ReportRow> _reportRows = new();
     private readonly OehsApplicationDataStore _dataStore = new();
+    private static readonly double[] ThreeColumnWidths = { 70d, 390d, 220d };
+    private static readonly double[] ThreeValueWidths = { 55d, 470d, 155d };
+    private static readonly double[] FourColumnWidths = { 60d, 310d, 155d, 155d };
+    private static readonly double[] FiveColumnWidths = { 45d, 255d, 126d, 126d, 128d };
+    private static readonly string[] MainReportHeaders = { "", "Kalem", "Tutar" };
+    private static readonly string[] DeductionHeaders = { "", "KESİNTİLER VE MAHSUPLAR", "Tutar" };
+    private static readonly string[] ContractHeaders = { "Sözleşme Bedeli", "Sözleşme Artış Onayının Tarihi No.su", "Ek Sözleşme Bedeli", "Toplam Sözleşme Bedeli" };
+    private static readonly string[] ExtensionHeaders = { "Tarih", "Sayısı", "Verilen Süre", "İş Bitim Tarihi" };
+    private static readonly string[] IcmalHeaders = { "Sıra No", "İşin Cinsi", "İş Tutarı (a)", "Fiyat Farkı Tutarı (b)", "Toplam (a+b)" };
+
+
 
     public MainWindow()
     {
@@ -745,7 +756,7 @@ public partial class MainWindow : Window
             Margin = new Thickness(0, 0, 0, 10)
         };
 
-        foreach (var width in new[] { 55d, 470d, 155d })
+        foreach (var width in ThreeValueWidths)
             table.Columns.Add(new TableColumn { Width = new GridLength(width) });
 
         var group = new TableRowGroup();
@@ -765,7 +776,7 @@ public partial class MainWindow : Window
     private static Table CreateFourColumnTable(IEnumerable<(string A, string B, string C, string D)> rows, string[] headers)
     {
         var table = new Table { CellSpacing = 0, BorderBrush = System.Windows.Media.Brushes.Black, BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 0, 10) };
-        foreach (var width in new[] { 60d, 310d, 155d, 155d })
+        foreach (var width in FourColumnWidths)
             table.Columns.Add(new TableColumn { Width = new GridLength(width) });
 
         var group = new TableRowGroup();
@@ -798,7 +809,7 @@ public partial class MainWindow : Window
             Margin = new Thickness(0, 0, 0, 10)
         };
 
-        foreach (var width in new[] { 45d, 255d, 126d, 126d, 128d })
+        foreach (var width in FiveColumnWidths)
             table.Columns.Add(new TableColumn { Width = new GridLength(width) });
 
         var group = new TableRowGroup();
@@ -1063,7 +1074,7 @@ public partial class MainWindow : Window
             ("F", "KDV  %10 + %20", FormatMoney(latest.Calculation.Vat)),
             ("G", "Tahakkuk Tutarı", FormatMoney(latest.Calculation.GrossAmount))
         };
-        doc.Blocks.Add(CreateThreeColumnTable(mainRows.ToArray(), new[] { "", "Kalem", "Tutar" }));
+        doc.Blocks.Add(CreateThreeColumnTable(mainRows.ToArray(), MainReportHeaders));
 
         doc.Blocks.Add(SectionHeading("KESİNTİLER VE MAHSUPLAR"));
         var d = latest.Calculation.Deductions;
@@ -1084,7 +1095,7 @@ public partial class MainWindow : Window
             ("H", "Kesintiler ve Mahsuplar Toplamı", FormatMoney(latest.Calculation.TotalDeductions)),
             ("I", "Yükleniciye Ödenecek Tutar  ( G - H )", FormatMoney(latest.Calculation.NetPayable))
         };
-        doc.Blocks.Add(CreateThreeColumnTable(hRows.ToArray(), new[] { "", "KESİNTİLER VE MAHSUPLAR", "Tutar" }));
+        doc.Blocks.Add(CreateThreeColumnTable(hRows.ToArray(), DeductionHeaders));
 
         doc.Blocks.Add(CreateDocumentTable(
             ("Yüklenici", ContractorTextBox.Text)));
@@ -1145,7 +1156,7 @@ public partial class MainWindow : Window
         doc.Blocks.Add(CreateFourColumnTable(
             new[] { ("", "Sözleşme Bedeli", FormatMoney(latest.Input.ContractAmount), "Toplam Sözleşme Bedeli"),
                     ("", "", "", FormatMoney(latest.Input.ContractAmount)) },
-            new[] { "Sözleşme Bedeli", "Sözleşme Artış Onayının Tarihi No.su", "Ek Sözleşme Bedeli", "Toplam Sözleşme Bedeli" }));
+            ContractHeaders));
 
         doc.Blocks.Add(SectionHeading("SÜRE UZATIM KARARLARININ"));
         doc.Blocks.Add(CreateFourColumnTable(
@@ -1153,7 +1164,7 @@ public partial class MainWindow : Window
                     ("", "................", "................", "................"),
                     ("", "................", "................", "................"),
                     ("", "................", "................", "................") },
-            new[] { "Tarih", "Sayısı", "Verilen Süre", "İş Bitim Tarihi" }));
+            ExtensionHeaders));
 
         doc.Blocks.Add(CreateSignatureTable(
             "Düzenleyen", "Aşkın KESKİNBALTA", "Memur",
@@ -1287,7 +1298,7 @@ public partial class MainWindow : Window
 
         doc.Blocks.Add(CreateFiveColumnTable(
             rows,
-            new[] { "Sıra No", "İşin Cinsi", "İş Tutarı (a)", "Fiyat Farkı Tutarı (b)", "Toplam (a+b)" }));
+            IcmalHeaders));
 
         var total = totalA + totalB;
         doc.Blocks.Add(CreateThreeValueTable(
