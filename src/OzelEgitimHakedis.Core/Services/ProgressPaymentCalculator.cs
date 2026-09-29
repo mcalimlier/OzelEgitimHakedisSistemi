@@ -28,9 +28,7 @@ public sealed class ProgressPaymentCalculator
         if (input.ContractAmount < 0)
             throw new ArgumentOutOfRangeException(nameof(input), "Sözleşme bedeli negatif olamaz.");
 
-        if (input.DiscountAmount < 0 ||
-            input.GuideDiscountAmount < 0 ||
-            input.TaxDebt < 0 ||
+        if (input.TaxDebt < 0 ||
             input.SocialSecurityDebt < 0 ||
             input.MinimumWageSupport < 0 ||
             input.InspectionPenalty < 0)
@@ -41,14 +39,19 @@ public sealed class ProgressPaymentCalculator
         }
 
         var transportServiceAmount = input.WorkDays * input.DailyPrice;
-        var transportPriceDifference = input.PriceDifference;
+        // Excel: Ek Fiyat Farkı KDV Hariç = İskonto Tutarı + Ek Fiyat Farkı.
+        // İskonto alanı Excel'de işaretli bir bileşendir; negatif değer girilmesi
+        // gerçek bir iskonto olarak desteklenir.
+        var transportPriceDifference =
+            input.DiscountAmount + input.PriceDifference;
         var transportNetAmount =
-            transportServiceAmount + transportPriceDifference - input.DiscountAmount;
+            transportServiceAmount + transportPriceDifference;
 
         var guideServiceAmount = input.GuideWorkDays * input.GuideDailyPrice;
-        var guidePriceDifference = input.GuidePriceDifference;
+        var guidePriceDifference =
+            input.GuideDiscountAmount + input.GuidePriceDifference;
         var guideNetAmount =
-            guideServiceAmount + guidePriceDifference - input.GuideDiscountAmount;
+            guideServiceAmount + guidePriceDifference;
 
         var totalAmount = transportNetAmount + guideNetAmount;
 
@@ -77,11 +80,12 @@ public sealed class ProgressPaymentCalculator
 
         var inspectionPenalty = input.InspectionPenalty;
 
-        // Excel'deki AC sütunu, iskonto sonrası tutarı değil ham fiyat farklarını
-        // baz alır: (Taşıma fiyat farkı + Rehber fiyat farkı) x %6.
+        // Excel: Ek Kesin Teminat = max(Ek Fiyat Farkı KDV Hariç, 0) × %6.
+        // Taşıma ve rehber bileşenleri önce kendi fiyat farkı KDV hariç
+        // tutarlarını oluşturur, ardından toplam taban üzerinden tek kez uygulanır.
         var additionalGuarantee =
-            Math.Max(transportPriceDifference, 0m) * AdditionalGuaranteeRate
-            + Math.Max(guidePriceDifference, 0m) * AdditionalGuaranteeRate;
+            Math.Max(transportPriceDifference + guidePriceDifference, 0m)
+            * AdditionalGuaranteeRate;
 
         var deductions = new DeductionBreakdown(
             Round(withholding),
