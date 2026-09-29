@@ -698,9 +698,11 @@ public partial class MainWindow : Window
         SummaryWithholdingTextBlock.Text = FormatMoney(_progressHistory.Sum(x => x.Calculation.Deductions.Withholding));
         SummaryStampTextBlock.Text = FormatMoney(_progressHistory.Sum(x => x.Calculation.Deductions.StampTax));
         SummaryOtherDeductionsTextBlock.Text = FormatMoney(_progressHistory.Sum(x =>
-            x.Calculation.TotalDeductions
-            - x.Calculation.Deductions.Withholding
-            - x.Calculation.Deductions.StampTax));
+            x.Calculation.Deductions.TaxDebt
+            + x.Calculation.Deductions.SocialSecurityDebt
+            + x.Calculation.Deductions.MinimumWageSupport
+            + x.Calculation.Deductions.InspectionPenalty
+            + x.Calculation.Deductions.AdditionalGuarantee));
 
         SummaryEmptyStateBorder.Visibility = _summaryRows.Count == 0
             ? Visibility.Visible
