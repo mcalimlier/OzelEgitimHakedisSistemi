@@ -274,37 +274,6 @@ public partial class MainWindow : Window
         }
     }
 
-    private void AddContractorButton_Click(object sender, RoutedEventArgs e)
-    {
-        var name = ContractorNameTextBox.Text.Trim();
-        var taxOrIdentityNumber = ContractorTaxNumberTextBox.Text.Trim();
-
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            ContractorStatusTextBlock.Text = "Yüklenici Adı / Unvanı alanı boş bırakılamaz.";
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(taxOrIdentityNumber))
-        {
-            ContractorStatusTextBlock.Text = "Vergi / T.C. Kimlik No alanı boş bırakılamaz.";
-            return;
-        }
-
-        if (_contractors.Any(x => string.Equals(x.TaxOrIdentityNumber, taxOrIdentityNumber, StringComparison.OrdinalIgnoreCase)))
-        {
-            ContractorStatusTextBlock.Text = "Bu Vergi / T.C. Kimlik No zaten tanımlı.";
-            return;
-        }
-
-        _contractors.Add(new ContractorDraft(name, taxOrIdentityNumber));
-        SavePersistedData();
-        UpdateContractorSummary();
-        UpdateHomeSummaryView();
-        ClearContractorButton_Click(sender, e);
-        ContractorStatusTextBlock.Text = $"Yüklenici eklendi: {name}.";
-    }
-
     private void RemoveContractorButton_Click(object sender, RoutedEventArgs e)
     {
         if (sender is System.Windows.Controls.Button { Tag: ContractorDraft contractor })
@@ -315,12 +284,6 @@ public partial class MainWindow : Window
             UpdateHomeSummaryView();
             ContractorStatusTextBlock.Text = $"Yüklenici silindi: {contractor.Name}.";
         }
-    }
-
-    private void ClearContractorButton_Click(object sender, RoutedEventArgs e)
-    {
-        ContractorNameTextBox.Clear();
-        ContractorTaxNumberTextBox.Clear();
     }
 
     private void UpdateContractorSummary()
@@ -2153,7 +2116,7 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
             ClearInvalid(control);
     }
 
-    private void MarkInvalid(Control control)
+    private static void MarkInvalid(Control control)
     {
         control.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 235, 235));
         control.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(220, 53, 69));
@@ -2161,7 +2124,7 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         control.ToolTip = "Bu alanı doldurun veya düzeltin.";
     }
 
-    private void ClearInvalid(Control control)
+    private static void ClearInvalid(Control control)
     {
         control.ClearValue(Control.BackgroundProperty);
         control.ClearValue(Control.BorderBrushProperty);
