@@ -290,7 +290,6 @@ public partial class MainWindow : Window
     private void UpdateContractorSummary()
     {
         ContractorCountTextBlock.Text = _contractors.Count.ToString(CultureInfo.CurrentCulture);
-        HomeContractorCountTextBlock.Text = _contractors.Count.ToString(CultureInfo.CurrentCulture);
     }
 
     private void UpdateHomeSummaryView()
