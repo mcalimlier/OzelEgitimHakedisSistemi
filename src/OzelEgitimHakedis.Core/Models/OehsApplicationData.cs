@@ -23,7 +23,9 @@ public sealed record ContractDraftData(
 public sealed record RouteData(
     string RouteNumber,
     string Name,
-    decimal DailyPrice);
+    decimal DailyPrice,
+    int GuideWorkDays = 0,
+    decimal GuideDailyPrice = 0m);
 
 public sealed record ProgressPaymentHistoryData(
     Guid Id,
@@ -33,4 +35,12 @@ public sealed record ProgressPaymentHistoryData(
     int? ProgressPaymentNumber = null,
     DateOnly? PeriodDate = null,
     string? RouteNumber = null,
-    string? RouteName = null);
+    string? RouteName = null,
+    string? WorkName = null,
+    string? ContractorName = null,
+    string? TenderNumber = null,
+    string? ContractNumber = null,
+    DateOnly? TenderDate = null,
+    DateOnly? ContractDate = null,
+    DateOnly? ContractStartDate = null,
+    DateOnly? ContractEndDate = null);
