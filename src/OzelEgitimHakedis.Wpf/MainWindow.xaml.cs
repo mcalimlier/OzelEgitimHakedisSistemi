@@ -649,7 +649,7 @@ public partial class MainWindow : Window
     private ProgressPaymentHistoryData? GetSelectedRouteLatestPayment()
     {
         var route = ReportRouteComboBox.SelectedItem as RouteDraft;
-        var query = _progressHistory.AsEnumerable();
+        IEnumerable<ProgressPaymentHistoryData> query = _progressHistory;
 
         if (route is not null)
             query = query.Where(x => string.Equals(x.RouteNumber, route.RouteNumber, StringComparison.OrdinalIgnoreCase));
@@ -679,38 +679,127 @@ public partial class MainWindow : Window
             ReportRouteComboBox.SelectedIndex = 0;
     }
 
+    private TableCell CreateCell(string text, bool bold = false, bool right = false, bool center = false, bool shaded = false)
+    {
+        return new TableCell(new Paragraph(new Run(text ?? "-")))
+        {
+            Padding = new Thickness(5),
+            FontWeight = bold ? FontWeights.Bold : FontWeights.Normal,
+            TextAlignment = right ? TextAlignment.Right : center ? TextAlignment.Center : TextAlignment.Left,
+            Background = shaded ? System.Windows.Media.Brushes.Gainsboro : System.Windows.Media.Brushes.White,
+            BorderBrush = System.Windows.Media.Brushes.Black,
+            BorderThickness = new Thickness(0.5)
+        };
+    }
+
     private Table CreateDocumentTable(params (string Label, string Value)[] rows)
     {
-        var table = new Table { CellSpacing = 0, BorderBrush = System.Windows.Media.Brushes.DarkGray, BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 0, 12) };
-        table.Columns.Add(new TableColumn { Width = new GridLength(250) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(430) });
+        var table = new Table { CellSpacing = 0, BorderBrush = System.Windows.Media.Brushes.Black, BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 0, 10) };
+        table.Columns.Add(new TableColumn { Width = new GridLength(235) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(445) });
         var group = new TableRowGroup();
         foreach (var (label, value) in rows)
         {
             var row = new TableRow();
-            row.Cells.Add(new TableCell(new Paragraph(new Run(label))) { Padding = new Thickness(7), FontWeight = FontWeights.Bold });
-            row.Cells.Add(new TableCell(new Paragraph(new Run(value ?? "-"))) { Padding = new Thickness(7) });
+            row.Cells.Add(CreateCell(label, true, false, false, true));
+            row.Cells.Add(CreateCell(value));
             group.Rows.Add(row);
         }
         table.RowGroups.Add(group);
         return table;
     }
 
+    private Table CreateThreeColumnTable((string A, string B, string C)[] rows, string[] headers)
+    {
+        var table = new Table { CellSpacing = 0, BorderBrush = System.Windows.Media.Brushes.Black, BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 0, 10) };
+        table.Columns.Add(new TableColumn { Width = new GridLength(70) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(390) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(220) });
+        var group = new TableRowGroup();
+        var header = new TableRow();
+        for (var i = 0; i < headers.Length; i++)
+            header.Cells.Add(CreateCell(headers[i], true, false, true, true));
+        group.Rows.Add(header);
+        foreach (var item in rows)
+        {
+            var row = new TableRow();
+            row.Cells.Add(CreateCell(item.A, false, false, true));
+            row.Cells.Add(CreateCell(item.B));
+            row.Cells.Add(CreateCell(item.C, false, true));
+            group.Rows.Add(row);
+        }
+        table.RowGroups.Add(group);
+        return table;
+    }
+
+    private Table CreateFourColumnTable(IEnumerable<(string A, string B, string C, string D)> rows, string[] headers)
+    {
+        var table = new Table { CellSpacing = 0, BorderBrush = System.Windows.Media.Brushes.Black, BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 0, 10) };
+        foreach (var width in new[] { 60d, 310d, 155d, 155d })
+            table.Columns.Add(new TableColumn { Width = new GridLength(width) });
+
+        var group = new TableRowGroup();
+        var header = new TableRow();
+        foreach (var h in headers)
+            header.Cells.Add(CreateCell(h, true, false, true, true));
+        group.Rows.Add(header);
+
+        foreach (var item in rows)
+        {
+            var row = new TableRow();
+            row.Cells.Add(CreateCell(item.A, false, false, true));
+            row.Cells.Add(CreateCell(item.B));
+            row.Cells.Add(CreateCell(item.C, false, true));
+            row.Cells.Add(CreateCell(item.D, false, true));
+            group.Rows.Add(row);
+        }
+
+        table.RowGroups.Add(group);
+        return table;
+    }
+
     private FlowDocument CreateBaseDocument(string title, string subtitle)
     {
-        var document = new FlowDocument { PagePadding = new Thickness(40), FontFamily = new System.Windows.Media.FontFamily("Segoe UI"), FontSize = 10.5, ColumnWidth = 720 };
-        var header = new Paragraph { TextAlignment = TextAlignment.Center, Margin = new Thickness(0, 0, 0, 16) };
-        header.Inlines.Add(new Run(title) { FontSize = 18, FontWeight = FontWeights.Bold });
-        header.Inlines.Add(new LineBreak());
-        header.Inlines.Add(new Run(subtitle) { FontSize = 11, FontWeight = FontWeights.SemiBold });
+        var document = new FlowDocument
+        {
+            PagePadding = new Thickness(28),
+            FontFamily = new System.Windows.Media.FontFamily("Arial"),
+            FontSize = 9,
+            ColumnWidth = 680
+        };
+
+        var header = new Paragraph
+        {
+            TextAlignment = TextAlignment.Center,
+            Margin = new Thickness(0, 0, 0, 10)
+        };
+        header.Inlines.Add(new Run(title) { FontSize = 15, FontWeight = FontWeights.Bold });
+        if (!string.IsNullOrWhiteSpace(subtitle))
+        {
+            header.Inlines.Add(new LineBreak());
+            header.Inlines.Add(new Run(subtitle) { FontSize = 9.5, FontWeight = FontWeights.Bold });
+        }
+
         document.Blocks.Add(header);
         return document;
+    }
+
+    private Paragraph SectionHeading(string text)
+    {
+        return new Paragraph(new Run(text))
+        {
+            FontSize = 10.5,
+            FontWeight = FontWeights.Bold,
+            Margin = new Thickness(0, 5, 0, 4)
+        };
     }
 
     private bool TryShowDocument(FlowDocument document, string title)
     {
         var dialog = new System.Windows.Controls.PrintDialog();
-        if (dialog.ShowDialog() != true) return false;
+        if (dialog.ShowDialog() != true)
+            return false;
+
         dialog.PrintDocument(((IDocumentPaginatorSource)document).DocumentPaginator, title);
         return true;
     }
@@ -718,171 +807,339 @@ public partial class MainWindow : Window
     private bool EnsureRouteForOutput()
     {
         RequireSelectedRoute();
+
         if (ReportRouteComboBox.SelectedItem is not RouteDraft route)
         {
             MessageBox.Show("Önce Hatlar ekranından en az bir hat tanımlayın.", "OEHS", MessageBoxButton.OK, MessageBoxImage.Information);
             return false;
         }
+
+        if (GetSelectedRouteLatestPayment() is null)
+        {
+            MessageBox.Show("Seçilen hat için henüz hakediş kaydı yok.", "OEHS", MessageBoxButton.OK, MessageBoxImage.Information);
+            return false;
+        }
+
         return true;
+    }
+
+    private FlowDocument BuildHakedişRaporu(RouteDraft route, ProgressPaymentHistoryData latest)
+    {
+        var payments = GetSelectedRoutePayments();
+        var previousTotal = payments
+            .Where(x => x.Id != latest.Id && x.CreatedAt < latest.CreatedAt)
+            .Sum(x => x.Calculation.TotalAmount);
+        var currentDifference = latest.Calculation.TotalAmount - previousTotal;
+
+        var doc = CreateBaseDocument(
+            "HAK EDİŞ RAPORU",
+            $"{route.Name} — Hat No : {route.RouteNumber}    Hakediş No : {latest.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"}");
+
+        doc.Blocks.Add(CreateDocumentTable(
+            ("İşin Adı", route.Name),
+            ("Hat No", route.RouteNumber),
+            ("Hakediş No", latest.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"),
+            ("Tarih / Dönem", latest.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-")));
+
+        doc.Blocks.Add(SectionHeading(
+            $"{latest.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"} TARİHİNE KADAR YAPILAN İŞİN"));
+
+        var mainRows = new List<(string, string, string)>
+        {
+            ("A", "Sözleşme Fiyatları İle Yapılan İş", FormatMoney(latest.Calculation.ServiceAmount)),
+            ("B", "Fiyat Farkı Tutarı", FormatMoney(latest.Calculation.PriceDifferenceExcludingVat)),
+            ("C", "Toplam Tutar  ( A + B )", FormatMoney(latest.Calculation.TotalAmount)),
+            ("D", "Bir Önceki Hakedişlerin Toplam Tutarı", FormatMoney(previousTotal)),
+            ("E", "Bu Hakedişin Tutarı  ( C - D )", FormatMoney(currentDifference)),
+            ("F", "KDV  %10 + %20", FormatMoney(latest.Calculation.Vat)),
+            ("G", "Tahakkuk Tutarı", FormatMoney(latest.Calculation.GrossAmount))
+        };
+        doc.Blocks.Add(CreateThreeColumnTable(mainRows.ToArray(), new[] { "", "Kalem", "Tutar" }));
+
+        doc.Blocks.Add(SectionHeading("KESİNTİLER VE MAHSUPLAR"));
+        var d = latest.Calculation.Deductions;
+        var hRows = new List<(string, string, string)>
+        {
+            ("a)", "Gelir / Kurumlar Vergisi  ( E x % .. )", "0,00 ₺"),
+            ("b)", "Damga Vergisi  ( E - g x % 9,48 )", FormatMoney(latest.Calculation.StampTax)),
+            ("c)", "KDV Tevkifatı  ( 5/10 + 9/10 kesilen )", FormatMoney(latest.Calculation.Withholding)),
+            ("d)", "Sosyal Sigortalar Kurumu Kesintisi", FormatMoney(d.SocialSecurityDebt)),
+            ("e)", "İdare Makinesi Kiraları", "0,00 ₺"),
+            ("f)", "Gecikme Cezası", "0,00 ₺"),
+            ("g)", "Avans Mahsubu", "0,00 ₺"),
+            ("h)", "Bu Hakedişle Ödenen Fiyat Farkı Teminat Kesintisi", FormatMoney(latest.Calculation.AdditionalGuarantee)),
+            ("ı)", "Vergi Borcu", FormatMoney(d.TaxDebt)),
+            ("j)", "İcra Borcu", "0,00 ₺"),
+            ("k)", "Ceza ve Diğer Kesintiler", FormatMoney(d.InspectionPenalty)),
+            ("l)", "Asgari Ücret Destek Tutarı Kesintisi", FormatMoney(d.MinimumWageSupport)),
+            ("H", "Kesintiler ve Mahsuplar Toplamı", FormatMoney(latest.Calculation.TotalDeductions)),
+            ("I", "Yükleniciye Ödenecek Tutar  ( G - H )", FormatMoney(latest.Calculation.NetPayable))
+        };
+        doc.Blocks.Add(CreateThreeColumnTable(hRows.ToArray(), new[] { "", "KESİNTİLER VE MAHSUPLAR", "Tutar" }));
+
+        doc.Blocks.Add(CreateDocumentTable(
+            ("Yüklenici", ContractorTextBox.Text),
+            ("Düzenleyen", "Aşkın KESKİNBALTA — Memur"),
+            ("Kontrol Eden", "Halil ÖZENÇ — İlçe Milli Eğitim Şube Müdürü"),
+            ("Onaylayan", "Özgür BAYSAL — İlçe Milli Eğitim Müdürü"),
+            ("Tarih", DateTime.Today.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture))));
+        doc.Blocks.Add(new Paragraph(new Run("M.Y.H.B.Y. Örnek No : 4/10"))
+        {
+            FontSize = 8,
+            Margin = new Thickness(0, 2, 0, 0)
+        });
+
+        return doc;
+    }
+
+    private FlowDocument BuildHizmetIsleriHakedisRaporu(RouteDraft route, ProgressPaymentHistoryData latest)
+    {
+        var doc = CreateBaseDocument("HİZMET İŞLERİ HAK EDİŞ RAPORU", "");
+        doc.Blocks.Add(CreateDocumentTable(
+            ("Tarihi", latest.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
+            ("No.su", latest.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"),
+            ("Uygulama Yılı", (latest.PeriodDate?.Year ?? DateTime.Today.Year).ToString(CultureInfo.CurrentCulture)),
+            ("Yapılan Hizmetin Adı", route.Name),
+            ("Yapılan Hizmetin Etüt / Proje No.su", "Proje Dışıdır."),
+            ("Yüklenicinin Adı / Ticari Unvanı", ContractorTextBox.Text),
+            ("Sözleşme Bedeli", FormatMoney(latest.Input.ContractAmount)),
+            ("İhale Tarihi", "-"),
+            ("Sözleşme Tarihi ve No.su", StartDatePicker.SelectedDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
+            ("Sözleşmenin Sayıştayca Tescil Tarihi ve No'su", "Tescile Dahil Değil"),
+            ("Tescilin Yükleniciye Tebliğ Tarihi", "Tescile Dahil Değil"),
+            ("İşyeri Teslim Tarihi", StartDatePicker.SelectedDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
+            ("Sözleşmeye Göre İşin Süresi", $"{Math.Max(0, (EndDatePicker.SelectedDate - StartDatePicker.SelectedDate)?.Days ?? 0)} Gün"),
+            ("Sözleşmeye Göre İş Bitim Tarihi", EndDatePicker.SelectedDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
+            ("Verilen Avanslar Toplamı", "Avans verilmeyecektir."),
+            ("Mahsubu Yapılan Avansın Toplam Tutarı", "Yoktur.")
+        ));
+
+        doc.Blocks.Add(SectionHeading("SÖZLEŞME BEDELİ / SÖZLEŞME ARTIŞI / EK SÖZLEŞME"));
+        doc.Blocks.Add(CreateFourColumnTable(
+            new[] { ("", "Sözleşme Bedeli", FormatMoney(latest.Input.ContractAmount), "Toplam Sözleşme Bedeli"),
+                    ("", "", "", FormatMoney(latest.Input.ContractAmount)) },
+            new[] { "Sözleşme Bedeli", "Sözleşme Artış Onayının Tarihi No.su", "Ek Sözleşme Bedeli", "Toplam Sözleşme Bedeli" }));
+
+        doc.Blocks.Add(SectionHeading("SÜRE UZATIM KARARLARININ"));
+        doc.Blocks.Add(CreateFourColumnTable(
+            new[] { ("", "................", "................", "................"),
+                    ("", "................", "................", "................"),
+                    ("", "................", "................", "................"),
+                    ("", "................", "................", "................") },
+            new[] { "Tarih", "Sayısı", "Verilen Süre", "İş Bitim Tarihi" }));
+
+        doc.Blocks.Add(new Paragraph(new Run("Düzenleyen                                      Kontrol Eden"))
+        {
+            TextAlignment = TextAlignment.Center,
+            Margin = new Thickness(0, 12, 0, 2),
+            FontWeight = FontWeights.Bold
+        });
+        doc.Blocks.Add(new Paragraph(new Run("Aşkın KESKİNBALTA                         Halil ÖZENÇ"))
+        {
+            TextAlignment = TextAlignment.Center,
+            Margin = new Thickness(0, 2, 0, 2)
+        });
+        doc.Blocks.Add(new Paragraph(new Run("Memur                                      İlçe Milli Eğitim Şube Müdürü"))
+        {
+            TextAlignment = TextAlignment.Center
+        });
+        doc.Blocks.Add(new Paragraph(new Run("M.Y.H.B.Y. Örnek No: 4"))
+        {
+            FontSize = 8,
+            Margin = new Thickness(0, 8, 0, 0)
+        });
+        return doc;
+    }
+
+    private FlowDocument BuildKabulTutanağı(RouteDraft route, ProgressPaymentHistoryData latest)
+    {
+        var doc = CreateBaseDocument("HİZMET İŞLERİ KABUL TUTANAĞI", "");
+        var duration = Math.Max(0, (EndDatePicker.SelectedDate - StartDatePicker.SelectedDate)?.Days ?? 0);
+        var finishDate = latest.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-";
+        var workStart = StartDatePicker.SelectedDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-";
+
+        doc.Blocks.Add(CreateDocumentTable(
+            ("İşin adı", route.Name),
+            ("Yüklenicinin adı/ticari unvanı", ContractorTextBox.Text),
+            ("Sözleşme tarihi", workStart),
+            ("Sözleşme bedeli", FormatMoney(latest.Input.ContractAmount)),
+            ("Sözleşmeye göre işin süresi(takvim günü)", $"{duration} İş Günü"),
+            ("Sözleşmeye göre işin bitirilmesi gereken tarih", EndDatePicker.SelectedDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
+            ("Varsa süre uzatımları", ""),
+            ("Süre uzatımı dahil işin bitirilmesi gereken tarih", EndDatePicker.SelectedDate?.ToString("dd MMMM yyyy dddd", new CultureInfo("tr-TR")) ?? "-"),
+            ("İşin bitirildiği tarih", finishDate)));
+
+        var workName = route.Name;
+        var contractor = ContractorTextBox.Text;
+        var paragraphText =
+            $"İlçe Milli Eğitim Müdürlüğü'nün {route.RouteNumber} Numaralı {workName} işi yüklenicisi {contractor} arasında imzalanan sözleşme kapsamında gerçekleştirilen iş için, " +
+            $"Memur Aşkın KESKİNBALTA ve İlçe Milli Eğitim Şube Müdürü Halil ÖZENÇ tarafından inceleme yapılmış; yüklenici, {contractor} tarafından " +
+            $"yapılan işlerin sözleşme ve eklerine uygun olduğu ve kabule engel olabilecek eksik, kusur ve arızaların bulunmadığı görülmüştür.";
+
+        doc.Blocks.Add(new Paragraph(new Run(paragraphText))
+        {
+            TextAlignment = TextAlignment.Justify,
+            Margin = new Thickness(0, 18, 0, 30),
+            FontSize = 10
+        });
+
+        doc.Blocks.Add(new Paragraph(new Run("Yüklenici"))
+        {
+            TextAlignment = TextAlignment.Center,
+            FontWeight = FontWeights.Bold,
+            Margin = new Thickness(0, 5, 0, 3)
+        });
+        doc.Blocks.Add(new Paragraph(new Run(contractor))
+        {
+            TextAlignment = TextAlignment.Center,
+            Margin = new Thickness(0, 0, 0, 25)
+        });
+        doc.Blocks.Add(new Paragraph(new Run("Düzenleyen                                      Kontrol Eden"))
+        {
+            TextAlignment = TextAlignment.Center,
+            FontWeight = FontWeights.Bold
+        });
+        doc.Blocks.Add(new Paragraph(new Run("Aşkın KESKİNBALTA                         Halil ÖZENÇ"))
+        {
+            TextAlignment = TextAlignment.Center,
+            Margin = new Thickness(0, 5, 0, 3)
+        });
+        doc.Blocks.Add(new Paragraph(new Run("Memur                                      İlçe Milli Eğitim Şube Müdürü"))
+        {
+            TextAlignment = TextAlignment.Center
+        });
+        doc.Blocks.Add(new Paragraph(new Run(DateTime.Today.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture)))
+        {
+            TextAlignment = TextAlignment.Center,
+            FontWeight = FontWeights.Bold,
+            Margin = new Thickness(0, 15, 0, 3)
+        });
+        doc.Blocks.Add(new Paragraph(new Run("Özgür BAYSAL"))
+        {
+            TextAlignment = TextAlignment.Center,
+            FontWeight = FontWeights.Bold
+        });
+        doc.Blocks.Add(new Paragraph(new Run("İlçe Milli Eğitim Müdürü"))
+        {
+            TextAlignment = TextAlignment.Center
+        });
+        return doc;
+    }
+
+    private FlowDocument BuildHakedişIcmali(RouteDraft route, ProgressPaymentHistoryData latest)
+    {
+        var payments = GetSelectedRoutePayments();
+        var latestDate = latest.PeriodDate ?? DateOnly.FromDateTime(DateTime.Today);
+        var baseYear = latestDate.Month >= 9 ? latestDate.Year : latestDate.Year - 1;
+
+        var rows = new List<(string, string, string, string)>();
+        var totalA = 0m;
+        var totalB = 0m;
+        for (var monthIndex = 0; monthIndex < 11; monthIndex++)
+        {
+            var month = new DateOnly(baseYear, 9, 1).AddMonths(monthIndex);
+            var monthPayment = payments.LastOrDefault(x => x.PeriodDate.HasValue &&
+                                                           x.PeriodDate.Value.Year == month.Year &&
+                                                           x.PeriodDate.Value.Month == month.Month);
+            var a = monthPayment?.Calculation.ServiceAmount ?? 0m;
+            var b = monthPayment?.Calculation.PriceDifferenceExcludingVat ?? 0m;
+            totalA += a;
+            totalB += b;
+            var monthName = month.ToString("MMMM yyyy", new CultureInfo("tr-TR"));
+            rows.Add(((monthIndex + 1).ToString(CultureInfo.CurrentCulture), $"Hizmet Alımı İşi {monthName}", FormatMoney(a), FormatMoney(b)));
+        }
+
+        var doc = CreateBaseDocument("HAKEDİŞ İCMALİ", route.Name);
+        doc.Blocks.Add(CreateDocumentTable(
+            ("Sayfa No", "1"),
+            ("Hakediş No", latest.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"),
+            ("Hat No", route.RouteNumber)));
+
+        doc.Blocks.Add(CreateFourColumnTable(
+            rows,
+            new[] { "Sıra No", "İşin Cinsi", "İş Tutarı (a)", "Fiyat Farkı Tutarı (b)" }));
+
+        var totalTable = new Table { CellSpacing = 0, BorderBrush = System.Windows.Media.Brushes.Black, BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 0, 10) };
+        foreach (var width in new[] { 70d, 390d, 220d }) totalTable.Columns.Add(new TableColumn { Width = new GridLength(width) });
+        var tg = new TableRowGroup();
+        var tr = new TableRow();
+        tr.Cells.Add(CreateCell("A", true, false, true, true));
+        tr.Cells.Add(CreateCell("T O P L A M", true, false, true, true));
+        tr.Cells.Add(CreateCell(FormatMoney(totalA + totalB), true, true, false, true));
+        tg.Rows.Add(tr);
+        totalTable.RowGroups.Add(tg);
+        doc.Blocks.Add(totalTable);
+
+        var previousDeduction = payments.Where(x => x.Id != latest.Id && x.CreatedAt < latest.CreatedAt).Sum(x => x.Calculation.TotalDeductions);
+        var currentDeduction = latest.Calculation.TotalDeductions;
+        var totalDeduction = previousDeduction + currentDeduction;
+        var net = totalA + totalB - totalDeduction;
+
+        doc.Blocks.Add(SectionHeading("Hakediş İçeriğinden Yapılan Kesintiler"));
+        doc.Blocks.Add(CreateDocumentTable(
+            ("Bir Evvelki Hakedişten Yapılan Kesinti", FormatMoney(previousDeduction)),
+            ("Bu Hakedişten Yapılan Kesinti", FormatMoney(currentDeduction)),
+            ("B — Toplam Kesinti Tutarı", FormatMoney(totalDeduction)),
+            ("C — Toplam Hakediş Tutarı : ( A - B )", FormatMoney(net))));
+
+        doc.Blocks.Add(new Paragraph(new Run("Düzenleyen                                      Kontrol Eden"))
+        {
+            TextAlignment = TextAlignment.Center,
+            FontWeight = FontWeights.Bold,
+            Margin = new Thickness(0, 15, 0, 3)
+        });
+        doc.Blocks.Add(new Paragraph(new Run("Aşkın KESKİNBALTA                         Halil ÖZENÇ"))
+        {
+            TextAlignment = TextAlignment.Center
+        });
+        doc.Blocks.Add(new Paragraph(new Run("Memur                                      İlçe Milli Eğitim Şube Müdürü"))
+        {
+            TextAlignment = TextAlignment.Center
+        });
+        doc.Blocks.Add(new Paragraph(new Run(DateTime.Today.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture)))
+        {
+            TextAlignment = TextAlignment.Center,
+            FontWeight = FontWeights.Bold,
+            Margin = new Thickness(12, 8, 0, 0)
+        });
+        doc.Blocks.Add(new Paragraph(new Run("M.Y.H.B.Y. Örnek No :4/9"))
+        {
+            FontSize = 8,
+            Margin = new Thickness(0, 12, 0, 0)
+        });
+        return doc;
+    }
+
+    private void PrintAllRouteDocumentsButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (!EnsureRouteForOutput())
+            return;
+
+        var route = (RouteDraft)ReportRouteComboBox.SelectedItem;
+        var latest = GetSelectedRouteLatestPayment()!;
+
+        var documents = new (FlowDocument Document, string Title)[]
+        {
+            (BuildHakedişRaporu(route, latest), "Hakediş Raporu"),
+            (BuildHizmetIsleriHakedisRaporu(route, latest), "Hizmet İşleri Hakediş Raporu"),
+            (BuildKabulTutanağı(route, latest), "Hizmet İşleri Kabul Tutanağı"),
+            (BuildHakedişIcmali(route, latest), "Hakediş İcmali")
+        };
+
+        foreach (var item in documents)
+        {
+            if (!TryShowDocument(item.Document, item.Title))
+                break;
+        }
     }
 
     private void ReportActionButton_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is System.Windows.Controls.Button button && button.Tag is string page)
-        {
+        if (sender is System.Windows.Controls.Button button && button.Tag is string)
             NavigationButton_Click(button, e);
-        }
     }
 
-    private void PrintRoutePaymentReportButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (!EnsureRouteForOutput()) return;
-        var route = (RouteDraft)ReportRouteComboBox.SelectedItem;
-        var latest = GetSelectedRouteLatestPayment();
-        if (latest is null) { MessageBox.Show("Seçilen hat için henüz hakediş kaydı yok.", "OEHS", MessageBoxButton.OK, MessageBoxImage.Information); return; }
-
-        var doc = CreateBaseDocument("HAKEDİŞ RAPORU", $"Hat No: {route.RouteNumber} — {route.Name}");
-        doc.Blocks.Add(new Paragraph(new Run("1. HAKEDİŞ BİLGİLERİ")) { FontSize = 12.5, FontWeight = FontWeights.Bold });
-        doc.Blocks.Add(CreateDocumentTable(
-            ("Hat No", route.RouteNumber), ("Hat Adı", route.Name),
-            ("Hakediş No", latest.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"),
-            ("Dönem", latest.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
-            ("Kayıt Tarihi", latest.CreatedAt.ToString("dd.MM.yyyy HH:mm", CultureInfo.CurrentCulture))));
-        doc.Blocks.Add(new Paragraph(new Run("2. TUTAR VE KESİNTİLER")) { FontSize = 12.5, FontWeight = FontWeights.Bold });
-        doc.Blocks.Add(CreateDocumentTable(
-            ("Hizmet Tutarı", FormatMoney(latest.Calculation.ServiceAmount)),
-            ("Fiyat Farkı / İndirim", FormatMoney(latest.Calculation.PriceDifferenceExcludingVat)),
-            ("Toplam Tutar", FormatMoney(latest.Calculation.TotalAmount)),
-            ("KDV", FormatMoney(latest.Calculation.Vat)),
-            ("Tahakkuk / Brüt", FormatMoney(latest.Calculation.GrossAmount)),
-            ("Tevkifat", FormatMoney(latest.Calculation.Withholding)),
-            ("Damga Vergisi", FormatMoney(latest.Calculation.StampTax)),
-            ("Toplam Kesinti", FormatMoney(latest.Calculation.TotalDeductions)),
-            ("Yükleniciye Ödenecek", FormatMoney(latest.Calculation.NetPayable))));
-        doc.Blocks.Add(new Paragraph(new Run("Created by Aşkın KESKİNBALTA")) { FontWeight = FontWeights.SemiBold });
-        TryShowDocument(doc, "Hakediş Raporu");
-    }
-
-    private void PrintServicePaymentReportButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (!EnsureRouteForOutput()) return;
-        var route = (RouteDraft)ReportRouteComboBox.SelectedItem;
-        var latest = GetSelectedRouteLatestPayment();
-        if (latest is null) { MessageBox.Show("Seçilen hat için henüz hakediş kaydı yok.", "OEHS", MessageBoxButton.OK, MessageBoxImage.Information); return; }
-
-        var doc = CreateBaseDocument("HİZMET İŞLERİ HAKEDİŞ RAPORU", "Hizmet işleri rapor formatı");
-        doc.Blocks.Add(CreateDocumentTable(
-            ("Tarihi", latest.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
-            ("No.su", latest.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"),
-            ("Uygulama Yılı", (latest.PeriodDate?.Year ?? DateTime.Now.Year).ToString(CultureInfo.CurrentCulture)),
-            ("Yapılan Hizmetin Adı", route.Name),
-            ("Hat No", route.RouteNumber),
-            ("Yüklenicinin Adı / Ticari Unvanı", ContractorTextBox.Text),
-            ("Sözleşme Bedeli", FormatMoney(latest.Input.ContractAmount)),
-            ("Sözleşme Başlangıç", StartDatePicker.SelectedDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
-            ("Sözleşme Bitiş", EndDatePicker.SelectedDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-")));
-        doc.Blocks.Add(new Paragraph(new Run("SÖZLEŞME / HAKEDİŞ TUTARLARI")) { FontSize = 12.5, FontWeight = FontWeights.Bold });
-        doc.Blocks.Add(CreateDocumentTable(
-            ("Sözleşme Fiyatları ile Yapılan İş", FormatMoney(latest.Calculation.ServiceAmount)),
-            ("Fiyat Farkı Tutarı", FormatMoney(latest.Calculation.PriceDifferenceExcludingVat)),
-            ("Toplam Tutar (A+B)", FormatMoney(latest.Calculation.TotalAmount)),
-            ("Bu Hakedişin Tutarı", FormatMoney(latest.Calculation.TotalAmount)),
-            ("KDV", FormatMoney(latest.Calculation.Vat)),
-            ("Tahakkuk Tutarı", FormatMoney(latest.Calculation.GrossAmount))));
-        doc.Blocks.Add(new Paragraph(new Run("KESİNTİLER VE MAHSUPLAR")) { FontSize = 12.5, FontWeight = FontWeights.Bold });
-        doc.Blocks.Add(CreateDocumentTable(
-            ("Gelir / Kurumlar Vergisi", "0,00 ₺"),
-            ("Damga Vergisi", FormatMoney(latest.Calculation.StampTax)),
-            ("KDV Tevkifatı", FormatMoney(latest.Calculation.Withholding)),
-            ("Sosyal Sigortalar Kurumu Kesintisi", FormatMoney(latest.Calculation.Deductions.SocialSecurityDebt)),
-            ("İdare Makinesi Kiraları", "0,00 ₺"),
-            ("Gecikme Cezası", "0,00 ₺"),
-            ("Avans Mahsubu", "0,00 ₺"),
-            ("Bu Hakedişle Ödenen Fiyat Farkı Teminat Kesintisi", FormatMoney(latest.Calculation.AdditionalGuarantee)),
-            ("Vergi Borcu", FormatMoney(latest.Calculation.Deductions.TaxDebt)),
-            ("İcra Borcu", "0,00 ₺"),
-            ("Ceza ve Diğer Kesintiler", FormatMoney(latest.Calculation.Deductions.InspectionPenalty)),
-            ("Asgari Ücret Destek Tutarı Kesintisi", FormatMoney(latest.Calculation.Deductions.MinimumWageSupport)),
-            ("Kesintiler ve Mahsuplar Toplamı", FormatMoney(latest.Calculation.TotalDeductions)),
-            ("Yükleniciye Ödenecek Tutar", FormatMoney(latest.Calculation.NetPayable))));
-        doc.Blocks.Add(new Paragraph(new Run("Created by Aşkın KESKİNBALTA")) { FontWeight = FontWeights.SemiBold });
-        TryShowDocument(doc, "Hizmet İşleri Hakediş Raporu");
-    }
-
-    private void PrintAcceptanceButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (!EnsureRouteForOutput()) return;
-        var route = (RouteDraft)ReportRouteComboBox.SelectedItem;
-        var latest = GetSelectedRouteLatestPayment();
-        if (latest is null) { MessageBox.Show("Seçilen hat için henüz hakediş kaydı yok.", "OEHS", MessageBoxButton.OK, MessageBoxImage.Information); return; }
-
-        var doc = CreateBaseDocument("HİZMET İŞLERİ KABUL TUTANAĞI", "");
-        doc.Blocks.Add(CreateDocumentTable(
-            ("İşin Adı", route.Name),
-            ("Hat No", route.RouteNumber),
-            ("Yüklenicinin adı/ticari unvanı", ContractorTextBox.Text),
-            ("Sözleşme Tarihi", StartDatePicker.SelectedDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
-            ("Sözleşme Bedeli", FormatMoney(latest.Input.ContractAmount)),
-            ("Sözleşmeye göre işin süresi", $"{(EndDatePicker.SelectedDate - StartDatePicker.SelectedDate)?.Days ?? 0} Gün"),
-            ("Sözleşmeye göre işin bitirilmesi gereken tarih", EndDatePicker.SelectedDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
-            ("Varsa süre uzatımları", "-"),
-            ("İşin bitirildiği tarih", latest.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-")));
-        doc.Blocks.Add(new Paragraph(new Run("İlçe Millî Eğitim Müdürlüğünün sözleşme kapsamında gerçekleştirilen iş için yapılan incelemede, kabulü engel olabilecek eksik, kusur ve arızaların bulunup bulunmadığı ayrıca doğrulanmalıdır."))
-        { Margin = new Thickness(0, 12, 0, 35) });
-        doc.Blocks.Add(CreateDocumentTable(
-            ("Yüklenici", ContractorTextBox.Text),
-            ("Düzenleyen", "Aşkın KESKİNBALTA — Memur"),
-            ("Kontrol Eden", "Kontrol görevlisi — kurum tarafından belirlenecek"),
-            ("Tarih", DateTime.Today.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture))));
-        doc.Blocks.Add(new Paragraph(new Run("Created by Aşkın KESKİNBALTA")) { FontWeight = FontWeights.SemiBold });
-        TryShowDocument(doc, "Hizmet İşleri Kabul Tutanağı");
-    }
-
-    private void PrintSummaryReportButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (!EnsureRouteForOutput()) return;
-        var route = (RouteDraft)ReportRouteComboBox.SelectedItem;
-        var payments = GetSelectedRoutePayments();
-        if (payments.Count == 0) { MessageBox.Show("Seçilen hat için henüz hakediş kaydı yok.", "OEHS", MessageBoxButton.OK, MessageBoxImage.Information); return; }
-
-        var doc = CreateBaseDocument("HAKEDİŞ İCMALİ", $"Hat No: {route.RouteNumber} — {route.Name}");
-        doc.Blocks.Add(new Paragraph(new Run("HAKEDİŞ DAĞILIMI")) { FontSize = 12.5, FontWeight = FontWeights.Bold });
-        var table = new Table { CellSpacing = 0, BorderBrush = System.Windows.Media.Brushes.DarkGray, BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 0, 12) };
-        foreach (var width in new[] { 70.0, 260.0, 150.0, 150.0 }) table.Columns.Add(new TableColumn { Width = new GridLength(width) });
-        var group = new TableRowGroup();
-        var header = new TableRow();
-        foreach (var h in new[] { "Sıra No", "İşin Cinsi", "İş Tutarı (a)", "Fiyat Farkı (b)" })
-            header.Cells.Add(new TableCell(new Paragraph(new Run(h))) { Padding = new Thickness(6), FontWeight = FontWeights.Bold });
-        group.Rows.Add(header);
-        var totalA=0m; var totalB=0m;
-        for (var idx=0; idx<payments.Count; idx++)
-        {
-            var p=payments[idx]; totalA+=p.Calculation.ServiceAmount; totalB+=p.Calculation.PriceDifferenceExcludingVat;
-            var row=new TableRow();
-            foreach (var v in new[] { (idx+1).ToString(CultureInfo.CurrentCulture), route.Name, FormatMoney(p.Calculation.ServiceAmount), FormatMoney(p.Calculation.PriceDifferenceExcludingVat) })
-                row.Cells.Add(new TableCell(new Paragraph(new Run(v))) { Padding = new Thickness(6) });
-            group.Rows.Add(row);
-        }
-        var totalRow=new TableRow();
-        foreach (var v in new[] {"", "Toplam", FormatMoney(totalA), FormatMoney(totalB)})
-            totalRow.Cells.Add(new TableCell(new Paragraph(new Run(v))) { Padding = new Thickness(6), FontWeight = FontWeights.Bold });
-        group.Rows.Add(totalRow); table.RowGroups.Add(group); doc.Blocks.Add(table);
-        doc.Blocks.Add(new Paragraph(new Run("HAKEDİŞ İÇERİĞİNDEN YAPILAN KESİNTİLER")) { FontSize = 12.5, FontWeight = FontWeights.Bold });
-        doc.Blocks.Add(CreateDocumentTable(
-            ("Bir Evvelki Hakedişten Yapılan Kesinti", "0,00 ₺"),
-            ("Bu Hakedişten Yapılan Kesinti", FormatMoney(payments.Sum(p => p.Calculation.TotalDeductions))),
-            ("Toplam Kesinti Tutarı", FormatMoney(payments.Sum(p => p.Calculation.TotalDeductions))),
-            ("Toplam Hakediş Tutarı (A - B)", FormatMoney(payments.Sum(p => p.Calculation.NetPayable)))));
-        doc.Blocks.Add(new Paragraph(new Run("Created by Aşkın KESKİNBALTA")) { FontWeight = FontWeights.SemiBold });
-        TryShowDocument(doc, "Hakediş İcmali");
-    }
-
-    private void PrintReportButton_Click(object sender, RoutedEventArgs e)
-    {
-        PrintRoutePaymentReportButton_Click(sender, e);
-    }
-
-    private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
+private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
 
     private void MaximizeRestore_Click(object sender, RoutedEventArgs e)
     {
