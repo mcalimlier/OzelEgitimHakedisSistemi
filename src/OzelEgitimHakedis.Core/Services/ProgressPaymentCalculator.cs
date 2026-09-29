@@ -84,16 +84,25 @@ public sealed class ProgressPaymentCalculator
             + Math.Max(guidePriceDifference, 0m) * AdditionalGuaranteeRate;
 
         var deductions = new DeductionBreakdown(
-            withholding,
-            stampTax,
-            input.TaxDebt,
-            inspectionPenalty,
-            input.SocialSecurityDebt,
-            input.MinimumWageSupport,
-            additionalGuarantee);
+            Round(withholding),
+            Round(stampTax),
+            Round(input.TaxDebt),
+            Round(inspectionPenalty),
+            Round(input.SocialSecurityDebt),
+            Round(input.MinimumWageSupport),
+            Round(additionalGuarantee));
 
         var grossAmount = totalAmount + vat;
-        var totalDeductions = deductions.Total;
+        // Excel'deki hücreler ara sonuçları tam hassasiyetle toplar; son tutar
+        // ekranda iki ondalığa yuvarlanır.
+        var totalDeductions = Round(
+            withholding
+            + stampTax
+            + input.TaxDebt
+            + inspectionPenalty
+            + input.SocialSecurityDebt
+            + input.MinimumWageSupport
+            + additionalGuarantee);
         var netPayable = grossAmount - totalDeductions;
 
         return new ProgressPaymentCalculation(
