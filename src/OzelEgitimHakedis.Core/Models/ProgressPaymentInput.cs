@@ -10,5 +10,4 @@ public sealed record ProgressPaymentInput(
     decimal TaxDebt,
     decimal SocialSecurityDebt,
     decimal MinimumWageSupport,
-    bool HasInspectionPenalty = false,
-    decimal InspectionPenaltyRatePerThousand = 2m);
+    decimal InspectionPenalty = 0m);
