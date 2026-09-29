@@ -20,7 +20,10 @@ public sealed record ContractDraftData(
     DateOnly EndDate,
     bool VatExempt,
     DateOnly? TenderDate = null,
-    DateOnly? ContractDate = null);
+    DateOnly? ContractDate = null,
+    string ContractorTaxOrIdentityNumber = "",
+    string BankAccountNumber = "",
+    int ContractWorkDays = 0);
 
 public sealed record RouteData(
     string RouteNumber,
