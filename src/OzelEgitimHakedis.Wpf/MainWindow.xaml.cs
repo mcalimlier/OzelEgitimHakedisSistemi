@@ -695,7 +695,8 @@ public partial class MainWindow : Window
             var wasEditing = _editingHistoryId.HasValue;
             if (wasEditing)
             {
-                var editIndex = _progressHistory.IndexOf(_progressHistory.First(x => x.Id == _editingHistoryId.Value));
+                var editingId = _editingHistoryId.GetValueOrDefault();
+                var editIndex = _progressHistory.IndexOf(_progressHistory.First(x => x.Id == editingId));
                 _progressHistory[editIndex] = historyItem;
                 _editingHistoryId = null;
             }
