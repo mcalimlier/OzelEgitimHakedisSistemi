@@ -26,10 +26,10 @@ public partial class MainWindow : Window
     private readonly ObservableCollection<SummaryRow> _summaryRows = new();
     private readonly ObservableCollection<ReportRow> _reportRows = new();
     private readonly OehsApplicationDataStore _dataStore = new();
-    private static readonly double[] ThreeColumnWidths = { 69d, 434d, 227d };
-    private static readonly double[] ThreeValueWidths = { 59d, 503d, 168d };
-    private static readonly double[] FourColumnWidths = { 69d, 330d, 163d, 168d };
-    private static readonly double[] FiveColumnWidths = { 47d, 276d, 138d, 138d, 131d };
+    private static readonly double[] ThreeColumnWidths = { 63d, 405d, 212d };
+    private static readonly double[] ThreeValueWidths = { 55d, 460d, 165d };
+    private static readonly double[] FourColumnWidths = { 62d, 305d, 148d, 165d };
+    private static readonly double[] FiveColumnWidths = { 43d, 257d, 128d, 128d, 124d };
     private static readonly string[] MainReportHeaders = { "", "Kalem", "Tutar" };
     private static readonly string[] DeductionHeaders = { "", "KESİNTİLER VE MAHSUPLAR", "Tutar" };
     private static readonly string[] ContractHeaders = { "Sözleşme Bedeli", "Sözleşme Artış Onayının Tarihi No.su", "Ek Sözleşme Bedeli", "Toplam Sözleşme Bedeli" };
@@ -907,8 +907,8 @@ public partial class MainWindow : Window
     private static Table CreateDocumentTable(params (string Label, string Value)[] rows)
     {
         var table = new Table { CellSpacing = 0, BorderBrush = System.Windows.Media.Brushes.Black, BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 0, 10) };
-        table.Columns.Add(new TableColumn { Width = new GridLength(365) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(365) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(340) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(340) });
         var group = new TableRowGroup();
         foreach (var (label, value) in rows)
         {
@@ -968,10 +968,10 @@ public partial class MainWindow : Window
             BorderThickness = new Thickness(1),
             Margin = new Thickness(0, 0, 0, 10)
         };
-        table.Columns.Add(new TableColumn { Width = new GridLength(69) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(41) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(433) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(187) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(62) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(38) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(404) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(176) });
 
         var group = new TableRowGroup();
         const int deductionItemCount = 12;
@@ -1047,8 +1047,8 @@ public partial class MainWindow : Window
             BorderThickness = new Thickness(1),
             Margin = new Thickness(0, 0, 0, 8)
         };
-        table.Columns.Add(new TableColumn { Width = new GridLength(562) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(168) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(523) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(157) });
 
         var group = new TableRowGroup();
         var left = CreateCell(route.Name, true);
@@ -1076,8 +1076,8 @@ public partial class MainWindow : Window
             BorderThickness = new Thickness(1),
             Margin = new Thickness(0, 0, 0, 8)
         };
-        table.Columns.Add(new TableColumn { Width = new GridLength(563) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(167) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(524) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(156) });
 
         var group = new TableRowGroup();
         var left = CreateCell(route.Name, true);
@@ -1235,8 +1235,8 @@ public partial class MainWindow : Window
             Margin = new Thickness(0, 18, 0, 8)
         };
 
-        table.Columns.Add(new TableColumn { Width = new GridLength(370) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(370) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(340) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(340) });
 
         var group = new TableRowGroup();
         var row = new TableRow();
@@ -1294,13 +1294,14 @@ public partial class MainWindow : Window
     {
         const double a4Width = 794;
         const double a4Height = 1123;
-        const double contentWidth = 730;
+        const double contentWidth = 680;
+        // A4 yazdırılabilir alanını güvenli tutmak için tüm rapor tabloları 680 DIP ile sınırlandırılmıştır.
 
         var document = new FlowDocument
         {
             PageWidth = a4Width,
             PageHeight = a4Height,
-            PagePadding = new Thickness(32, 30, 32, 30),
+            PagePadding = new Thickness(57, 30, 57, 30),
             FontFamily = new System.Windows.Media.FontFamily("Arial"),
             FontSize = 9,
             ColumnWidth = contentWidth,
