@@ -318,7 +318,7 @@
                                                         <ColumnDefinition Width="170"/><ColumnDefinition Width="*"/>
                                                     </Grid.ColumnDefinitions>
                                                     <Grid.RowDefinitions>
-                                                        <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
                                                     </Grid.RowDefinitions>
                                                     <TextBlock Grid.Row="0" Grid.Column="0" Text="İhale / Dosya No" Style="{StaticResource FieldLabel}" Margin="0,8"/>
                                                     <TextBox x:Name="TenderNumberTextBox" Grid.Row="0" Grid.Column="1" Margin="8" Style="{StaticResource FieldTextBox}"/>
@@ -337,6 +337,10 @@
                                                     <DatePicker x:Name="StartDatePicker" Grid.Row="3" Grid.Column="1" Margin="8" Style="{StaticResource FieldDatePicker}"/>
                                                     <TextBlock Grid.Row="3" Grid.Column="2" Text="Bitiş Tarihi" Style="{StaticResource FieldLabel}" Margin="18,8,0,8"/>
                                                     <DatePicker x:Name="EndDatePicker" Grid.Row="3" Grid.Column="3" Margin="8" Style="{StaticResource FieldDatePicker}"/>
+                                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="İhale Tarihi" Style="{StaticResource FieldLabel}" Margin="0,8"/>
+                                                    <DatePicker x:Name="TenderDatePicker" Grid.Row="4" Grid.Column="1" Margin="8" Style="{StaticResource FieldDatePicker}"/>
+                                                    <TextBlock Grid.Row="4" Grid.Column="2" Text="Sözleşme Tarihi" Style="{StaticResource FieldLabel}" Margin="18,8,0,8"/>
+                                                    <DatePicker x:Name="ContractDatePicker" Grid.Row="4" Grid.Column="3" Margin="8" Style="{StaticResource FieldDatePicker}"/>
                                                 </Grid>
                                                 <Border Style="{StaticResource StatusBanner}" Margin="8,14,8,0" Padding="14,11">
                                                     <Grid>
