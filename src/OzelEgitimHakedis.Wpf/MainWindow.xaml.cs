@@ -282,7 +282,6 @@ public partial class MainWindow : Window
             SavePersistedData();
             UpdateContractorSummary();
             UpdateHomeSummaryView();
-            ContractorStatusTextBlock.Text = $"Yüklenici silindi: {contractor.Name}.";
         }
     }
 
