@@ -268,8 +268,8 @@ public partial class MainWindow : Window
     {
         foreach (var button in new[]
         {
-            NavHome, NavContract, NavLines, NavContractors,
-            NavProgress, NavHistory, NavSummary, NavReports, NavAcceptance, NavSettings
+            NavHome, NavContract, NavLines,
+            NavProgress, NavHistory, NavReports, NavAcceptance, NavSettings
         })
         {
             button.Uid = button.Tag?.ToString() == page ? "Active" : string.Empty;
