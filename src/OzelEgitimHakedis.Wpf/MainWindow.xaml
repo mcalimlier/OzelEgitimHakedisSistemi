@@ -158,12 +158,6 @@
                                 <TextBlock Text="HATLAR" FontSize="16.5" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
-                        <Button x:Name="NavContractors" Style="{StaticResource NavButton}" Tag="Contractors" Click="NavigationButton_Click">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE77B;" FontSize="23" Width="42"/>
-                                <TextBlock Text="YÜKLENİCİLER" FontSize="16.5" FontWeight="SemiBold"/>
-                            </StackPanel>
-                        </Button>
                         <Border Height="3" Background="#557A9D" Margin="16,10" CornerRadius="1.5"/>
                         <Button x:Name="NavProgress" Style="{StaticResource NavButton}" Tag="Progress" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
@@ -175,12 +169,6 @@
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE81C;" FontSize="23" Width="42"/>
                                 <TextBlock Text="HAKEDİŞ GEÇMİŞİ" FontSize="16.5" FontWeight="SemiBold"/>
-                            </StackPanel>
-                        </Button>
-                        <Button x:Name="NavSummary" Style="{StaticResource NavButton}" Tag="Summary" Click="NavigationButton_Click">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE9D5;" FontSize="23" Width="42"/>
-                                <TextBlock Text="İCMAL" FontSize="16.5" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                         <Button x:Name="NavReports" Style="{StaticResource NavButton}" Tag="Reports" Click="NavigationButton_Click">
@@ -324,6 +312,30 @@
                                             <TextBlock x:Name="HomeVatWithholdingTextBlock" Text="0,00 / 0,00 ₺" Foreground="White" FontSize="14" FontWeight="Bold" Margin="0,5,0,0" TextWrapping="Wrap"/>
                                         </StackPanel>
                                     </Border>
+                                </UniformGrid>
+                                <UniformGrid Columns="4" Margin="0,14,0,0">
+                                    <Border Style="{StaticResource MetricCard}" Margin="0,0,8,0"><StackPanel><TextBlock Text="TAŞIMA HİZMET" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock x:Name="HomeTransportServiceTextBlock" Text="0,00 ₺" Foreground="White" FontSize="17" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel></Border>
+                                    <Border Style="{StaticResource MetricCard}" Margin="4,0"><StackPanel><TextBlock Text="TAŞIMA FİYAT FARKI" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock x:Name="HomeTransportPriceDifferenceTextBlock" Text="0,00 ₺" Foreground="White" FontSize="17" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel></Border>
+                                    <Border Style="{StaticResource MetricCard}" Margin="4,0"><StackPanel><TextBlock Text="TAŞIMA HAKEDİŞ" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock x:Name="HomeTransportNetTextBlock" Text="0,00 ₺" Foreground="White" FontSize="17" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel></Border>
+                                    <Border Style="{StaticResource MetricCard}" Margin="8,0,0,0"><StackPanel><TextBlock Text="REHBER HİZMET" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock x:Name="HomeGuideServiceTextBlock" Text="0,00 ₺" Foreground="White" FontSize="17" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel></Border>
+                                </UniformGrid>
+                                <UniformGrid Columns="4" Margin="0,14,0,0">
+                                    <Border Style="{StaticResource MetricCard}" Margin="0,0,8,0"><StackPanel><TextBlock Text="REHBER HAKEDİŞ" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock x:Name="HomeGuideNetTextBlock" Text="0,00 ₺" Foreground="White" FontSize="17" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel></Border>
+                                    <Border Style="{StaticResource MetricCard}" Margin="4,0"><StackPanel><TextBlock Text="TOPLAM TUTAR" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock x:Name="HomeTotalAmountTextBlock" Text="0,00 ₺" Foreground="White" FontSize="17" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel></Border>
+                                    <Border Style="{StaticResource MetricCard}" Margin="4,0"><StackPanel><TextBlock Text="KDV" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock x:Name="HomeVatTextBlock" Text="0,00 ₺" Foreground="White" FontSize="17" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel></Border>
+                                    <Border Style="{StaticResource MetricCard}" Margin="8,0,0,0"><StackPanel><TextBlock Text="TEVKİFAT" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock x:Name="HomeWithholdingTextBlock" Text="0,00 ₺" Foreground="{StaticResource Gold500Brush}" FontSize="17" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel></Border>
+                                </UniformGrid>
+                                <UniformGrid Columns="4" Margin="0,14,0,0">
+                                    <Border Style="{StaticResource MetricCard}" Margin="0,0,8,0"><StackPanel><TextBlock Text="FATURA TUTARI" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock x:Name="HomeInvoiceTextBlock" Text="0,00 ₺" Foreground="White" FontSize="17" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel></Border>
+                                    <Border Style="{StaticResource MetricCard}" Margin="4,0"><StackPanel><TextBlock Text="FİYAT FARKI TEMİNATI" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock x:Name="HomeGuaranteeTextBlock" Text="0,00 ₺" Foreground="White" FontSize="17" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel></Border>
+                                    <Border Style="{StaticResource MetricCard}" Margin="4,0"><StackPanel><TextBlock Text="DAMGA VERGİSİ" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock x:Name="HomeStampTaxTextBlock" Text="0,00 ₺" Foreground="White" FontSize="17" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel></Border>
+                                    <Border Style="{StaticResource MetricCard}" Margin="8,0,0,0"><StackPanel><TextBlock Text="BRÜT TUTAR" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock x:Name="HomeGrossTextBlock2" Text="0,00 ₺" Foreground="White" FontSize="17" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel></Border>
+                                </UniformGrid>
+                                <UniformGrid Columns="4" Margin="0,14,0,0">
+                                    <Border Style="{StaticResource MetricCard}" Margin="0,0,8,0"><StackPanel><TextBlock Text="TOPLAM KESİNTİ" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock x:Name="HomeDeductionsTextBlock2" Text="0,00 ₺" Foreground="{StaticResource Gold500Brush}" FontSize="17" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel></Border>
+                                    <Border Style="{StaticResource MetricCard}" Margin="4,0"><StackPanel><TextBlock Text="NET ÖDENECEK" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock x:Name="HomeNetPayableTextBlock2" Text="0,00 ₺" Foreground="{StaticResource Blue600Brush}" FontSize="18" FontWeight="Bold" Margin="0,5,0,0"/></StackPanel></Border>
+                                    <Border Style="{StaticResource MetricCard}" Margin="4,0"><StackPanel><TextBlock Text="KONTROL" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock Text="Excel karşılaştırma alanı" Foreground="White" FontSize="14" FontWeight="Bold" Margin="0,5,0,0" TextWrapping="Wrap"/></StackPanel></Border>
+                                    <Border Style="{StaticResource MetricCard}" Margin="8,0,0,0"><StackPanel><TextBlock Text="ARŞİV" Foreground="#D9E9F6" FontSize="12" FontWeight="Bold"/><TextBlock Text="Otomatik kaydediliyor" Foreground="White" FontSize="14" FontWeight="Bold" Margin="0,5,0,0" TextWrapping="Wrap"/></StackPanel></Border>
                                 </UniformGrid>
                             </StackPanel>
                         </Grid>
@@ -621,19 +633,19 @@
                                                 <TextBlock Text="YENİ HAT" Style="{StaticResource CardTitle}"/>
                                                 <TextBlock Text="Hat bilgilerini girin" Style="{StaticResource CardSubtitle}" Margin="0,0,0,18"/><Border x:Name="RouteValidationBanner" Visibility="Collapsed" Background="#FFF1F1" BorderBrush="#E53935" BorderThickness="1.5" CornerRadius="9" Padding="12,9" Margin="0,0,0,14"><StackPanel><TextBlock Text="EKSİK / HATALI HAT BİLGİSİ" Foreground="#C62828" FontSize="12.5" FontWeight="Bold"/><TextBlock x:Name="RouteValidationMessageTextBlock" Foreground="#8E1B1B" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,3,0,0"/></StackPanel></Border>
 
-                                                <TextBlock Text="Hat No" Foreground="{StaticResource Text900Brush}" FontSize="15" FontWeight="Bold"/>
+                                                <TextBlock Text="Hat No" Foreground="White" FontSize="15" FontWeight="Bold"/>
                                                 <TextBox x:Name="RouteNumberTextBox" Style="{StaticResource FieldTextBox}" Margin="0,7,0,14"/>
 
-                                                <TextBlock Text="Hat Adı" Foreground="{StaticResource Text900Brush}" FontSize="15" FontWeight="Bold"/>
+                                                <TextBlock Text="Hat Adı" Foreground="White" FontSize="15" FontWeight="Bold"/>
                                                 <TextBox x:Name="RouteNameTextBox" Style="{StaticResource FieldTextBox}" Margin="0,7,0,14"/>
 
-                                                <TextBlock Text="Taşıma İş Günü" Foreground="{StaticResource Text900Brush}" FontSize="15" FontWeight="Bold"/>
+                                                <TextBlock Text="Taşıma İş Günü" Foreground="White" FontSize="15" FontWeight="Bold"/>
                                                 <TextBox x:Name="RouteTransportWorkDaysTextBox"
                                                          Style="{StaticResource FieldTextBox}"
                                                          Margin="0,7,0,14"
                                                          TextChanged="RouteTransportCalculation_TextChanged"/>
 
-                                                <TextBlock Text="Taşıma Günlük Birim Fiyat" Foreground="{StaticResource Text900Brush}" FontSize="15" FontWeight="Bold"/>
+                                                <TextBlock Text="Taşıma Günlük Birim Fiyat" Foreground="White" FontSize="15" FontWeight="Bold"/>
                                                 <TextBox x:Name="RouteDailyPriceTextBox"
                                                          Style="{StaticResource FieldTextBox}"
                                                          Margin="0,7,0,10"
@@ -651,10 +663,10 @@
                                                     </Grid>
                                                 </Border>
 
-                                                <TextBlock Text="Rehber Yıllık İş Günü" Foreground="{StaticResource Text900Brush}" FontSize="15" FontWeight="Bold"/>
+                                                <TextBlock Text="Rehber Yıllık İş Günü" Foreground="White" FontSize="15" FontWeight="Bold"/>
                                                 <TextBox x:Name="RouteGuideWorkDaysTextBox" Style="{StaticResource FieldTextBox}" Margin="0,7,0,12"/>
 
-                                                <TextBlock Text="Rehber Personel Günlük Fiyat" Foreground="{StaticResource Text900Brush}" FontSize="15" FontWeight="Bold"/>
+                                                <TextBlock Text="Rehber Personel Günlük Fiyat" Foreground="White" FontSize="15" FontWeight="Bold"/>
                                                 <TextBox x:Name="RouteGuideDailyPriceTextBox" Style="{StaticResource FieldTextBox}" Margin="0,7,0,18"/>
 
                                                 <StackPanel Orientation="Horizontal">
