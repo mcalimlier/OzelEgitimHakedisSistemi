@@ -491,15 +491,20 @@ public partial class MainWindow : Window
     private void CalculateProgressButton_Click(object sender, RoutedEventArgs e)
     {
         if (!int.TryParse(WorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var workDays) ||
-            workDays < 0)
+            workDays < 0 ||
+            !int.TryParse(GuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var guideWorkDays) ||
+            guideWorkDays < 0)
         {
-            CalculationStatusTextBlock.Text = "İş Günü 0 veya daha büyük bir tam sayı olmalıdır.";
+            CalculationStatusTextBlock.Text = "Taşıma ve rehber iş günleri 0 veya daha büyük tam sayılar olmalıdır.";
             return;
         }
 
         if (!TryParseDecimal(DailyPriceTextBox.Text, out var dailyPrice) || dailyPrice < 0 ||
+            !TryParseDecimal(GuideDailyPriceTextBox.Text, out var guideDailyPrice) || guideDailyPrice < 0 ||
             !TryParseDecimal(DiscountTextBox.Text, out var discount) || discount < 0 ||
+            !TryParseDecimal(GuideDiscountTextBox.Text, out var guideDiscount) || guideDiscount < 0 ||
             !TryParseDecimal(PriceDifferenceTextBox.Text, out var priceDifference) ||
+            !TryParseDecimal(GuidePriceDifferenceTextBox.Text, out var guidePriceDifference) ||
             !TryParseDecimal(ProgressContractAmountTextBox.Text, out var contractAmount) || contractAmount < 0 ||
             !TryParseDecimal(TaxDebtTextBox.Text, out var taxDebt) || taxDebt < 0 ||
             !TryParseDecimal(SocialSecurityDebtTextBox.Text, out var socialSecurityDebt) || socialSecurityDebt < 0 ||
@@ -524,11 +529,17 @@ public partial class MainWindow : Window
                 taxDebt,
                 socialSecurityDebt,
                 minimumWageSupport,
-                inspectionPenalty);
+                inspectionPenalty,
+                guideWorkDays,
+                guideDailyPrice,
+                guideDiscount,
+                guidePriceDifference);
 
             var result = ProgressPaymentCalculator.Calculate(input);
 
             ServiceAmountResultTextBlock.Text = FormatMoney(result.ServiceAmount);
+            GuideServiceAmountResultTextBlock.Text = FormatMoney(result.GuideServiceAmount);
+            CombinedPriceDifferenceResultTextBlock.Text = FormatMoney(result.CombinedPriceDifferenceExcludingVat);
             TotalAmountResultTextBlock.Text = FormatMoney(result.TotalAmount);
             VatResultTextBlock.Text = FormatMoney(result.Vat);
             DeductionsResultTextBlock.Text = FormatMoney(result.TotalDeductions);
@@ -568,11 +579,21 @@ public partial class MainWindow : Window
                 progressNumber,
                 periodDate,
                 routeNumber,
-                routeName));
+                routeName,
+                WorkNameTextBox.Text.Trim(),
+                ContractorTextBox.Text.Trim(),
+                TenderNumberTextBox.Text.Trim(),
+                ContractNumberTextBox.Text.Trim(),
+                DateOnly.FromDateTime(StartDatePicker.SelectedDate ?? DateTime.Today),
+                DateOnly.FromDateTime(StartDatePicker.SelectedDate ?? DateTime.Today),
+                DateOnly.FromDateTime(StartDatePicker.SelectedDate ?? DateTime.Today),
+                DateOnly.FromDateTime(EndDatePicker.SelectedDate ?? DateTime.Today)));
             SavePersistedData();
             UpdateHistoryView();
             UpdateSummaryView();
             UpdateReportView();
+            UpdateHomeSummaryView();
+            UpdateAcceptanceView();
 
             CalculationStatusTextBlock.Text = "Hesaplama başarıyla tamamlandı ve geçmişe kaydedildi.";
         }
