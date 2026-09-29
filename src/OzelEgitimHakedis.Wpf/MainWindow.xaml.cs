@@ -563,7 +563,7 @@ public partial class MainWindow : Window
             !TryParseDecimal(GuideDiscountTextBox.Text, out var guideDiscount) || guideDiscount < 0 ||
             !TryParseDecimal(PriceDifferenceTextBox.Text, out var priceDifference) ||
             !TryParseDecimal(GuidePriceDifferenceTextBox.Text, out var guidePriceDifference) ||
-            !TryParseDecimal(ProgressContractAmountTextBox.Text, out var contractAmount) || contractAmount < 0 ||
+            !TryParseDecimal(ContractAmountTextBox.Text, out var contractAmount) || contractAmount < 0 ||
             !TryParseDecimal(TaxDebtTextBox.Text, out var taxDebt) || taxDebt < 0 ||
             !TryParseDecimal(SocialSecurityDebtTextBox.Text, out var socialSecurityDebt) || socialSecurityDebt < 0 ||
             !TryParseDecimal(MinimumWageSupportTextBox.Text, out var minimumWageSupport) || minimumWageSupport < 0 ||
@@ -583,7 +583,7 @@ public partial class MainWindow : Window
                 discount,
                 priceDifference,
                 contractAmount,
-                ProgressVatExemptCheckBox.IsChecked != true,
+                VatExemptCheckBox.IsChecked != true,
                 taxDebt,
                 socialSecurityDebt,
                 minimumWageSupport,
