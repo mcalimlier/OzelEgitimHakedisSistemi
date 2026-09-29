@@ -598,20 +598,41 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (!TryParseDecimal(DailyPriceTextBox.Text, out var dailyPrice) || dailyPrice < 0 ||
-            !TryParseDecimal(GuideDailyPriceTextBox.Text, out var guideDailyPrice) || guideDailyPrice < 0 ||
-            !TryParseDecimal(DiscountTextBox.Text, out var discount) || discount < 0 ||
-            !TryParseDecimal(GuideDiscountTextBox.Text, out var guideDiscount) || guideDiscount < 0 ||
-            !TryParseDecimal(PriceDifferenceTextBox.Text, out var priceDifference) ||
-            !TryParseDecimal(GuidePriceDifferenceTextBox.Text, out var guidePriceDifference) ||
-            !TryParseDecimal(ContractAmountTextBox.Text, out var contractAmount) || contractAmount < 0 ||
-            !TryParseDecimal(TaxDebtTextBox.Text, out var taxDebt) || taxDebt < 0 ||
-            !TryParseDecimal(SocialSecurityDebtTextBox.Text, out var socialSecurityDebt) || socialSecurityDebt < 0 ||
-            !TryParseDecimal(MinimumWageSupportTextBox.Text, out var minimumWageSupport) || minimumWageSupport < 0 ||
-            !TryParseDecimal(InspectionPenaltyTextBox.Text, out var inspectionPenalty) || inspectionPenalty < 0)
+        ClearProgressValidationVisuals();
+
+        var invalidFields = new List<(Control Control, string Name)>();
+
+        if (!TryParseDecimal(DailyPriceTextBox.Text, out var dailyPrice) || dailyPrice < 0)
+            invalidFields.Add((DailyPriceTextBox, "Taşıma Günlük Fiyat"));
+        if (!TryParseDecimal(GuideDailyPriceTextBox.Text, out var guideDailyPrice) || guideDailyPrice < 0)
+            invalidFields.Add((GuideDailyPriceTextBox, "Rehber Günlük Fiyat"));
+        if (!TryParseDecimal(DiscountTextBox.Text, out var discount) || discount < 0)
+            invalidFields.Add((DiscountTextBox, "Taşıma İskonto"));
+        if (!TryParseDecimal(GuideDiscountTextBox.Text, out var guideDiscount) || guideDiscount < 0)
+            invalidFields.Add((GuideDiscountTextBox, "Rehber İskonto"));
+        if (!TryParseDecimal(PriceDifferenceTextBox.Text, out var priceDifference))
+            invalidFields.Add((PriceDifferenceTextBox, "Taşıma Fiyat Farkı"));
+        if (!TryParseDecimal(GuidePriceDifferenceTextBox.Text, out var guidePriceDifference))
+            invalidFields.Add((GuidePriceDifferenceTextBox, "Rehber Fiyat Farkı"));
+        if (!TryParseDecimal(ContractAmountTextBox.Text, out var contractAmount) || contractAmount < 0)
+            invalidFields.Add((ContractAmountTextBox, "Sözleşme Bedeli"));
+        if (!TryParseDecimal(TaxDebtTextBox.Text, out var taxDebt) || taxDebt < 0)
+            invalidFields.Add((TaxDebtTextBox, "Vergi Borcu"));
+        if (!TryParseDecimal(SocialSecurityDebtTextBox.Text, out var socialSecurityDebt) || socialSecurityDebt < 0)
+            invalidFields.Add((SocialSecurityDebtTextBox, "SGK Borcu"));
+        if (!TryParseDecimal(MinimumWageSupportTextBox.Text, out var minimumWageSupport) || minimumWageSupport < 0)
+            invalidFields.Add((MinimumWageSupportTextBox, "Asgari Ücret Desteği"));
+        if (!TryParseDecimal(InspectionPenaltyTextBox.Text, out var inspectionPenalty) || inspectionPenalty < 0)
+            invalidFields.Add((InspectionPenaltyTextBox, "Denetim Cezası"));
+
+        if (invalidFields.Count > 0)
         {
-            ProgressCalculationSummaryTextBlock.Text = "BEKLENİYOR";
-            CalculationStatusTextBlock.Text = "Tutar alanlarını 0 veya daha büyük geçerli sayılarla doldurun.";
+            foreach (var (control, _) in invalidFields)
+                MarkProgressInvalid(control);
+
+            ProgressCalculationSummaryTextBlock.Text = "KONTROL GEREKLİ";
+            CalculationStatusTextBlock.Text = "Kırmızı işaretli alanları doldurun/düzeltin: " +
+                                              string.Join(", ", invalidFields.Select(x => x.Name)) + ".";
             return;
         }
 
@@ -1980,6 +2001,22 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
     {
         if (sender is TextBox textBox && string.IsNullOrWhiteSpace(textBox.Text))
             textBox.Text = "0";
+    }
+
+    private void ClearProgressValidationVisuals()
+    {
+        foreach (var control in new Control[]
+        {
+            DailyPriceTextBox, GuideDailyPriceTextBox, DiscountTextBox, GuideDiscountTextBox,
+            PriceDifferenceTextBox, GuidePriceDifferenceTextBox, ContractAmountTextBox,
+            TaxDebtTextBox, SocialSecurityDebtTextBox, MinimumWageSupportTextBox, InspectionPenaltyTextBox
+        })
+            ClearInvalid(control);
+    }
+
+    private void MarkProgressInvalid(Control control)
+    {
+        MarkInvalid(control);
     }
 
     private void ConfigureContractValidationInputs()
