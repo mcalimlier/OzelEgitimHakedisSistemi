@@ -45,7 +45,7 @@ public sealed class ProgressPaymentCalculatorTests
     [Fact]
     public void TransportAndGuideComposition_ShouldMatch()
     {
-        // Orijinal XLSM Hesaplama!4 satırındaki senaryo:
+        // Taşıma + rehber personel bileşimi regresyon senaryosu:
         // Taşıma 29 gün x 2608,26 + 1.500 fiyat farkı
         // Rehber 30 gün x 1362,49 + 1.500 fiyat farkı
         // Taşıma KDV %10, rehber KDV %20, tevkifat sırasıyla %5 ve %18.
