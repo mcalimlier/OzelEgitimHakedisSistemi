@@ -1509,8 +1509,8 @@ public partial class MainWindow : Window
         var doc = CreateBaseDocument("HİZMET İŞLERİ KABUL TUTANAĞI", "");
 
         var tr = new CultureInfo("tr-TR");
-        var contractStart = StartDatePicker.SelectedDate;
-        var contractEnd = EndDatePicker.SelectedDate;
+        var contractStart = latest.ContractStartDate?.ToDateTime(TimeOnly.MinValue) ?? StartDatePicker.SelectedDate;
+        var contractEnd = latest.ContractEndDate?.ToDateTime(TimeOnly.MinValue) ?? EndDatePicker.SelectedDate;
         var duration = Math.Max(0, (contractEnd - contractStart)?.Days ?? 0);
 
         // Örnekteki kabul dönemi, seçilen hakediş tarihini takip eden takvim ayıdır.
