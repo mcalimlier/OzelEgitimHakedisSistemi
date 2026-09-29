@@ -180,9 +180,10 @@ public partial class MainWindow : Window
         HistoryPanel.Visibility = page == "History" ? Visibility.Visible : Visibility.Collapsed;
         SummaryPanel.Visibility = page == "Summary" ? Visibility.Visible : Visibility.Collapsed;
         ReportsPanel.Visibility = page == "Reports" ? Visibility.Visible : Visibility.Collapsed;
+        AcceptancePanel.Visibility = page == "Acceptance" ? Visibility.Visible : Visibility.Collapsed;
         SettingsPanel.Visibility = page == "Settings" ? Visibility.Visible : Visibility.Collapsed;
         PlaceholderPanel.Visibility = page is "Home" or "Contract" or "Progress" or "Lines" or "Contractors"
-            or "History" or "Summary" or "Reports" or "Settings"
+            or "History" or "Summary" or "Reports" or "Acceptance" or "Settings"
             ? Visibility.Collapsed
             : Visibility.Visible;
 
@@ -195,6 +196,7 @@ public partial class MainWindow : Window
             "History" => "Hakediş Geçmişi",
             "Summary" => "İcmal",
             "Reports" => "Raporlar",
+            "Acceptance" => "Kabul Tutanağı",
             "Settings" => "Ayarlar",
             _ => "Ana Ekran"
         };
@@ -217,7 +219,7 @@ public partial class MainWindow : Window
         foreach (var button in new[]
         {
             NavHome, NavContract, NavLines, NavContractors,
-            NavProgress, NavHistory, NavSummary, NavReports, NavSettings
+            NavProgress, NavHistory, NavSummary, NavReports, NavAcceptance, NavSettings
         })
         {
             button.Uid = button.Tag?.ToString() == page ? "Active" : string.Empty;
@@ -758,6 +760,40 @@ public partial class MainWindow : Window
         return table;
     }
 
+    private Table CreateFiveColumnTable(IEnumerable<(string A, string B, string C, string D, string E)> rows, string[] headers)
+    {
+        var table = new Table
+        {
+            CellSpacing = 0,
+            BorderBrush = System.Windows.Media.Brushes.Black,
+            BorderThickness = new Thickness(1),
+            Margin = new Thickness(0, 0, 0, 10)
+        };
+
+        foreach (var width in new[] { 48d, 285d, 135d, 135d, 135d })
+            table.Columns.Add(new TableColumn { Width = new GridLength(width) });
+
+        var group = new TableRowGroup();
+        var header = new TableRow();
+        foreach (var h in headers)
+            header.Cells.Add(CreateCell(h, true, false, true, true));
+        group.Rows.Add(header);
+
+        foreach (var item in rows)
+        {
+            var row = new TableRow();
+            row.Cells.Add(CreateCell(item.A, false, false, true));
+            row.Cells.Add(CreateCell(item.B));
+            row.Cells.Add(CreateCell(item.C, false, true));
+            row.Cells.Add(CreateCell(item.D, false, true));
+            row.Cells.Add(CreateCell(item.E, false, true));
+            group.Rows.Add(row);
+        }
+
+        table.RowGroups.Add(group);
+        return table;
+    }
+
     private FlowDocument CreateBaseDocument(string title, string subtitle)
     {
         var document = new FlowDocument
@@ -802,6 +838,85 @@ public partial class MainWindow : Window
 
         dialog.PrintDocument(((IDocumentPaginatorSource)document).DocumentPaginator, title);
         return true;
+    }
+
+    private void PreviewAllRouteDocumentsButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (!EnsureRouteForOutput())
+            return;
+
+        var route = (RouteDraft)ReportRouteComboBox.SelectedItem;
+        var latest = GetSelectedRouteLatestPayment()!;
+
+        var documents = new (FlowDocument Document, string Title)[]
+        {
+            (BuildHakedişRaporu(route, latest), "Hakediş Raporu"),
+            (BuildHizmetIsleriHakedisRaporu(route, latest), "Hizmet İşleri Hakediş Raporu"),
+            (BuildKabulTutanağı(route, latest), "Hizmet İşleri Kabul Tutanağı"),
+            (BuildHakedişIcmali(route, latest), "Hakediş İcmali")
+        };
+
+        var previewWindow = new Window
+        {
+            Title = "OEHS — Belge Önizleme",
+            Owner = this,
+            Width = 1180,
+            Height = 820,
+            MinWidth = 900,
+            MinHeight = 650,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            Background = System.Windows.Media.Brushes.White
+        };
+
+        var root = new Grid { Margin = new Thickness(10) };
+        root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+        var titleBlock = new TextBlock
+        {
+            Text = "BELGE ÖNİZLEME",
+            FontSize = 18,
+            FontWeight = FontWeights.Bold,
+            Foreground = System.Windows.Media.Brushes.DarkSlateGray,
+            Margin = new Thickness(4, 4, 4, 8)
+        };
+        Grid.SetRow(titleBlock, 0);
+        root.Children.Add(titleBlock);
+
+        var tabs = new System.Windows.Controls.TabControl();
+        foreach (var item in documents)
+        {
+            var viewer = new System.Windows.Controls.DocumentViewer
+            {
+                Document = item.Document,
+                HorizontalContentAlignment = HorizontalAlignment.Center,
+                VerticalContentAlignment = VerticalAlignment.Top,
+                Margin = new Thickness(4)
+            };
+            tabs.Items.Add(new System.Windows.Controls.TabItem
+            {
+                Header = item.Title,
+                Content = viewer
+            });
+        }
+        Grid.SetRow(tabs, 1);
+        root.Children.Add(tabs);
+
+        var closeButton = new System.Windows.Controls.Button
+        {
+            Content = "KAPAT",
+            Width = 110,
+            Height = 38,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            Margin = new Thickness(4, 8, 4, 2)
+        };
+        closeButton.Click += (_, _) => previewWindow.Close();
+        Grid.SetRow(closeButton, 2);
+        root.Children.Add(closeButton);
+
+        previewWindow.Content = root;
+        previewWindow.ShowDialog();
     }
 
     private bool EnsureRouteForOutput()
@@ -954,32 +1069,45 @@ public partial class MainWindow : Window
     private FlowDocument BuildKabulTutanağı(RouteDraft route, ProgressPaymentHistoryData latest)
     {
         var doc = CreateBaseDocument("HİZMET İŞLERİ KABUL TUTANAĞI", "");
-        var duration = Math.Max(0, (EndDatePicker.SelectedDate - StartDatePicker.SelectedDate)?.Days ?? 0);
-        var finishDate = latest.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-";
-        var workStart = StartDatePicker.SelectedDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-";
+
+        var tr = new CultureInfo("tr-TR");
+        var contractStart = StartDatePicker.SelectedDate;
+        var contractEnd = EndDatePicker.SelectedDate;
+        var duration = Math.Max(0, (contractEnd - contractStart)?.Days ?? 0);
+
+        // Örnekteki kabul dönemi, seçilen hakediş tarihini takip eden takvim ayıdır.
+        // Böylece 29.09.2026 tarihli kayıt için metin 01.10.2026 / 31.10.2026 şeklinde oluşur.
+        var periodAnchor = latest.PeriodDate ?? DateOnly.FromDateTime(DateTime.Today);
+        var serviceMonth = periodAnchor.AddMonths(1);
+        var serviceStart = new DateOnly(serviceMonth.Year, serviceMonth.Month, 1);
+        var serviceEnd = serviceStart.AddMonths(1).AddDays(-1);
+
+        var contractAmount = latest.Input.ContractAmount;
+        var contractor = string.IsNullOrWhiteSpace(ContractorTextBox.Text)
+            ? "S.S. Selçikler Min. Kar. Yolcu Taşıma Kooperatifi"
+            : ContractorTextBox.Text.Trim();
 
         doc.Blocks.Add(CreateDocumentTable(
             ("İşin adı", route.Name),
-            ("Yüklenicinin adı/ticari unvanı", ContractorTextBox.Text),
-            ("Sözleşme tarihi", workStart),
-            ("Sözleşme bedeli", FormatMoney(latest.Input.ContractAmount)),
+            ("Yüklenicinin adı/ticari unvanı", contractor),
+            ("Sözleşme tarihi", contractStart?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
+            ("Sözleşme bedeli", FormatMoney(contractAmount)),
             ("Sözleşmeye göre işin süresi(takvim günü)", $"{duration} İş Günü"),
-            ("Sözleşmeye göre işin bitirilmesi gereken tarih", EndDatePicker.SelectedDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
+            ("Sözleşmeye göre işin bitirilmesi gereken tarih", contractEnd?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
             ("Varsa süre uzatımları", ""),
-            ("Süre uzatımı dahil işin bitirilmesi gereken tarih", EndDatePicker.SelectedDate?.ToString("dd MMMM yyyy dddd", new CultureInfo("tr-TR")) ?? "-"),
-            ("İşin bitirildiği tarih", finishDate)));
+            ("Süre uzatımı dahil işin bitirilmesi gereken tarih", contractEnd?.ToString("dd MMMM yyyy dddd", tr) ?? "-"),
+            ("İşin bitirildiği tarih", contractEnd?.ToString("dd MMMM yyyy dddd", tr) ?? "-")));
 
-        var workName = route.Name;
-        var contractor = ContractorTextBox.Text;
         var paragraphText =
-            $"İlçe Milli Eğitim Müdürlüğü'nün {route.RouteNumber} Numaralı {workName} işi yüklenicisi {contractor} arasında imzalanan sözleşme kapsamında gerçekleştirilen iş için, " +
-            $"Memur Aşkın KESKİNBALTA ve İlçe Milli Eğitim Şube Müdürü Halil ÖZENÇ tarafından inceleme yapılmış; yüklenici, {contractor} tarafından " +
-            $"yapılan işlerin sözleşme ve eklerine uygun olduğu ve kabule engel olabilecek eksik, kusur ve arızaların bulunmadığı görülmüştür.";
+            $"İlçe Milli Eğitim Müdürlüğü'nün {route.RouteNumber} Numaralı {route.Name} işi yüklenicisi {contractor} arasında imzalanan sözleşme kapsamında gerçekleştirilen iş için, " +
+            $"Memur Aşkın KESKİNBALTA ve İlçe Milli Eğitim Şube Müdürü Halil ÖZENÇ tarafından inceleme yapılmış yüklenici, " +
+            $"{contractor} tarafından {serviceStart:dd.MM.yyyy} / {serviceEnd:dd.MM.yyyy} tarihleri arasında yapılan işlerin, " +
+            "Sözleşme ve eklerine uygun olduğu ve kabule engel olabilecek eksik kusur ve arızaların bulunmadığı görülmüştür.";
 
         doc.Blocks.Add(new Paragraph(new Run(paragraphText))
         {
             TextAlignment = TextAlignment.Justify,
-            Margin = new Thickness(0, 18, 0, 30),
+            Margin = new Thickness(0, 20, 0, 52),
             FontSize = 10
         });
 
@@ -987,42 +1115,47 @@ public partial class MainWindow : Window
         {
             TextAlignment = TextAlignment.Center,
             FontWeight = FontWeights.Bold,
-            Margin = new Thickness(0, 5, 0, 3)
+            Margin = new Thickness(0, 0, 0, 3)
         });
         doc.Blocks.Add(new Paragraph(new Run(contractor))
         {
             TextAlignment = TextAlignment.Center,
-            Margin = new Thickness(0, 0, 0, 25)
+            Margin = new Thickness(0, 0, 0, 58)
         });
+
         doc.Blocks.Add(new Paragraph(new Run("Düzenleyen                                      Kontrol Eden"))
         {
             TextAlignment = TextAlignment.Center,
-            FontWeight = FontWeights.Bold
+            FontWeight = FontWeights.Bold,
+            Margin = new Thickness(0, 0, 0, 8)
         });
         doc.Blocks.Add(new Paragraph(new Run("Aşkın KESKİNBALTA                         Halil ÖZENÇ"))
         {
             TextAlignment = TextAlignment.Center,
-            Margin = new Thickness(0, 5, 0, 3)
+            Margin = new Thickness(0, 0, 0, 3)
         });
         doc.Blocks.Add(new Paragraph(new Run("Memur                                      İlçe Milli Eğitim Şube Müdürü"))
         {
-            TextAlignment = TextAlignment.Center
+            TextAlignment = TextAlignment.Center,
+            Margin = new Thickness(0, 0, 0, 22)
         });
         doc.Blocks.Add(new Paragraph(new Run(DateTime.Today.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture)))
         {
             TextAlignment = TextAlignment.Center,
             FontWeight = FontWeights.Bold,
-            Margin = new Thickness(0, 15, 0, 3)
+            Margin = new Thickness(0, 0, 0, 8)
         });
         doc.Blocks.Add(new Paragraph(new Run("Özgür BAYSAL"))
         {
             TextAlignment = TextAlignment.Center,
-            FontWeight = FontWeights.Bold
+            FontWeight = FontWeights.Bold,
+            Margin = new Thickness(0, 0, 0, 2)
         });
         doc.Blocks.Add(new Paragraph(new Run("İlçe Milli Eğitim Müdürü"))
         {
             TextAlignment = TextAlignment.Center
         });
+
         return doc;
     }
 
@@ -1032,21 +1165,31 @@ public partial class MainWindow : Window
         var latestDate = latest.PeriodDate ?? DateOnly.FromDateTime(DateTime.Today);
         var baseYear = latestDate.Month >= 9 ? latestDate.Year : latestDate.Year - 1;
 
-        var rows = new List<(string, string, string, string)>();
+        var rows = new List<(string, string, string, string, string)>();
         var totalA = 0m;
         var totalB = 0m;
+
         for (var monthIndex = 0; monthIndex < 11; monthIndex++)
         {
             var month = new DateOnly(baseYear, 9, 1).AddMonths(monthIndex);
-            var monthPayment = payments.LastOrDefault(x => x.PeriodDate.HasValue &&
-                                                           x.PeriodDate.Value.Year == month.Year &&
-                                                           x.PeriodDate.Value.Month == month.Month);
+            var monthPayment = payments.LastOrDefault(x =>
+                x.PeriodDate.HasValue &&
+                x.PeriodDate.Value.Year == month.Year &&
+                x.PeriodDate.Value.Month == month.Month);
+
             var a = monthPayment?.Calculation.ServiceAmount ?? 0m;
             var b = monthPayment?.Calculation.PriceDifferenceExcludingVat ?? 0m;
+            var total = a + b;
             totalA += a;
             totalB += b;
+
             var monthName = month.ToString("MMMM yyyy", new CultureInfo("tr-TR"));
-            rows.Add(((monthIndex + 1).ToString(CultureInfo.CurrentCulture), $"Hizmet Alımı İşi {monthName}", FormatMoney(a), FormatMoney(b)));
+            rows.Add((
+                (monthIndex + 1).ToString(CultureInfo.CurrentCulture),
+                $"Hizmet Alımı İşi {monthName}",
+                FormatMoney(a),
+                FormatMoney(b),
+                FormatMoney(total)));
         }
 
         var doc = CreateBaseDocument("HAKEDİŞ İCMALİ", route.Name);
@@ -1055,58 +1198,65 @@ public partial class MainWindow : Window
             ("Hakediş No", latest.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"),
             ("Hat No", route.RouteNumber)));
 
-        doc.Blocks.Add(CreateFourColumnTable(
+        doc.Blocks.Add(CreateFiveColumnTable(
             rows,
-            new[] { "Sıra No", "İşin Cinsi", "İş Tutarı (a)", "Fiyat Farkı Tutarı (b)" }));
+            new[] { "Sıra No", "İşin Cinsi", "İş Tutarı (a)", "Fiyat Farkı Tutarı (b)", "Toplam (a+b)" }));
 
-        var totalTable = new Table { CellSpacing = 0, BorderBrush = System.Windows.Media.Brushes.Black, BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 0, 10) };
-        foreach (var width in new[] { 70d, 390d, 220d }) totalTable.Columns.Add(new TableColumn { Width = new GridLength(width) });
-        var tg = new TableRowGroup();
-        var tr = new TableRow();
-        tr.Cells.Add(CreateCell("A", true, false, true, true));
-        tr.Cells.Add(CreateCell("T O P L A M", true, false, true, true));
-        tr.Cells.Add(CreateCell(FormatMoney(totalA + totalB), true, true, false, true));
-        tg.Rows.Add(tr);
-        totalTable.RowGroups.Add(tg);
-        doc.Blocks.Add(totalTable);
+        var total = totalA + totalB;
+        doc.Blocks.Add(CreateDocumentTable(
+            ("A", "T O P L A M", FormatMoney(total))));
 
-        var previousDeduction = payments.Where(x => x.Id != latest.Id && x.CreatedAt < latest.CreatedAt).Sum(x => x.Calculation.TotalDeductions);
+        var previousDeduction = payments
+            .Where(x => x.Id != latest.Id && x.CreatedAt < latest.CreatedAt)
+            .Sum(x => x.Calculation.TotalDeductions);
         var currentDeduction = latest.Calculation.TotalDeductions;
         var totalDeduction = previousDeduction + currentDeduction;
-        var net = totalA + totalB - totalDeduction;
+        var net = total - totalDeduction;
 
-        doc.Blocks.Add(SectionHeading("Hakediş İçeriğinden Yapılan Kesintiler"));
         doc.Blocks.Add(CreateDocumentTable(
-            ("Bir Evvelki Hakedişten Yapılan Kesinti", FormatMoney(previousDeduction)),
-            ("Bu Hakedişten Yapılan Kesinti", FormatMoney(currentDeduction)),
-            ("B — Toplam Kesinti Tutarı", FormatMoney(totalDeduction)),
-            ("C — Toplam Hakediş Tutarı : ( A - B )", FormatMoney(net))));
+            ("a)", "Bir Evvelki Hakedişten Yapılan Kesinti", FormatMoney(previousDeduction)),
+            ("b)", "Bu Hakedişten Yapılan Kesinti", FormatMoney(currentDeduction)),
+            ("B", "Toplam Kesinti Tutarı", FormatMoney(totalDeduction)),
+            ("C", "Toplam Hakediş Tutarı : ( A - B )", FormatMoney(net))));
 
         doc.Blocks.Add(new Paragraph(new Run("Düzenleyen                                      Kontrol Eden"))
         {
             TextAlignment = TextAlignment.Center,
             FontWeight = FontWeights.Bold,
-            Margin = new Thickness(0, 15, 0, 3)
+            Margin = new Thickness(0, 18, 0, 8)
         });
         doc.Blocks.Add(new Paragraph(new Run("Aşkın KESKİNBALTA                         Halil ÖZENÇ"))
         {
-            TextAlignment = TextAlignment.Center
+            TextAlignment = TextAlignment.Center,
+            Margin = new Thickness(0, 0, 0, 3)
         });
         doc.Blocks.Add(new Paragraph(new Run("Memur                                      İlçe Milli Eğitim Şube Müdürü"))
         {
-            TextAlignment = TextAlignment.Center
+            TextAlignment = TextAlignment.Center,
+            Margin = new Thickness(0, 0, 0, 20)
         });
         doc.Blocks.Add(new Paragraph(new Run(DateTime.Today.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture)))
         {
             TextAlignment = TextAlignment.Center,
             FontWeight = FontWeights.Bold,
-            Margin = new Thickness(12, 8, 0, 0)
+            Margin = new Thickness(0, 0, 0, 8)
+        });
+        doc.Blocks.Add(new Paragraph(new Run("Özgür BAYSAL"))
+        {
+            TextAlignment = TextAlignment.Center,
+            FontWeight = FontWeights.Bold,
+            Margin = new Thickness(0, 0, 0, 2)
+        });
+        doc.Blocks.Add(new Paragraph(new Run("İlçe Milli Eğitim Müdürü"))
+        {
+            TextAlignment = TextAlignment.Center
         });
         doc.Blocks.Add(new Paragraph(new Run("M.Y.H.B.Y. Örnek No :4/9"))
         {
             FontSize = 8,
             Margin = new Thickness(0, 12, 0, 0)
         });
+
         return doc;
     }
 
