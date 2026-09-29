@@ -79,7 +79,7 @@ Test sırası:
 - Test paketi oluştur
 - Windows kurulum / dağıtım paketi hazırlan
 
-## 12.09.2026 Orijinal Excel doğrulaması
+## 29.09.2026 Orijinal Excel doğrulaması
 
 Kullanıcının yeniden yüklediği orijinal `Özel Eğitim Hakediş Ödeme Programı.xlsm` doğrudan incelendi.
 
