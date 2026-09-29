@@ -14,7 +14,7 @@ namespace OzelEgitimHakedis.Wpf;
 public partial class MainWindow : Window
 {
     private const double DesignWidth = 1522.5;
-    private const double DesignHeight = 1012.1;
+    private const double DesignHeight = 1042.5;
 
     private const int WmGetMinMaxInfo = 0x0024;
     private const uint MonitorDefaultToNearest = 0x00000002;
@@ -25,6 +25,7 @@ public partial class MainWindow : Window
     private readonly ObservableCollection<HistoryRow> _historyRows = new();
     private readonly ObservableCollection<SummaryRow> _summaryRows = new();
     private readonly ObservableCollection<ReportRow> _reportRows = new();
+    private Guid? _editingHistoryId;
     private readonly OehsApplicationDataStore _dataStore = new();
     private static readonly double[] ThreeColumnWidths = { 55d, 350d, 195d };
     private static readonly double[] ThreeValueWidths = { 50d, 400d, 150d };
@@ -42,6 +43,8 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         ConfigureWindow();
+        ConfigureZeroValueInputs();
+        ConfigureContractValidationInputs();
         SourceInitialized += MainWindow_SourceInitialized;
         StartDatePicker.SelectedDate = DateTime.Today;
         EndDatePicker.SelectedDate = DateTime.Today;
@@ -98,7 +101,7 @@ public partial class MainWindow : Window
     {
         var workArea = SystemParameters.WorkArea;
         var maxWidth = Math.Min(DesignWidth, workArea.Width * 0.92);
-        var maxHeight = Math.Min(DesignHeight, workArea.Height * 0.965);
+        var maxHeight = Math.Min(DesignHeight, workArea.Height * 0.985);
         var scale = Math.Min(maxWidth / DesignWidth, maxHeight / DesignHeight);
 
         Width = Math.Round(DesignWidth * scale);
@@ -431,22 +434,58 @@ public partial class MainWindow : Window
 
     private void SaveContractButton_Click(object sender, RoutedEventArgs e)
     {
+        ClearContractValidationVisuals();
+
+        var errors = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(TenderNumberTextBox.Text))
+        {
+            errors.Add("İhale / Dosya No");
+            MarkInvalid(TenderNumberTextBox);
+        }
+
+        if (string.IsNullOrWhiteSpace(ContractNumberTextBox.Text))
+        {
+            errors.Add("Sözleşme No");
+            MarkInvalid(ContractNumberTextBox);
+        }
+
         if (string.IsNullOrWhiteSpace(WorkNameTextBox.Text))
         {
-            ContractStatusTextBlock.Text = "İşin Adı alanı boş bırakılamaz.";
-            return;
+            errors.Add("İşin Adı");
+            MarkInvalid(WorkNameTextBox);
+        }
+
+        if (string.IsNullOrWhiteSpace(ContractorTextBox.Text))
+        {
+            errors.Add("Yüklenici");
+            MarkInvalid(ContractorTextBox);
         }
 
         if (!TryParseDecimal(ContractAmountTextBox.Text, out var contractAmount) || contractAmount < 0)
         {
-            ContractStatusTextBlock.Text = "Sözleşme Bedeli geçerli bir tutar olmalıdır.";
-            return;
+            errors.Add("Sözleşme Bedeli");
+            MarkInvalid(ContractAmountTextBox);
         }
 
         if (!int.TryParse(ContractWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var contractWorkDays) ||
             contractWorkDays < 0)
         {
-            ContractStatusTextBlock.Text = "Sözleşme İş Günü 0 veya daha büyük tam sayı olmalıdır.";
+            errors.Add("Sözleşme İş Günü");
+            MarkInvalid(ContractWorkDaysTextBox);
+        }
+
+        if (StartDatePicker.SelectedDate.HasValue && EndDatePicker.SelectedDate.HasValue &&
+            EndDatePicker.SelectedDate.Value.Date < StartDatePicker.SelectedDate.Value.Date)
+        {
+            errors.Add("Başlangıç / Bitiş Tarihi");
+            MarkInvalid(StartDatePicker);
+            MarkInvalid(EndDatePicker);
+        }
+
+        if (errors.Count > 0)
+        {
+            ShowContractValidation("Lütfen şu alanları kontrol edin: " + string.Join(", ", errors) + ".");
             return;
         }
 
@@ -539,6 +578,7 @@ public partial class MainWindow : Window
         TenderDatePicker.SelectedDate = DateTime.Today;
         ContractDatePicker.SelectedDate = DateTime.Today;
         VatExemptCheckBox.IsChecked = false;
+        ClearContractValidationVisuals();
         SavePersistedData();
         UpdateContractSummaryView();
         UpdateHomeSummaryView();
@@ -631,9 +671,11 @@ public partial class MainWindow : Window
                 ? DateOnly.FromDateTime(selectedPeriodDate)
                 : (DateOnly?)null;
 
-            _progressHistory.Add(new ProgressPaymentHistoryData(
-                Guid.NewGuid(),
-                DateTime.Now,
+            var historyItem = new ProgressPaymentHistoryData(
+                _editingHistoryId ?? Guid.NewGuid(),
+                _editingHistoryId.HasValue
+                    ? _progressHistory.First(x => x.Id == _editingHistoryId.Value).CreatedAt
+                    : DateTime.Now,
                 input,
                 result,
                 progressNumber,
@@ -647,7 +689,20 @@ public partial class MainWindow : Window
                 TenderDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(TenderDatePicker.SelectedDate.Value) : null,
                 ContractDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(ContractDatePicker.SelectedDate.Value) : null,
                 StartDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(StartDatePicker.SelectedDate.Value) : null,
-                EndDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(EndDatePicker.SelectedDate.Value) : null));
+                EndDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(EndDatePicker.SelectedDate.Value) : null);
+
+            var wasEditing = _editingHistoryId.HasValue;
+            if (wasEditing)
+            {
+                var editIndex = _progressHistory.IndexOf(_progressHistory.First(x => x.Id == _editingHistoryId.Value));
+                _progressHistory[editIndex] = historyItem;
+                _editingHistoryId = null;
+            }
+            else
+            {
+                _progressHistory.Add(historyItem);
+            }
+
             SavePersistedData();
             UpdateHistoryView();
             UpdateSummaryView();
@@ -655,7 +710,9 @@ public partial class MainWindow : Window
             UpdateHomeSummaryView();
             UpdateAcceptanceView();
 
-            CalculationStatusTextBlock.Text = "Hesaplama başarıyla tamamlandı ve geçmişe kaydedildi.";
+            CalculationStatusTextBlock.Text = wasEditing
+                ? "Hakediş kaydı güncellendi."
+                : "Hesaplama başarıyla tamamlandı ve geçmişe kaydedildi.";
         }
         catch (ArgumentOutOfRangeException ex)
         {
@@ -679,6 +736,7 @@ public partial class MainWindow : Window
                 : $"Kayıt: {item.CreatedAt:dd.MM.yyyy HH:mm}";
 
             _historyRows.Add(new HistoryRow(
+                item.Id,
                 displayNumber,
                 periodText,
                 FormatMoney(item.Calculation.TotalAmount),
@@ -691,6 +749,78 @@ public partial class MainWindow : Window
         HistoryEmptyStateBorder.Visibility = _progressHistory.Count == 0
             ? Visibility.Visible
             : Visibility.Collapsed;
+    }
+
+    private void EditHistoryButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: HistoryRow row })
+            return;
+
+        var item = _progressHistory.FirstOrDefault(x => x.Id == row.Id);
+        if (item is null)
+            return;
+
+        _editingHistoryId = item.Id;
+
+        if (!string.IsNullOrWhiteSpace(item.RouteNumber))
+            ProgressRouteComboBox.SelectedItem = _routes.FirstOrDefault(x =>
+                string.Equals(x.RouteNumber, item.RouteNumber, StringComparison.OrdinalIgnoreCase));
+
+        WorkDaysTextBox.Text = item.Input.WorkDays.ToString(CultureInfo.CurrentCulture);
+        DailyPriceTextBox.Text = item.Input.DailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+        GuideWorkDaysTextBox.Text = item.Input.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
+        GuideDailyPriceTextBox.Text = item.Input.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+        DiscountTextBox.Text = item.Input.DiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
+        GuideDiscountTextBox.Text = item.Input.GuideDiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
+        PriceDifferenceTextBox.Text = item.Input.PriceDifference.ToString("N2", CultureInfo.CurrentCulture);
+        GuidePriceDifferenceTextBox.Text = item.Input.GuidePriceDifference.ToString("N2", CultureInfo.CurrentCulture);
+        ContractAmountTextBox.Text = item.Input.ContractAmount.ToString("N2", CultureInfo.CurrentCulture);
+        TaxDebtTextBox.Text = item.Input.TaxDebt.ToString("N2", CultureInfo.CurrentCulture);
+        SocialSecurityDebtTextBox.Text = item.Input.SocialSecurityDebt.ToString("N2", CultureInfo.CurrentCulture);
+        MinimumWageSupportTextBox.Text = item.Input.MinimumWageSupport.ToString("N2", CultureInfo.CurrentCulture);
+        InspectionPenaltyTextBox.Text = item.Input.InspectionPenalty.ToString("N2", CultureInfo.CurrentCulture);
+        VatExemptCheckBox.IsChecked = item.Input.IsVatExempt;
+
+        ProgressNumberTextBox.Text = item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
+        ProgressPeriodDatePicker.SelectedDate = item.PeriodDate?.ToDateTime(TimeOnly.MinValue);
+
+        NavigationButton_Click(NavProgress, e);
+        CalculationStatusTextBlock.Text = "Düzenleme modu: bilgileri kontrol edip HAKEDİŞİ HESAPLA ile kaydı güncelleyin.";
+    }
+
+    private void DeleteHistoryButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: HistoryRow row })
+            return;
+
+        var item = _progressHistory.FirstOrDefault(x => x.Id == row.Id);
+        if (item is null)
+            return;
+
+        var title = item.ProgressPaymentNumber.HasValue
+            ? $"Hakediş No {item.ProgressPaymentNumber.Value}"
+            : "Hakediş Hesaplama";
+
+        var result = MessageBox.Show(
+            $"{title} kaydı silinsin mi? Bu işlem geri alınamaz.",
+            "Hakediş Kaydını Sil",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+
+        if (result != MessageBoxResult.Yes)
+            return;
+
+        _progressHistory.Remove(item);
+        if (_editingHistoryId == item.Id)
+            _editingHistoryId = null;
+
+        SavePersistedData();
+        UpdateHistoryView();
+        UpdateSummaryView();
+        UpdateReportView();
+        UpdateHomeSummaryView();
+        UpdateAcceptanceView();
+        CalculationStatusTextBlock.Text = $"{title} kaydı silindi.";
     }
 
     private void UpdateSummaryView()
@@ -1808,6 +1938,118 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
 
     private void Window_StateChanged(object? sender, EventArgs e) => UpdateMaximizeRestoreButton();
 
+    private void ConfigureZeroValueInputs()
+    {
+        foreach (var textBox in new[]
+        {
+            GuideWorkDaysTextBox,
+            GuideDailyPriceTextBox,
+            GuideDiscountTextBox,
+            GuidePriceDifferenceTextBox,
+            TaxDebtTextBox,
+            SocialSecurityDebtTextBox,
+            MinimumWageSupportTextBox,
+            InspectionPenaltyTextBox,
+            DiscountTextBox,
+            PriceDifferenceTextBox
+        })
+        {
+            textBox.GotFocus += ZeroValueTextBox_GotFocus;
+            textBox.LostFocus += ZeroValueTextBox_LostFocus;
+        }
+    }
+
+    private static void ZeroValueTextBox_GotFocus(object sender, RoutedEventArgs e)
+    {
+        if (sender is TextBox textBox && (textBox.Text.Trim() == "0" || textBox.Text.Trim() == "0,00" || textBox.Text.Trim() == "0.00"))
+        {
+            textBox.Clear();
+            textBox.Select(0, 0);
+        }
+    }
+
+    private static void ZeroValueTextBox_LostFocus(object sender, RoutedEventArgs e)
+    {
+        if (sender is TextBox textBox && string.IsNullOrWhiteSpace(textBox.Text))
+            textBox.Text = "0";
+    }
+
+    private void ConfigureContractValidationInputs()
+    {
+        foreach (var textBox in new[]
+        {
+            TenderNumberTextBox,
+            ContractNumberTextBox,
+            WorkNameTextBox,
+            ContractorTextBox,
+            ContractAmountTextBox,
+            ContractWorkDaysTextBox
+        })
+        {
+            textBox.TextChanged += ContractValidationInput_TextChanged;
+        }
+
+        StartDatePicker.SelectedDateChanged += ContractValidationDateChanged;
+        EndDatePicker.SelectedDateChanged += ContractValidationDateChanged;
+    }
+
+    private void ContractValidationInput_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (sender is Control control)
+            ClearInvalid(control);
+    }
+
+    private void ContractValidationDateChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (sender is Control control)
+            ClearInvalid(control);
+    }
+
+    private void MarkInvalid(Control control)
+    {
+        control.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 235, 235));
+        control.BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(220, 53, 69));
+        control.BorderThickness = new Thickness(2);
+        control.ToolTip = "Bu alanı doldurun veya düzeltin.";
+    }
+
+    private void ClearInvalid(Control control)
+    {
+        control.ClearValue(Control.BackgroundProperty);
+        control.ClearValue(Control.BorderBrushProperty);
+        control.ClearValue(Control.BorderThicknessProperty);
+        control.ClearValue(Control.ToolTipProperty);
+    }
+
+    private void ClearContractValidationVisuals()
+    {
+        foreach (var control in new Control[]
+        {
+            TenderNumberTextBox,
+            ContractNumberTextBox,
+            WorkNameTextBox,
+            ContractorTextBox,
+            ContractAmountTextBox,
+            ContractWorkDaysTextBox,
+            StartDatePicker,
+            EndDatePicker
+        })
+        {
+            ClearInvalid(control);
+        }
+
+        ContractValidationBanner.Visibility = Visibility.Collapsed;
+        ContractValidationMessageTextBlock.Text = string.Empty;
+    }
+
+    private void ShowContractValidation(string message)
+    {
+        ContractValidationMessageTextBlock.Text = message;
+        ContractValidationBanner.Visibility = Visibility.Visible;
+        ContractStatusTextBlock.Text = "Kaydetme durduruldu. Kırmızı işaretli alanları tamamlayın.";
+        ContractStatusTextBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(198, 40, 40));
+    }
+
     private static bool TryParseDecimal(string? text, out decimal value)
     {
         return decimal.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out value) ||
@@ -1837,6 +2079,7 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
     private sealed record ContractorDraft(string Name, string TaxOrIdentityNumber);
 
     private sealed record HistoryRow(
+        Guid Id,
         string DisplayTitle,
         string CreatedAtText,
         string TotalAmountText,
