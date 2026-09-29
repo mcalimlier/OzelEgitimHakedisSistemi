@@ -349,7 +349,7 @@
 
                                                     <TextBlock Grid.Row="6" Grid.Column="0" Text="Sözleşme İş Günü" Style="{StaticResource FieldLabel}" Margin="0,8"/>
                                                     <TextBox x:Name="ContractWorkDaysTextBox" Grid.Row="6" Grid.Column="1" Margin="8" Style="{StaticResource FieldTextBox}"/>
-                                                    <TextBlock Grid.Row="6" Grid.Column="2" Text="Excel: İhale Verileri" Foreground="{StaticResource Text500Brush}" FontSize="11" Margin="18,8,0,8"/>
+                                                    <TextBlock Grid.Row="6" Grid.Column="2" Text="Excel: İhale Verileri" Foreground="{StaticResource Text600Brush}" FontSize="11" Margin="18,8,0,8"/>
                                                 </Grid>
                                                 <Border Style="{StaticResource StatusBanner}" Margin="8,14,8,0" Padding="14,11">
                                                     <Grid>
