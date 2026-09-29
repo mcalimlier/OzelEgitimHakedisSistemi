@@ -343,7 +343,7 @@
                                                     <DatePicker x:Name="ContractDatePicker" Grid.Row="4" Grid.Column="3" Margin="8" Style="{StaticResource FieldDatePicker}"/>
 
                                                     <TextBlock Grid.Row="5" Grid.Column="0" Text="TC Kimlik No / Vergi No" Style="{StaticResource FieldLabel}" Margin="0,8"/>
-                                                    <TextBox x:Name="ContractorTaxNumberTextBox" Grid.Row="5" Grid.Column="1" Margin="8" Style="{StaticResource FieldTextBox}"/>
+                                                    <TextBox x:Name="ContractorIdentityNumberTextBox" Grid.Row="5" Grid.Column="1" Margin="8" Style="{StaticResource FieldTextBox}"/>
                                                     <TextBlock Grid.Row="5" Grid.Column="2" Text="Banka Hesap No" Style="{StaticResource FieldLabel}" Margin="18,8,0,8"/>
                                                     <TextBox x:Name="BankAccountNumberTextBox" Grid.Row="5" Grid.Column="3" Margin="8" Style="{StaticResource FieldTextBox}"/>
 
