@@ -27,7 +27,8 @@ public sealed record RouteData(
     string Name,
     decimal DailyPrice,
     int GuideWorkDays = 0,
-    decimal GuideDailyPrice = 0m);
+    decimal GuideDailyPrice = 0m,
+    int TransportWorkDays = 0);
 
 public sealed record ProgressPaymentHistoryData(
     Guid Id,
