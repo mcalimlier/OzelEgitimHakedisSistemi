@@ -29,10 +29,10 @@ public partial class MainWindow : Window
     private readonly ObservableCollection<ReportRow> _reportRows = new();
     private Guid? _editingHistoryId;
     private readonly OehsApplicationDataStore _dataStore = new();
-    private static readonly double[] ThreeColumnWidths = { 50d, 315d, 175d };
+    private static readonly double[] ThreeColumnWidths = { 60d, 455d, 203.11d };
     private static readonly double[] ThreeValueWidths = { 45d, 360d, 135d };
-    private static readonly double[] FourColumnWidths = { 47d, 239d, 113d, 141d };
-    private static readonly double[] FiveColumnWidths = { 36d, 203d, 99d, 99d, 103d };
+    private static readonly double[] FourColumnWidths = { 58d, 320d, 170d, 170.11d };
+    private static readonly double[] FiveColumnWidths = { 42d, 290d, 128d, 128d, 130.11d };
     private static readonly string[] MainReportHeaders = { "", "Kalem", "Tutar" };
     private static readonly string[] DeductionHeaders = { "", "KESİNTİLER VE MAHSUPLAR", "Tutar" };
     private static readonly string[] ContractHeaders = { "Sözleşme Bedeli", "Sözleşme Artış Onayının Tarihi No.su", "Ek Sözleşme Bedeli", "Toplam Sözleşme Bedeli" };
@@ -670,27 +670,17 @@ public partial class MainWindow : Window
         File.WriteAllText(filePath, json);
     }
 
-    private static void SaveFlowDocumentAsRtf(FlowDocument document, string filePath)
-    {
-        var range = new TextRange(document.ContentStart, document.ContentEnd);
-        using var stream = File.Create(filePath);
-        range.Save(stream, DataFormats.Rtf);
-    }
-
-    private static string SaveRouteDocumentsArchive(
-        RouteDraft route,
-        ProgressPaymentHistoryData latest,
-        IReadOnlyList<(FlowDocument Document, string Title)> documents)
+    private static string SaveRouteDocumentsArchive(RouteDraft route, ProgressPaymentHistoryData latest)
     {
         var folderName = BuildArchiveKey(latest);
         var documentFolder = Path.Combine(OehsDesktopRoot, "Belgeler", folderName);
         Directory.CreateDirectory(documentFolder);
 
-        foreach (var item in documents)
-        {
-            var fileName = SafeFileName(item.Title) + ".rtf";
-            SaveFlowDocumentAsRtf(item.Document, Path.Combine(documentFolder, fileName));
-        }
+        var workbookPath = Path.Combine(documentFolder, "OEHS_Hakediş_Belgeleri.xlsx");
+        var contractor = string.IsNullOrWhiteSpace(latest.ContractorName) ? ContractorTextBox.Text.Trim() : latest.ContractorName.Trim();
+        var workName = string.IsNullOrWhiteSpace(latest.WorkName) ? WorkNameTextBox.Text.Trim() : latest.WorkName.Trim();
+
+        ExcelDocumentExporter.Save(workbookPath, route.RouteNumber, route.Name, contractor, workName, latest);
 
         var metadataPath = Path.Combine(documentFolder, "OEHS_Hakediş_Bilgi.json");
         var metadata = JsonSerializer.Serialize(new
@@ -702,6 +692,7 @@ public partial class MainWindow : Window
             latest.RouteName,
             latest.WorkName,
             latest.ContractorName,
+            ExcelFile = workbookPath,
             SavedAt = DateTime.Now
         }, new JsonSerializerOptions { WriteIndented = true });
         File.WriteAllText(metadataPath, metadata);
@@ -1142,27 +1133,6 @@ public partial class MainWindow : Window
             GuideWorkDaysTextBox.Text = route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
     }
 
-    private void RouteTransportCalculation_TextChanged(object sender, TextChangedEventArgs e)
-    {
-        if (!IsInitialized)
-            return;
-
-        UpdateRouteTransportAnnualAmount();
-    }
-
-    private void UpdateRouteTransportAnnualAmount()
-    {
-        var workDays = int.TryParse(RouteTransportWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var days)
-            ? Math.Max(0, days)
-            : 0;
-        var dailyPrice = TryParseDecimal(RouteDailyPriceTextBox.Text, out var price)
-            ? Math.Max(0m, price)
-            : 0m;
-
-        RouteTransportAnnualAmountTextBlock.Text =
-            FormatMoney(workDays * dailyPrice);
-    }
-
     private void ReportRouteComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (!IsInitialized)
@@ -1221,8 +1191,8 @@ public partial class MainWindow : Window
     private static Table CreateDocumentTable(params (string Label, string Value)[] rows)
     {
         var table = new Table { CellSpacing = 0, BorderBrush = System.Windows.Media.Brushes.Black, BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 0, 10) };
-        table.Columns.Add(new TableColumn { Width = new GridLength(270) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(270) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(359.055) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(359.055) });
         var group = new TableRowGroup();
         foreach (var (label, value) in rows)
         {
@@ -1282,10 +1252,10 @@ public partial class MainWindow : Window
             BorderThickness = new Thickness(1),
             Margin = new Thickness(0, 0, 0, 10)
         };
-        table.Columns.Add(new TableColumn { Width = new GridLength(50) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(29) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(323) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(138) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(60) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(38) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(440) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(180.11) });
 
         var group = new TableRowGroup();
         const int deductionItemCount = 12;
@@ -1549,8 +1519,8 @@ public partial class MainWindow : Window
             Margin = new Thickness(0, 18, 0, 8)
         };
 
-        table.Columns.Add(new TableColumn { Width = new GridLength(270) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(270) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(359.055) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(359.055) });
 
         var group = new TableRowGroup();
         var row = new TableRow();
@@ -1606,16 +1576,17 @@ public partial class MainWindow : Window
 
     private static FlowDocument CreateBaseDocument(string title, string subtitle)
     {
-        const double a4Width = 794;
-        const double a4Height = 1123;
-        const double contentWidth = 540;
-        // A4 yazdırılabilir alanını güvenli tutmak için tüm rapor tabloları 540 DIP ile sınırlandırılmıştır.
+        const double a4Width = 793.7008;
+        const double a4Height = 1122.5197;
+        const double margin = 37.7953;
+        const double contentWidth = 718.1102;
+        // A4 sabit: 210 x 297 mm. Sol/sağ/üst/alt 1 cm; içerik 190 mm.
 
         var document = new FlowDocument
         {
             PageWidth = a4Width,
             PageHeight = a4Height,
-            PagePadding = new Thickness(127, 30, 127, 30),
+            PagePadding = new Thickness(margin, margin, margin, margin),
             FontFamily = new System.Windows.Media.FontFamily("Arial"),
             FontSize = 9,
             ColumnWidth = contentWidth,
@@ -1662,9 +1633,7 @@ public partial class MainWindow : Window
         if (dialog.ShowDialog() != true)
             return false;
 
-        // Belge tabloları A4 içinde güvenli 540 DIP genişliğe sınırlandırılmıştır.
-        // Sayfa boyutu A4 olarak bırakılır; yazıcı sürücüsünün kenar boşlukları
-        // içerikle çakışmayacak kadar geniş güvenlik payı zaten PagePadding'e dahildir.
+        // A4 yazdırma kalıbı sabittir: 210 x 297 mm ve 1 cm kenar boşluğu.
 
         dialog.PrintDocument(((IDocumentPaginatorSource)document).DocumentPaginator, title);
         return true;
@@ -1714,27 +1683,16 @@ public partial class MainWindow : Window
         Grid.SetRow(titleBlock, 0);
         root.Children.Add(titleBlock);
 
-        var tabs = new System.Windows.Controls.TabControl();
-        foreach (var item in documents)
+        var combined = BuildCombinedRouteDocuments(documents);
+        var viewer = new System.Windows.Controls.FlowDocumentPageViewer
         {
-            var viewer = new System.Windows.Controls.FlowDocumentScrollViewer
-            {
-                Document = item.Document,
-                HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                HorizontalContentAlignment = HorizontalAlignment.Center,
-                VerticalContentAlignment = VerticalAlignment.Top,
-                Margin = new Thickness(4),
-                IsToolBarVisible = true
-            };
-            tabs.Items.Add(new System.Windows.Controls.TabItem
-            {
-                Header = item.Title,
-                Content = viewer
-            });
-        }
-        Grid.SetRow(tabs, 1);
-        root.Children.Add(tabs);
+            Document = combined,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+            Margin = new Thickness(4)
+        };
+        Grid.SetRow(viewer, 1);
+        root.Children.Add(viewer);
 
         var closeButton = new System.Windows.Controls.Button
         {
@@ -2059,6 +2017,27 @@ public partial class MainWindow : Window
         return doc;
     }
 
+    private static FlowDocument BuildCombinedRouteDocuments(IReadOnlyList<(FlowDocument Document, string Title)> documents)
+    {
+        var combined = CreateBaseDocument("OEHS — 4 BELGE", "Tek önizleme / tek yazdırma");
+        combined.Blocks.Clear();
+
+        for (var index = 0; index < documents.Count; index++)
+        {
+            var section = new Section { BreakPageBefore = index > 0 };
+            var source = documents[index].Document;
+            while (source.Blocks.Count > 0)
+            {
+                var block = source.Blocks.FirstBlock!;
+                source.Blocks.Remove(block);
+                section.Blocks.Add(block);
+            }
+            combined.Blocks.Add(section);
+        }
+
+        return combined;
+    }
+
     private void PrintAllRouteDocumentsButton_Click(object sender, RoutedEventArgs e)
     {
         if (!EnsureRouteForOutput())
@@ -2077,23 +2056,20 @@ public partial class MainWindow : Window
 
         try
         {
-            var savedFolder = SaveRouteDocumentsArchive(route, latest, documents);
-            CalculationStatusTextBlock.Text = $"4 belge otomatik arşivlendi: {savedFolder}";
+            var savedFolder = SaveRouteDocumentsArchive(route, latest);
+            CalculationStatusTextBlock.Text = $"4 belge tek Excel dosyasında arşivlendi: {savedFolder}";
         }
         catch (Exception ex)
         {
             MessageBox.Show(
-                $"Belgeler arşivlenirken hata oluştu. Yazdırma işlemi yine devam edecek.\n\n{ex.Message}",
+                $"Excel arşivi oluşturulurken hata oluştu. Yazdırma işlemi yine devam edecek.\n\n{ex.Message}",
                 "OEHS Arşiv Uyarısı",
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
         }
 
-        foreach (var item in documents)
-        {
-            if (!TryShowDocument(item.Document, item.Title))
-                break;
-        }
+        var combined = BuildCombinedRouteDocuments(documents);
+        TryShowDocument(combined, "OEHS — 4 Belge Tek Yazdırma");
     }
 
     private void ReportActionButton_Click(object sender, RoutedEventArgs e)
