@@ -647,6 +647,8 @@ public partial class MainWindow : Window
         return string.IsNullOrWhiteSpace(value) ? "OEHS" : value;
     }
 
+    private static readonly JsonSerializerOptions JsonWriteOptions = new() { WriteIndented = true };
+
     private static string BuildArchiveKey(ProgressPaymentHistoryData item)
     {
         var route = SafeFileName(string.IsNullOrWhiteSpace(item.RouteNumber) ? "Hat" : item.RouteNumber);
@@ -661,11 +663,11 @@ public partial class MainWindow : Window
         Directory.CreateDirectory(archiveFolder);
 
         var filePath = Path.Combine(archiveFolder, BuildArchiveKey(item) + ".json");
-        var json = JsonSerializer.Serialize(item, new JsonSerializerOptions { WriteIndented = true });
+        var json = JsonSerializer.Serialize(item, JsonWriteOptions);
         File.WriteAllText(filePath, json);
     }
 
-    private static string SaveRouteDocumentsArchive(RouteDraft route, ProgressPaymentHistoryData latest)
+    private string SaveRouteDocumentsArchive(RouteDraft route, ProgressPaymentHistoryData latest)
     {
         var folderName = BuildArchiveKey(latest);
         var documentFolder = Path.Combine(OehsDesktopRoot, "Belgeler", folderName);
@@ -689,7 +691,7 @@ public partial class MainWindow : Window
             latest.ContractorName,
             ExcelFile = workbookPath,
             SavedAt = DateTime.Now
-        }, new JsonSerializerOptions { WriteIndented = true });
+        }, JsonWriteOptions);
         File.WriteAllText(metadataPath, metadata);
 
         return documentFolder;
@@ -2152,7 +2154,7 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
             ClearInvalid(control);
     }
 
-    private void MarkProgressInvalid(Control control)
+    private static void MarkProgressInvalid(Control control)
     {
         MarkInvalid(control);
     }
