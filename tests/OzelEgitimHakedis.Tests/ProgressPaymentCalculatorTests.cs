@@ -58,6 +58,39 @@ public sealed class ProgressPaymentCalculatorTests
     }
 
     [Fact]
+    public void ExcelRealScenario_Row4_ShouldMatchWorkbook()
+    {
+        // Kaynak Excel Hesaplama 4. satır senaryosu:
+        // Taşıma: 29 gün × 2.608,26 + 1.500,00 fiyat farkı.
+        // Rehber: 30 gün × 1.362,49; fiyat farkı ve iskonto 0.
+        // E4 = "Hayır" olduğundan KDV ve tevkifat hesaplanır.
+        var input = new ProgressPaymentInput(
+            WorkDays: 29, DailyPrice: 2608.26m, DiscountAmount: 0m, PriceDifference: 1500m,
+            ContractAmount: 816805.03m, IsVatExempt: false, TaxDebt: 0m,
+            SocialSecurityDebt: 0m, MinimumWageSupport: 0m, InspectionPenalty: 0m,
+            GuideWorkDays: 30, GuideDailyPrice: 1362.49m, GuideDiscountAmount: 0m,
+            GuidePriceDifference: 0m);
+
+        var result = ProgressPaymentCalculator.Calculate(input);
+
+        Assert.Equal(75639.54m, result.ServiceAmount);
+        Assert.Equal(77139.54m, result.TransportNetAmount);
+        Assert.Equal(40874.70m, result.GuideServiceAmount);
+        Assert.Equal(40874.70m, result.GuideNetAmount);
+        Assert.Equal(1500m, result.PriceDifferenceExcludingVat);
+        Assert.Equal(0m, result.GuidePriceDifferenceExcludingVat);
+        Assert.Equal(118014.24m, result.TotalAmount);
+        Assert.Equal(15888.89m, result.Vat);
+        Assert.Equal(11214.42m, result.Withholding);
+        Assert.Equal(129228.66m, result.InvoiceAmountAfterWithholding);
+        Assert.Equal(90m, result.AdditionalGuarantee);
+        Assert.Equal(1118.77m, result.StampTax);
+        Assert.Equal(12423.20m, result.TotalDeductions);
+        Assert.Equal(133903.13m, result.GrossAmount);
+        Assert.Equal(121479.94m, result.NetPayable);
+    }
+
+    [Fact]
     public void PdfScenario_HakedisRaporu_ShouldMatchDisplayedTotals()
     {
         // deneme.pdf: 22.500,00 hizmet + 255,00 fiyat farkı,
