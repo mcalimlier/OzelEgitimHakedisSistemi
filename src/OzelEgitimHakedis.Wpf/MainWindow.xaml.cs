@@ -335,6 +335,27 @@ public partial class MainWindow : Window
             string.IsNullOrWhiteSpace(WorkNameTextBox.Text) ? "Bekleniyor" : "KAYITLI";
         HomeRouteCountTextBlock.Text = _routes.Count.ToString(CultureInfo.CurrentCulture);
         HomeNetPayableTextBlock.Text = FormatMoney(_progressHistory.Sum(x => x.Calculation.NetPayable));
+
+        HomeWorkNameTextBlock.Text = string.IsNullOrWhiteSpace(WorkNameTextBox.Text)
+            ? "—" : WorkNameTextBox.Text.Trim();
+        HomeContractorTextBlock.Text = string.IsNullOrWhiteSpace(ContractorTextBox.Text)
+            ? "—" : ContractorTextBox.Text.Trim();
+
+        var latest = _progressHistory
+            .OrderByDescending(x => x.PeriodDate ?? DateOnly.MinValue)
+            .ThenByDescending(x => x.CreatedAt)
+            .FirstOrDefault();
+
+        HomeProgressTextBlock.Text = latest?.ProgressPaymentNumber.HasValue == true
+            ? $"Hakediş No {latest.ProgressPaymentNumber.Value.ToString(CultureInfo.CurrentCulture)}"
+            : latest is null ? "—" : "Son hesaplama";
+        HomePeriodTextBlock.Text = latest?.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "—";
+        HomeGrossTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.GrossAmount);
+        HomeDeductionsTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.TotalDeductions);
+        HomeLatestNetTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.NetPayable);
+        HomeVatWithholdingTextBlock.Text = latest is null
+            ? "0,00 / 0,00 ₺"
+            : $"{FormatMoney(latest.Calculation.Vat)} / {FormatMoney(latest.Calculation.Withholding)}";
     }
 
     private void UpdateContractSummaryView()
@@ -783,7 +804,24 @@ public partial class MainWindow : Window
             }
             else
             {
-                _progressHistory.Add(historyItem);
+                var duplicate = _progressHistory.FirstOrDefault(x =>
+                    string.Equals(x.RouteNumber, routeNumber, StringComparison.OrdinalIgnoreCase) &&
+                    x.ProgressPaymentNumber == progressNumber &&
+                    x.PeriodDate == periodDate &&
+                    x.Input.Equals(input) &&
+                    x.Calculation.Equals(result));
+
+                if (duplicate is not null)
+                {
+                    historyItem = historyItem with { Id = duplicate.Id, CreatedAt = duplicate.CreatedAt };
+                    var duplicateIndex = _progressHistory.IndexOf(duplicate);
+                    _progressHistory[duplicateIndex] = historyItem;
+                    wasEditing = true;
+                }
+                else
+                {
+                    _progressHistory.Add(historyItem);
+                }
             }
 
             SavePersistedData();
@@ -799,6 +837,9 @@ public partial class MainWindow : Window
             CalculationStatusTextBlock.Text = wasEditing
                 ? "Hakediş kaydı güncellendi."
                 : "Hesaplama başarıyla tamamlandı ve geçmişe kaydedildi.";
+
+            // Kullanıcı hakedişi hesapladığında kritik kontrol özeti ana sayfada tek ekranda gösterilir.
+            NavigationButton_Click(NavHome, e);
         }
         catch (ArgumentOutOfRangeException ex)
         {
