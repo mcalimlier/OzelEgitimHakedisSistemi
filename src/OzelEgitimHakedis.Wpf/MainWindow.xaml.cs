@@ -469,11 +469,9 @@ public partial class MainWindow : Window
         RouteNumberTextBox.Clear();
         RouteNameTextBox.Clear();
         RouteTransportWorkDaysTextBox.Clear();
-        RouteDailyPriceTextBox.Clear();
         RouteGuideWorkDaysTextBox.Clear();
         RouteGuideDailyPriceTextBox.Text = "0";
         RouteTransportWorkDaysTextBox.Text = "0";
-        RouteDailyPriceTextBox.Text = "0";
         RouteGuideWorkDaysTextBox.Text = "0";
         ClearRouteValidationVisuals();
     }
