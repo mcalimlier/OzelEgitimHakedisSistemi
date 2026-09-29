@@ -375,12 +375,14 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (!TryParseDecimal(RouteDailyPriceTextBox.Text, out var dailyPrice) || dailyPrice < 0 ||
+        if (!int.TryParse(RouteTransportWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var transportWorkDays) ||
+            transportWorkDays < 0 ||
+            !TryParseDecimal(RouteDailyPriceTextBox.Text, out var dailyPrice) || dailyPrice < 0 ||
             !int.TryParse(RouteGuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var guideWorkDays) ||
             guideWorkDays < 0 ||
             !TryParseDecimal(RouteGuideDailyPriceTextBox.Text, out var guideDailyPrice) || guideDailyPrice < 0)
         {
-            RouteStatusTextBlock.Text = "Taşıma iş günü, taşıma fiyatı ve rehber personel fiyat/gün bilgileri geçerli olmalıdır.";
+            RouteStatusTextBlock.Text = "Taşıma iş günü, taşıma fiyatı ve rehber personel iş günü/fiyat bilgileri geçerli olmalıdır.";
             return;
         }
 
@@ -414,9 +416,11 @@ public partial class MainWindow : Window
     {
         RouteNumberTextBox.Clear();
         RouteNameTextBox.Clear();
+        RouteTransportWorkDaysTextBox.Clear();
         RouteDailyPriceTextBox.Clear();
         RouteGuideWorkDaysTextBox.Clear();
         RouteGuideDailyPriceTextBox.Clear();
+        UpdateRouteTransportAnnualAmount();
     }
 
     private void UpdateRouteSummary()
@@ -807,8 +811,8 @@ public partial class MainWindow : Window
             return;
 
         RouteTransportWorkDaysTextBox.Text = route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
-         DailyPriceTextBox.Text = route.DailyPrice.ToString("N2", CultureInfo.CurrentCulture);
-         UpdateRouteTransportAnnualAmount();
+        DailyPriceTextBox.Text = route.DailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+        UpdateRouteTransportAnnualAmount();
         GuideDailyPriceTextBox.Text = route.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
 
         if (string.IsNullOrWhiteSpace(WorkDaysTextBox.Text))
