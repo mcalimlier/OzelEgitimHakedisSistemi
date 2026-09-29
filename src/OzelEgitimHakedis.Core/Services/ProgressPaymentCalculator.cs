@@ -28,11 +28,11 @@ public sealed class ProgressPaymentCalculator
             throw new ArgumentOutOfRangeException(nameof(input), "Sözleşme bedeli negatif olamaz.");
         }
 
-        if (input.InspectionPenaltyRatePerThousand < 0)
+        if (input.TaxDebt < 0 || input.SocialSecurityDebt < 0 || input.MinimumWageSupport < 0 || input.InspectionPenalty < 0)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(input),
-                "Denetim cezası oranı negatif olamaz.");
+                "Kesinti ve denetim cezası tutarları negatif olamaz.");
         }
 
         var serviceAmount = Round(input.WorkDays * input.DailyPrice);
@@ -53,9 +53,7 @@ public sealed class ProgressPaymentCalculator
         var stampTax =
             Round(Math.Max(totalAmount, 0m) * StampTaxRate);
 
-        var inspectionPenalty = input.HasInspectionPenalty
-            ? Round(input.ContractAmount * input.InspectionPenaltyRatePerThousand / 1000m)
-            : 0m;
+        var inspectionPenalty = Round(input.InspectionPenalty);
 
         var additionalGuarantee =
             Round(Math.Max(priceDifferenceExcludingVat, 0m) * AdditionalGuaranteeRate);
