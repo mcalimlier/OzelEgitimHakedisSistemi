@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Globalization;
 using System.Linq;
 using System.Security;
 using System.Text;
@@ -46,7 +47,7 @@ internal static class ExcelDocumentExporter
         {
             Row("İşin Adı", workName, "Yüklenici", contractor),
             Row("Hat No", routeNumber, "Hat Adı", routeName),
-            Row("Hakediş No", item.ProgressPaymentNumber?.ToString() ?? "-", "Dönem", item.PeriodDate?.ToString("dd.MM.yyyy") ?? "-"),
+            Row("Hakediş No", item.ProgressPaymentNumber?.ToString(CultureInfo.InvariantCulture) ?? "-", "Dönem", item.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) ?? "-"),
             Header("AÇIKLAMA", "TUTAR", "AÇIKLAMA", "TUTAR"),
             Row("Taşıma Hizmet Tutarı", Money(c.ServiceAmount), "Taşıma Fiyat Farkı", Money(c.PriceDifferenceExcludingVat)),
             Row("Taşıma Hakediş Tutarı", Money(c.TransportNetAmount), "Rehber Hizmet Tutarı", Money(c.GuideServiceAmount)),
@@ -89,12 +90,12 @@ internal static class ExcelDocumentExporter
             Row("Sözleşme No", item.ContractNumber ?? "-", "İhale / Dosya No", item.TenderNumber ?? "-"),
             Row("Sözleşme Tarihi", item.ContractDate?.ToString("dd.MM.yyyy") ?? "-", "Hakediş Tarihi", item.PeriodDate?.ToString("dd.MM.yyyy") ?? "-"),
             Header("BİLGİ", "DEĞER", "BİLGİ", "DEĞER"),
-            Row("Taşıma İş Günü", input.WorkDays.ToString(), "Taşıma Günlük Fiyat", Money(input.DailyPrice)),
-            Row("Rehber İş Günü", input.GuideWorkDays.ToString(), "Rehber Günlük Fiyat", Money(input.GuideDailyPrice)),
+            Row("Taşıma İş Günü", input.WorkDays.ToString(CultureInfo.InvariantCulture), "Taşıma Günlük Fiyat", Money(input.DailyPrice)),
+            Row("Rehber İş Günü", input.GuideWorkDays.ToString(CultureInfo.InvariantCulture), "Rehber Günlük Fiyat", Money(input.GuideDailyPrice)),
             Row("Dönem Taşıma Hizmet", Money(item.Calculation.ServiceAmount), "Dönem Rehber Hizmet", Money(item.Calculation.GuideServiceAmount)),
             Row("Toplam Hakediş", Money(item.Calculation.TotalAmount), "Net Ödenecek", Money(item.Calculation.NetPayable)),
             Row("Düzenleyen", "Aşkın KESKİNBALTA", "Kontrol Eden", "Halil ÖZENÇ"),
-            Row("Onaylayan", "Özgür BAYSAL", "Tarih", DateTime.Today.ToString("dd.MM.yyyy"))
+            Row("Onaylayan", "Özgür BAYSAL", "Tarih", DateTime.Today.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture))
         });
     }
 
@@ -143,7 +144,7 @@ internal static class ExcelDocumentExporter
             "<sheet name=\"" + Xml(s.Name) + "\" sheetId=\"" + (i + 1) + "\" r:id=\"rId" + (i + 1) + "\"/>"));
         var names = string.Join("", sheets.Select((s, i) =>
             "<definedName name=\"_xlnm.Print_Area\" localSheetId=\"" + i + "\">'"
-            + Xml(s.Name.Replace("'", "''")) + "'!$A$1:$D$" + s.Rows.Count + "</definedName>"));
+            + Xml(s.Name.Replace("'", "''", StringComparison.Ordinal)) + "'!$A$1:$D$" + s.Rows.Count + "</definedName>"));
         return "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><workbook xmlns=\"" + MainNs + "\" xmlns:r=\"" + RelNs + "\"><bookViews><workbookView xWindow=\"0\" yWindow=\"0\" windowWidth=\"24000\" windowHeight=\"14000\"/></bookViews><sheets>"
             + sheetXml + "</sheets><definedNames>" + names + "</definedNames></workbook>";
     }
@@ -187,7 +188,7 @@ internal static class ExcelDocumentExporter
         return sb.ToString();
     }
 
-    private static int StyleFor(string value) => value.Contains("₺", StringComparison.Ordinal) ? 5 : 4;
+    private static int StyleFor(string value) => value.Contains('₺') ? 5 : 4;
 
     private static string Cell(string reference, string value, int style)
     {
