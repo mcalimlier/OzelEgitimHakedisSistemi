@@ -763,11 +763,7 @@
             </Border>
         </StackPanel>
     </Border>
-    <StackPanel Visibility="Collapsed">
-        <TextBox x:Name="ContractorNameTextBox"/>
-        <TextBox x:Name="ContractorTaxNumberTextBox"/>
     </StackPanel>
-</StackPanel>
 
 <Border Grid.Column="1" Style="{StaticResource Card}" Margin="10,0,0,0">
                                             <StackPanel>
