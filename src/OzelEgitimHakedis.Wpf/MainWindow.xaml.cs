@@ -45,6 +45,10 @@ public partial class MainWindow : Window
         SourceInitialized += MainWindow_SourceInitialized;
         StartDatePicker.SelectedDate = DateTime.Today;
         EndDatePicker.SelectedDate = DateTime.Today;
+        TaxDebtTextBox.Text = "0";
+        SocialSecurityDebtTextBox.Text = "0";
+        MinimumWageSupportTextBox.Text = "0";
+        InspectionPenaltyTextBox.Text = "0";
         UpdateShellText("Ana Ekran");
         RoutesListBox.ItemsSource = _routes;
         ContractorsListBox.ItemsSource = _contractors;
