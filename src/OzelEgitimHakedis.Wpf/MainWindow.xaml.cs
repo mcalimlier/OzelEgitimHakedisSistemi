@@ -442,6 +442,7 @@ public partial class MainWindow : Window
         SavePersistedData();
         UpdateContractSummaryView();
         UpdateHomeSummaryView();
+        UpdateAcceptanceView();
         ContractStatusTextBlock.Text =
             $"Sözleşme taslağı kaydedildi: {WorkNameTextBox.Text.Trim()} — {contractAmount:N2} ₺.";
     }
@@ -521,6 +522,7 @@ public partial class MainWindow : Window
         SavePersistedData();
         UpdateContractSummaryView();
         UpdateHomeSummaryView();
+        UpdateAcceptanceView();
         ContractStatusTextBlock.Text = "Sözleşme taslağı temizlendi.";
     }
 
@@ -575,6 +577,8 @@ public partial class MainWindow : Window
 
             ServiceAmountResultTextBlock.Text = FormatMoney(result.ServiceAmount);
             GuideServiceAmountResultTextBlock.Text = FormatMoney(result.GuideServiceAmount);
+            TransportPriceDifferenceResultTextBlock.Text = FormatMoney(result.PriceDifferenceExcludingVat);
+            GuidePriceDifferenceResultTextBlock.Text = FormatMoney(result.GuidePriceDifferenceExcludingVat);
             CombinedPriceDifferenceResultTextBlock.Text = FormatMoney(result.CombinedPriceDifferenceExcludingVat);
             TotalAmountResultTextBlock.Text = FormatMoney(result.TotalAmount);
             VatResultTextBlock.Text = FormatMoney(result.Vat);
