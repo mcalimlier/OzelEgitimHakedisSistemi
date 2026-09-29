@@ -171,14 +171,28 @@ public partial class MainWindow : Window
             return;
         }
 
+        var selectedRoute = ReportRouteComboBox.SelectedItem as RouteDraft;
         var latest = _progressHistory
+            .Where(x => selectedRoute is null ||
+                        string.Equals(x.RouteNumber, selectedRoute.RouteNumber, StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(x => x.PeriodDate ?? DateOnly.MinValue)
             .ThenByDescending(x => x.CreatedAt)
-            .First();
+            .FirstOrDefault();
 
-        AcceptanceContractTextBlock.Text = string.IsNullOrWhiteSpace(ContractorTextBox.Text)
-            ? "Sözleşme bilgisi"
-            : ContractorTextBox.Text.Trim();
+        if (latest is null)
+        {
+            AcceptanceContractTextBlock.Text = "Kayıt yok";
+            AcceptanceProgressTextBlock.Text = "Kayıt yok";
+            AcceptanceNetTextBlock.Text = FormatMoney(0);
+            AcceptanceDetailTextBlock.Text = selectedRoute is null
+                ? "Hakediş kaydı oluşturulduğunda bilgiler burada görünür."
+                : "Seçilen hat için henüz hakediş kaydı yok.";
+            return;
+        }
+
+        AcceptanceContractTextBlock.Text = string.IsNullOrWhiteSpace(latest.ContractorName)
+            ? (string.IsNullOrWhiteSpace(ContractorTextBox.Text) ? "Sözleşme bilgisi" : ContractorTextBox.Text.Trim())
+            : latest.ContractorName.Trim();
 
         AcceptanceProgressTextBlock.Text = latest.ProgressPaymentNumber.HasValue
             ? $"Hakediş No {latest.ProgressPaymentNumber.Value}"
@@ -1277,15 +1291,15 @@ public partial class MainWindow : Window
             ("Uygulama Yılı", (latest.PeriodDate?.Year ?? DateTime.Today.Year).ToString(CultureInfo.CurrentCulture)),
             ("Yapılan Hizmetin Adı", route.Name),
             ("Yapılan Hizmetin Etüt / Proje No.su", "Proje Dışıdır."),
-            ("Yüklenicinin Adı / Ticari Unvanı", ContractorTextBox.Text),
+            ("Yüklenicinin Adı / Ticari Unvanı", string.IsNullOrWhiteSpace(latest.ContractorName) ? ContractorTextBox.Text : latest.ContractorName),
             ("Sözleşme Bedeli", FormatMoney(latest.Input.ContractAmount)),
-            ("İhale Tarihi", "-"),
-            ("Sözleşme Tarihi ve No.su", StartDatePicker.SelectedDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
+            ("İhale Tarihi", latest.TenderDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
+            ("Sözleşme Tarihi ve No.su", latest.ContractDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? StartDatePicker.SelectedDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
             ("Sözleşmenin Sayıştayca Tescil Tarihi ve No'su", "Tescile Dahil Değil"),
             ("Tescilin Yükleniciye Tebliğ Tarihi", "Tescile Dahil Değil"),
-            ("İşyeri Teslim Tarihi", StartDatePicker.SelectedDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
-            ("Sözleşmeye Göre İşin Süresi", $"{Math.Max(0, (EndDatePicker.SelectedDate - StartDatePicker.SelectedDate)?.Days ?? 0)} Gün"),
-            ("Sözleşmeye Göre İş Bitim Tarihi", EndDatePicker.SelectedDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
+            ("İşyeri Teslim Tarihi", latest.ContractStartDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? StartDatePicker.SelectedDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
+            ("Sözleşmeye Göre İşin Süresi", $"{Math.Max(0, (latest.ContractEndDate - latest.ContractStartDate)?.Days ?? 0)} Gün"),
+            ("Sözleşmeye Göre İş Bitim Tarihi", latest.ContractEndDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? EndDatePicker.SelectedDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
             ("Verilen Avanslar Toplamı", "Avans verilmeyecektir."),
             ("Mahsubu Yapılan Avansın Toplam Tutarı", "Yoktur.")
         ));
@@ -1332,9 +1346,11 @@ public partial class MainWindow : Window
         var serviceEnd = serviceStart.AddMonths(1).AddDays(-1);
 
         var contractAmount = latest.Input.ContractAmount;
-        var contractor = string.IsNullOrWhiteSpace(ContractorTextBox.Text)
-            ? "S.S. Selçikler Min. Kar. Yolcu Taşıma Kooperatifi"
-            : ContractorTextBox.Text.Trim();
+        var contractor = string.IsNullOrWhiteSpace(latest.ContractorName)
+            ? (string.IsNullOrWhiteSpace(ContractorTextBox.Text)
+                ? "S.S. Selçikler Min. Kar. Yolcu Taşıma Kooperatifi"
+                : ContractorTextBox.Text.Trim())
+            : latest.ContractorName.Trim();
 
         doc.Blocks.Add(CreateDocumentTable(
             ("İşin adı", route.Name),
