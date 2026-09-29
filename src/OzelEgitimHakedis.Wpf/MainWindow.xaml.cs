@@ -497,6 +497,9 @@ public partial class MainWindow : Window
             NetControlResultTextBlock.Text = FormatMoney(result.NetPayable);
             WithholdingResultTextBlock.Text = FormatMoney(result.Withholding);
             StampTaxResultTextBlock.Text = FormatMoney(result.StampTax);
+            TaxDebtResultTextBlock.Text = FormatMoney(result.Deductions.TaxDebt);
+            SocialSecurityDebtResultTextBlock.Text = FormatMoney(result.Deductions.SocialSecurityDebt);
+            MinimumWageSupportResultTextBlock.Text = FormatMoney(result.Deductions.MinimumWageSupport);
             InspectionPenaltyResultTextBlock.Text = FormatMoney(result.Deductions.InspectionPenalty);
             AdditionalGuaranteeResultTextBlock.Text = FormatMoney(result.AdditionalGuarantee);
             ProgressWorkDaysSummaryTextBlock.Text = workDays.ToString(CultureInfo.CurrentCulture);
