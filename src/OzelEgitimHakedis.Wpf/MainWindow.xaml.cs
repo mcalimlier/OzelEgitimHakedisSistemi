@@ -380,7 +380,7 @@ public partial class MainWindow : Window
             guideWorkDays < 0 ||
             !TryParseDecimal(RouteGuideDailyPriceTextBox.Text, out var guideDailyPrice) || guideDailyPrice < 0)
         {
-            RouteStatusTextBlock.Text = "Taşıma ve rehber personel fiyat/gün bilgileri geçerli olmalıdır.";
+            RouteStatusTextBlock.Text = "Taşıma iş günü, taşıma fiyatı ve rehber personel fiyat/gün bilgileri geçerli olmalıdır.";
             return;
         }
 
@@ -390,7 +390,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        _routes.Add(new RouteDraft(routeNumber, routeName, dailyPrice, guideWorkDays, guideDailyPrice));
+        _routes.Add(new RouteDraft(routeNumber, routeName, dailyPrice, guideWorkDays, guideDailyPrice, transportWorkDays));
         SavePersistedData();
         UpdateRouteSummary();
         UpdateHomeSummaryView();
@@ -453,7 +453,7 @@ public partial class MainWindow : Window
 
         _routes.Clear();
         foreach (var route in data.Routes)
-            _routes.Add(new RouteDraft(route.RouteNumber, route.Name, route.DailyPrice, route.GuideWorkDays, route.GuideDailyPrice));
+            _routes.Add(new RouteDraft(route.RouteNumber, route.Name, route.DailyPrice, route.GuideWorkDays, route.GuideDailyPrice, route.TransportWorkDays));
 
         _contractors.Clear();
         foreach (var contractor in data.Contractors)
@@ -500,7 +500,7 @@ public partial class MainWindow : Window
 
         var data = new OehsApplicationData(
             contract,
-            _routes.Select(x => new RouteData(x.RouteNumber, x.Name, x.DailyPrice, x.GuideWorkDays, x.GuideDailyPrice)).ToArray(),
+            _routes.Select(x => new RouteData(x.RouteNumber, x.Name, x.DailyPrice, x.GuideWorkDays, x.GuideDailyPrice, x.TransportWorkDays)).ToArray(),
             _contractors.Select(x => new Contractor(x.Name, x.TaxOrIdentityNumber)).ToArray(),
             _progressHistory.ToArray());
 
@@ -806,7 +806,9 @@ public partial class MainWindow : Window
         if (ProgressRouteComboBox.SelectedItem is not RouteDraft route)
             return;
 
-        DailyPriceTextBox.Text = route.DailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+        RouteTransportWorkDaysTextBox.Text = route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
+         DailyPriceTextBox.Text = route.DailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+         UpdateRouteTransportAnnualAmount();
         GuideDailyPriceTextBox.Text = route.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
 
         if (string.IsNullOrWhiteSpace(WorkDaysTextBox.Text))
@@ -814,6 +816,27 @@ public partial class MainWindow : Window
 
         if (string.IsNullOrWhiteSpace(GuideWorkDaysTextBox.Text) || GuideWorkDaysTextBox.Text == "0")
             GuideWorkDaysTextBox.Text = route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
+    }
+
+    private void RouteTransportCalculation_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (!IsInitialized)
+            return;
+
+        UpdateRouteTransportAnnualAmount();
+    }
+
+    private void UpdateRouteTransportAnnualAmount()
+    {
+        var workDays = int.TryParse(RouteTransportWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var days)
+            ? Math.Max(0, days)
+            : 0;
+        var dailyPrice = TryParseDecimal(RouteDailyPriceTextBox.Text, out var price)
+            ? Math.Max(0m, price)
+            : 0m;
+
+        RouteTransportAnnualAmountTextBlock.Text =
+            FormatMoney(workDays * dailyPrice);
     }
 
     private void ReportRouteComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -1773,12 +1796,16 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         string Name,
         decimal DailyPrice,
         int GuideWorkDays = 0,
-        decimal GuideDailyPrice = 0m)
+        decimal GuideDailyPrice = 0m,
+        int TransportWorkDays = 0)
     {
-        public string DailyPriceText => $"Taşıma: {DailyPrice:N2} ₺";
+        public string TransportWorkDaysText => $"Taşıma İş Günü: {TransportWorkDays}";
+        public decimal TransportAnnualPrice => TransportWorkDays * DailyPrice;
+        public string TransportAnnualPriceText => $"Taşıma Yıllık: {TransportAnnualPrice:N2} ₺";
+        public string DailyPriceText => $"Taşıma Günlük: {DailyPrice:N2} ₺";
         public string GuideDailyPriceText => $"Rehber: {GuideDailyPrice:N2} ₺";
         public string ServiceSummaryText =>
-            $"Hizmet hattı • Rehber {GuideWorkDays} yıllık gün";
+            $"Hizmet hattı • Taşıma {TransportWorkDays} gün • Rehber {GuideWorkDays} gün";
         public string DisplayText => $"Hat {RouteNumber} — {Name}";
     }
 
