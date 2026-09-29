@@ -806,6 +806,7 @@ public partial class MainWindow : Window
             return;
 
         UpdateReportView();
+        UpdateAcceptanceView();
     }
 
     private ProgressPaymentHistoryData? GetSelectedRouteLatestPayment()
