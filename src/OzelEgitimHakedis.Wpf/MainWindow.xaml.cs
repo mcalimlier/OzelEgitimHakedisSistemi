@@ -1383,11 +1383,7 @@ public partial class MainWindow : Window
             "HAK EDİŞ RAPORU",
             $"{route.Name} — Hat No : {route.RouteNumber}    Hakediş No : {latest.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"}");
 
-        doc.Blocks.Add(CreateDocumentTable(
-            ("İşin Adı", route.Name),
-            ("Hat No", route.RouteNumber),
-            ("Hakediş No", latest.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"),
-            ("Tarih / Dönem", latest.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-")));
+        doc.Blocks.Add(CreateReportHeaderTable(route, latest));
 
         doc.Blocks.Add(SectionHeading(
             $"{latest.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"} TARİHİNE KADAR YAPILAN İŞİN"));
@@ -1402,9 +1398,7 @@ public partial class MainWindow : Window
             ("F", "KDV  %10 + %20", FormatMoney(latest.Calculation.Vat)),
             ("G", "Tahakkuk Tutarı", FormatMoney(latest.Calculation.GrossAmount))
         };
-        doc.Blocks.Add(CreateThreeColumnTable(mainRows.ToArray(), MainReportHeaders));
-
-        doc.Blocks.Add(SectionHeading("KESİNTİLER VE MAHSUPLAR"));
+        doc.Blocks.Add(CreateThreeColumnTable(mainRows.ToArray(), MainReportHeaders, false));
         var d = latest.Calculation.Deductions;
         var hRows = new List<(string, string, string)>
         {
@@ -1423,7 +1417,7 @@ public partial class MainWindow : Window
             ("H", "Kesintiler ve Mahsuplar Toplamı", FormatMoney(latest.Calculation.TotalDeductions)),
             ("I", "Yükleniciye Ödenecek Tutar  ( G - H )", FormatMoney(latest.Calculation.NetPayable))
         };
-        doc.Blocks.Add(CreateThreeColumnTable(hRows.ToArray(), DeductionHeaders));
+        doc.Blocks.Add(CreateDeductionTable(hRows.ToArray()));
 
         var contractor = string.IsNullOrWhiteSpace(latest.ContractorName)
             ? ContractorTextBox.Text.Trim()
@@ -1484,19 +1478,12 @@ public partial class MainWindow : Window
             ("Mahsubu Yapılan Avansın Toplam Tutarı", "Yoktur.")
         ));
 
-        doc.Blocks.Add(SectionHeading("SÖZLEŞME BEDELİ / SÖZLEŞME ARTIŞI / EK SÖZLEŞME"));
         doc.Blocks.Add(CreateFourColumnTable(
             new[] { ("", "Sözleşme Bedeli", FormatMoney(latest.Input.ContractAmount), "Toplam Sözleşme Bedeli"),
                     ("", "", "", FormatMoney(latest.Input.ContractAmount)) },
             ContractHeaders));
 
-        doc.Blocks.Add(SectionHeading("SÜRE UZATIM KARARLARININ"));
-        doc.Blocks.Add(CreateFourColumnTable(
-            new[] { ("", "................", "................", "................"),
-                    ("", "................", "................", "................"),
-                    ("", "................", "................", "................"),
-                    ("", "................", "................", "................") },
-            ExtensionHeaders));
+        doc.Blocks.Add(CreateExtensionTable());
 
         doc.Blocks.Add(CreateSignatureTable(
             "Düzenleyen", "Aşkın KESKİNBALTA", "Memur",
