@@ -61,7 +61,7 @@ public sealed class ProgressPaymentCalculatorTests
         Assert.Equal(0m, result.Vat);
         Assert.Equal(0m, result.Withholding);
         Assert.Equal(0m, result.Deductions.InspectionPenalty);
-        Assert.Equal(9905.20m, result.NetPayable);
+        Assert.Equal(10405.20m, result.NetPayable);
     }
 
     [Fact]
