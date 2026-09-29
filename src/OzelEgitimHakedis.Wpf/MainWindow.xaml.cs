@@ -858,8 +858,8 @@ public partial class MainWindow : Window
     private static Table CreateDocumentTable(params (string Label, string Value)[] rows)
     {
         var table = new Table { CellSpacing = 0, BorderBrush = System.Windows.Media.Brushes.Black, BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 0, 10) };
-        table.Columns.Add(new TableColumn { Width = new GridLength(235) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(445) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(330) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(350) });
         var group = new TableRowGroup();
         foreach (var (label, value) in rows)
         {
@@ -872,17 +872,32 @@ public partial class MainWindow : Window
         return table;
     }
 
-    private static Table CreateThreeColumnTable((string A, string B, string C)[] rows, string[] headers)
+    private static Table CreateThreeColumnTable(
+        (string A, string B, string C)[] rows,
+        string[] headers,
+        bool includeHeader = true)
     {
-        var table = new Table { CellSpacing = 0, BorderBrush = System.Windows.Media.Brushes.Black, BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 0, 10) };
-        table.Columns.Add(new TableColumn { Width = new GridLength(70) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(390) });
+        var table = new Table
+        {
+            CellSpacing = 0,
+            BorderBrush = System.Windows.Media.Brushes.Black,
+            BorderThickness = new Thickness(1),
+            Margin = new Thickness(0, 0, 0, 10)
+        };
+        table.Columns.Add(new TableColumn { Width = new GridLength(60) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(400) });
         table.Columns.Add(new TableColumn { Width = new GridLength(220) });
+
         var group = new TableRowGroup();
-        var header = new TableRow();
-        for (var i = 0; i < headers.Length; i++)
-            header.Cells.Add(CreateCell(headers[i], true, false, true, true));
-        group.Rows.Add(header);
+
+        if (includeHeader)
+        {
+            var header = new TableRow();
+            for (var i = 0; i < headers.Length; i++)
+                header.Cells.Add(CreateCell(headers[i], true, false, true, true));
+            group.Rows.Add(header);
+        }
+
         foreach (var item in rows)
         {
             var row = new TableRow();
@@ -891,6 +906,162 @@ public partial class MainWindow : Window
             row.Cells.Add(CreateCell(item.C, false, true));
             group.Rows.Add(row);
         }
+
+        table.RowGroups.Add(group);
+        return table;
+    }
+
+    private static Table CreateDeductionTable((string A, string B, string C)[] rows)
+    {
+        var table = new Table
+        {
+            CellSpacing = 0,
+            BorderBrush = System.Windows.Media.Brushes.Black,
+            BorderThickness = new Thickness(1),
+            Margin = new Thickness(0, 0, 0, 10)
+        };
+        table.Columns.Add(new TableColumn { Width = new GridLength(52) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(42) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(406) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(180) });
+
+        var group = new TableRowGroup();
+        var verticalCell = new TableCell
+        {
+            RowSpan = rows.Length,
+            Padding = new Thickness(0),
+            BorderBrush = System.Windows.Media.Brushes.Black,
+            BorderThickness = new Thickness(0.5)
+        };
+
+        var verticalText = new TextBlock
+        {
+            Text = "KESİNTİLER VE MAHSUPLAR",
+            FontSize = 9,
+            FontWeight = FontWeights.Bold,
+            TextAlignment = TextAlignment.Center,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            LayoutTransform = new System.Windows.Media.RotateTransform(-90),
+            Width = 190,
+            Height = 34
+        };
+        verticalCell.Blocks.Add(new BlockUIContainer(verticalText));
+
+        for (var i = 0; i < rows.Length; i++)
+        {
+            var item = rows[i];
+            var row = new TableRow();
+
+            if (i == 0)
+                row.Cells.Add(verticalCell);
+
+            var shaded = item.A is "H" or "I";
+            row.Cells.Add(CreateCell(item.A, item.A is "H" or "I", false, true, shaded));
+            row.Cells.Add(CreateCell(item.B, item.A is "H" or "I", false, false, shaded));
+            row.Cells.Add(CreateCell(item.C, item.A is "H" or "I", true, false, shaded));
+            group.Rows.Add(row);
+        }
+
+        table.RowGroups.Add(group);
+        return table;
+    }
+
+    private static Table CreateReportHeaderTable(RouteDraft route, ProgressPaymentHistoryData latest)
+    {
+        var table = new Table
+        {
+            CellSpacing = 0,
+            BorderBrush = System.Windows.Media.Brushes.Black,
+            BorderThickness = new Thickness(1),
+            Margin = new Thickness(0, 0, 0, 8)
+        };
+        table.Columns.Add(new TableColumn { Width = new GridLength(525) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(155) });
+
+        var group = new TableRowGroup();
+        var left = CreateCell(route.Name, true);
+        left.RowSpan = 2;
+        left.Padding = new Thickness(7);
+        var row1 = new TableRow();
+        row1.Cells.Add(left);
+        row1.Cells.Add(CreateCell($"Hakediş No : {latest.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"}", true, false, true));
+        group.Rows.Add(row1);
+
+        var row2 = new TableRow();
+        row2.Cells.Add(CreateCell($"Hat No : {route.RouteNumber}", true, false, true));
+        group.Rows.Add(row2);
+
+        table.RowGroups.Add(group);
+        return table;
+    }
+
+    private static Table CreateIcmalHeaderTable(RouteDraft route, ProgressPaymentHistoryData latest)
+    {
+        var table = new Table
+        {
+            CellSpacing = 0,
+            BorderBrush = System.Windows.Media.Brushes.Black,
+            BorderThickness = new Thickness(1),
+            Margin = new Thickness(0, 0, 0, 8)
+        };
+        table.Columns.Add(new TableColumn { Width = new GridLength(525) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(155) });
+
+        var group = new TableRowGroup();
+        var left = CreateCell(route.Name, true);
+        left.RowSpan = 3;
+        left.Padding = new Thickness(7);
+
+        var row1 = new TableRow();
+        row1.Cells.Add(left);
+        row1.Cells.Add(CreateCell("Sayfa No : 1", true, false, true));
+        group.Rows.Add(row1);
+
+        var row2 = new TableRow();
+        row2.Cells.Add(CreateCell($"Hakediş No : {latest.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"}", true, false, true));
+        group.Rows.Add(row2);
+
+        var row3 = new TableRow();
+        row3.Cells.Add(CreateCell($"Hat No : {route.RouteNumber}", true, false, true));
+        group.Rows.Add(row3);
+
+        table.RowGroups.Add(group);
+        return table;
+    }
+
+    private static Table CreateExtensionTable()
+    {
+        var table = new Table
+        {
+            CellSpacing = 0,
+            BorderBrush = System.Windows.Media.Brushes.Black,
+            BorderThickness = new Thickness(1),
+            Margin = new Thickness(0, 0, 0, 10)
+        };
+        foreach (var width in FourColumnWidths)
+            table.Columns.Add(new TableColumn { Width = new GridLength(width) });
+
+        var group = new TableRowGroup();
+        var title = CreateCell("Süre Uzatım Kararlarının", true, false, true, true);
+        title.ColumnSpan = 4;
+        group.Rows.Add(new TableRow { Cells = { title } });
+
+        var header = new TableRow();
+        foreach (var h in ExtensionHeaders)
+            header.Cells.Add(CreateCell(h, true, false, true, true));
+        group.Rows.Add(header);
+
+        for (var i = 0; i < 4; i++)
+        {
+            var row = new TableRow();
+            row.Cells.Add(CreateCell("................", false, false, true));
+            row.Cells.Add(CreateCell("................", false, false, true));
+            row.Cells.Add(CreateCell("................", false, false, true));
+            row.Cells.Add(CreateCell("................", false, false, true));
+            group.Rows.Add(row);
+        }
+
         table.RowGroups.Add(group);
         return table;
     }
