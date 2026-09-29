@@ -423,16 +423,16 @@
                                                 <Grid>
                                                     <Grid.ColumnDefinitions><ColumnDefinition Width="120"/><ColumnDefinition Width="1.2*"/><ColumnDefinition Width="145"/><ColumnDefinition Width="1.2*"/></Grid.ColumnDefinitions>
                                                     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Hat" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,5"/>
+                                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Hat" Foreground="White" Style="{StaticResource FieldLabel}" Margin="0,5"/>
                                                     <ComboBox x:Name="ProgressRouteComboBox" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Margin="6" Height="42" DisplayMemberPath="DisplayText" SelectionChanged="ProgressRouteComboBox_SelectionChanged" Style="{StaticResource FieldComboBox}"/>
                                                     <TextBlock Grid.Row="1" Grid.Column="0" Text="Taşıma İş Günü" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,5"/>
-                                                    <TextBox x:Name="WorkDaysTextBox" Grid.Row="1" Grid.Column="1" Margin="6" Style="{StaticResource PremiumFieldTextBox}"/>
+                                                    <TextBox x:Name="WorkDaysTextBox" Grid.Row="1" Grid.Column="1" Margin="6" Style="{StaticResource PremiumFieldTextBox}" IsReadOnly="True" ToolTip="Hatlar ekranındaki Taşıma İş Günü değerinden otomatik alınır."/>
                                                     <TextBlock Grid.Row="1" Grid.Column="2" Text="Taşıma Günlük Fiyat" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,5,0,5"/>
-                                                    <TextBox x:Name="DailyPriceTextBox" Grid.Row="1" Grid.Column="3" Margin="6" Style="{StaticResource PremiumFieldTextBox}"/>
+                                                    <TextBox x:Name="DailyPriceTextBox" Grid.Row="1" Grid.Column="3" Margin="6" Style="{StaticResource PremiumFieldTextBox}" IsReadOnly="True" ToolTip="Hatlar ekranındaki Taşıma Günlük Birim Fiyat değerinden otomatik alınır."/>
                                                     <TextBlock Grid.Row="2" Grid.Column="0" Text="Rehber İş Günü" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,5"/>
-                                                    <TextBox x:Name="GuideWorkDaysTextBox" Grid.Row="2" Grid.Column="1" Margin="6" Style="{StaticResource PremiumFieldTextBox}"/>
+                                                    <TextBox x:Name="GuideWorkDaysTextBox" Grid.Row="2" Grid.Column="1" Margin="6" Style="{StaticResource PremiumFieldTextBox}" IsReadOnly="True" ToolTip="Hatlar ekranındaki Rehber Yıllık İş Günü değerinden otomatik alınır."/>
                                                     <TextBlock Grid.Row="2" Grid.Column="2" Text="Rehber Günlük Fiyat" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,5,0,5"/>
-                                                    <TextBox x:Name="GuideDailyPriceTextBox" Grid.Row="2" Grid.Column="3" Margin="6" Style="{StaticResource PremiumFieldTextBox}"/>
+                                                    <TextBox x:Name="GuideDailyPriceTextBox" Grid.Row="2" Grid.Column="3" Margin="6" Style="{StaticResource PremiumFieldTextBox}" IsReadOnly="True" ToolTip="Hatlar ekranındaki Rehber Personel Günlük Fiyat değerinden otomatik alınır."/>
                                                     <TextBlock Grid.Row="3" Grid.Column="0" Text="Taşıma İskonto" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,8"/>
                                                     <TextBox x:Name="DiscountTextBox" Grid.Row="3" Grid.Column="1" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
                                                     <TextBlock Grid.Row="3" Grid.Column="2" Text="Taşıma Fiyat Farkı" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,5,0,5"/>
@@ -569,19 +569,19 @@
                                                 <TextBlock Text="YENİ HAT" Style="{StaticResource CardTitle}"/>
                                                 <TextBlock Text="Hat bilgilerini girin" Style="{StaticResource CardSubtitle}" Margin="0,0,0,18"/>
 
-                                                <TextBlock Text="Hat No" Foreground="{StaticResource Text900Brush}" FontWeight="SemiBold"/>
+                                                <TextBlock Text="Hat No" Foreground="{StaticResource Text900Brush}" FontSize="15" FontWeight="Bold"/>
                                                 <TextBox x:Name="RouteNumberTextBox" Style="{StaticResource FieldTextBox}" Margin="0,7,0,14"/>
 
-                                                <TextBlock Text="Hat Adı" Foreground="{StaticResource Text900Brush}" FontWeight="SemiBold"/>
+                                                <TextBlock Text="Hat Adı" Foreground="{StaticResource Text900Brush}" FontSize="15" FontWeight="Bold"/>
                                                 <TextBox x:Name="RouteNameTextBox" Style="{StaticResource FieldTextBox}" Margin="0,7,0,14"/>
 
-                                                <TextBlock Text="Taşıma İş Günü" Foreground="{StaticResource Text900Brush}" FontWeight="SemiBold"/>
+                                                <TextBlock Text="Taşıma İş Günü" Foreground="{StaticResource Text900Brush}" FontSize="15" FontWeight="Bold"/>
                                                 <TextBox x:Name="RouteTransportWorkDaysTextBox"
                                                          Style="{StaticResource FieldTextBox}"
                                                          Margin="0,7,0,14"
                                                          TextChanged="RouteTransportCalculation_TextChanged"/>
 
-                                                <TextBlock Text="Taşıma Günlük Birim Fiyat" Foreground="{StaticResource Text900Brush}" FontWeight="SemiBold"/>
+                                                <TextBlock Text="Taşıma Günlük Birim Fiyat" Foreground="{StaticResource Text900Brush}" FontSize="15" FontWeight="Bold"/>
                                                 <TextBox x:Name="RouteDailyPriceTextBox"
                                                          Style="{StaticResource FieldTextBox}"
                                                          Margin="0,7,0,10"
@@ -599,10 +599,10 @@
                                                     </Grid>
                                                 </Border>
 
-                                                <TextBlock Text="Rehber Yıllık İş Günü" Foreground="{StaticResource Text900Brush}" FontWeight="SemiBold"/>
+                                                <TextBlock Text="Rehber Yıllık İş Günü" Foreground="{StaticResource Text900Brush}" FontSize="15" FontWeight="Bold"/>
                                                 <TextBox x:Name="RouteGuideWorkDaysTextBox" Style="{StaticResource FieldTextBox}" Margin="0,7,0,12"/>
 
-                                                <TextBlock Text="Rehber Personel Günlük Fiyat" Foreground="{StaticResource Text900Brush}" FontWeight="SemiBold"/>
+                                                <TextBlock Text="Rehber Personel Günlük Fiyat" Foreground="{StaticResource Text900Brush}" FontSize="15" FontWeight="Bold"/>
                                                 <TextBox x:Name="RouteGuideDailyPriceTextBox" Style="{StaticResource FieldTextBox}" Margin="0,7,0,18"/>
 
                                                 <StackPanel Orientation="Horizontal">
