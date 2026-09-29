@@ -18,7 +18,9 @@ public sealed record ContractDraftData(
     decimal ContractAmount,
     DateOnly StartDate,
     DateOnly EndDate,
-    bool VatExempt);
+    bool VatExempt,
+    DateOnly? TenderDate = null,
+    DateOnly? ContractDate = null);
 
 public sealed record RouteData(
     string RouteNumber,
