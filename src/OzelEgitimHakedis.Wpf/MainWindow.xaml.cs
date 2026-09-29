@@ -1611,11 +1611,8 @@ public partial class MainWindow : Window
                 FormatMoney(monthlyTotal)));
         }
 
-        var doc = CreateBaseDocument("HAKEDİŞ İCMALİ", route.Name);
-        doc.Blocks.Add(CreateDocumentTable(
-            ("Sayfa No", "1"),
-            ("Hakediş No", latest.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"),
-            ("Hat No", route.RouteNumber)));
+        var doc = CreateBaseDocument("HAKEDİŞ İCMALİ", "");
+        doc.Blocks.Add(CreateIcmalHeaderTable(route, latest));
 
         doc.Blocks.Add(CreateFiveColumnTable(
             rows,
