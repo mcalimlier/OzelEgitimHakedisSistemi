@@ -474,7 +474,6 @@ public partial class MainWindow : Window
 
         UpdateContractSummaryView();
         UpdateHomeSummaryView();
-        }
     }
 
     private void SavePersistedData()
