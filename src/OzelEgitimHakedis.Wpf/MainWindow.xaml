@@ -419,10 +419,10 @@
                                         <Border Grid.Column="0" Style="{StaticResource PremiumPanel}" Padding="18" Margin="0,0,10,0">
                                             <StackPanel>
                                                 <TextBlock Text="DÖNEM HESAP BİLGİLERİ" Foreground="{StaticResource Gold500Brush}" FontSize="13" FontWeight="Bold"/>
-                                                <TextBlock Text="Hakediş hesaplama girdileri" Foreground="White" FontSize="21" FontWeight="SemiBold" Margin="0,5,0,12"/>
+                                                <TextBlock Text="Hakediş hesaplama girdileri" Foreground="White" FontSize="21" FontWeight="SemiBold" Margin="0,5,0,4"/><TextBlock Text="Sözleşme bedeli ve KDV durumu İhale Bilgileri ekranından otomatik alınır." Foreground="#B9CBDA" FontSize="11.5" TextWrapping="Wrap" Margin="0,0,0,8"/>
                                                 <Grid>
                                                     <Grid.ColumnDefinitions><ColumnDefinition Width="120"/><ColumnDefinition Width="1.2*"/><ColumnDefinition Width="145"/><ColumnDefinition Width="1.2*"/></Grid.ColumnDefinitions>
-                                                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                                                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                                                     <TextBlock Grid.Row="0" Grid.Column="0" Text="Hat" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,5"/>
                                                     <ComboBox x:Name="ProgressRouteComboBox" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Margin="6" Height="42" DisplayMemberPath="DisplayText" SelectionChanged="ProgressRouteComboBox_SelectionChanged" Style="{StaticResource FieldComboBox}"/>
                                                     <TextBlock Grid.Row="1" Grid.Column="0" Text="Taşıma İş Günü" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,5"/>
@@ -441,21 +441,18 @@
                                                     <TextBox x:Name="GuideDiscountTextBox" Grid.Row="4" Grid.Column="1" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
                                                     <TextBlock Grid.Row="4" Grid.Column="2" Text="Rehber Fiyat Farkı" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,5,0,5"/>
                                                     <TextBox x:Name="GuidePriceDifferenceTextBox" Grid.Row="4" Grid.Column="3" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
-                                                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Sözleşme Bedeli" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,8"/>
-                                                    <TextBox x:Name="ProgressContractAmountTextBox" Grid.Row="5" Grid.Column="1" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
-                                                    <CheckBox x:Name="ProgressVatExemptCheckBox" Grid.Row="5" Grid.Column="2" Grid.ColumnSpan="2" Content="KDV HESAPLA / DAHİL ET" Style="{StaticResource PremiumCheckBox}" Margin="12,6,0,6"/>
-                                                    <TextBlock Grid.Row="6" Grid.Column="0" Text="Vergi Borcu" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,8"/>
-                                                    <TextBox x:Name="TaxDebtTextBox" Grid.Row="6" Grid.Column="1" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
-                                                    <TextBlock Grid.Row="6" Grid.Column="2" Text="SGK Borcu" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,8,0,8"/>
-                                                    <TextBox x:Name="SocialSecurityDebtTextBox" Grid.Row="6" Grid.Column="3" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
-                                                    <TextBlock Grid.Row="7" Grid.Column="0" Text="Asgari Ücret Desteği" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,8"/>
-                                                    <TextBox x:Name="MinimumWageSupportTextBox" Grid.Row="7" Grid.Column="1" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
-                                                    <TextBlock Grid.Row="7" Grid.Column="2" Text="Denetim Cezası" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,8,0,8"/>
-                                                    <TextBox x:Name="InspectionPenaltyTextBox" Grid.Row="7" Grid.Column="3" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
-                                                    <TextBlock Grid.Row="8" Grid.Column="0" Text="Hakediş No" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,8"/>
-                                                    <TextBox x:Name="ProgressNumberTextBox" Grid.Row="8" Grid.Column="1" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
-                                                    <TextBlock Grid.Row="8" Grid.Column="2" Text="Dönem Tarihi" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,8,0,8"/>
-                                                    <DatePicker x:Name="ProgressPeriodDatePicker" Grid.Row="8" Grid.Column="3" Margin="8" Style="{StaticResource FieldDatePicker}"/>
+                                                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Vergi Borcu" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,8"/>
+                                                    <TextBox x:Name="TaxDebtTextBox" Grid.Row="5" Grid.Column="1" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
+                                                    <TextBlock Grid.Row="5" Grid.Column="2" Text="SGK Borcu" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,8,0,8"/>
+                                                    <TextBox x:Name="SocialSecurityDebtTextBox" Grid.Row="5" Grid.Column="3" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
+                                                    <TextBlock Grid.Row="6" Grid.Column="0" Text="Asgari Ücret Desteği" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,8"/>
+                                                    <TextBox x:Name="MinimumWageSupportTextBox" Grid.Row="6" Grid.Column="1" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
+                                                    <TextBlock Grid.Row="6" Grid.Column="2" Text="Denetim Cezası" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,8,0,8"/>
+                                                    <TextBox x:Name="InspectionPenaltyTextBox" Grid.Row="6" Grid.Column="3" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
+                                                    <TextBlock Grid.Row="7" Grid.Column="0" Text="Hakediş No" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,8"/>
+                                                    <TextBox x:Name="ProgressNumberTextBox" Grid.Row="7" Grid.Column="1" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
+                                                    <TextBlock Grid.Row="7" Grid.Column="2" Text="Dönem Tarihi" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,8,0,8"/>
+                                                    <DatePicker x:Name="ProgressPeriodDatePicker" Grid.Row="7" Grid.Column="3" Margin="8" Style="{StaticResource FieldDatePicker}"/>
                                                 </Grid>
                                                 <Button Content="HAKEDİŞİ HESAPLA" Click="CalculateProgressButton_Click" Style="{StaticResource ModernButton}" Width="220" Margin="6,12,0,0" HorizontalAlignment="Left"/>
                                                 <TextBlock x:Name="CalculationStatusTextBlock" Style="{StaticResource ValidationText}"/>
