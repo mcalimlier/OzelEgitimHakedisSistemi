@@ -1684,12 +1684,15 @@ public partial class MainWindow : Window
         root.Children.Add(titleBlock);
 
         var combined = BuildCombinedRouteDocuments(documents);
-        var viewer = new System.Windows.Controls.FlowDocumentPageViewer
+        var viewer = new System.Windows.Controls.FlowDocumentScrollViewer
         {
             Document = combined,
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            VerticalAlignment = VerticalAlignment.Stretch,
-            Margin = new Thickness(4)
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            HorizontalContentAlignment = HorizontalAlignment.Center,
+            VerticalContentAlignment = VerticalAlignment.Top,
+            Margin = new Thickness(4),
+            IsToolBarVisible = true
         };
         Grid.SetRow(viewer, 1);
         root.Children.Add(viewer);
