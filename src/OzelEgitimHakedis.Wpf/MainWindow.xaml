@@ -311,7 +311,7 @@
                                         <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0">
                                             <StackPanel>
                                                 <TextBlock Text="Sözleşme Bilgileri" Style="{StaticResource CardTitle}"/>
-                                                <TextBlock Text="Temel ihale ve sözleşme alanları" Style="{StaticResource CardSubtitle}" Margin="0,0,0,18"/>
+                                                <TextBlock Text="Temel ihale ve sözleşme alanları" Style="{StaticResource CardSubtitle}" Margin="0,0,0,18"/><Border x:Name="ContractValidationBanner" Visibility="Collapsed" Background="#FFF1F1" BorderBrush="#E53935" BorderThickness="1.5" CornerRadius="9" Padding="14,11" Margin="8,14,8,0"><StackPanel><TextBlock Text="EKSİK / HATALI İHALE BİLGİSİ" Foreground="#C62828" FontSize="13" FontWeight="Bold"/><TextBlock x:Name="ContractValidationMessageTextBlock" Foreground="#8E1B1B" FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,3,0,0"/></StackPanel></Border>
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="170"/><ColumnDefinition Width="*"/>
@@ -361,7 +361,7 @@
                                                         <CheckBox x:Name="VatExemptCheckBox" Grid.Column="1" Content="KDV İSTİSNASI" Style="{StaticResource LightCheckBox}" VerticalAlignment="Center" Margin="18,0,2,0"/>
                                                     </Grid>
                                                 </Border>
-                                                <Border x:Name="ContractValidationBanner" Visibility="Collapsed" Background="#FFF1F1" BorderBrush="#E53935" BorderThickness="1.5" CornerRadius="9" Padding="14,11" Margin="8,14,8,0"><StackPanel><TextBlock Text="EKSİK / HATALI İHALE BİLGİSİ" Foreground="#C62828" FontSize="13" FontWeight="Bold"/><TextBlock x:Name="ContractValidationMessageTextBlock" Foreground="#8E1B1B" FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,3,0,0"/></StackPanel></Border><StackPanel Orientation="Horizontal" Margin="8,20,8,0">
+                                                <StackPanel Orientation="Horizontal" Margin="8,20,8,0">
                                                     <Button Content="KAYDET" Click="SaveContractButton_Click" Style="{StaticResource ModernButton}" Width="140"/>
                                                     <Button Content="TEMİZLE" Click="ClearContractButton_Click" Style="{StaticResource SecondaryButton}" Width="120" Margin="10,0,0,0"/>
                                                 </StackPanel>
