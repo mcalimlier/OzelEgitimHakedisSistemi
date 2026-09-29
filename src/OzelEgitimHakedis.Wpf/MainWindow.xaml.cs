@@ -1249,8 +1249,12 @@ public partial class MainWindow : Window
         };
         doc.Blocks.Add(CreateThreeColumnTable(hRows.ToArray(), DeductionHeaders));
 
+        var contractor = string.IsNullOrWhiteSpace(latest.ContractorName)
+            ? ContractorTextBox.Text.Trim()
+            : latest.ContractorName.Trim();
+
         doc.Blocks.Add(CreateDocumentTable(
-            ("Yüklenici", ContractorTextBox.Text)));
+            ("Yüklenici", contractor)));
 
         doc.Blocks.Add(CreateSignatureTable(
             "Düzenleyen", "Aşkın KESKİNBALTA", "Memur",
