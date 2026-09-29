@@ -927,15 +927,17 @@ public partial class MainWindow : Window
             BorderThickness = new Thickness(1),
             Margin = new Thickness(0, 0, 0, 10)
         };
-        table.Columns.Add(new TableColumn { Width = new GridLength(52) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(70) });
         table.Columns.Add(new TableColumn { Width = new GridLength(42) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(406) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(180) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(398) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(170) });
 
         var group = new TableRowGroup();
+        const int deductionItemCount = 12;
+
         var verticalCell = new TableCell
         {
-            RowSpan = rows.Length,
+            RowSpan = deductionItemCount,
             Padding = new Thickness(0),
             BorderBrush = System.Windows.Media.Brushes.Black,
             BorderThickness = new Thickness(0.5)
@@ -960,13 +962,35 @@ public partial class MainWindow : Window
             var item = rows[i];
             var row = new TableRow();
 
-            if (i == 0)
-                row.Cells.Add(verticalCell);
+            if (i < deductionItemCount)
+                row.Cells.Add(i == 0 ? verticalCell : new TableCell
+                {
+                    Padding = new Thickness(0),
+                    BorderBrush = System.Windows.Media.Brushes.Black,
+                    BorderThickness = new Thickness(0.5)
+                });
 
             var shaded = item.A is "H" or "I";
-            row.Cells.Add(CreateCell(item.A, item.A is "H" or "I", false, true, shaded));
-            row.Cells.Add(CreateCell(item.B, item.A is "H" or "I", false, false, shaded));
-            row.Cells.Add(CreateCell(item.C, item.A is "H" or "I", true, false, shaded));
+
+            if (i < deductionItemCount)
+            {
+                row.Cells.Add(CreateCell(item.A, false, false, true, false));
+                row.Cells.Add(CreateCell(item.B));
+                row.Cells.Add(CreateCell(item.C, false, true));
+            }
+            else
+            {
+                row.Cells.Add(CreateCell(item.A, true, false, true, true));
+                row.Cells.Add(CreateCell(item.B, true, false, false, true));
+                row.Cells.Add(CreateCell(item.C, true, true, false, true));
+            }
+
+            if (shaded)
+            {
+                foreach (var cell in row.Cells)
+                    cell.Background = System.Windows.Media.Brushes.Gainsboro;
+            }
+
             group.Rows.Add(row);
         }
 
@@ -1386,9 +1410,7 @@ public partial class MainWindow : Window
             .Sum(x => x.Calculation.TotalAmount);
         var currentDifference = latest.Calculation.TotalAmount - previousTotal;
 
-        var doc = CreateBaseDocument(
-            "HAK EDİŞ RAPORU",
-            $"{route.Name} — Hat No : {route.RouteNumber}    Hakediş No : {latest.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"}");
+        var doc = CreateBaseDocument("HAK EDİŞ RAPORU", "");
 
         doc.Blocks.Add(CreateReportHeaderTable(route, latest));
 
@@ -1603,7 +1625,7 @@ public partial class MainWindow : Window
                 x.PeriodDate.Value.Year == month.Year &&
                 x.PeriodDate.Value.Month == month.Month);
 
-            var a = monthPayment?.Calculation.TotalAmount ?? 0m;
+            var a = monthPayment?.Calculation.CombinedServiceAmount ?? 0m;
             var b = monthPayment?.Calculation.CombinedPriceDifferenceExcludingVat ?? 0m;
             var monthlyTotal = a + b;
             totalA += a;
