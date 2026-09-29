@@ -43,7 +43,7 @@ public sealed class ProgressPaymentCalculatorTests
 
 
     [Fact]
-    public void ExcelTransportAndGuideExample_ShouldMatch()
+    public void TransportAndGuideComposition_ShouldMatch()
     {
         // Orijinal XLSM Hesaplama!4 satırındaki senaryo:
         // Taşıma 29 gün x 2608,26 + 1.500 fiyat farkı
@@ -72,17 +72,17 @@ public sealed class ProgressPaymentCalculatorTests
         Assert.Equal(1500m, result.PriceDifferenceExcludingVat);
         Assert.Equal(1500m, result.GuidePriceDifferenceExcludingVat);
         Assert.Equal(3000m, result.CombinedPriceDifferenceExcludingVat);
-        Assert.Equal(119514.24m, result.TotalAmount);
-        Assert.Equal(16188.89m, result.Vat);
-        Assert.Equal(11484.42m, result.Withholding);
+        Assert.Equal(121014.24m, result.TotalAmount);
+        Assert.Equal(16488.89m, result.Vat);
+        Assert.Equal(11754.42m, result.Withholding);
         Assert.Equal(180m, result.AdditionalGuarantee);
-        Assert.Equal(1132.99m, result.StampTax);
-        Assert.Equal(12797.42m, result.TotalDeductions);
-        Assert.Equal(122905.72m, result.NetPayable);
+        Assert.Equal(1147.21m, result.StampTax);
+        Assert.Equal(13081.64m, result.TotalDeductions);
+        Assert.Equal(124421.50m, result.NetPayable);
     }
 
     [Fact]
-    public void Discount_ShouldBeSubtractedFromTransportAndGuideBases()
+    public void DiscountAndPriceDifference_ShouldComposeTransportAndGuideBases()
     {
         var input = new ProgressPaymentInput(
             WorkDays: 10,
@@ -101,9 +101,9 @@ public sealed class ProgressPaymentCalculatorTests
 
         var result = ProgressPaymentCalculator.Calculate(input);
 
-        Assert.Equal(10100m, result.TransportNetAmount);
-        Assert.Equal(2550m, result.GuideNetAmount);
-        Assert.Equal(12650m, result.TotalAmount);
+        Assert.Equal(10300m, result.TransportNetAmount);
+        Assert.Equal(2650m, result.GuideNetAmount);
+        Assert.Equal(12950m, result.TotalAmount);
     }
 
     [Fact]
