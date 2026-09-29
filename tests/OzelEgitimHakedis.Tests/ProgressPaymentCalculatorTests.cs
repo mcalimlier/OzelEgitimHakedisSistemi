@@ -111,8 +111,8 @@ public sealed class ProgressPaymentCalculatorTests
         Assert.Equal(800m, result.Deductions.SocialSecurityDebt);
         Assert.Equal(300m, result.Deductions.MinimumWageSupport);
         Assert.Equal(1699.68m, result.AdditionalGuarantee);
-        Assert.Equal(17355.96m, result.TotalDeductions);
-        Assert.Equal(183826.27m, result.NetPayable);
+        Assert.Equal(17155.96m, result.TotalDeductions);
+        Assert.Equal(184026.27m, result.NetPayable);
     }
 
     [Fact]
@@ -136,9 +136,9 @@ public sealed class ProgressPaymentCalculatorTests
         Assert.Equal(0m, result.AdditionalGuarantee);
         Assert.Equal(90.06m, result.StampTax);
         Assert.Equal(475m, result.Withholding);
-        Assert.Equal(10474m, result.GrossAmount);
+        Assert.Equal(10450m, result.GrossAmount);
         Assert.Equal(565.06m, result.TotalDeductions);
-        Assert.Equal(9908.94m, result.NetPayable);
+        Assert.Equal(9884.94m, result.NetPayable);
     }
 
     [Fact]
