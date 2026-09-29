@@ -35,26 +35,30 @@ public sealed class ProgressPaymentCalculator
         {
             throw new ArgumentOutOfRangeException(
                 nameof(input),
-                "İskonto, kesinti ve denetim cezası tutarları negatif olamaz.");
+                "Kesinti ve denetim cezası tutarları negatif olamaz.");
         }
 
+        // Kaynak Excel Hesaplama:
+        // K = (G * H) + I - J
+        // I = Taşıma Fiyat Farkı KDV Hariç, J = Taşıma İskonto.
         var transportServiceAmount = input.WorkDays * input.DailyPrice;
-        // Excel: Ek Fiyat Farkı KDV Hariç = İskonto Tutarı + Ek Fiyat Farkı.
-        // İskonto alanı Excel'de işaretli bir bileşendir; negatif değer girilmesi
-        // gerçek bir iskonto olarak desteklenir.
         var transportPriceDifference =
-            input.DiscountAmount + input.PriceDifference;
+            input.PriceDifference - input.DiscountAmount;
         var transportNetAmount =
             transportServiceAmount + transportPriceDifference;
 
+        // Kaynak Excel Hesaplama:
+        // T = (P * Q) + R - S
+        // R = Rehber Personel Fiyat Farkı KDV Hariç, S = Rehber Personel İskonto.
         var guideServiceAmount = input.GuideWorkDays * input.GuideDailyPrice;
         var guidePriceDifference =
-            input.GuideDiscountAmount + input.GuidePriceDifference;
+            input.GuidePriceDifference - input.GuideDiscountAmount;
         var guideNetAmount =
             guideServiceAmount + guidePriceDifference;
 
         var totalAmount = transportNetAmount + guideNetAmount;
 
+        // Excel: L = K*10%, U = T*20%.
         var transportVat = input.IncludeVat
             ? transportNetAmount * TransportVatRate
             : 0m;
@@ -62,6 +66,7 @@ public sealed class ProgressPaymentCalculator
             ? guideNetAmount * GuideVatRate
             : 0m;
 
+        // Excel: M = L/2 (%5), V = U*9/10 (%18).
         var transportWithholding = input.IncludeVat
             ? transportVat * 0.5m
             : 0m;
@@ -72,52 +77,47 @@ public sealed class ProgressPaymentCalculator
         var vat = transportVat + guideVat;
         var withholding = transportWithholding + guideWithholding;
 
-        var invoiceAmountAfterWithholding =
-            totalAmount + vat - withholding;
+        // Excel: N = K+M, W = T+V.
+        var invoiceAmountAfterWithholding = totalAmount + withholding;
 
-        var stampTax =
-            Math.Max(totalAmount, 0m) * StampTaxRate;
+        // Excel: AD = (K*9.48/1000)+(T*9.48/1000).
+        var stampTax = totalAmount * StampTaxRate;
 
-        var inspectionPenalty = input.InspectionPenalty;
+        // Excel: AC = (I*6/100)+(R*6/100).
+        // I/R fiyat farkı KDV hariç alanlarıdır; Excel'deki gibi negatif değerler
+        // ayrıca sıfırlanmaz.
+        var additionalGuarantee =
+            (transportPriceDifference + guidePriceDifference)
+            * AdditionalGuaranteeRate;
 
-        // Excel'de iki sürümün formülü bulunuyor:
-        // 1) Taşıma-only V3: Ek Kesin Teminat = max(H, 0) × %6.
-        // 2) Rehber personel eklenmiş tabloda AC hücresi:
-        //    =(I4*6/100)+R4*6/100
-        //    I4 = Taşıma Toplam Tutarı, R4 = Rehber Fiyat Farkı KDV Hariç.
-        // Rehber bileşeni kullanılıyorsa genişletilmiş Excel formülünü,
-        // rehber yoksa mevcut V3 taşıma formülünü koruyoruz.
-        var hasGuideComponent =
-            input.GuideWorkDays > 0
-            || input.GuideDailyPrice != 0m
-            || guidePriceDifference != 0m;
-
-        var additionalGuarantee = hasGuideComponent
-            ? (transportNetAmount + guidePriceDifference) * AdditionalGuaranteeRate
-            : Math.Max(transportPriceDifference, 0m) * AdditionalGuaranteeRate;
-
-        var deductions = new DeductionBreakdown(
-            Round(withholding),
-            Round(stampTax),
-            Round(input.TaxDebt),
-            Round(inspectionPenalty),
-            Round(input.SocialSecurityDebt),
-            Round(input.MinimumWageSupport),
-            Round(additionalGuarantee));
-
-        var grossAmount = totalAmount + vat;
-        // Excel'deki hücreler ara sonuçları tam hassasiyetle toplar; son tutar
-        // ekranda iki ondalığa yuvarlanır.
+        // Excel: AE = M+V+Y+Z+AA+AB+AC+AD.
         var exactTotalDeductions =
             withholding
             + stampTax
             + input.TaxDebt
-            + inspectionPenalty
+            + input.InspectionPenalty
             + input.SocialSecurityDebt
             + input.MinimumWageSupport
             + additionalGuarantee;
+
         var totalDeductions = Round(exactTotalDeductions);
+
+        // Excel: AF = O+X = (K+L)+(T+U).
+        // Excel: AG = AF-AE.
+        var grossAmount = transportNetAmount
+            + transportVat
+            + guideNetAmount
+            + guideVat;
         var netPayable = grossAmount - exactTotalDeductions;
+
+        var deductions = new DeductionBreakdown(
+            Round(transportWithholding + guideWithholding),
+            Round(stampTax),
+            Round(input.TaxDebt),
+            Round(input.InspectionPenalty),
+            Round(input.SocialSecurityDebt),
+            Round(input.MinimumWageSupport),
+            Round(additionalGuarantee));
 
         return new ProgressPaymentCalculation(
             Round(transportServiceAmount),
@@ -128,7 +128,7 @@ public sealed class ProgressPaymentCalculator
             Round(invoiceAmountAfterWithholding),
             Round(stampTax),
             Round(grossAmount),
-            Round(totalDeductions),
+            totalDeductions,
             Round(netPayable),
             Round(additionalGuarantee),
             deductions,
