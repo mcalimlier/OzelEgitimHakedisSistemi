@@ -6,4 +6,5 @@ public sealed record Route(
     Contract Contract,
     decimal DailyPrice,
     int GuideWorkDays = 0,
-    decimal GuideDailyPrice = 0m);
+    decimal GuideDailyPrice = 0m,
+    int TransportWorkDays = 0);
