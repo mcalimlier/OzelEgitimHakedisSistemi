@@ -493,6 +493,7 @@ public partial class MainWindow : Window
         UpdateContractSummaryView();
         UpdateHomeSummaryView();
         UpdateAcceptanceView();
+        ContractStatusTextBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(36, 104, 216));
         ContractStatusTextBlock.Text =
             $"Sözleşme taslağı kaydedildi: {WorkNameTextBox.Text.Trim()} — {contractAmount:N2} ₺.";
     }
@@ -1942,6 +1943,8 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
     {
         foreach (var textBox in new[]
         {
+            WorkDaysTextBox,
+            DailyPriceTextBox,
             GuideWorkDaysTextBox,
             GuideDailyPriceTextBox,
             GuideDiscountTextBox,
@@ -1951,7 +1954,11 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
             MinimumWageSupportTextBox,
             InspectionPenaltyTextBox,
             DiscountTextBox,
-            PriceDifferenceTextBox
+            PriceDifferenceTextBox,
+            RouteTransportWorkDaysTextBox,
+            RouteDailyPriceTextBox,
+            RouteGuideWorkDaysTextBox,
+            RouteGuideDailyPriceTextBox
         })
         {
             textBox.GotFocus += ZeroValueTextBox_GotFocus;
