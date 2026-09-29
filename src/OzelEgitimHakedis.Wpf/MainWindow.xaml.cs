@@ -1199,7 +1199,7 @@ public partial class MainWindow : Window
         };
         table.Columns.Add(new TableColumn { Width = new GridLength(50) });
         table.Columns.Add(new TableColumn { Width = new GridLength(29) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(328) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(323) });
         table.Columns.Add(new TableColumn { Width = new GridLength(138) });
 
         var group = new TableRowGroup();
