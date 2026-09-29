@@ -900,9 +900,8 @@ public partial class MainWindow : Window
             BorderThickness = new Thickness(1),
             Margin = new Thickness(0, 0, 0, 10)
         };
-        table.Columns.Add(new TableColumn { Width = new GridLength(70) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(440) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(230) });
+        foreach (var width in ThreeColumnWidths)
+            table.Columns.Add(new TableColumn { Width = new GridLength(width) });
 
         var group = new TableRowGroup();
 
@@ -979,7 +978,11 @@ public partial class MainWindow : Window
             if (shaded)
             {
                 row.Cells.Add(CreateCell(item.A, true, false, true, true));
-                row.Cells.Add(CreateCell(item.B, true, false, false, true));
+
+                var summaryDescriptionCell = CreateCell(item.B, true, false, false, true);
+                summaryDescriptionCell.ColumnSpan = 2;
+                row.Cells.Add(summaryDescriptionCell);
+
                 row.Cells.Add(CreateCell(item.C, true, true, false, true));
             }
             else
@@ -1244,6 +1247,16 @@ public partial class MainWindow : Window
         return cell;
     }
 
+    private static Paragraph CreateDocumentExampleFooter(string text)
+    {
+        return new Paragraph(new Run(text))
+        {
+            FontSize = 7.5,
+            TextAlignment = TextAlignment.Center,
+            Margin = new Thickness(0, 6, 0, 0)
+        };
+    }
+
     private static FlowDocument CreateBaseDocument(string title, string subtitle)
     {
         const double a4Width = 794;
@@ -1480,11 +1493,7 @@ public partial class MainWindow : Window
         {
             TextAlignment = TextAlignment.Center
         });
-        doc.Blocks.Add(new Paragraph(new Run("M.Y.H.B.Y. Örnek No : 4/10"))
-        {
-            FontSize = 8,
-            Margin = new Thickness(0, 2, 0, 0)
-        });
+        doc.Blocks.Add(CreateDocumentExampleFooter("M.Y.H.B.Y. Örnek No : 4/10"));
 
         return doc;
     }
@@ -1531,11 +1540,7 @@ public partial class MainWindow : Window
         doc.Blocks.Add(CreateSignatureTable(
             "Düzenleyen", "Aşkın KESKİNBALTA", "Memur",
             "Kontrol Eden", "Halil ÖZENÇ", "İlçe Milli Eğitim Şube Müdürü"));
-        doc.Blocks.Add(new Paragraph(new Run("M.Y.H.B.Y. Örnek No: 4"))
-        {
-            FontSize = 8,
-            Margin = new Thickness(0, 8, 0, 0)
-        });
+        doc.Blocks.Add(CreateDocumentExampleFooter("M.Y.H.B.Y. Örnek No: 4"));
         return doc;
     }
 
@@ -1697,11 +1702,7 @@ public partial class MainWindow : Window
         {
             TextAlignment = TextAlignment.Center
         });
-        doc.Blocks.Add(new Paragraph(new Run("M.Y.H.B.Y. Örnek No :4/9"))
-        {
-            FontSize = 8,
-            Margin = new Thickness(0, 12, 0, 0)
-        });
+        doc.Blocks.Add(CreateDocumentExampleFooter("M.Y.H.B.Y. Örnek No : 4/9"));
 
         return doc;
     }
