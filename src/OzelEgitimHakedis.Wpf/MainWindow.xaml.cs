@@ -346,7 +346,12 @@ public partial class MainWindow : Window
             EndDatePicker.SelectedDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "—";
 
         ContractSummaryTenderTextBlock.Text =
-            string.IsNullOrWhiteSpace(TenderNumberTextBox.Text) ? "Bekleniyor" : TenderNumberTextBox.Text.Trim();
+            string.IsNullOrWhiteSpace(TenderNumberTextBox.Text)
+                ? "Bekleniyor"
+                : $"{TenderNumberTextBox.Text.Trim()}" +
+                  (TenderDatePicker.SelectedDate.HasValue
+                      ? $" • {TenderDatePicker.SelectedDate.Value:dd.MM.yyyy}"
+                      : "");
         ContractSummaryContractorTextBlock.Text =
             string.IsNullOrWhiteSpace(ContractorTextBox.Text) ? "Bekleniyor" : ContractorTextBox.Text.Trim();
         ContractSummaryVatTextBlock.Text =
@@ -417,7 +422,7 @@ public partial class MainWindow : Window
     private void UpdateRouteSummary()
     {
         RouteCountTextBlock.Text = _routes.Count.ToString(CultureInfo.CurrentCulture);
-        RouteTotalDailyPriceTextBlock.Text = FormatMoney(_routes.Sum(x => x.DailyPrice));
+        RouteTotalDailyPriceTextBlock.Text = FormatMoney(_routes.Sum(x => x.DailyPrice + x.GuideDailyPrice));
     }
 
     private void SaveContractButton_Click(object sender, RoutedEventArgs e)
@@ -803,8 +808,8 @@ public partial class MainWindow : Window
         if (string.IsNullOrWhiteSpace(WorkDaysTextBox.Text))
             WorkDaysTextBox.Text = "0";
 
-        if (string.IsNullOrWhiteSpace(GuideWorkDaysTextBox.Text))
-            GuideWorkDaysTextBox.Text = "0";
+        if (string.IsNullOrWhiteSpace(GuideWorkDaysTextBox.Text) || GuideWorkDaysTextBox.Text == "0")
+            GuideWorkDaysTextBox.Text = route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
     }
 
     private void ReportRouteComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
