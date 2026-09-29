@@ -1305,7 +1305,7 @@ public partial class MainWindow : Window
         const double a4Width = 794;
         const double a4Height = 1123;
         const double contentWidth = 600;
-        // A4 yazdırılabilir alanını güvenli tutmak için tüm rapor tabloları 680 DIP ile sınırlandırılmıştır.
+        // A4 yazdırılabilir alanını güvenli tutmak için tüm rapor tabloları 600 DIP ile sınırlandırılmıştır.
 
         var document = new FlowDocument
         {
