@@ -976,14 +976,17 @@ public partial class MainWindow : Window
 
             var shaded = item.A is "H" or "I";
 
-            row.Cells.Add(CreateCell(item.A, item.A is "H" or "I", false, true, shaded));
-            row.Cells.Add(CreateCell(item.B, item.A is "H" or "I", false, false, shaded));
-            row.Cells.Add(CreateCell(item.C, item.A is "H" or "I", true, false, shaded));
-            else
+            if (shaded)
             {
                 row.Cells.Add(CreateCell(item.A, true, false, true, true));
                 row.Cells.Add(CreateCell(item.B, true, false, false, true));
                 row.Cells.Add(CreateCell(item.C, true, true, false, true));
+            }
+            else
+            {
+                row.Cells.Add(CreateCell(item.A, false, false, true, false));
+                row.Cells.Add(CreateCell(item.B, false, false, false, false));
+                row.Cells.Add(CreateCell(item.C, false, true, false, false));
             }
 
             if (shaded)
