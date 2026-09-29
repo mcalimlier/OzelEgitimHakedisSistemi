@@ -454,12 +454,16 @@ public partial class MainWindow : Window
         }
 
         if (!TryParseDecimal(DailyPriceTextBox.Text, out var dailyPrice) || dailyPrice < 0 ||
-            !TryParseDecimal(DiscountTextBox.Text, out var discount) ||
+            !TryParseDecimal(DiscountTextBox.Text, out var discount) || discount < 0 ||
             !TryParseDecimal(PriceDifferenceTextBox.Text, out var priceDifference) ||
-            !TryParseDecimal(ProgressContractAmountTextBox.Text, out var contractAmount) || contractAmount < 0)
+            !TryParseDecimal(ProgressContractAmountTextBox.Text, out var contractAmount) || contractAmount < 0 ||
+            !TryParseDecimal(TaxDebtTextBox.Text, out var taxDebt) || taxDebt < 0 ||
+            !TryParseDecimal(SocialSecurityDebtTextBox.Text, out var socialSecurityDebt) || socialSecurityDebt < 0 ||
+            !TryParseDecimal(MinimumWageSupportTextBox.Text, out var minimumWageSupport) || minimumWageSupport < 0 ||
+            !TryParseDecimal(InspectionPenaltyTextBox.Text, out var inspectionPenalty) || inspectionPenalty < 0)
         {
             ProgressCalculationSummaryTextBlock.Text = "BEKLENİYOR";
-            CalculationStatusTextBlock.Text = "Tutar alanlarını geçerli sayılarla doldurun.";
+            CalculationStatusTextBlock.Text = "Tutar alanlarını 0 veya daha büyük geçerli sayılarla doldurun.";
             return;
         }
 
@@ -472,11 +476,11 @@ public partial class MainWindow : Window
                 discount,
                 priceDifference,
                 contractAmount,
-                ProgressVatExemptCheckBox.IsChecked == true,
-                0m,
-                0m,
-                0m,
-                InspectionPenaltyCheckBox.IsChecked == true);
+                ProgressVatExemptCheckBox.IsChecked != true,
+                taxDebt,
+                socialSecurityDebt,
+                minimumWageSupport,
+                inspectionPenalty);
 
             var result = ProgressPaymentCalculator.Calculate(input);
 
