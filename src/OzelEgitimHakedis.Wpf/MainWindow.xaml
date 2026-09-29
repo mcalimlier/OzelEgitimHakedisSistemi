@@ -567,7 +567,7 @@
                                         <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0">
                                             <StackPanel>
                                                 <TextBlock Text="YENİ HAT" Style="{StaticResource CardTitle}"/>
-                                                <TextBlock Text="Hat bilgilerini girin" Style="{StaticResource CardSubtitle}" Margin="0,0,0,18"/>
+                                                <TextBlock Text="Hat bilgilerini girin" Style="{StaticResource CardSubtitle}" Margin="0,0,0,18"/><Border x:Name="RouteValidationBanner" Visibility="Collapsed" Background="#FFF1F1" BorderBrush="#E53935" BorderThickness="1.5" CornerRadius="9" Padding="12,9" Margin="0,0,0,14"><StackPanel><TextBlock Text="EKSİK / HATALI HAT BİLGİSİ" Foreground="#C62828" FontSize="12.5" FontWeight="Bold"/><TextBlock x:Name="RouteValidationMessageTextBlock" Foreground="#8E1B1B" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,3,0,0"/></StackPanel></Border>
 
                                                 <TextBlock Text="Hat No" Foreground="{StaticResource Text900Brush}" FontSize="15" FontWeight="Bold"/>
                                                 <TextBox x:Name="RouteNumberTextBox" Style="{StaticResource FieldTextBox}" Margin="0,7,0,14"/>
