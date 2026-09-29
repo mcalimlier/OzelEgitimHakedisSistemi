@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Printing;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
@@ -934,7 +935,15 @@ public partial class MainWindow : Window
 
     private static bool TryShowDocument(FlowDocument document, string title)
     {
-        var dialog = new System.Windows.Controls.PrintDialog();
+        var dialog = new System.Windows.Controls.PrintDialog
+        {
+            PrintTicket = new PrintTicket
+            {
+                PageMediaSize = new PageMediaSize(PageMediaSizeName.ISOA4),
+                PageOrientation = PageOrientation.Portrait
+            }
+        };
+
         if (dialog.ShowDialog() != true)
             return false;
 
