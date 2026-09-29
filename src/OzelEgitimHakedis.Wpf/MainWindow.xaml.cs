@@ -67,6 +67,9 @@ public partial class MainWindow : Window
 
         UpdateRouteSummary();
         UpdateContractorSummary();
+        UpdateContractSummaryView();
+        UpdateHomeSummaryView();
+        UpdateProgressRouteDefaults();
         UpdateHistoryView();
         UpdateSummaryView();
         UpdateReportView();
@@ -300,6 +303,34 @@ public partial class MainWindow : Window
     private void UpdateContractorSummary()
     {
         ContractorCountTextBlock.Text = _contractors.Count.ToString(CultureInfo.CurrentCulture);
+        HomeContractorCountTextBlock.Text = _contractors.Count.ToString(CultureInfo.CurrentCulture);
+    }
+
+    private void UpdateHomeSummaryView()
+    {
+        HomeContractStatusTextBlock.Text =
+            string.IsNullOrWhiteSpace(WorkNameTextBox.Text) ? "Bekleniyor" : "KAYITLI";
+        HomeRouteCountTextBlock.Text = _routes.Count.ToString(CultureInfo.CurrentCulture);
+        HomeNetPayableTextBlock.Text = FormatMoney(_progressHistory.Sum(x => x.Calculation.NetPayable));
+    }
+
+    private void UpdateContractSummaryView()
+    {
+        var hasContract = !string.IsNullOrWhiteSpace(WorkNameTextBox.Text);
+        ContractStatusSummaryTextBlock.Text = hasContract ? "KAYITLI" : "TASLAK";
+        ContractAmountSummaryTextBlock.Text =
+            TryParseDecimal(ContractAmountTextBox.Text, out var amount) ? FormatMoney(amount) : FormatMoney(0);
+        ContractStartSummaryTextBlock.Text =
+            StartDatePicker.SelectedDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "—";
+        ContractEndSummaryTextBlock.Text =
+            EndDatePicker.SelectedDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "—";
+
+        ContractSummaryTenderTextBlock.Text =
+            string.IsNullOrWhiteSpace(TenderNumberTextBox.Text) ? "Bekleniyor" : TenderNumberTextBox.Text.Trim();
+        ContractSummaryContractorTextBlock.Text =
+            string.IsNullOrWhiteSpace(ContractorTextBox.Text) ? "Bekleniyor" : ContractorTextBox.Text.Trim();
+        ContractSummaryVatTextBlock.Text =
+            VatExemptCheckBox.IsChecked == true ? "KDV İstisnası" : "KDV Dahil";
     }
 
     private void AddRouteButton_Click(object sender, RoutedEventArgs e)
@@ -319,9 +350,12 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (!TryParseDecimal(RouteDailyPriceTextBox.Text, out var dailyPrice) || dailyPrice < 0)
+        if (!TryParseDecimal(RouteDailyPriceTextBox.Text, out var dailyPrice) || dailyPrice < 0 ||
+            !int.TryParse(RouteGuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var guideWorkDays) ||
+            guideWorkDays < 0 ||
+            !TryParseDecimal(RouteGuideDailyPriceTextBox.Text, out var guideDailyPrice) || guideDailyPrice < 0)
         {
-            RouteStatusTextBlock.Text = "Günlük Birim Fiyat geçerli bir tutar olmalıdır.";
+            RouteStatusTextBlock.Text = "Taşıma ve rehber personel fiyat/gün bilgileri geçerli olmalıdır.";
             return;
         }
 
@@ -331,7 +365,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        _routes.Add(new RouteDraft(routeNumber, routeName, dailyPrice));
+        _routes.Add(new RouteDraft(routeNumber, routeName, dailyPrice, guideWorkDays, guideDailyPrice));
         SavePersistedData();
         UpdateRouteSummary();
         ClearRouteButton_Click(sender, e);
@@ -354,6 +388,8 @@ public partial class MainWindow : Window
         RouteNumberTextBox.Clear();
         RouteNameTextBox.Clear();
         RouteDailyPriceTextBox.Clear();
+        RouteGuideWorkDaysTextBox.Clear();
+        RouteGuideDailyPriceTextBox.Clear();
     }
 
     private void UpdateRouteSummary()
@@ -377,6 +413,8 @@ public partial class MainWindow : Window
         }
 
         SavePersistedData();
+        UpdateContractSummaryView();
+        UpdateHomeSummaryView();
         ContractStatusTextBlock.Text =
             $"Sözleşme taslağı kaydedildi: {WorkNameTextBox.Text.Trim()} — {contractAmount:N2} ₺.";
     }
@@ -387,7 +425,7 @@ public partial class MainWindow : Window
 
         _routes.Clear();
         foreach (var route in data.Routes)
-            _routes.Add(new RouteDraft(route.RouteNumber, route.Name, route.DailyPrice));
+            _routes.Add(new RouteDraft(route.RouteNumber, route.Name, route.DailyPrice, route.GuideWorkDays, route.GuideDailyPrice));
 
         _contractors.Clear();
         foreach (var contractor in data.Contractors)
@@ -427,7 +465,7 @@ public partial class MainWindow : Window
 
         var data = new OehsApplicationData(
             contract,
-            _routes.Select(x => new RouteData(x.RouteNumber, x.Name, x.DailyPrice)).ToArray(),
+            _routes.Select(x => new RouteData(x.RouteNumber, x.Name, x.DailyPrice, x.GuideWorkDays, x.GuideDailyPrice)).ToArray(),
             _contractors.Select(x => new Contractor(x.Name, x.TaxOrIdentityNumber)).ToArray(),
             _progressHistory.ToArray());
 
@@ -445,6 +483,8 @@ public partial class MainWindow : Window
         EndDatePicker.SelectedDate = DateTime.Today;
         VatExemptCheckBox.IsChecked = false;
         SavePersistedData();
+        UpdateContractSummaryView();
+        UpdateHomeSummaryView();
         ContractStatusTextBlock.Text = "Sözleşme taslağı temizlendi.";
     }
 
