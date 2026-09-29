@@ -80,12 +80,21 @@ public sealed class ProgressPaymentCalculator
 
         var inspectionPenalty = input.InspectionPenalty;
 
-        // Excel: Ek Kesin Teminat = max(Ek Fiyat Farkı KDV Hariç, 0) × %6.
-        // Taşıma ve rehber bileşenleri önce kendi fiyat farkı KDV hariç
-        // tutarlarını oluşturur, ardından toplam taban üzerinden tek kez uygulanır.
-        var additionalGuarantee =
-            Math.Max(transportPriceDifference + guidePriceDifference, 0m)
-            * AdditionalGuaranteeRate;
+        // Excel'de iki sürümün formülü bulunuyor:
+        // 1) Taşıma-only V3: Ek Kesin Teminat = max(H, 0) × %6.
+        // 2) Rehber personel eklenmiş tabloda AC hücresi:
+        //    =(I4*6/100)+R4*6/100
+        //    I4 = Taşıma Toplam Tutarı, R4 = Rehber Fiyat Farkı KDV Hariç.
+        // Rehber bileşeni kullanılıyorsa genişletilmiş Excel formülünü,
+        // rehber yoksa mevcut V3 taşıma formülünü koruyoruz.
+        var hasGuideComponent =
+            input.GuideWorkDays > 0
+            || input.GuideDailyPrice != 0m
+            || guidePriceDifference != 0m;
+
+        var additionalGuarantee = hasGuideComponent
+            ? (transportNetAmount + guidePriceDifference) * AdditionalGuaranteeRate
+            : Math.Max(transportPriceDifference, 0m) * AdditionalGuaranteeRate;
 
         var deductions = new DeductionBreakdown(
             Round(withholding),
