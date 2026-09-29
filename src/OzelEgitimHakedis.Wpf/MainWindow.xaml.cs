@@ -831,12 +831,6 @@ public partial class MainWindow : Window
         UpdateRouteTransportAnnualAmount();
         GuideDailyPriceTextBox.Text = route.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
 
-        // Excel'deki E/G zinciri sözleşme durumunu ve sözleşme bedelini hakedişe taşır.
-        // Bunlar kullanıcıdan her hakedişte yeniden istenen bağımsız değerler değildir.
-        ProgressVatExemptCheckBox.IsChecked = VatExemptCheckBox.IsChecked == true;
-        if (TryParseDecimal(ContractAmountTextBox.Text, out var contractAmount))
-            ProgressContractAmountTextBox.Text = contractAmount.ToString("N2", CultureInfo.CurrentCulture);
-
         if (string.IsNullOrWhiteSpace(WorkDaysTextBox.Text))
             WorkDaysTextBox.Text = "0";
 
