@@ -58,6 +58,30 @@ public sealed class ProgressPaymentCalculatorTests
     }
 
     [Fact]
+    public void PdfScenario_HakedisRaporu_ShouldMatchDisplayedTotals()
+    {
+        // deneme.pdf: 22.500,00 hizmet + 255,00 fiyat farkı,
+        // KDV muaf, 180,00 denetim cezası.
+        var input = new ProgressPaymentInput(
+            WorkDays: 3, DailyPrice: 7500m, DiscountAmount: 0m, PriceDifference: 255m,
+            ContractAmount: 90000m, IsVatExempt: true, TaxDebt: 0m,
+            SocialSecurityDebt: 0m, MinimumWageSupport: 0m, InspectionPenalty: 180m);
+
+        var result = ProgressPaymentCalculator.Calculate(input);
+
+        Assert.Equal(22500m, result.ServiceAmount);
+        Assert.Equal(255m, result.PriceDifferenceExcludingVat);
+        Assert.Equal(22755m, result.TotalAmount);
+        Assert.Equal(0m, result.Vat);
+        Assert.Equal(0m, result.Withholding);
+        Assert.Equal(22755m, result.GrossAmount);
+        Assert.Equal(215.72m, result.StampTax);
+        Assert.Equal(15.30m, result.AdditionalGuarantee);
+        Assert.Equal(411.02m, result.TotalDeductions);
+        Assert.Equal(22343.98m, result.NetPayable);
+    }
+
+    [Fact]
     public void ExcelDiscountIsSubtractedFromPriceDifference()
     {
         var input = new ProgressPaymentInput(
