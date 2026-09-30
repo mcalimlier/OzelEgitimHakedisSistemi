@@ -761,6 +761,11 @@ public partial class MainWindow : Window
         var documentFolder = Path.Combine(OehsDesktopRoot, "Belgeler", folderName);
         Directory.CreateDirectory(documentFolder);
 
+        // Eski sürümden kalan Excel arşivi varsa yeni Word arşivine geçerken temizle.
+        var obsoleteExcelPath = Path.Combine(documentFolder, "OEHS_Hakediş_Belgeleri.xlsx");
+        if (File.Exists(obsoleteExcelPath))
+            File.Delete(obsoleteExcelPath);
+
         var wordFiles = new[]
         {
             (Name: "Hakediş Raporu.rtf", Document: BuildHakedişRaporu(route, latest)),
