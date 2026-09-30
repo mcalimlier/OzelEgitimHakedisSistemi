@@ -765,15 +765,15 @@
             <TextBlock Text="Firma bilgilerini bir kez tanımlayın. Aynı firma birden fazla ihale/dosya numarasıyla ilişkilendirilebilir." Style="{StaticResource PageSubtitle}"/>
             <Grid Margin="0,0,0,14">
                 <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
                 <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,8,0" Padding="18">
                     <StackPanel>
                         <TextBlock Text="FİRMA BİLGİLERİ" Style="{StaticResource CardTitle}"/>
                         <Grid Margin="0,6,0,0">
                             <Grid.ColumnDefinitions><ColumnDefinition Width="170"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Firma Adı / Ticari Unvan" Style="{StaticResource FieldLabel}" Margin="0,7"/>
                             <TextBox x:Name="ContractorNameTextBox" Grid.Row="0" Grid.Column="1" Margin="6" Style="{StaticResource FieldTextBox}"/>
                             <TextBlock Grid.Row="1" Grid.Column="0" Text="TC / Vergi No" Style="{StaticResource FieldLabel}" Margin="0,7"/>
