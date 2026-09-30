@@ -10,8 +10,7 @@ public static class OehsFileNameService
         int progressPaymentNumber,
         DateOnly periodDate)
     {
-        if (progressPaymentNumber <= 0)
-            throw new ArgumentOutOfRangeException(nameof(progressPaymentNumber));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(progressPaymentNumber);
 
         return $"OEHS_{Safe(tenderNumber, "Ihale")}_Hat-{Safe(routeNumber, "Hat")}_Hakediş-{progressPaymentNumber.ToString("00", CultureInfo.InvariantCulture)}_{periodDate:yyyy-MM-dd}.pdf";
     }
