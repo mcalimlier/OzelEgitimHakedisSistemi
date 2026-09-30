@@ -1872,7 +1872,11 @@ public partial class MainWindow : Window
             routeData,
             item,
             prior,
-            BuildPdfPrintTitle(route, item) + ".pdf",
+            OehsFileNameService.BuildProgressPdfFileName(
+                item.TenderNumber ?? string.Empty,
+                route.RouteNumber,
+                item.ProgressPaymentNumber ?? 1,
+                item.PeriodDate ?? DateOnly.FromDateTime(DateTime.Today)),
             new[]
             {
                 "Hakediş Raporu",
