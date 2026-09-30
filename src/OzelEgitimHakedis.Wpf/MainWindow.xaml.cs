@@ -1602,8 +1602,6 @@ public partial class MainWindow : Window
                 discount,
                 priceDifference,
                 selectedContract.ContractAmount,
-                // ProgressPaymentInput.IsVatExempt doğrudan ihale bilgisindeki
-                // "KDV İstisnası" seçimine karşılık gelir. Tersine çevrilmemeli.
                 selectedContract.VatExempt,
                 taxDebt,
                 socialSecurityDebt,
@@ -1614,7 +1612,116 @@ public partial class MainWindow : Window
                 guideDiscount,
                 guidePriceDifference);
 
+            int? progressNumber = null;
+            if (int.TryParse(
+                    ProgressNumberTextBox.Text,
+                    NumberStyles.Integer,
+                    CultureInfo.CurrentCulture,
+                    out var parsedProgressNumber) &&
+                parsedProgressNumber > 0)
+            {
+                progressNumber = parsedProgressNumber;
+            }
+
+            var periodDate = ProgressPeriodDatePicker.SelectedDate is DateTime selectedPeriodDate
+                ? DateOnly.FromDateTime(selectedPeriodDate)
+                : (DateOnly?)null;
+
+            var normalizedContractorIdentity = OehsIdentityService.NormalizeIdentity(
+                selectedRoute.ContractorTaxOrIdentityNumber);
+
+            var routeContractor = FindContractor(normalizedContractorIdentity);
+            var contractorName = routeContractor?.Name ?? selectedRoute.ContractorName;
+            var contractorBankAccount = routeContractor?.BankAccountNumber ?? string.Empty;
+
+            // Ön kontrol, hesaplama motorundan önce çalışır.
+            var historyItem = new ProgressPaymentHistoryData(
+                _editingHistoryId ?? Guid.NewGuid(),
+                _editingHistoryId.HasValue
+                    ? _progressHistory.First(x => x.Id == _editingHistoryId.Value).CreatedAt
+                    : DateTime.Now,
+                input,
+                new ProgressPaymentCalculation(
+                    0m, 0m, 0m, 0m, 0m, 0m, 0m, 0m, 0m, 0m, 0m,
+                    new DeductionBreakdown(0m, 0m, 0m, 0m, 0m, 0m, 0m)),
+                progressNumber,
+                periodDate,
+                selectedRoute.RouteNumber,
+                selectedRoute.Name,
+                selectedContract.WorkName,
+                contractorName,
+                selectedRoute.TenderNumber,
+                selectedContract.ContractNumber,
+                selectedContract.TenderDate,
+                selectedContract.ContractDate,
+                selectedContract.StartDate,
+                selectedContract.EndDate,
+                contractorBankAccount,
+                normalizedContractorIdentity);
+
+            var dataForValidation = new OehsApplicationData(
+                selectedContract,
+                _routes.Select(x => new RouteData(
+                    x.RouteNumber,
+                    x.Name,
+                    x.DailyPrice,
+                    x.GuideWorkDays,
+                    x.GuideDailyPrice,
+                    x.TransportWorkDays,
+                    x.TenderNumber,
+                    x.ContractorTaxOrIdentityNumber)).ToArray(),
+                _contractors.Select(x => new Contractor(
+                    x.Name,
+                    OehsIdentityService.NormalizeIdentity(x.TaxOrIdentityNumber),
+                    x.Address,
+                    x.Phone,
+                    x.Email,
+                    x.BankAccountNumber,
+                    x.ContactPerson)).ToArray(),
+                _progressHistory.ToArray(),
+                _contracts.ToArray());
+
+            var validationErrors = ProgressPaymentValidationService.ValidateCreation(
+                dataForValidation,
+                selectedContract,
+                new RouteData(
+                    selectedRoute.RouteNumber,
+                    selectedRoute.Name,
+                    selectedRoute.DailyPrice,
+                    selectedRoute.GuideWorkDays,
+                    selectedRoute.GuideDailyPrice,
+                    selectedRoute.TransportWorkDays,
+                    selectedRoute.TenderNumber,
+                    normalizedContractorIdentity),
+                historyItem,
+                _editingHistoryId.HasValue);
+
+            if (validationErrors.Count > 0)
+            {
+                ProgressCalculationSummaryTextBlock.Text = "KONTROL GEREKLİ";
+                ProgressValidationMessageTextBlock.Text = string.Join(Environment.NewLine, validationErrors);
+                ProgressValidationBanner.Visibility = Visibility.Visible;
+                CalculationStatusTextBlock.Foreground =
+                    new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(198, 40, 40));
+                CalculationStatusTextBlock.FontWeight = FontWeights.Bold;
+                CalculationStatusTextBlock.Text = string.Join(" ", validationErrors);
+                ArchiveCurrentProgressButton.Visibility = Visibility.Collapsed;
+                CorrectCurrentProgressButton.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            ProgressValidationBanner.Visibility = Visibility.Collapsed;
+            ProgressValidationMessageTextBlock.Text =
+                $"Ön kontrol tamam: İhale/Dosya {selectedContract.TenderNumber} • Hat {selectedRoute.RouteNumber} • " +
+                $"Yüklenici {contractorName} • Hakediş {progressNumber} • Dönem {periodDate:dd.MM.yyyy}.";
+            CalculationStatusTextBlock.Foreground =
+                new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(36, 104, 216));
+            CalculationStatusTextBlock.FontWeight = FontWeights.SemiBold;
+            CalculationStatusTextBlock.Text = ProgressValidationMessageTextBlock.Text;
+
             var result = ProgressPaymentCalculator.Calculate(input);
+
+            historyItem = historyItem with { Calculation = result };
 
             ServiceAmountResultTextBlock.Text = FormatMoney(result.ServiceAmount);
             GuideServiceAmountResultTextBlock.Text = FormatMoney(result.GuideServiceAmount);
@@ -1638,103 +1745,10 @@ public partial class MainWindow : Window
             ProgressNetSummaryTextBlock.Text = FormatMoney(result.NetPayable);
             ProgressCalculationSummaryTextBlock.Text = "TAMAM";
 
-            int? progressNumber = null;
-            if (int.TryParse(ProgressNumberTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var parsedProgressNumber) &&
-                parsedProgressNumber > 0)
-                progressNumber = parsedProgressNumber;
-
-            var periodDate = ProgressPeriodDatePicker.SelectedDate is DateTime selectedPeriodDate
-                ? DateOnly.FromDateTime(selectedPeriodDate)
-                : (DateOnly?)null;
-
-            // Yüklenici artık ihale kaydında değil, seçilen Hat ilişkisinde tutulur.
-            // Bu nedenle hakediş geçmişi ve çıktılar daima seçilen hattın yüklenicisini kullanır.
-            var routeContractor = FindContractor(selectedRoute.ContractorTaxOrIdentityNumber);
-
-            var historyItem = new ProgressPaymentHistoryData(
-                _editingHistoryId ?? Guid.NewGuid(),
-                _editingHistoryId.HasValue ? _progressHistory.First(x => x.Id == _editingHistoryId.Value).CreatedAt : DateTime.Now,
-                input,
-                result,
-                progressNumber,
-                periodDate,
-                selectedRoute.RouteNumber,
-                selectedRoute.Name,
-                selectedContract.WorkName,
-                selectedRoute.ContractorName,
-                selectedRoute.TenderNumber,
-                selectedContract.ContractNumber,
-                selectedContract.TenderDate,
-                selectedContract.ContractDate,
-                selectedContract.StartDate,
-                selectedContract.EndDate,
-                routeContractor?.BankAccountNumber ?? string.Empty,
-                OehsIdentityService.NormalizeIdentity(selectedRoute.ContractorTaxOrIdentityNumber));
-
-            var validationProbe = historyItem with
-            {
-                Calculation = new ProgressPaymentCalculation(
-                    0m, 0m, 0m, 0m, 0m, 0m, 0m, 0m, 0m, 0m, 0m,
-                    new DeductionBreakdown(0m, 0m, 0m, 0m, 0m, 0m, 0m))
-            };
-
-            var dataForValidation = new OehsApplicationData(
-                selectedContract,
-                _routes.Select(x => new RouteData(
-                    x.RouteNumber,
-                    x.Name,
-                    x.DailyPrice,
-                    x.GuideWorkDays,
-                    x.GuideDailyPrice,
-                    x.TransportWorkDays,
-                    x.TenderNumber,
-                    x.ContractorTaxOrIdentityNumber)).ToArray(),
-                _contractors.Select(x => new Contractor(
-                    x.Name,
-                    x.TaxOrIdentityNumber,
-                    x.Address,
-                    x.Phone,
-                    x.Email,
-                    x.BankAccountNumber,
-                    x.ContactPerson)).ToArray(),
-                _progressHistory.ToArray(),
-                _contracts.ToArray());
-
-            var validationErrors = ProgressPaymentValidationService.ValidateCreation(
-                dataForValidation,
-                selectedContract,
-                new RouteData(
-                    selectedRoute.RouteNumber,
-                    selectedRoute.Name,
-                    selectedRoute.DailyPrice,
-                    selectedRoute.GuideWorkDays,
-                    selectedRoute.GuideDailyPrice,
-                    selectedRoute.TransportWorkDays,
-                    selectedRoute.TenderNumber,
-                    OehsIdentityService.NormalizeIdentity(selectedRoute.ContractorTaxOrIdentityNumber)),
-                validationProbe,
-                _editingHistoryId.HasValue);
-
-            if (validationErrors.Count > 0)
-            {
-                ProgressCalculationSummaryTextBlock.Text = "KONTROL GEREKLİ";
-                ProgressValidationMessageTextBlock.Text = string.Join(Environment.NewLine, validationErrors);
-                ProgressValidationBanner.Visibility = Visibility.Visible;
-                CalculationStatusTextBlock.Foreground =
-                    new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(198, 40, 40));
-                CalculationStatusTextBlock.FontWeight = FontWeights.Bold;
-                CalculationStatusTextBlock.Text = string.Join(" ", validationErrors);
-                return;
-            }
-
-            ProgressValidationBanner.Visibility = Visibility.Collapsed;
-            ProgressValidationMessageTextBlock.Text =
-                $"Kontrol tamam: İhale/Dosya {selectedContract.TenderNumber} • Hat {selectedRoute.RouteNumber} • " +
-                $"Yüklenici {selectedRoute.ContractorName} • Hakediş {progressNumber} • Dönem {periodDate:dd.MM.yyyy}.";
-
             if (_editingHistoryId.HasValue)
             {
-                var editIndex = _progressHistory.IndexOf(_progressHistory.First(x => x.Id == _editingHistoryId.Value));
+                var editIndex = _progressHistory.IndexOf(
+                    _progressHistory.First(x => x.Id == _editingHistoryId.Value));
                 _progressHistory[editIndex] = historyItem;
                 _editingHistoryId = null;
             }
