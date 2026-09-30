@@ -20,15 +20,20 @@ public sealed class ProgressPaymentArchiveRestoreServiceTests
                 Array.Empty<ContractDraftData>()),
             archive);
 
-        Assert.Single(result.Data.Contracts);
-        Assert.Single(result.Data.Contractors);
-        Assert.Single(result.Data.Routes);
-        Assert.Single(result.Data.ProgressPayments);
+        var contracts = result.Data.Contracts ?? Array.Empty<ContractDraftData>();
+        var contractors = result.Data.Contractors ?? Array.Empty<Contractor>();
+        var routes = result.Data.Routes;
+        var payments = result.Data.ProgressPayments ?? Array.Empty<ProgressPaymentHistoryData>();
 
-        Assert.Equal("IHALE-01", result.Data.Contracts[0].TenderNumber);
-        Assert.Equal("12345678901", result.Data.Contractors[0].TaxOrIdentityNumber);
-        Assert.Equal("01", result.Data.Routes[0].RouteNumber);
-        Assert.Equal(archive.ProgressPayment.Id, result.Data.ProgressPayments[0].Id);
+        Assert.Single(contracts);
+        Assert.Single(contractors);
+        Assert.Single(routes);
+        Assert.Single(payments);
+
+        Assert.Equal("IHALE-01", contracts[0].TenderNumber);
+        Assert.Equal("12345678901", contractors[0].TaxOrIdentityNumber);
+        Assert.Equal("01", routes[0].RouteNumber);
+        Assert.Equal(archive.ProgressPayment.Id, payments[0].Id);
     }
 
     [Fact]
@@ -44,10 +49,10 @@ public sealed class ProgressPaymentArchiveRestoreServiceTests
 
         var result = ProgressPaymentArchiveRestoreService.Restore(baseData, archive);
 
-        Assert.Single(result.Data.Contracts);
-        Assert.Single(result.Data.Contractors);
+        Assert.Single(result.Data.Contracts ?? Array.Empty<ContractDraftData>());
+        Assert.Single(result.Data.Contractors ?? Array.Empty<Contractor>());
         Assert.Single(result.Data.Routes);
-        Assert.Single(result.Data.ProgressPayments);
+        Assert.Single(result.Data.ProgressPayments ?? Array.Empty<ProgressPaymentHistoryData>());
         Assert.False(result.AddedAnything);
     }
 
