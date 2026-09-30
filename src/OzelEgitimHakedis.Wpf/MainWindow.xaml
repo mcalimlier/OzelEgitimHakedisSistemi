@@ -368,7 +368,7 @@
                                                         <ColumnDefinition Width="170"/><ColumnDefinition Width="*"/>
                                                     </Grid.ColumnDefinitions>
                                                     <Grid.RowDefinitions>
-                                                        <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
                                                     </Grid.RowDefinitions>
                                                     <TextBlock Grid.Row="0" Grid.Column="0" Text="İhale / Dosya No" Style="{StaticResource FieldLabel}" Margin="0,8"/>
                                                     <TextBox x:Name="TenderNumberTextBox" Grid.Row="0" Grid.Column="1" Margin="8" Style="{StaticResource FieldTextBox}"/>
@@ -378,10 +378,10 @@
                                                     <TextBlock Grid.Row="1" Grid.Column="0" Text="İşin Adı" Style="{StaticResource FieldLabel}" Margin="0,8"/>
                                                     <TextBox x:Name="WorkNameTextBox" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="8" Style="{StaticResource FieldTextBox}"/>
 
-                                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Yüklenici Firma" Style="{StaticResource FieldLabel}" Margin="0,8"/>
-                                                    <ComboBox x:Name="ContractorSelectionComboBox" Grid.Row="2" Grid.Column="1" Margin="8" Height="42" DisplayMemberPath="Name" Style="{StaticResource FieldComboBox}" SelectionChanged="ContractorSelectionComboBox_SelectionChanged"/>
-                                                    <TextBlock Grid.Row="2" Grid.Column="2" Text="Sözleşme Bedeli" Style="{StaticResource FieldLabel}" Margin="18,8,0,8"/>
-                                                    <TextBox x:Name="ContractAmountTextBox" Grid.Row="2" Grid.Column="3" Margin="8" Style="{StaticResource FieldTextBox}"/>
+                                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Sözleşme Bedeli" Style="{StaticResource FieldLabel}" Margin="0,8"/>
+                                                    <TextBox x:Name="ContractAmountTextBox" Grid.Row="2" Grid.Column="1" Margin="8" Style="{StaticResource FieldTextBox}"/>
+                                                    <TextBlock Grid.Row="2" Grid.Column="2" Text="Sözleşme İş Günü" Style="{StaticResource FieldLabel}" Margin="18,8,0,8"/>
+                                                    <TextBox x:Name="ContractWorkDaysTextBox" Grid.Row="2" Grid.Column="3" Margin="8" Style="{StaticResource FieldTextBox}"/>
 
                                                     <TextBlock Grid.Row="3" Grid.Column="0" Text="Başlangıç Tarihi" Style="{StaticResource FieldLabel}" Margin="0,8"/>
                                                     <DatePicker x:Name="StartDatePicker" Grid.Row="3" Grid.Column="1" Margin="8" Style="{StaticResource FieldDatePicker}"/>
@@ -392,15 +392,8 @@
                                                     <TextBlock Grid.Row="4" Grid.Column="2" Text="Sözleşme Tarihi" Style="{StaticResource FieldLabel}" Margin="18,8,0,8"/>
                                                     <DatePicker x:Name="ContractDatePicker" Grid.Row="4" Grid.Column="3" Margin="8" Style="{StaticResource FieldDatePicker}"/>
 
-                                                    <TextBlock Grid.Row="5" Grid.Column="0" Text="TC Kimlik No / Vergi No" Style="{StaticResource FieldLabel}" Margin="0,8"/>
-                                                    <TextBox x:Name="ContractorIdentityNumberTextBox" Grid.Row="5" Grid.Column="1" Margin="8" Style="{StaticResource FieldTextBox}" IsReadOnly="True"/>
-                                                    <TextBlock Grid.Row="5" Grid.Column="2" Text="Banka Hesap No" Style="{StaticResource FieldLabel}" Margin="18,8,0,8"/>
-                                                    <TextBox x:Name="BankAccountNumberTextBox" Grid.Row="5" Grid.Column="3" Margin="8" Style="{StaticResource FieldTextBox}" IsReadOnly="True"/>
-
-                                                    <TextBlock Grid.Row="6" Grid.Column="0" Text="Sözleşme İş Günü" Style="{StaticResource FieldLabel}" Margin="0,8"/>
-                                                    <TextBox x:Name="ContractWorkDaysTextBox" Grid.Row="6" Grid.Column="1" Margin="8" Style="{StaticResource FieldTextBox}"/>
-                                                    <TextBlock Grid.Row="6" Grid.Column="2" Text="Taşıma Günlük Fiyatı" Style="{StaticResource FieldLabel}" Margin="18,8,0,8"/>
-                                                    <TextBox x:Name="ContractTransportDailyPriceTextBox" Grid.Row="6" Grid.Column="3" Margin="8" Style="{StaticResource FieldTextBox}" ToolTip="Excel İhale Verileri içindeki Günlük Fiyat. Hat ve hakediş ekranlarında tekrar girilmez."/>
+                                                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Taşıma Günlük Fiyatı" Style="{StaticResource FieldLabel}" Margin="0,8"/>
+                                                    <TextBox x:Name="ContractTransportDailyPriceTextBox" Grid.Row="5" Grid.Column="1" Margin="8" Style="{StaticResource FieldTextBox}" ToolTip="Excel İhale Verileri içindeki Günlük Fiyat. Hat ve hakediş ekranlarında tekrar girilmez."/>
                                                 </Grid>
                                                 <Border Style="{StaticResource StatusBanner}" Margin="8,14,8,0" Padding="14,11">
                                                     <Grid>
@@ -429,25 +422,18 @@
                                                     <Border Height="1" Background="#315371" Margin="0,18,0,14"/>
                                                     <Grid>
                                                         <Grid.RowDefinitions>
-                                                            <RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/>
-                                                            <RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/>
+                                                            <RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/>
                                                         </Grid.RowDefinitions>
                                                         <TextBlock Grid.Row="0" Text="İhale / Dosya No" Foreground="#91ABC0"/>
                                                         <TextBlock x:Name="ContractSummaryTenderTextBlock" Grid.Row="0" Text="Bekleniyor" Foreground="White" HorizontalAlignment="Right" TextWrapping="Wrap"/>
                                                         <TextBlock Grid.Row="1" Text="Sözleşme No" Foreground="#91ABC0" Margin="0,10,0,0"/>
                                                         <TextBlock x:Name="ContractSummaryContractTextBlock" Grid.Row="1" Text="Bekleniyor" Foreground="White" HorizontalAlignment="Right" TextWrapping="Wrap" Margin="0,10,0,0"/>
-                                                        <TextBlock Grid.Row="2" Text="Yüklenici" Foreground="#91ABC0" Margin="0,10,0,0"/>
-                                                        <TextBlock x:Name="ContractSummaryContractorTextBlock" Grid.Row="2" Text="Bekleniyor" Foreground="White" HorizontalAlignment="Right" TextWrapping="Wrap" Margin="0,10,0,0"/>
-                                                        <TextBlock Grid.Row="3" Text="TC / Vergi No" Foreground="#91ABC0" Margin="0,10,0,0"/>
-                                                        <TextBlock x:Name="ContractSummaryIdentityTextBlock" Grid.Row="3" Text="—" Foreground="White" HorizontalAlignment="Right" TextWrapping="Wrap" Margin="0,10,0,0"/>
-                                                        <TextBlock Grid.Row="4" Text="Sözleşme Bedeli" Foreground="#91ABC0" Margin="0,10,0,0"/>
-                                                        <TextBlock x:Name="ContractSummaryAmountTextBlock" Grid.Row="4" Text="0,00 ₺" Foreground="White" HorizontalAlignment="Right" Margin="0,10,0,0"/>
-                                                        <TextBlock Grid.Row="5" Text="Banka Hesabı" Foreground="#91ABC0" Margin="0,10,0,0"/>
-                                                        <TextBlock x:Name="ContractSummaryBankTextBlock" Grid.Row="5" Text="—" Foreground="White" HorizontalAlignment="Right" TextWrapping="Wrap" Margin="0,10,0,0"/>
-                                                        <TextBlock Grid.Row="6" Text="İş Günü / Taşıma Günlük Fiyat" Foreground="#91ABC0" Margin="0,10,0,0"/>
-                                                        <TextBlock x:Name="ContractSummaryWorkDaysTextBlock" Grid.Row="6" Text="0 gün • 0,00 ₺" Foreground="White" HorizontalAlignment="Right" TextWrapping="Wrap" Margin="0,10,0,0"/>
-                                                        <TextBlock Grid.Row="7" Text="KDV / Hat Durumu" Foreground="#91ABC0" Margin="0,10,0,0"/>
-                                                        <TextBlock x:Name="ContractSummaryVatTextBlock" Grid.Row="7" Text="Standart" Foreground="{StaticResource Gold500Brush}" HorizontalAlignment="Right" TextWrapping="Wrap" Margin="0,10,0,0"/>
+                                                        <TextBlock Grid.Row="2" Text="Sözleşme Bedeli" Foreground="#91ABC0" Margin="0,10,0,0"/>
+                                                        <TextBlock x:Name="ContractSummaryAmountTextBlock" Grid.Row="2" Text="0,00 ₺" Foreground="White" HorizontalAlignment="Right" Margin="0,10,0,0"/>
+                                                        <TextBlock Grid.Row="3" Text="İş Günü / Taşıma Günlük Fiyat" Foreground="#91ABC0" Margin="0,10,0,0"/>
+                                                        <TextBlock x:Name="ContractSummaryWorkDaysTextBlock" Grid.Row="3" Text="0 gün • 0,00 ₺" Foreground="White" HorizontalAlignment="Right" TextWrapping="Wrap" Margin="0,10,0,0"/>
+                                                        <TextBlock Grid.Row="4" Text="KDV / Hat Durumu" Foreground="#91ABC0" Margin="0,10,0,0"/>
+                                                        <TextBlock x:Name="ContractSummaryVatTextBlock" Grid.Row="4" Text="Standart" Foreground="{StaticResource Gold500Brush}" HorizontalAlignment="Right" TextWrapping="Wrap" Margin="0,10,0,0"/>
                                                     </Grid>
                                                 </StackPanel>
                                             </Border>
@@ -463,7 +449,7 @@
                                                                         <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="74"/><ColumnDefinition Width="52"/></Grid.ColumnDefinitions>
                                                                         <StackPanel>
                                                                             <TextBlock Text="{Binding TenderNumber}" Foreground="White" FontSize="14" FontWeight="Bold"/>
-                                                                            <TextBlock Text="{Binding ContractorName}" Foreground="#C5D7E7" FontSize="12.5"/>
+
                                                                             <TextBlock Text="{Binding WorkName}" Foreground="#C5D7E7" FontSize="11.5" TextWrapping="Wrap"/>
                                                                         </StackPanel>
                                                                         <Button Grid.Column="1" Content="DÜZENLE" Tag="{Binding}" Click="EditContractButton_Click" Style="{StaticResource SecondaryButton}" Height="34" FontSize="10.5" Margin="4,0"/>
