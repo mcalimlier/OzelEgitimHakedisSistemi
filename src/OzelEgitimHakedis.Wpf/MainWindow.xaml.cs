@@ -891,8 +891,19 @@ public partial class MainWindow : Window
             var index = _routes.IndexOf(old);
             if (index >= 0)
             {
-                _routes[index] = proposed;
-                UpdateHistoryForRouteEdit(old, proposed);
+                try
+                {
+                    var propagated = BuildRoutePropagation(old, proposed);
+                    _routes[index] = proposed;
+                    _progressHistory.Clear();
+                    foreach (var item in propagated)
+                        _progressHistory.Add(item);
+                }
+                catch (ProgressPaymentPropagationException ex)
+                {
+                    RouteStatusTextBlock.Text = $"Hat kaydedilmedi: {ex.Message}";
+                    return;
+                }
             }
             _editingRoute = null;
         }
@@ -906,6 +917,47 @@ public partial class MainWindow : Window
         UpdateHomeSummaryView();
         ClearRouteButton_Click(sender, e);
         RouteStatusTextBlock.Text = $"Hat kaydedildi: {routeNumber} — {routeName}.";
+    }
+
+    private IReadOnlyList<ProgressPaymentHistoryData> BuildRoutePropagation(RouteDraft oldRoute, RouteDraft updatedRoute)
+    {
+        var oldData = new RouteData(
+            oldRoute.RouteNumber,
+            oldRoute.Name,
+            oldRoute.DailyPrice,
+            oldRoute.GuideWorkDays,
+            oldRoute.GuideDailyPrice,
+            oldRoute.TransportWorkDays,
+            oldRoute.TenderNumber,
+            oldRoute.ContractorTaxOrIdentityNumber);
+
+        var newData = new RouteData(
+            updatedRoute.RouteNumber,
+            updatedRoute.Name,
+            updatedRoute.DailyPrice,
+            updatedRoute.GuideWorkDays,
+            updatedRoute.GuideDailyPrice,
+            updatedRoute.TransportWorkDays,
+            updatedRoute.TenderNumber,
+            updatedRoute.ContractorTaxOrIdentityNumber);
+
+        var contractor = FindContractor(updatedRoute.ContractorTaxOrIdentityNumber);
+        var contractorSnapshot = contractor is null
+            ? new Contractor(updatedRoute.ContractorName, updatedRoute.ContractorTaxOrIdentityNumber)
+            : new Contractor(
+                contractor.Name,
+                contractor.TaxOrIdentityNumber,
+                contractor.Address,
+                contractor.Phone,
+                contractor.Email,
+                contractor.BankAccountNumber,
+                contractor.ContactPerson);
+
+        return ProgressPaymentPropagationService.RecalculateForRouteChange(
+            _progressHistory.ToArray(),
+            oldData,
+            newData,
+            contractorSnapshot);
     }
 
     private void ShowRouteValidation(string message)
@@ -1146,19 +1198,50 @@ public partial class MainWindow : Window
             else
             {
                 var index = _contracts.IndexOf(oldContract);
-                _contracts[index] = proposedContract;
 
-                foreach (var route in _routes.Where(x => string.Equals(x.TenderNumber, oldTender, StringComparison.OrdinalIgnoreCase)).ToArray())
+                try
                 {
-                    var routeIndex = _routes.IndexOf(route);
-                    _routes[routeIndex] = route with
-                    {
-                        TenderNumber = proposedContract.TenderNumber,
-                        DailyPrice = proposedContract.TransportDailyPrice
-                    };
-                }
+                    var proposedHistories = ProgressPaymentPropagationService.RecalculateForContractChange(
+                        _progressHistory.ToArray(),
+                        _routes.Select(x => new RouteData(
+                            x.RouteNumber,
+                            x.Name,
+                            x.DailyPrice,
+                            x.GuideWorkDays,
+                            x.GuideDailyPrice,
+                            x.TransportWorkDays,
+                            x.TenderNumber,
+                            x.ContractorTaxOrIdentityNumber)).ToArray(),
+                        oldContract,
+                        proposedContract);
 
-                RecalculateHistoriesForTenderChange(oldContract, proposedContract);
+                    var affectedRouteIndices = _routes
+                        .Select((route, routeIndex) => (route, routeIndex))
+                        .Where(x => string.Equals(x.route.TenderNumber, oldTender, StringComparison.OrdinalIgnoreCase))
+                        .ToArray();
+
+                    var affectedRoutes = affectedRouteIndices
+                        .Select(x => x.route with
+                        {
+                            TenderNumber = proposedContract.TenderNumber,
+                            DailyPrice = proposedContract.TransportDailyPrice
+                        })
+                        .ToArray();
+
+                    _contracts[index] = proposedContract;
+
+                    for (var routeIndex = 0; routeIndex < affectedRouteIndices.Length; routeIndex++)
+                        _routes[affectedRouteIndices[routeIndex].routeIndex] = affectedRoutes[routeIndex];
+
+                    _progressHistory.Clear();
+                    foreach (var item in proposedHistories)
+                        _progressHistory.Add(item);
+                }
+                catch (ProgressPaymentPropagationException ex)
+                {
+                    ContractStatusTextBlock.Text = $"İhale kaydedilmedi: {ex.Message}";
+                    return;
+                }
             }
         }
 
