@@ -183,7 +183,7 @@ public sealed class ProgressPaymentArchiveStore
     {
         var name = Path.GetFileName(path);
         return name.StartsWith("OEHS_", StringComparison.OrdinalIgnoreCase)
-            && Regex.IsMatch(name, @"_v\d+.json$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+            && Regex.IsMatch(name, @"_v\d+\.json$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
     }
 
     private static string SafeFilePart(string? value, string fallback)
