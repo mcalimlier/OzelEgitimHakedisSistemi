@@ -183,9 +183,9 @@
 
 **Interfaces:**
 - Produces:
-  - `public static IReadOnlyList<ProgressPaymentHistoryData> RecalculateForContractChange(...)`
-  - `public static IReadOnlyList<ProgressPaymentHistoryData> RecalculateForContractorChange(...)`
-  - `public static IReadOnlyList<ProgressPaymentHistoryData> RecalculateForRouteChange(...)`
+  - `public static IReadOnlyList<ProgressPaymentHistoryData> RecalculateForContractChange(IReadOnlyList<ProgressPaymentHistoryData> history, IReadOnlyList<RouteData> routes, ContractDraftData oldContract, ContractDraftData newContract)`
+  - `public static IReadOnlyList<ProgressPaymentHistoryData> RecalculateForContractorChange(IReadOnlyList<ProgressPaymentHistoryData> history, Contractor oldContractor, Contractor newContractor)`
+  - `public static IReadOnlyList<ProgressPaymentHistoryData> RecalculateForRouteChange(IReadOnlyList<ProgressPaymentHistoryData> history, RouteData oldRoute, RouteData newRoute, Contractor contractor)`
   - Each method preserves user-entered input values and rebuilds source-derived snapshot fields/calculations.
   - No method mutates a history record in place.
 
