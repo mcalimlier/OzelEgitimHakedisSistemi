@@ -761,8 +761,6 @@ public partial class MainWindow : Window
         var documentFolder = Path.Combine(OehsDesktopRoot, "Belgeler", folderName);
         Directory.CreateDirectory(documentFolder);
 
-        var contractor = string.IsNullOrWhiteSpace(latest.ContractorName) ? ContractorTextBox.Text.Trim() : latest.ContractorName.Trim();
-
         var wordFiles = new[]
         {
             (Name: "Hakediş Raporu.rtf", Document: BuildHakedişRaporu(route, latest)),
