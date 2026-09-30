@@ -3320,7 +3320,7 @@ public partial class MainWindow : Window
             ("D", "Bir Önceki Hakedişlerin Toplam Tutarı", FormatMoney(previousTotal)),
             ("E", "Bu Hakedişin Tutarı  ( C - D )", FormatMoney(currentTotal)),
             ("F", "KDV  %10 + %20", FormatMoney(latest.Calculation.Vat)),
-            ("G", "Tahakkuk Tutarı", FormatMoney(latest.Calculation.GrossAmount))
+            ("G", "Tahakkuk Tutarı", FormatMoney(currentTotal + latest.Calculation.Vat))
         };
         doc.Blocks.Add(CreateThreeColumnTable(mainRows.ToArray(), MainReportHeaders, false));
         var d = latest.Calculation.Deductions;
