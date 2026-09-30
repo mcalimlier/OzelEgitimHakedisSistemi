@@ -2745,10 +2745,24 @@ public partial class MainWindow : Window
     private FlowDocument BuildHakedişRaporu(RouteDraft route, ProgressPaymentHistoryData latest)
     {
         var payments = GetSelectedRoutePayments();
-        var previousTotal = payments
+        var previousPayments = payments
             .Where(x => x.Id != latest.Id && x.CreatedAt < latest.CreatedAt)
-            .Sum(x => x.Calculation.TotalAmount);
-        var currentDifference = latest.Calculation.TotalAmount - previousTotal;
+            .ToList();
+
+        // Excel Hakediş Raporu'nda A/B/C kümülatif, D önceki toplam,
+        // E ise yalnızca cari hakediş tutarıdır:
+        // C = A + B, E = C - D.
+        var previousServiceAmount = previousPayments.Sum(x => x.Calculation.CombinedServiceAmount);
+        var previousPriceDifference = previousPayments.Sum(x => x.Calculation.CombinedPriceDifferenceExcludingVat);
+        var previousTotal = RoundMoney(previousServiceAmount + previousPriceDifference);
+
+        var currentServiceAmount = latest.Calculation.CombinedServiceAmount;
+        var currentPriceDifference = latest.Calculation.CombinedPriceDifferenceExcludingVat;
+        var currentTotal = latest.Calculation.TotalAmount;
+
+        var cumulativeServiceAmount = RoundMoney(previousServiceAmount + currentServiceAmount);
+        var cumulativePriceDifference = RoundMoney(previousPriceDifference + currentPriceDifference);
+        var cumulativeTotal = RoundMoney(cumulativeServiceAmount + cumulativePriceDifference);
 
         var doc = CreateBaseDocument("HAK EDİŞ RAPORU", "");
 
@@ -2759,11 +2773,11 @@ public partial class MainWindow : Window
 
         var mainRows = new List<(string, string, string)>
         {
-            ("A", "Sözleşme Fiyatları İle Yapılan İş", FormatMoney(latest.Calculation.CombinedServiceAmount)),
-            ("B", "Fiyat Farkı Tutarı", FormatMoney(latest.Calculation.CombinedPriceDifferenceExcludingVat)),
-            ("C", "Toplam Tutar  ( A + B )", FormatMoney(latest.Calculation.TotalAmount)),
+            ("A", "Sözleşme Fiyatları İle Yapılan İş", FormatMoney(cumulativeServiceAmount)),
+            ("B", "Fiyat Farkı Tutarı", FormatMoney(cumulativePriceDifference)),
+            ("C", "Toplam Tutar  ( A + B )", FormatMoney(cumulativeTotal)),
             ("D", "Bir Önceki Hakedişlerin Toplam Tutarı", FormatMoney(previousTotal)),
-            ("E", "Bu Hakedişin Tutarı  ( C - D )", FormatMoney(currentDifference)),
+            ("E", "Bu Hakedişin Tutarı  ( C - D )", FormatMoney(currentTotal)),
             ("F", "KDV  %10 + %20", FormatMoney(latest.Calculation.Vat)),
             ("G", "Tahakkuk Tutarı", FormatMoney(latest.Calculation.GrossAmount))
         };
@@ -3108,7 +3122,8 @@ public partial class MainWindow : Window
 
         try
         {
-            if (!TryShowDocument(combined, "OEHS - 4 Belge PDF", requirePdfPrinter: true))
+            var pdfTitle = BuildPdfPrintTitle(route, latest);
+            if (!TryShowDocument(combined, pdfTitle, requirePdfPrinter: true))
                 return;
 
             var savedFolder = SaveRouteDocumentsArchiveMetadata(route, latest);
@@ -3292,7 +3307,28 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
                decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out value);
     }
 
-    private static string FormatMoney(decimal value) => $"{value:N2} ₺";
+    private static decimal RoundMoney(decimal value) =>
+        decimal.Round(value, 2, MidpointRounding.AwayFromZero);
+
+    private static string FormatMoney(decimal value) => $"{RoundMoney(value):N2} ₺";
+    private static string BuildPdfPrintTitle(RouteDraft route, ProgressPaymentHistoryData latest)
+    {
+        var tender = SanitizePrintTitlePart(latest.TenderNumber);
+        var routeNumber = SanitizePrintTitlePart(route.RouteNumber);
+        var progress = latest.ProgressPaymentNumber?.ToString(CultureInfo.InvariantCulture) ?? "-";
+        return $"OEHS_{tender}_Hat-{routeNumber}_Hakedis-{progress}_4-Belge";
+    }
+
+    private static string SanitizePrintTitlePart(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return "Kayitsiz";
+
+        var invalid = Path.GetInvalidFileNameChars();
+        var chars = value.Trim().Select(ch => invalid.Contains(ch) ? '_' : ch).ToArray();
+        return new string(chars);
+    }
+
 
     private sealed record RouteDraft(
         string RouteNumber,
