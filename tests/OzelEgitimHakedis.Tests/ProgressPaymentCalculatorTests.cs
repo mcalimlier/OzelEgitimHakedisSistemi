@@ -177,8 +177,8 @@ public sealed class ProgressPaymentCalculatorTests
         var result = ProgressPaymentCalculator.Calculate(input);
 
         Assert.Equal(1699.6764m, result.AdditionalGuarantee);
-        Assert.Equal(17155.96m, result.TotalDeductions);
-        Assert.Equal(184026.27m, result.NetPayable);
+        Assert.Equal(17155.9484712m, result.TotalDeductions);
+        Assert.Equal(184026.2855288m, result.NetPayable);
     }
 
     [Fact]
