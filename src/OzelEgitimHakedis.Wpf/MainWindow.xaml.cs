@@ -1283,52 +1283,13 @@ public partial class MainWindow : Window
         File.WriteAllText(filePath, json);
     }
 
-    private static void SaveFlowDocumentAsRtf(FlowDocument document, string filePath)
-    {
-        using var memory = new MemoryStream();
-        var range = new TextRange(document.ContentStart, document.ContentEnd);
-        range.Save(memory, System.Windows.DataFormats.Rtf);
-
-        var rtfBytes = memory.ToArray();
-        var marker = System.Text.Encoding.ASCII.GetBytes(@"\rtf1");
-        var a4Controls = System.Text.Encoding.ASCII.GetBytes(@"\paperw11907\paperh16840\margl777\margr777\margt777\margb777");
-
-        var markerIndex = rtfBytes.AsSpan().IndexOf(marker);
-        if (markerIndex < 0)
-        {
-            File.WriteAllBytes(filePath, rtfBytes);
-            return;
-        }
-
-        using var stream = File.Create(filePath);
-        stream.Write(rtfBytes, 0, markerIndex + marker.Length);
-        stream.Write(a4Controls, 0, a4Controls.Length);
-        stream.Write(rtfBytes, markerIndex + marker.Length, rtfBytes.Length - markerIndex - marker.Length);
-    }
-
-    private string SaveRouteDocumentsArchive(RouteDraft route, ProgressPaymentHistoryData latest)
+    private string SaveRouteDocumentsArchiveMetadata(RouteDraft route, ProgressPaymentHistoryData latest)
     {
         var folderName = BuildArchiveKey(latest);
         var documentFolder = Path.Combine(OehsDesktopRoot, "Belgeler", folderName);
         Directory.CreateDirectory(documentFolder);
 
-        // Eski sürümden kalan Excel arşivi varsa yeni Word arşivine geçerken temizle.
-        var obsoleteExcelPath = Path.Combine(documentFolder, "OEHS_Hakediş_Belgeleri.xlsx");
-        if (File.Exists(obsoleteExcelPath))
-            File.Delete(obsoleteExcelPath);
-
-        var wordFiles = new[]
-        {
-            (Name: "Hakediş Raporu.rtf", Document: BuildHakedişRaporu(route, latest)),
-            (Name: "Hizmet İşleri Hakediş Raporu.rtf", Document: BuildHizmetIsleriHakedisRaporu(route, latest)),
-            (Name: "Hizmet İşleri Kabul Tutanağı.rtf", Document: BuildKabulTutanağı(route, latest)),
-            (Name: "Hakediş İcmali.rtf", Document: BuildHakedişIcmali(route, latest))
-        };
-
-        foreach (var word in wordFiles)
-            SaveFlowDocumentAsRtf(word.Document, Path.Combine(documentFolder, word.Name));
-
-        var metadataPath = Path.Combine(documentFolder, "OEHS_Hakediş_Bilgi.json");
+        var metadataPath = Path.Combine(documentFolder, "OEHS_PDF_Bilgi.json");
         var metadata = JsonSerializer.Serialize(new
         {
             latest.Id,
@@ -1340,12 +1301,35 @@ public partial class MainWindow : Window
             latest.ContractorName,
             latest.BankAccountNumber,
             TransportDailyPrice = latest.Input.DailyPrice,
-            WordFiles = wordFiles.Select(x => Path.Combine(documentFolder, x.Name)).ToArray(),
+            PdfPrinter = "Microsoft Print to PDF",
+            Documents = new[]
+            {
+                "Hakediş Raporu",
+                "Hizmet İşleri Hakediş Raporu",
+                "Hizmet İşleri Kabul Tutanağı",
+                "Hakediş İcmali"
+            },
             SavedAt = DateTime.Now
         }, JsonWriteOptions);
         File.WriteAllText(metadataPath, metadata);
 
         return documentFolder;
+    }
+
+    private static PrintQueue? FindPdfPrintQueue()
+    {
+        try
+        {
+            var server = new LocalPrintServer();
+            return server.GetPrintQueues()
+                .FirstOrDefault(q =>
+                    q.Name.Contains("Microsoft Print to PDF", StringComparison.OrdinalIgnoreCase) ||
+                    q.Name.Contains("Microsoft PDF", StringComparison.OrdinalIgnoreCase));
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     private void RecalculateHistoryItem(int index, ProgressPaymentInput input, ProgressPaymentHistoryData metadataSource)
@@ -1990,7 +1974,10 @@ public partial class MainWindow : Window
         var routePayments = selectedRoute is null
             ? _progressHistory.ToArray()
             : _progressHistory
-                .Where(x => string.Equals(x.RouteNumber, selectedRoute.RouteNumber, StringComparison.OrdinalIgnoreCase))
+                .Where(x =>
+                    string.Equals(x.TenderNumber, selectedRoute.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(x.RouteNumber, selectedRoute.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(x.ContractorTaxOrIdentityNumber, selectedRoute.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase))
                 .ToArray();
 
         foreach (var item in routePayments
@@ -2627,7 +2614,7 @@ public partial class MainWindow : Window
         };
     }
 
-    private static bool TryShowDocument(FlowDocument document, string title)
+    private static bool TryShowDocument(FlowDocument document, string title, bool requirePdfPrinter = false)
     {
         var dialog = new System.Windows.Controls.PrintDialog
         {
@@ -2638,11 +2625,26 @@ public partial class MainWindow : Window
             }
         };
 
+        if (requirePdfPrinter)
+        {
+            var pdfQueue = FindPdfPrintQueue();
+            if (pdfQueue is null)
+            {
+                MessageBox.Show(
+                    "Microsoft Print to PDF yazıcısı bulunamadı. Windows'un bu yazıcıyı kurduğunu kontrol ettikten sonra tekrar deneyin.",
+                    "OEHS PDF",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return false;
+            }
+
+            dialog.PrintQueue = pdfQueue;
+        }
+
         if (dialog.ShowDialog() != true)
             return false;
 
         // A4 yazdırma kalıbı sabittir: 210 x 297 mm ve 1 cm kenar boşluğu.
-
         dialog.PrintDocument(((IDocumentPaginatorSource)document).DocumentPaginator, title);
         return true;
     }
@@ -2829,6 +2831,23 @@ public partial class MainWindow : Window
         return Math.Max(0, (end - start).Days);
     }
 
+    private static string FormatContractDateAndNumber(ProgressPaymentHistoryData latest)
+    {
+        var date = latest.ContractDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture);
+        var number = latest.ContractNumber?.Trim();
+
+        if (string.IsNullOrWhiteSpace(date) && string.IsNullOrWhiteSpace(number))
+            return "-";
+
+        if (string.IsNullOrWhiteSpace(number))
+            return date!;
+
+        if (string.IsNullOrWhiteSpace(date))
+            return number;
+
+        return $"{date} / {number}";
+    }
+
     private FlowDocument BuildHizmetIsleriHakedisRaporu(RouteDraft route, ProgressPaymentHistoryData latest)
     {
         var doc = CreateBaseDocument("HİZMET İŞLERİ HAK EDİŞ RAPORU", "");
@@ -2841,7 +2860,7 @@ public partial class MainWindow : Window
             ("Yüklenicinin Adı / Ticari Unvanı", string.IsNullOrWhiteSpace(latest.ContractorName) ? CurrentContractorName : latest.ContractorName),
             ("Sözleşme Bedeli", FormatMoney(latest.Input.ContractAmount)),
             ("İhale Tarihi", latest.TenderDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
-            ("Sözleşme Tarihi ve No.su", latest.ContractDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? StartDatePicker.SelectedDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
+            ("Sözleşme Tarihi ve No.su", FormatContractDateAndNumber(latest)),
             ("Sözleşmenin Sayıştayca Tescil Tarihi ve No'su", "Tescile Dahil Değil"),
             ("Tescilin Yükleniciye Tebliğ Tarihi", "Tescile Dahil Değil"),
             ("İşyeri Teslim Tarihi", latest.ContractStartDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? StartDatePicker.SelectedDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
@@ -2884,16 +2903,16 @@ public partial class MainWindow : Window
         var contractAmount = latest.Input.ContractAmount;
         var contractor = string.IsNullOrWhiteSpace(latest.ContractorName)
             ? (string.IsNullOrWhiteSpace(CurrentContractorName)
-                ? "S.S. Selçikler Min. Kar. Yolcu Taşıma Kooperatifi"
+                ? "Yüklenici bilgisi bulunamadı"
                 : CurrentContractorName.Trim())
             : latest.ContractorName.Trim();
 
         doc.Blocks.Add(CreateDocumentTable(
             ("İşin adı", route.Name),
             ("Yüklenicinin adı/ticari unvanı", contractor),
-            ("Sözleşme tarihi", contractStart?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
+            ("Sözleşme tarihi", latest.ContractDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
             ("Sözleşme bedeli", FormatMoney(contractAmount)),
-            ("Sözleşmeye göre işin süresi(takvim günü)", $"{duration} İş Günü"),
+            ("Sözleşmeye göre işin süresi (takvim günü)", $"{duration} Takvim Günü"),
             ("Sözleşmeye göre işin bitirilmesi gereken tarih", contractEnd?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
             ("Varsa süre uzatımları", ""),
             ("Süre uzatımı dahil işin bitirilmesi gereken tarih", contractEnd?.ToString("dd MMMM yyyy dddd", tr) ?? "-"),
@@ -3065,44 +3084,8 @@ public partial class MainWindow : Window
             (BuildHakedişIcmali(route, latest), "Hakediş İcmali")
         };
 
-        try
-        {
-            var savedFolder = SaveRouteDocumentsArchive(route, latest);
-            CalculationStatusTextBlock.Text = $"4 Word belgesi A4 uyumlu olarak arşivlendi: {savedFolder}";
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(
-                $"Word arşivi oluşturulurken hata oluştu. Yazdırma işlemi yine devam edecek.\n\n{ex.Message}",
-                "OEHS Arşiv Uyarısı",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
-        }
-
         var combined = BuildCombinedRouteDocuments(documents);
-        TryShowDocument(combined, "OEHS — 4 Belge Tek Yazdırma");
-    }
-
-    private void ReportActionButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is System.Windows.Controls.Button button && button.Tag is string)
-            NavigationButton_Click(button, e);
-    }
-
-    private void ShowOutputSummaryButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (!EnsureRouteForOutput())
-            return;
-
-        var route = (RouteDraft)ReportRouteComboBox.SelectedItem;
-        var latest = GetSelectedRouteLatestPayment()!;
-        var folder = GetHistoryArchiveFolder(latest);
-
-        MessageBox.Show(
-            $"İhale / Dosya: {latest.TenderNumber}\nYüklenici: {latest.ContractorName}\nHat: {route.RouteNumber} — {route.Name}\nHakediş No: {latest.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"}\n\nBelgeler bu klasöre kaydedilir:\n{folder}",
-            "OEHS Çıktı Özeti",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
+        TryShowDocument(combined, "OEHS - 4 Belge Tek Yazdırma");
     }
 
     private void CreateSaveAllRouteDocumentsButton_Click(object sender, RoutedEventArgs e)
@@ -3113,21 +3096,36 @@ public partial class MainWindow : Window
         var route = (RouteDraft)ReportRouteComboBox.SelectedItem;
         var latest = GetSelectedRouteLatestPayment()!;
 
+        var documents = new (FlowDocument Document, string Title)[]
+        {
+            (BuildHakedişRaporu(route, latest), "Hakediş Raporu"),
+            (BuildHizmetIsleriHakedisRaporu(route, latest), "Hizmet İşleri Hakediş Raporu"),
+            (BuildKabulTutanağı(route, latest), "Hizmet İşleri Kabul Tutanağı"),
+            (BuildHakedişIcmali(route, latest), "Hakediş İcmali")
+        };
+
+        var combined = BuildCombinedRouteDocuments(documents);
+
         try
         {
-            var savedFolder = SaveRouteDocumentsArchive(route, latest);
-            CalculationStatusTextBlock.Text = $"4 Word belgesi kaydedildi: {savedFolder}";
+            if (!TryShowDocument(combined, "OEHS - 4 Belge PDF", requirePdfPrinter: true))
+                return;
+
+            var savedFolder = SaveRouteDocumentsArchiveMetadata(route, latest);
+            CalculationStatusTextBlock.Text =
+                $"4 belge PDF yazdırma akışı çalıştırıldı. Arşiv bilgisi: {savedFolder}";
+
             MessageBox.Show(
-                $"4 belge Word olarak oluşturuldu ve kaydedildi.\n\n{savedFolder}",
-                "OEHS Çıktılar",
+                "4 belge A4 düzeninde Microsoft Print to PDF üzerinden tek PDF çıktısı için gönderildi.\n\nWindows PDF penceresinde dosya adını ve kayıt yerini seçin.",
+                "OEHS PDF Çıktılar",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
         }
         catch (Exception ex)
         {
             MessageBox.Show(
-                $"Belgeler kaydedilirken hata oluştu.\n\n{ex.Message}",
-                "OEHS Çıktı Hatası",
+                $"PDF çıktısı hazırlanırken hata oluştu.\n\n{ex.Message}",
+                "OEHS PDF Çıktı Hatası",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
         }
@@ -3316,7 +3314,9 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         public string GuideSummaryText => $"Rehber: {GuideWorkDays} gün × {GuideDailyPrice:N2} ₺";
         public string ServiceSummaryText => $"Taşıma {TransportWorkDays} gün • Rehber {GuideWorkDays} gün";
         public string RelationshipText => $"İhale/Dosya: {TenderNumber} • Yüklenici: {ContractorName}";
-        public string DisplayText => $"Hat {RouteNumber} — {Name}";
+        public string DisplayText => string.IsNullOrWhiteSpace(ContractorName)
+            ? $"Hat {RouteNumber} — {Name}"
+            : $"Hat {RouteNumber} — {Name} • {ContractorName}";
     }
 
     private sealed record ContractorDraft(
