@@ -211,4 +211,22 @@ public sealed class ProgressPaymentCalculatorTests
 
         Assert.Throws<ArgumentOutOfRangeException>(() => ProgressPaymentCalculator.Calculate(input));
     }
+
+    [Fact]
+    public void IntermediatePrecision_ShouldNotRoundAtTwoDecimals()
+    {
+        var input = new ProgressPaymentInput(
+            WorkDays: 1, DailyPrice: 1.005m, DiscountAmount: 0m, PriceDifference: 0m,
+            ContractAmount: 1.005m, IsVatExempt: false, TaxDebt: 0m,
+            SocialSecurityDebt: 0m, MinimumWageSupport: 0m);
+
+        var result = ProgressPaymentCalculator.Calculate(input);
+
+        Assert.Equal(1.005m, result.ServiceAmount);
+        Assert.Equal(1.1055m, result.GrossAmount);
+        Assert.Equal(0.0095274m, result.StampTax);
+        Assert.Equal(0.0597774m, result.TotalDeductions);
+        Assert.Equal(1.0457226m, result.NetPayable);
+    }
+
 }
