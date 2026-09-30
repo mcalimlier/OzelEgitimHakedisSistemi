@@ -167,7 +167,7 @@ public sealed class ProgressPaymentArchiveStore
     {
         var match = Regex.Match(
             fileName,
-            "^" + Regex.Escape(baseStem) + @"_v(?<revision>d+)$",
+            "^" + Regex.Escape(baseStem) + @"_v(?<revision>\\d+)$",
             RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
         return match.Success && int.TryParse(
@@ -183,7 +183,7 @@ public sealed class ProgressPaymentArchiveStore
     {
         var name = Path.GetFileName(path);
         return name.StartsWith("OEHS_", StringComparison.OrdinalIgnoreCase)
-            && Regex.IsMatch(name, @"_vd+.json$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+            && Regex.IsMatch(name, @"_v\\d+.json$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
     }
 
     private static string SafeFilePart(string? value, string fallback)
