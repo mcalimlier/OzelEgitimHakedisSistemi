@@ -370,7 +370,7 @@
                                                     <TextBlock Grid.Row="6" Grid.Column="0" Text="Sözleşme İş Günü" Style="{StaticResource FieldLabel}" Margin="0,8"/>
                                                     <TextBox x:Name="ContractWorkDaysTextBox" Grid.Row="6" Grid.Column="1" Margin="8" Style="{StaticResource FieldTextBox}"/>
                                                     <TextBlock Grid.Row="6" Grid.Column="2" Text="Taşıma Günlük Fiyatı" Style="{StaticResource FieldLabel}" Margin="18,8,0,8"/>
-                                                    <TextBox x:Name="RouteDailyPriceTextBox" Grid.Row="6" Grid.Column="3" Margin="8" Style="{StaticResource FieldTextBox}" ToolTip="Excel İhale Verileri'ndeki Günlük Fiyatı. Hakedişte tekrar girilmez."/>
+                                                    <TextBox x:Name="ContractTransportDailyPriceTextBox" Grid.Row="6" Grid.Column="3" Margin="8" Style="{StaticResource FieldTextBox}" ToolTip="Excel İhale Verileri içindeki Günlük Fiyat. Hat ve hakediş ekranlarında tekrar girilmez."/>
                                                 </Grid>
                                                 <Border Style="{StaticResource StatusBanner}" Margin="8,14,8,0" Padding="14,11">
                                                     <Grid>
@@ -448,12 +448,12 @@
                                                     <ComboBox x:Name="ProgressRouteComboBox" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Margin="6" Height="42" DisplayMemberPath="DisplayText" SelectionChanged="ProgressRouteComboBox_SelectionChanged" Style="{StaticResource FieldComboBox}"/>
                                                     <TextBlock Grid.Row="1" Grid.Column="0" Text="Taşıma İş Günü (otomatik)" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,5"/>
                                                     <TextBox x:Name="WorkDaysTextBox" Grid.Row="1" Grid.Column="1" Margin="6" Style="{StaticResource PremiumFieldTextBox}" IsReadOnly="True" ToolTip="Hatlar ekranındaki Taşıma İş Günü değerinden otomatik alınır."/>
-                                                    <TextBlock Grid.Row="1" Grid.Column="2" Text="Taşıma Günlük Fiyat (otomatik)" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,5,0,5"/>
-                                                    <TextBox x:Name="DailyPriceTextBox" Grid.Row="1" Grid.Column="3" Margin="6" Visibility="Collapsed" Style="{StaticResource PremiumFieldTextBox}" IsReadOnly="True" ToolTip="Hatlar ekranındaki Taşıma Günlük Birim Fiyat değerinden otomatik alınır."/>
+                                                    <TextBlock Grid.Row="1" Grid.Column="2" Text="Taşıma Günlük Fiyat" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,5,0,5" Visibility="Collapsed"/>
+                                                    <TextBox x:Name="DailyPriceTextBox" Grid.Row="1" Grid.Column="3" Margin="6" Visibility="Collapsed" Style="{StaticResource PremiumFieldTextBox}" IsReadOnly="True" ToolTip="İhale Bilgileri'ndeki Taşıma Günlük Fiyatından otomatik alınır."/>
                                                     <TextBlock Grid.Row="2" Grid.Column="0" Text="Rehber İş Günü (otomatik)" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,5"/>
-                                                    <TextBox x:Name="GuideWorkDaysTextBox" Grid.Row="2" Grid.Column="1" Margin="6" Style="{StaticResource PremiumFieldTextBox}" IsReadOnly="True" ToolTip="Hatlar ekranındaki Rehber Yıllık İş Günü değerinden otomatik alınır."/>
+                                                    <TextBox x:Name="GuideWorkDaysTextBox" Grid.Row="2" Grid.Column="1" Margin="6" Style="{StaticResource PremiumFieldTextBox}" IsReadOnly="True" ToolTip="Tanımlı hattan otomatik alınır."/>
                                                     <TextBlock Grid.Row="2" Grid.Column="2" Text="Rehber Günlük Fiyat (otomatik)" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,5,0,5"/>
-                                                    <TextBox x:Name="GuideDailyPriceTextBox" Grid.Row="2" Grid.Column="3" Margin="6" Style="{StaticResource PremiumFieldTextBox}" IsReadOnly="True" ToolTip="Hatlar ekranındaki Rehber Personel Günlük Fiyat değerinden otomatik alınır."/>
+                                                    <TextBox x:Name="GuideDailyPriceTextBox" Grid.Row="2" Grid.Column="3" Margin="6" Style="{StaticResource PremiumFieldTextBox}" IsReadOnly="True" ToolTip="Tanımlı hattan otomatik alınır."/>
                                                     <TextBlock Grid.Row="3" Grid.Column="0" Text="Taşıma İskonto" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,8"/>
                                                     <TextBox x:Name="DiscountTextBox" Grid.Row="3" Grid.Column="1" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
                                                     <TextBlock Grid.Row="3" Grid.Column="2" Text="Taşıma Fiyat Farkı" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,5,0,5"/>
@@ -592,10 +592,7 @@
                                                 <TextBlock Text="Taşıma İş Günü" Foreground="White" FontSize="15" FontWeight="Bold"/>
                                                 <TextBox x:Name="RouteTransportWorkDaysTextBox"
                                                          Style="{StaticResource FieldTextBox}"
-                                                         Margin="0,7,0,14"
-                                                         />
-
-
+                                                         Margin="0,7,0,14"/>
 
                                                 <TextBlock Text="Rehber Yıllık İş Günü" Foreground="White" FontSize="15" FontWeight="Bold"/>
                                                 <TextBox x:Name="RouteGuideWorkDaysTextBox" Style="{StaticResource FieldTextBox}" Margin="0,7,0,12"/>
@@ -800,7 +797,7 @@
                                     </StackPanel>
                                     <TextBlock Grid.Column="2" Text="{Binding TotalAmountText}" Foreground="{StaticResource Text900Brush}" FontSize="14" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                     <TextBlock Grid.Column="3" Text="{Binding NetPayableText}" Foreground="{StaticResource Blue700Brush}" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                    <TextBlock Grid.Column="4" Text="HESAPLANDI" Foreground="{StaticResource Gold600Brush}" FontSize="12.5" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center"/><StackPanel Grid.Column="5" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center"><Button Content="DÜZENLE" Tag="{Binding}" Click="EditHistoryButton_Click" Style="{StaticResource SecondaryButton}" Height="36" FontSize="12" Width="82" Margin="4,0,4,0"/><Button Content="SİL" Tag="{Binding}" Click="DeleteHistoryButton_Click" Style="{StaticResource SecondaryButton}" Height="36" FontSize="12" Width="60" Margin="4,0,0,0"/></StackPanel>
+                                    <TextBlock Grid.Column="4" Text="HESAPLANDI" Foreground="{StaticResource Gold600Brush}" FontSize="12.5" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center"/><StackPanel Grid.Column="5" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center"><Button Content="EXCEL" Tag="{Binding}" Click="OpenHistoryExcelButton_Click" Style="{StaticResource SecondaryButton}" Height="36" FontSize="11" Width="58" Margin="2,0,2,0"/><Button Content="KLASÖR" Tag="{Binding}" Click="OpenHistoryFolderButton_Click" Style="{StaticResource SecondaryButton}" Height="36" FontSize="11" Width="62" Margin="2,0,2,0"/><Button Content="DÜZENLE" Tag="{Binding}" Click="EditHistoryButton_Click" Style="{StaticResource SecondaryButton}" Height="36" FontSize="11" Width="62" Margin="2,0,2,0"/><Button Content="SİL" Tag="{Binding}" Click="DeleteHistoryButton_Click" Style="{StaticResource SecondaryButton}" Height="36" FontSize="11" Width="48" Margin="2,0,0,0"/></StackPanel>
                                 </Grid>
                             </Border>
                         </DataTemplate>
