@@ -650,8 +650,7 @@
                                                           Height="44"
                                                           Margin="0,7,0,0"
                                                           SelectionChanged="RouteTenderListBox_SelectionChanged"
-                                                          Style="{StaticResource FieldComboBox}"
-                                                          MaxDropDownHeight="320"
+                                                          Style="{StaticResource RouteSelectorComboBox}"
                                                           ScrollViewer.VerticalScrollBarVisibility="Auto"
                                                           ToolTip="İhale / dosya numarasını seçin">
                                                     <ComboBox.ItemTemplate>
@@ -671,8 +670,7 @@
                                                           Height="44"
                                                           Margin="0,7,0,0"
                                                           SelectionChanged="RouteContractorListBox_SelectionChanged"
-                                                          Style="{StaticResource FieldComboBox}"
-                                                          MaxDropDownHeight="320"
+                                                          Style="{StaticResource RouteSelectorComboBox}"
                                                           ScrollViewer.VerticalScrollBarVisibility="Auto"
                                                           ToolTip="Yüklenici firmayı seçin">
                                                     <ComboBox.ItemTemplate>
