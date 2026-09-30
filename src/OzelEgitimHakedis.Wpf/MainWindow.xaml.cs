@@ -77,6 +77,7 @@ public partial class MainWindow : Window
         ReportItemsControl.ItemsSource = _reportRows;
         ProgressRouteComboBox.ItemsSource = _routes;
         ReportRouteComboBox.ItemsSource = _routes;
+        OutputTenderListBox.ItemsSource = _contracts;
         LoadPersistedData();
 
         UpdateContractSelectors();
@@ -415,6 +416,7 @@ public partial class MainWindow : Window
         HomeTenderListBox.ItemsSource = _contracts.ToArray();
         RouteTenderListBox.ItemsSource = _contracts.ToArray();
         ProgressTenderListBox.ItemsSource = _contracts.ToArray();
+        OutputTenderListBox.ItemsSource = _contracts.ToArray();
 
         var contract = _contracts.FirstOrDefault(x => string.Equals(x.TenderNumber, selectedTender, StringComparison.OrdinalIgnoreCase))
                        ?? _contracts.FirstOrDefault();
@@ -427,6 +429,7 @@ public partial class MainWindow : Window
                 HomeTenderListBox.SelectedItem = contract;
                 RouteTenderListBox.SelectedItem = contract;
                 ProgressTenderListBox.SelectedItem = contract;
+                OutputTenderListBox.SelectedItem = contract;
             }
             finally
             {
@@ -2101,6 +2104,27 @@ public partial class MainWindow : Window
             GuideWorkDaysTextBox.Text = route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
     }
 
+    private void OutputTenderListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_suppressSelectionEvents)
+            return;
+
+        var contract = OutputTenderListBox.SelectedItem as ContractDraftData;
+        var routes = contract is null
+            ? Array.Empty<RouteDraft>()
+            : _routes.Where(x =>
+                string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(x.ContractorTaxOrIdentityNumber, contract.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase))
+              .ToArray();
+
+        ReportRouteComboBox.ItemsSource = routes;
+        if (routes.Length > 0)
+            ReportRouteComboBox.SelectedIndex = 0;
+
+        UpdateReportView();
+        UpdateAcceptanceView();
+    }
+
     private void ReportRouteComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (!IsInitialized)
@@ -3050,6 +3074,50 @@ public partial class MainWindow : Window
     {
         if (sender is System.Windows.Controls.Button button && button.Tag is string)
             NavigationButton_Click(button, e);
+    }
+
+    private void ShowOutputSummaryButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (!EnsureRouteForOutput())
+            return;
+
+        var route = (RouteDraft)ReportRouteComboBox.SelectedItem;
+        var latest = GetSelectedRouteLatestPayment()!;
+        var folder = GetHistoryArchiveFolder(latest);
+
+        MessageBox.Show(
+            $"İhale / Dosya: {latest.TenderNumber}\nYüklenici: {latest.ContractorName}\nHat: {route.RouteNumber} — {route.Name}\nHakediş No: {latest.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"}\n\nBelgeler bu klasöre kaydedilir:\n{folder}",
+            "OEHS Çıktı Özeti",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information);
+    }
+
+    private void CreateSaveAllRouteDocumentsButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (!EnsureRouteForOutput())
+            return;
+
+        var route = (RouteDraft)ReportRouteComboBox.SelectedItem;
+        var latest = GetSelectedRouteLatestPayment()!;
+
+        try
+        {
+            var savedFolder = SaveRouteDocumentsArchive(route, latest);
+            CalculationStatusTextBlock.Text = $"4 Word belgesi kaydedildi: {savedFolder}";
+            MessageBox.Show(
+                $"4 belge Word olarak oluşturuldu ve kaydedildi.\n\n{savedFolder}",
+                "OEHS Çıktılar",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Belgeler kaydedilirken hata oluştu.\n\n{ex.Message}",
+                "OEHS Çıktı Hatası",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
     }
 
 private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
