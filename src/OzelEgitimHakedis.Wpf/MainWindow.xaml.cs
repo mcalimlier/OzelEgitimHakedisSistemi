@@ -698,6 +698,8 @@ public partial class MainWindow : Window
             latest.RouteName,
             latest.WorkName,
             latest.ContractorName,
+            latest.BankAccountNumber,
+            TransportDailyPrice = latest.Input.DailyPrice,
             ExcelFile = workbookPath,
             SavedAt = DateTime.Now
         }, JsonWriteOptions);
