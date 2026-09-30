@@ -191,7 +191,9 @@ public partial class MainWindow : Window
         var selectedRoute = ReportRouteComboBox.SelectedItem as RouteDraft;
         var latest = _progressHistory
             .Where(x => selectedRoute is null ||
-                        string.Equals(x.RouteNumber, selectedRoute.RouteNumber, StringComparison.OrdinalIgnoreCase))
+                        (string.Equals(x.TenderNumber, selectedRoute.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+                         string.Equals(x.RouteNumber, selectedRoute.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
+                         string.Equals(x.ContractorTaxOrIdentityNumber, selectedRoute.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase)))
             .OrderByDescending(x => x.PeriodDate ?? DateOnly.MinValue)
             .ThenByDescending(x => x.CreatedAt)
             .FirstOrDefault();
@@ -2114,7 +2116,10 @@ public partial class MainWindow : Window
         IEnumerable<ProgressPaymentHistoryData> query = _progressHistory;
 
         if (route is not null)
-            query = query.Where(x => string.Equals(x.RouteNumber, route.RouteNumber, StringComparison.OrdinalIgnoreCase));
+            query = query.Where(x =>
+                string.Equals(x.TenderNumber, route.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(x.RouteNumber, route.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(x.ContractorTaxOrIdentityNumber, route.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase));
 
         return query
             .OrderByDescending(x => x.PeriodDate ?? DateOnly.MinValue)
