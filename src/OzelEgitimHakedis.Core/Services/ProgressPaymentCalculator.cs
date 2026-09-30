@@ -6,6 +6,8 @@ public sealed class ProgressPaymentCalculator
 {
     public const decimal TransportVatRate = 0.10m;
     public const decimal GuideVatRate = 0.20m;
+    public const decimal TransportWithholdingShare = 0.50m;
+    public const decimal GuideWithholdingShare = 0.90m;
     public const decimal TransportWithholdingRate = 0.05m;
     public const decimal GuideWithholdingRate = 0.18m;
     public const decimal StampTaxRate = 0.00948m;
@@ -72,10 +74,10 @@ public sealed class ProgressPaymentCalculator
             : 0m;
 
         var transportWithholding = input.IncludeVat
-            ? transportVat * TransportWithholdingRate
+            ? transportVat * TransportWithholdingShare
             : 0m;
         var guideWithholding = input.IncludeVat
-            ? guideVat * GuideWithholdingRate
+            ? guideVat * GuideWithholdingShare
             : 0m;
 
         var vat = transportVat + guideVat;
