@@ -529,8 +529,12 @@ public partial class MainWindow : Window
         }
         else
         {
+            var editingIdentity = OehsIdentityService.NormalizeIdentity(_editingContractorKey ?? string.Empty);
             var existing = _contractors.FirstOrDefault(x =>
-                string.Equals(x.TaxOrIdentityNumber, _editingContractorKey, StringComparison.OrdinalIgnoreCase));
+                string.Equals(
+                    OehsIdentityService.NormalizeIdentity(x.TaxOrIdentityNumber),
+                    editingIdentity,
+                    StringComparison.Ordinal));
 
             if (existing is null)
                 _contractors.Add(updated);
