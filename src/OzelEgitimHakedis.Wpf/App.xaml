@@ -308,9 +308,9 @@
         </Style>
 
         <Style x:Key="FieldComboBox" TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="Foreground" Value="{StaticResource Text900Brush}"/>
-            <Setter Property="BorderBrush" Value="#D2DBE7"/>
+            <Setter Property="Background" Value="#EAF3FF"/>
+            <Setter Property="Foreground" Value="#082845"/>
+            <Setter Property="BorderBrush" Value="#B8CEE3"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Height" Value="44"/>
             <Setter Property="Padding" Value="10,3"/>
@@ -460,17 +460,19 @@
         <Style TargetType="ComboBoxItem">
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontSize" Value="14.5"/>
-            <Setter Property="Foreground" Value="{StaticResource Text900Brush}"/>
-            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="#082845"/>
+            <Setter Property="Background" Value="#EAF3FF"/>
             <Setter Property="Padding" Value="10,9"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Margin" Value="1"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#EEF5FF"/>
+                    <Setter Property="Background" Value="#D7E9FA"/>
+                    <Setter Property="Foreground" Value="#082845"/>
                 </Trigger>
                 <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="{StaticResource Blue600Brush}"/>
-                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="Background" Value="#C7DDF3"/>
+                    <Setter Property="Foreground" Value="#082845"/>
                     <Setter Property="FontWeight" Value="SemiBold"/>
                 </Trigger>
                 <Trigger Property="IsEnabled" Value="False">
