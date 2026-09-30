@@ -16,8 +16,8 @@ namespace OzelEgitimHakedis.Wpf;
 
 public partial class MainWindow : Window
 {
-    private const double DesignWidth = 1522.5;
-    private const double DesignHeight = 1042.5;
+    // Pencere, ekran çalışma alanını doğrudan kullanır; eski Viewbox tasarım oranı
+    // yatay alanı daraltıp metinleri sıkıştırıyordu.
 
     private const int WmGetMinMaxInfo = 0x0024;
     private const uint MonitorDefaultToNearest = 0x00000002;
@@ -114,12 +114,12 @@ public partial class MainWindow : Window
     private void ConfigureWindowForCurrentScreen()
     {
         var workArea = SystemParameters.WorkArea;
-        var maxWidth = Math.Min(DesignWidth, workArea.Width * 0.92);
-        var maxHeight = Math.Min(DesignHeight, workArea.Height * 0.985);
-        var scale = Math.Min(maxWidth / DesignWidth, maxHeight / DesignHeight);
 
-        Width = Math.Round(DesignWidth * scale);
-        Height = Math.Round(DesignHeight * scale);
+        // Çalışma alanının neredeyse tamamını kullan: yatayda daha fazla alan,
+        // dikeyde görev çubuğunun altında kalmadan mümkün olan maksimum yükseklik.
+        Width = Math.Round(workArea.Width * 0.98);
+        Height = Math.Round(workArea.Height * 0.985);
+
         Left = workArea.Left + ((workArea.Width - Width) / 2.0);
         Top = workArea.Top + ((workArea.Height - Height) / 2.0);
     }
@@ -1487,7 +1487,9 @@ public partial class MainWindow : Window
                 discount,
                 priceDifference,
                 selectedContract.ContractAmount,
-                !selectedContract.VatExempt,
+                // ProgressPaymentInput.IsVatExempt doğrudan ihale bilgisindeki
+                // "KDV İstisnası" seçimine karşılık gelir. Tersine çevrilmemeli.
+                selectedContract.VatExempt,
                 taxDebt,
                 socialSecurityDebt,
                 minimumWageSupport,
