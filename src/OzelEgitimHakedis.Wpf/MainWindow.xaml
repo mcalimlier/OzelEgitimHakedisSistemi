@@ -11,13 +11,13 @@
         WindowStartupLocation="Manual"
         WindowStyle="None"
         ShowInTaskbar="True"
-        Background="White"
+        Background="{StaticResource Navy900Brush}"
         UseLayoutRounding="True"
         SnapsToDevicePixels="True"
         StateChanged="Window_StateChanged">
     <Viewbox x:Name="AppScaleViewbox"
-             Stretch="Uniform"
-             StretchDirection="DownOnly"
+             Stretch="Fill"
+             StretchDirection="Both"
              HorizontalAlignment="Stretch"
              VerticalAlignment="Stretch">
         <Border Width="1846.4"
