@@ -1721,7 +1721,7 @@ public partial class MainWindow : Window
     {
         const double a4Width = 793.7008;
         const double a4Height = 1122.5197;
-        const margin = 51.8504;
+        const double margin = 51.8504;
         const double contentWidth = DocumentContentWidth;
         // A4 sabit: 210 x 297 mm. Yaklaşık 13,7 mm güvenli kenar boşluğu; tablo içeriği 690 pt.
 
