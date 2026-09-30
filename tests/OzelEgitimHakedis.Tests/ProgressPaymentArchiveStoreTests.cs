@@ -44,14 +44,14 @@ public sealed class ProgressPaymentArchiveStoreTests
         var path = store.Save(archive);
         var json = File.ReadAllText(path);
 
-        Assert.Contains(""SchemaVersion"", json, StringComparison.Ordinal);
-        Assert.Contains(""Revision"", json, StringComparison.Ordinal);
-        Assert.Contains(""Contract"", json, StringComparison.Ordinal);
-        Assert.Contains(""Contractor"", json, StringComparison.Ordinal);
-        Assert.Contains(""Route"", json, StringComparison.Ordinal);
-        Assert.Contains(""ProgressPayment"", json, StringComparison.Ordinal);
-        Assert.Contains(""PreviousPayments"", json, StringComparison.Ordinal);
-        Assert.Contains(""PdfFileName"", json, StringComparison.Ordinal);
+        Assert.Contains("\"SchemaVersion\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"Revision\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"Contract\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"Contractor\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"Route\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"ProgressPayment\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"PreviousPayments\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"PdfFileName\"", json, StringComparison.Ordinal);
     }
 
     [Fact]
