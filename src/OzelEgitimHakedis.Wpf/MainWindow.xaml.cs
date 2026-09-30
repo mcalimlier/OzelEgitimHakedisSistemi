@@ -685,12 +685,13 @@ public partial class MainWindow : Window
             if (string.Equals(item.ContractorTaxOrIdentityNumber, oldContractor.TaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(item.ContractorName, oldContractor.Name, StringComparison.OrdinalIgnoreCase))
             {
-                _progressHistory[i] = item with
+                var updatedHistory = item with
                 {
                     ContractorName = updated.Name,
-                    BankAccountNumber = updated.BankAccountNumber
+                    BankAccountNumber = updated.BankAccountNumber,
+                    ContractorTaxOrIdentityNumber = updated.TaxOrIdentityNumber
                 };
-                SaveProgressArchive(_progressHistory[i]);
+                RecalculateHistoryItem(i, item.Input, updatedHistory);
             }
         }
     }
@@ -1189,6 +1190,24 @@ public partial class MainWindow : Window
         ContractStatusTextBlock.Text = $"İhale kaydedildi: {proposedContract.TenderNumber}.";
     }
 
+    private void SavePersistedData()
+    {
+        var activeContract = GetSelectedContract() ?? _contracts.FirstOrDefault();
+
+        var data = new OehsApplicationData(
+            activeContract,
+            _routes.Select(x => new RouteData(
+                x.RouteNumber, x.Name, x.DailyPrice, x.GuideWorkDays, x.GuideDailyPrice,
+                x.TransportWorkDays, x.TenderNumber, x.ContractorTaxOrIdentityNumber)).ToArray(),
+            _contractors.Select(x => new Contractor(
+                x.Name, x.TaxOrIdentityNumber, x.Address, x.Phone, x.Email,
+                x.BankAccountNumber, x.ContactPerson)).ToArray(),
+            _progressHistory.ToArray(),
+            _contracts.ToArray());
+
+        _dataStore.Save(data);
+    }
+
     private void ClearContractButton_Click(object sender, RoutedEventArgs e)
     {
         _editingContractTender = null;
@@ -1212,10 +1231,11 @@ public partial class MainWindow : Window
 
     private static string BuildArchiveKey(ProgressPaymentHistoryData item)
     {
+        var tender = SafeFileName(string.IsNullOrWhiteSpace(item.TenderNumber) ? "Ihale" : item.TenderNumber);
         var route = SafeFileName(string.IsNullOrWhiteSpace(item.RouteNumber) ? "Hat" : item.RouteNumber);
         var progress = item.ProgressPaymentNumber?.ToString(CultureInfo.InvariantCulture) ?? "Yeni";
         var period = item.PeriodDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "Donemsiz";
-        return $"{item.Id:N}_{route}_Hakedis-{progress}_{period}";
+        return $"{tender}_{route}_Hakedis-{progress}_{period}_{item.Id:N}";
     }
 
     private static void SaveProgressArchive(ProgressPaymentHistoryData item)
@@ -1291,6 +1311,75 @@ public partial class MainWindow : Window
         File.WriteAllText(metadataPath, metadata);
 
         return documentFolder;
+    }
+
+    private void RecalculateHistoryItem(int index, ProgressPaymentInput input, ProgressPaymentHistoryData metadataSource)
+    {
+        var result = ProgressPaymentCalculator.Calculate(input);
+        _progressHistory[index] = metadataSource with
+        {
+            Input = input,
+            Calculation = result
+        };
+        SaveProgressArchive(_progressHistory[index]);
+    }
+
+    private void RecalculateHistoriesForTenderChange(ContractDraftData oldContract, ContractDraftData updatedContract)
+    {
+        for (var i = 0; i < _progressHistory.Count; i++)
+        {
+            var item = _progressHistory[i];
+            if (!string.Equals(item.TenderNumber, oldContract.TenderNumber, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            var input = item.Input with
+            {
+                ContractAmount = updatedContract.ContractAmount,
+                IsVatExempt = updatedContract.VatExempt
+            };
+            var contractor = FindContractor(updatedContract.ContractorTaxOrIdentityNumber);
+            var updated = item with
+            {
+                ContractorName = updatedContract.ContractorName,
+                TenderNumber = updatedContract.TenderNumber,
+                ContractNumber = updatedContract.ContractNumber,
+                TenderDate = updatedContract.TenderDate,
+                ContractDate = updatedContract.ContractDate,
+                ContractStartDate = updatedContract.StartDate,
+                ContractEndDate = updatedContract.EndDate,
+                BankAccountNumber = contractor?.BankAccountNumber ?? updatedContract.BankAccountNumber,
+                ContractorTaxOrIdentityNumber = updatedContract.ContractorTaxOrIdentityNumber
+            };
+            RecalculateHistoryItem(i, input, updated);
+        }
+    }
+
+    private void UpdateHistoryForRouteEdit(RouteDraft oldRoute, RouteDraft updatedRoute)
+    {
+        for (var i = 0; i < _progressHistory.Count; i++)
+        {
+            var item = _progressHistory[i];
+            if (!string.Equals(item.TenderNumber, oldRoute.TenderNumber, StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(item.RouteNumber, oldRoute.RouteNumber, StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(item.ContractorTaxOrIdentityNumber, oldRoute.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            var input = item.Input with
+            {
+                WorkDays = updatedRoute.TransportWorkDays,
+                DailyPrice = updatedRoute.DailyPrice,
+                GuideWorkDays = updatedRoute.GuideWorkDays,
+                GuideDailyPrice = updatedRoute.GuideDailyPrice
+            };
+            var updated = item with
+            {
+                RouteNumber = updatedRoute.RouteNumber,
+                RouteName = updatedRoute.Name,
+                ContractorName = updatedRoute.ContractorName,
+                ContractorTaxOrIdentityNumber = updatedRoute.ContractorTaxOrIdentityNumber
+            };
+            RecalculateHistoryItem(i, input, updated);
+        }
     }
 
     private void CalculateProgressButton_Click(object sender, RoutedEventArgs e)
