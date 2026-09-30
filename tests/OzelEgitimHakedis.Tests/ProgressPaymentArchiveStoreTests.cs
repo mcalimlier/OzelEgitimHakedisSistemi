@@ -165,4 +165,24 @@ public sealed class ProgressPaymentArchiveStoreTests
                 Directory.Delete(Path, recursive: true);
         }
     }
+
+    [Fact]
+    public void ThirdSave_ShouldCreateV03WithoutOverwritingEarlierRevisions()
+    {
+        using var temp = new TempDirectory();
+        var store = new ProgressPaymentArchiveStore(temp.Path);
+
+        var first = store.Save(CreateArchive(1));
+        var second = store.Save(CreateArchive(1));
+        var third = store.Save(CreateArchive(1));
+
+        Assert.EndsWith("_v01.json", first, StringComparison.OrdinalIgnoreCase);
+        Assert.EndsWith("_v02.json", second, StringComparison.OrdinalIgnoreCase);
+        Assert.EndsWith("_v03.json", third, StringComparison.OrdinalIgnoreCase);
+        Assert.True(File.Exists(first));
+        Assert.True(File.Exists(second));
+        Assert.True(File.Exists(third));
+        Assert.Equal(3, store.List().Count);
+    }
+
 }
