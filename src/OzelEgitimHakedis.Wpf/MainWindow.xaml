@@ -641,48 +641,50 @@
                                         </Border>
                                     </UniformGrid>
 
-                                    <Border Panel.ZIndex="50" Style="{StaticResource Card}" Padding="14" Margin="0,0,0,14">
+                                    <Border Panel.ZIndex="1000" Style="{StaticResource Card}" Padding="14" Margin="0,0,0,14">
                                         <Grid>
                                             <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
                                             <StackPanel Grid.Column="0" Margin="0,0,8,0">
                                                 <TextBlock Text="1. İHALE / DOSYA NO SEÇ" Style="{StaticResource CardTitle}"/>
-                                                <ListBox x:Name="RouteTenderListBox" Height="110" Margin="0,7,0,0" SelectionChanged="RouteTenderListBox_SelectionChanged"
-                                                         Background="#0A2A49" Foreground="White" BorderBrush="#335A79" BorderThickness="1"
-                                                         ScrollViewer.VerticalScrollBarVisibility="Auto">
-                                                        <ListBox.ItemContainerStyle>
-                                                            <Style TargetType="ListBoxItem">
-                                                                <Setter Property="Foreground" Value="White"/>
-                                                                <Setter Property="Padding" Value="4"/>
-                                                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                                                <Setter Property="Background" Value="Transparent"/>
-                                                                <Style.Triggers>
-                                                                    <Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="#1D4B70"/></Trigger>
-                                                                    <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="#153E5F"/></Trigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </ListBox.ItemContainerStyle>
-                                                    <ListBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding TenderNumber}" Foreground="White" FontSize="14" FontWeight="SemiBold" Margin="8,5"/></DataTemplate></ListBox.ItemTemplate>
-                                                </ListBox>
+                                                <ComboBox x:Name="RouteTenderListBox"
+                                                          Height="44"
+                                                          Margin="0,7,0,0"
+                                                          SelectionChanged="RouteTenderListBox_SelectionChanged"
+                                                          Style="{StaticResource FieldComboBox}"
+                                                          MaxDropDownHeight="320"
+                                                          ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                                          ToolTip="İhale / dosya numarasını seçin">
+                                                    <ComboBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding TenderNumber}"
+                                                                       Foreground="{StaticResource Text900Brush}"
+                                                                       FontSize="14"
+                                                                       FontWeight="SemiBold"
+                                                                       TextWrapping="NoWrap"/>
+                                                        </DataTemplate>
+                                                    </ComboBox.ItemTemplate>
+                                                </ComboBox>
                                             </StackPanel>
                                             <StackPanel Grid.Column="1" Margin="8,0,0,0">
                                                 <TextBlock Text="2. YÜKLENİCİ FİRMA SEÇ" Style="{StaticResource CardTitle}"/>
-                                                <ListBox x:Name="RouteContractorListBox" Height="110" Margin="0,7,0,0" SelectionChanged="RouteContractorListBox_SelectionChanged"
-                                                         Background="#0A2A49" Foreground="White" BorderBrush="#335A79" BorderThickness="1"
-                                                         ScrollViewer.VerticalScrollBarVisibility="Auto">
-                                                        <ListBox.ItemContainerStyle>
-                                                            <Style TargetType="ListBoxItem">
-                                                                <Setter Property="Foreground" Value="White"/>
-                                                                <Setter Property="Padding" Value="4"/>
-                                                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                                                <Setter Property="Background" Value="Transparent"/>
-                                                                <Style.Triggers>
-                                                                    <Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="#1D4B70"/></Trigger>
-                                                                    <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="#153E5F"/></Trigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </ListBox.ItemContainerStyle>
-                                                    <ListBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Name}" Foreground="White" FontSize="14" FontWeight="SemiBold" Margin="8,5"/></DataTemplate></ListBox.ItemTemplate>
-                                                </ListBox>
+                                                <ComboBox x:Name="RouteContractorListBox"
+                                                          Height="44"
+                                                          Margin="0,7,0,0"
+                                                          SelectionChanged="RouteContractorListBox_SelectionChanged"
+                                                          Style="{StaticResource FieldComboBox}"
+                                                          MaxDropDownHeight="320"
+                                                          ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                                          ToolTip="Yüklenici firmayı seçin">
+                                                    <ComboBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding Name}"
+                                                                       Foreground="{StaticResource Text900Brush}"
+                                                                       FontSize="14"
+                                                                       FontWeight="SemiBold"
+                                                                       TextWrapping="NoWrap"/>
+                                                        </DataTemplate>
+                                                    </ComboBox.ItemTemplate>
+                                                </ComboBox>
                                             </StackPanel>
                                         </Grid>
                                     </Border>
