@@ -428,26 +428,21 @@ public partial class MainWindow : Window
             return;
         }
 
-        var contractor = FindContractor(contract.ContractorTaxOrIdentityNumber);
-        ProgressContractorTextBlock.Text = contractor?.Name ?? contract.ContractorName;
-
         var routes = _routes.Where(x =>
-            string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
-            string.Equals(x.ContractorTaxOrIdentityNumber, contract.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase))
+            string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase))
             .ToArray();
 
         var previous = ProgressRouteComboBox.SelectedItem as RouteDraft;
         ProgressRouteComboBox.ItemsSource = routes;
 
         if (previous is not null)
-            ProgressRouteComboBox.SelectedItem = routes.FirstOrDefault(x => x.RouteNumber == previous.RouteNumber);
+            ProgressRouteComboBox.SelectedItem = routes.FirstOrDefault(x =>
+                x.RouteNumber == previous.RouteNumber &&
+                string.Equals(x.ContractorTaxOrIdentityNumber, previous.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase));
         if (ProgressRouteComboBox.SelectedItem is null && routes.Length > 0)
             ProgressRouteComboBox.SelectedIndex = 0;
 
-        var route = ProgressRouteComboBox.SelectedItem as RouteDraft;
-        ProgressRouteRelationTextBlock.Text = route is null
-            ? "Bu ihaleye bağlı hat tanımlanmamış."
-            : $"İhale: {route.TenderNumber} • Yüklenici: {route.ContractorName} • Hat: {route.RouteNumber} — {route.Name}";
+        UpdateProgressRouteDefaults();
     }
 
     private void UpdateHomeTenderSummary(ContractDraftData? contract)
@@ -2062,7 +2057,16 @@ public partial class MainWindow : Window
     private void UpdateProgressRouteDefaults()
     {
         if (ProgressRouteComboBox.SelectedItem is not RouteDraft route)
+        {
+            ProgressContractorTextBlock.Text = "Seçilmedi";
+            ProgressRouteRelationTextBlock.Text = "Hat seçiniz.";
             return;
+        }
+
+        ProgressContractorTextBlock.Text = string.IsNullOrWhiteSpace(route.ContractorName)
+            ? "Firma seçilmemiş"
+            : route.ContractorName;
+        ProgressRouteRelationTextBlock.Text = $"İhale: {route.TenderNumber} • Yüklenici: {route.ContractorName} • Hat: {route.RouteNumber} — {route.Name}";
 
         RouteTransportWorkDaysTextBox.Text = route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
         DailyPriceTextBox.Text = route.DailyPrice.ToString("N2", CultureInfo.CurrentCulture);
@@ -2109,6 +2113,11 @@ public partial class MainWindow : Window
         UpdateAcceptanceView();
     }
 
+    private string CurrentContractorName =>
+        (ReportRouteComboBox.SelectedItem as RouteDraft)?.ContractorName
+        ?? (ProgressRouteComboBox.SelectedItem as RouteDraft)?.ContractorName
+        ?? string.Empty;
+
     private ProgressPaymentHistoryData? GetSelectedProgressLatestPayment()
     {
         var contract = ProgressTenderListBox.SelectedItem as ContractDraftData;
@@ -2120,7 +2129,7 @@ public partial class MainWindow : Window
             .Where(x =>
                 string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(x.RouteNumber, route.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(x.ContractorTaxOrIdentityNumber, contract.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase))
+                string.Equals(x.ContractorTaxOrIdentityNumber, route.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(x => x.PeriodDate ?? DateOnly.MinValue)
             .ThenByDescending(x => x.CreatedAt)
             .FirstOrDefault();
