@@ -533,6 +533,168 @@ public partial class MainWindow : Window
         MessageBox.Show(message, "OEHS", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
+    private void SaveContractorButton_Click(object sender, RoutedEventArgs e)
+    {
+        var name = ContractorNameTextBox.Text.Trim();
+        var tax = ContractorTaxTextBox.Text.Trim();
+        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(tax))
+        {
+            ContractorStatusTextBlock.Text = "Firma adı ve TC / Vergi No zorunludur.";
+            return;
+        }
+
+        var duplicate = _contractors.FirstOrDefault(x =>
+            (string.Equals(x.TaxOrIdentityNumber, tax, StringComparison.OrdinalIgnoreCase) ||
+             (string.IsNullOrWhiteSpace(x.TaxOrIdentityNumber) && string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase))) &&
+            !string.Equals(x.TaxOrIdentityNumber, _editingContractorKey, StringComparison.OrdinalIgnoreCase));
+
+        if (duplicate is not null)
+        {
+            ShowAlreadyRegistered($"'{name}' zaten kayıtlı. Mükerrer firma kaydı oluşturulmadı.");
+            return;
+        }
+
+        var updated = new ContractorDraft(
+            name,
+            tax,
+            ContractorAddressTextBox.Text.Trim(),
+            ContractorPhoneTextBox.Text.Trim(),
+            ContractorEmailTextBox.Text.Trim(),
+            ContractorBankTextBox.Text.Trim(),
+            ContractorContactTextBox.Text.Trim());
+
+        if (_editingContractorKey is null)
+        {
+            _contractors.Add(updated);
+        }
+        else
+        {
+            var existing = _contractors.FirstOrDefault(x =>
+                string.Equals(x.TaxOrIdentityNumber, _editingContractorKey, StringComparison.OrdinalIgnoreCase));
+
+            if (existing is null)
+                _contractors.Add(updated);
+            else
+            {
+                var index = _contractors.IndexOf(existing);
+                _contractors[index] = updated;
+                UpdateReferencesForContractorEdit(existing, updated);
+            }
+        }
+
+        _editingContractorKey = null;
+        ContractorSelectionComboBox.ItemsSource = null;
+        ContractorSelectionComboBox.ItemsSource = _contractors;
+        ContractorSelectionComboBox.SelectedItem = updated;
+        UpdateContractorSummary();
+        SavePersistedData();
+        UpdateContractSelectors();
+        UpdateHomeSummaryView();
+        ClearContractorButton_Click(sender, e);
+        ContractorStatusTextBlock.Text = $"Firma kaydedildi: {name}.";
+    }
+
+    private void EditContractorButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: ContractorDraft contractor })
+            return;
+
+        _editingContractorKey = contractor.TaxOrIdentityNumber;
+        ContractorNameTextBox.Text = contractor.Name;
+        ContractorTaxTextBox.Text = contractor.TaxOrIdentityNumber;
+        ContractorAddressTextBox.Text = contractor.Address;
+        ContractorPhoneTextBox.Text = contractor.Phone;
+        ContractorEmailTextBox.Text = contractor.Email;
+        ContractorBankTextBox.Text = contractor.BankAccountNumber;
+        ContractorContactTextBox.Text = contractor.ContactPerson;
+        ContractorStatusTextBlock.Text = $"Düzenleme modu: {contractor.Name}.";
+    }
+
+    private void DeleteContractorButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: ContractorDraft contractor })
+            return;
+
+        var usedByContract = _contracts.Any(x =>
+            string.Equals(x.ContractorTaxOrIdentityNumber, contractor.TaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase));
+
+        if (usedByContract)
+        {
+            ShowAlreadyRegistered($"'{contractor.Name}' kayıtlı ihalelerde kullanılıyor. Önce ilişkili ihaleleri düzeltin; firma silinmedi.");
+            return;
+        }
+
+        _contractors.Remove(contractor);
+        SavePersistedData();
+        UpdateContractorSummary();
+        UpdateContractSelectors();
+        UpdateHomeSummaryView();
+        ContractorStatusTextBlock.Text = $"Firma silindi: {contractor.Name}.";
+    }
+
+    private void ClearContractorButton_Click(object sender, RoutedEventArgs e)
+    {
+        _editingContractorKey = null;
+        ContractorNameTextBox.Clear();
+        ContractorTaxTextBox.Clear();
+        ContractorAddressTextBox.Clear();
+        ContractorPhoneTextBox.Clear();
+        ContractorEmailTextBox.Clear();
+        ContractorBankTextBox.Clear();
+        ContractorContactTextBox.Clear();
+        ContractorStatusTextBlock.Text = "Yeni firma kaydı için alanlar temizlendi.";
+    }
+
+    private void UpdateContractorSummary()
+    {
+        ContractorCountTextBlock.Text = _contractors.Count.ToString(CultureInfo.CurrentCulture);
+    }
+
+    private void UpdateReferencesForContractorEdit(ContractorDraft oldContractor, ContractorDraft updated)
+    {
+        for (var i = 0; i < _contracts.Count; i++)
+        {
+            var contract = _contracts[i];
+            if (string.Equals(contract.ContractorTaxOrIdentityNumber, oldContractor.TaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase))
+            {
+                _contracts[i] = contract with
+                {
+                    ContractorName = updated.Name,
+                    ContractorTaxOrIdentityNumber = updated.TaxOrIdentityNumber,
+                    BankAccountNumber = updated.BankAccountNumber
+                };
+            }
+        }
+
+        for (var i = 0; i < _routes.Count; i++)
+        {
+            var route = _routes[i];
+            if (string.Equals(route.ContractorTaxOrIdentityNumber, oldContractor.TaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase))
+            {
+                _routes[i] = route with
+                {
+                    ContractorTaxOrIdentityNumber = updated.TaxOrIdentityNumber,
+                    ContractorName = updated.Name
+                };
+            }
+        }
+
+        for (var i = 0; i < _progressHistory.Count; i++)
+        {
+            var item = _progressHistory[i];
+            if (string.Equals(item.ContractorTaxOrIdentityNumber, oldContractor.TaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(item.ContractorName, oldContractor.Name, StringComparison.OrdinalIgnoreCase))
+            {
+                _progressHistory[i] = item with
+                {
+                    ContractorName = updated.Name,
+                    BankAccountNumber = updated.BankAccountNumber
+                };
+                SaveProgressArchive(_progressHistory[i]);
+            }
+        }
+    }
+
     private void HomeTenderListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (_suppressSelectionEvents)
@@ -2646,7 +2808,6 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
             TenderNumberTextBox,
             ContractNumberTextBox,
             WorkNameTextBox,
-            ContractorTextBox,
             ContractAmountTextBox,
             ContractWorkDaysTextBox
         })
@@ -2693,7 +2854,6 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
             TenderNumberTextBox,
             ContractNumberTextBox,
             WorkNameTextBox,
-            ContractorTextBox,
             ContractAmountTextBox,
             ContractWorkDaysTextBox,
             StartDatePicker,
@@ -2729,7 +2889,10 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         decimal DailyPrice,
         int GuideWorkDays = 0,
         decimal GuideDailyPrice = 0m,
-        int TransportWorkDays = 0)
+        int TransportWorkDays = 0,
+        string TenderNumber = "",
+        string ContractorTaxOrIdentityNumber = "",
+        string ContractorName = "")
     {
         public string TransportWorkDaysText => $"Taşıma İş Günü: {TransportWorkDays}";
         public decimal TransportAnnualPrice => TransportWorkDays * DailyPrice;
@@ -2738,12 +2901,19 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         public string GuideDailyPriceText => $"Rehber: {GuideDailyPrice:N2} ₺";
         public string TransportSummaryText => $"Taşıma: {TransportWorkDays} gün × {DailyPrice:N2} ₺";
         public string GuideSummaryText => $"Rehber: {GuideWorkDays} gün × {GuideDailyPrice:N2} ₺";
-        public string ServiceSummaryText =>
-            $"Taşıma {TransportWorkDays} gün • Rehber {GuideWorkDays} gün";
+        public string ServiceSummaryText => $"Taşıma {TransportWorkDays} gün • Rehber {GuideWorkDays} gün";
+        public string RelationshipText => $"İhale/Dosya: {TenderNumber} • Yüklenici: {ContractorName}";
         public string DisplayText => $"Hat {RouteNumber} — {Name}";
     }
 
-    private sealed record ContractorDraft(string Name, string TaxOrIdentityNumber);
+    private sealed record ContractorDraft(
+        string Name,
+        string TaxOrIdentityNumber,
+        string Address = "",
+        string Phone = "",
+        string Email = "",
+        string BankAccountNumber = "",
+        string ContactPerson = "");
 
     private sealed record HistoryRow(
         Guid Id,
