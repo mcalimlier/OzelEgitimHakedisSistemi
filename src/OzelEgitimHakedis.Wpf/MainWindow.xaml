@@ -174,7 +174,7 @@
                         <Button x:Name="NavReports" Style="{StaticResource NavButton}" Tag="Reports" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE9D2;" FontSize="23" Width="42"/>
-                                <TextBlock Text="RAPORLAR" FontSize="16.5" FontWeight="SemiBold"/>
+                                <TextBlock Text="ÇIKTILAR" FontSize="16.5" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                         <Button x:Name="NavHistory" Style="{StaticResource NavButton}" Tag="History" Click="NavigationButton_Click">
@@ -393,9 +393,9 @@
                                                     <DatePicker x:Name="ContractDatePicker" Grid.Row="4" Grid.Column="3" Margin="8" Style="{StaticResource FieldDatePicker}"/>
 
                                                     <TextBlock Grid.Row="5" Grid.Column="0" Text="TC Kimlik No / Vergi No" Style="{StaticResource FieldLabel}" Margin="0,8"/>
-                                                    <TextBox x:Name="ContractorIdentityNumberTextBox" Grid.Row="5" Grid.Column="1" Margin="8" Style="{StaticResource FieldTextBox}"/>
+                                                    <TextBox x:Name="ContractorIdentityNumberTextBox" Grid.Row="5" Grid.Column="1" Margin="8" Style="{StaticResource FieldTextBox}" IsReadOnly="True"/>
                                                     <TextBlock Grid.Row="5" Grid.Column="2" Text="Banka Hesap No" Style="{StaticResource FieldLabel}" Margin="18,8,0,8"/>
-                                                    <TextBox x:Name="BankAccountNumberTextBox" Grid.Row="5" Grid.Column="3" Margin="8" Style="{StaticResource FieldTextBox}"/>
+                                                    <TextBox x:Name="BankAccountNumberTextBox" Grid.Row="5" Grid.Column="3" Margin="8" Style="{StaticResource FieldTextBox}" IsReadOnly="True"/>
 
                                                     <TextBlock Grid.Row="6" Grid.Column="0" Text="Sözleşme İş Günü" Style="{StaticResource FieldLabel}" Margin="0,8"/>
                                                     <TextBox x:Name="ContractWorkDaysTextBox" Grid.Row="6" Grid.Column="1" Margin="8" Style="{StaticResource FieldTextBox}"/>
@@ -711,6 +711,7 @@
                                                                 <TextBlock Grid.Column="0" Text="{Binding RouteNumber}" Foreground="White" FontSize="15.5" FontWeight="Bold" VerticalAlignment="Center"/>
                                                                 <StackPanel Grid.Column="1" Margin="8,0">
                                                                     <TextBlock Text="{Binding Name}" Foreground="White" FontSize="15.5" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                                                    <TextBlock Text="{Binding RelationshipText}" Foreground="{StaticResource Gold500Brush}" FontSize="12.5" TextWrapping="Wrap"/>
                                                                     <TextBlock Text="{Binding TransportSummaryText}" Foreground="#B9CBDA" FontSize="12.5" TextWrapping="Wrap"/>
                                                                     <TextBlock Text="{Binding GuideSummaryText}" Foreground="#B9CBDA" FontSize="12.5" TextWrapping="Wrap"/>
                                                                 </StackPanel>
@@ -958,8 +959,8 @@
             <Grid>
                 <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                 <StackPanel Grid.Row="0">
-                    <TextBlock Text="HAKEDİŞ RAPOR ÖNİZLEMESİ" Style="{StaticResource CardTitle}" FontSize="17"/>
-                    <TextBlock Text="Seçilen hatta ait kayıtlar" Style="{StaticResource CardSubtitle}" FontSize="13.5" Margin="0,0,0,10"/>
+                    <TextBlock Text="KAYITLI HAKEDİŞLER" Style="{StaticResource CardTitle}" FontSize="17"/>
+                    <TextBlock Text="Seçilen ihale ve hatta ait kayıtlar" Style="{StaticResource CardSubtitle}" FontSize="13.5" Margin="0,0,0,10"/>
                     <Grid>
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="125"/><ColumnDefinition Width="135"/></Grid.ColumnDefinitions>
                         <TextBlock Text="HAKEDİŞ / DÖNEM" Foreground="{StaticResource Text600Brush}" FontSize="12.5" FontWeight="Bold"/>
@@ -997,6 +998,11 @@
                 <StackPanel>
                     <TextBlock Text="4 BELGE ÇIKTISI" Style="{StaticResource CardTitle}" FontSize="17"/>
                     <TextBlock Text="Seçilen hat için dört kurum belgesi Word olarak kaydedilir." Style="{StaticResource CardSubtitle}" FontSize="13.5" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                    <TextBlock Text="İHALE / DOSYA NO" Style="{StaticResource FieldLabel}" FontSize="12.5"/>
+                    <ListBox x:Name="OutputTenderListBox" Height="70" Margin="0,7,0,10" SelectionChanged="OutputTenderListBox_SelectionChanged"
+                             Background="#0A2A49" Foreground="White" BorderBrush="#335A79" BorderThickness="1">
+                        <ListBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding TenderNumber}" Foreground="White" FontSize="14" FontWeight="SemiBold" Margin="8,5"/></DataTemplate></ListBox.ItemTemplate>
+                    </ListBox>
                     <TextBlock Text="HAT SEÇİMİ" Style="{StaticResource FieldLabel}" FontSize="12.5"/>
                     <ComboBox x:Name="ReportRouteComboBox" DisplayMemberPath="DisplayText" Height="44" Margin="0,7,0,12" Style="{StaticResource FieldComboBox}" SelectionChanged="ReportRouteComboBox_SelectionChanged"/>
                     <Grid Margin="0,0,0,2">
