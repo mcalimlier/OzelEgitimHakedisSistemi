@@ -131,10 +131,10 @@ public sealed class ProgressPaymentArchiveStore
 
         var tender = SafeFilePart(archive.ProgressPayment.TenderNumber, "Ihale");
         var route = SafeFilePart(archive.ProgressPayment.RouteNumber, "Hat");
-        var progress = archive.ProgressPayment.ProgressPaymentNumber?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "Yeni";
+        var progress = archive.ProgressPayment.ProgressPaymentNumber?.ToString("00", System.Globalization.CultureInfo.InvariantCulture) ?? "Yeni";
         var period = archive.ProgressPayment.PeriodDate?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) ?? "Donemsiz";
 
-        return $"OEHS_{tender}_Hat-{route}_Hakedis-{progress}_{period}_v{archive.Revision:00}";
+        return $"OEHS_{tender}_Hat-{route}_Hakediş-{progress}_{period}_v{archive.Revision:00}";
     }
 
     private int FindNextRevision(ProgressPaymentArchive archive, int minimumRevision = 1)
@@ -160,7 +160,7 @@ public sealed class ProgressPaymentArchiveStore
         var route = SafeFilePart(archive.ProgressPayment.RouteNumber, "Hat");
         var progress = archive.ProgressPayment.ProgressPaymentNumber?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "Yeni";
         var period = archive.ProgressPayment.PeriodDate?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) ?? "Donemsiz";
-        return $"OEHS_{tender}_Hat-{route}_Hakedis-{progress}_{period}";
+        return $"OEHS_{tender}_Hat-{route}_Hakediş-{progress}_{period}";
     }
 
     private static int? ParseRevision(string fileName, string baseStem)
