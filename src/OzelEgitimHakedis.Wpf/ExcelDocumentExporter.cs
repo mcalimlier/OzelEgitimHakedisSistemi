@@ -47,6 +47,10 @@ internal static class ExcelDocumentExporter
         {
             Row("İşin Adı", workName, "Yüklenici", contractor),
             Row("Hat No", routeNumber, "Hat Adı", routeName),
+            Row("İhale / Dosya No", item.TenderNumber ?? "-", "Sözleşme No", item.ContractNumber ?? "-"),
+            Row("Sözleşme Bedeli", Money(item.Input.ContractAmount), "Banka Hesap No", item.BankAccountNumber ?? "-"),
+            Row("İhale Tarihi", item.TenderDate?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) ?? "-", "Sözleşme Tarihi", item.ContractDate?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) ?? "-"),
+            Row("İş Başlangıcı", item.ContractStartDate?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) ?? "-", "İş Bitişi", item.ContractEndDate?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) ?? "-"),
             Row("Hakediş No", item.ProgressPaymentNumber?.ToString(CultureInfo.InvariantCulture) ?? "-", "Dönem", item.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) ?? "-"),
             Header("AÇIKLAMA", "TUTAR", "AÇIKLAMA", "TUTAR"),
             Row("Taşıma Hizmet Tutarı", Money(c.ServiceAmount), "Taşıma Fiyat Farkı", Money(c.PriceDifferenceExcludingVat)),
@@ -67,6 +71,8 @@ internal static class ExcelDocumentExporter
         {
             Row("İşin Adı", workName, "Yüklenici", contractor),
             Row("Hat No", routeNumber, "Hat Adı", routeName),
+            Row("İhale / Dosya No", item.TenderNumber ?? "-", "Sözleşme No", item.ContractNumber ?? "-"),
+            Row("Sözleşme Bedeli", Money(item.Input.ContractAmount), "Banka Hesap No", item.BankAccountNumber ?? "-"),
             Header("HİZMET / HESAP", "TUTAR", "KESİNTİ / MAHSUP", "TUTAR"),
             Row("Taşıma Hizmet", Money(c.ServiceAmount), "Vergi Borcu", Money(d.TaxDebt)),
             Row("Taşıma Fiyat Farkı", Money(c.PriceDifferenceExcludingVat), "SGK Borcu", Money(d.SocialSecurityDebt)),
@@ -87,6 +93,7 @@ internal static class ExcelDocumentExporter
         {
             Row("İşin Adı", workName, "Yüklenici", contractor),
             Row("Hat No", routeNumber, "Hat Adı", routeName),
+            Row("Sözleşme Bedeli", Money(item.Input.ContractAmount), "Banka Hesap No", item.BankAccountNumber ?? "-"),
             Row("Sözleşme No", item.ContractNumber ?? "-", "İhale / Dosya No", item.TenderNumber ?? "-"),
             Row("Sözleşme Tarihi", item.ContractDate?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) ?? "-", "Hakediş Tarihi", item.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) ?? "-"),
             Header("BİLGİ", "DEĞER", "BİLGİ", "DEĞER"),
@@ -106,6 +113,8 @@ internal static class ExcelDocumentExporter
         {
             Row("İşin Adı", workName, "Yüklenici", contractor),
             Row("Hat No", routeNumber, "Hat Adı", routeName),
+            Row("İhale / Dosya No", item.TenderNumber ?? "-", "Sözleşme No", item.ContractNumber ?? "-"),
+            Row("Sözleşme Bedeli", Money(item.Input.ContractAmount), "Banka Hesap No", item.BankAccountNumber ?? "-"),
             Row("Hakediş No", item.ProgressPaymentNumber?.ToString(CultureInfo.InvariantCulture) ?? "-", "Dönem", item.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) ?? "-"),
             Header("KALEM", "TUTAR", "KALEM", "TUTAR"),
             Row("Hizmet Tutarı", Money(c.CombinedServiceAmount), "Fiyat Farkı", Money(c.CombinedPriceDifferenceExcludingVat)),
