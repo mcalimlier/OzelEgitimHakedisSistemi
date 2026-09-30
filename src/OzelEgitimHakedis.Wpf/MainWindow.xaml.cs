@@ -68,7 +68,6 @@ public partial class MainWindow : Window
         UpdateShellText("Ana Ekran");
         RoutesListBox.ItemsSource = _routes;
         ContractorsListBox.ItemsSource = _contractors;
-        ContractorSelectionComboBox.ItemsSource = _contractors;
         HomeTenderListBox.ItemsSource = _contracts;
         RouteTenderListBox.ItemsSource = _contracts;
         ProgressTenderListBox.ItemsSource = _contracts;
@@ -308,51 +307,6 @@ public partial class MainWindow : Window
             ?? _contracts.FirstOrDefault(x => string.Equals(x.TenderNumber, TenderNumberTextBox.Text.Trim(), StringComparison.OrdinalIgnoreCase));
     }
 
-    private ContractorDraft? GetSelectedContractor()
-    {
-        return ContractorSelectionComboBox.SelectedItem as ContractorDraft;
-    }
-
-    private string CurrentContractorName =>
-        GetSelectedContractor()?.Name
-        ?? GetSelectedContract()?.ContractorName
-        ?? string.Empty;
-
-    private string CurrentContractorTax =>
-        GetSelectedContractor()?.TaxOrIdentityNumber
-        ?? GetSelectedContract()?.ContractorTaxOrIdentityNumber
-        ?? string.Empty;
-
-    private string CurrentContractorBank =>
-        GetSelectedContractor()?.BankAccountNumber
-        ?? GetSelectedContract()?.BankAccountNumber
-        ?? string.Empty;
-
-    private ContractDraftData? BuildContractFromFormOrNull()
-    {
-        if (string.IsNullOrWhiteSpace(TenderNumberTextBox.Text) ||
-            !TryParseDecimal(ContractAmountTextBox.Text, out var amount))
-            return null;
-
-        var contractor = GetSelectedContractor();
-
-        return new ContractDraftData(
-            TenderNumberTextBox.Text.Trim(),
-            ContractNumberTextBox.Text.Trim(),
-            WorkNameTextBox.Text.Trim(),
-            contractor?.Name ?? string.Empty,
-            amount,
-            DateOnly.FromDateTime(StartDatePicker.SelectedDate ?? DateTime.Today),
-            DateOnly.FromDateTime(EndDatePicker.SelectedDate ?? DateTime.Today),
-            VatExemptCheckBox.IsChecked == true,
-            TenderDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(TenderDatePicker.SelectedDate.Value) : null,
-            ContractDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(ContractDatePicker.SelectedDate.Value) : null,
-            contractor?.TaxOrIdentityNumber ?? ContractorIdentityNumberTextBox.Text.Trim(),
-            contractor?.BankAccountNumber ?? BankAccountNumberTextBox.Text.Trim(),
-            int.TryParse(ContractWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var workDays) ? workDays : 0,
-            TryParseDecimal(ContractTransportDailyPriceTextBox.Text, out var transportPrice) ? transportPrice : 0m);
-    }
-
     private void ApplyContractToForm(ContractDraftData contract)
     {
         _suppressSelectionEvents = true;
@@ -370,19 +324,6 @@ public partial class MainWindow : Window
             ContractDatePicker.SelectedDate = contract.ContractDate?.ToDateTime(TimeOnly.MinValue);
             VatExemptCheckBox.IsChecked = contract.VatExempt;
 
-            var contractor = FindContractor(contract.ContractorTaxOrIdentityNumber);
-            if (contractor is not null)
-            {
-                ContractorSelectionComboBox.SelectedItem = contractor;
-                ContractorIdentityNumberTextBox.Text = contractor.TaxOrIdentityNumber;
-                BankAccountNumberTextBox.Text = contractor.BankAccountNumber;
-            }
-            else
-            {
-                ContractorSelectionComboBox.SelectedItem = null;
-                ContractorIdentityNumberTextBox.Text = contract.ContractorTaxOrIdentityNumber;
-                BankAccountNumberTextBox.Text = contract.BankAccountNumber;
-            }
         }
         finally
         {
@@ -397,9 +338,6 @@ public partial class MainWindow : Window
         TenderNumberTextBox.Clear();
         ContractNumberTextBox.Clear();
         WorkNameTextBox.Clear();
-        ContractorSelectionComboBox.SelectedItem = null;
-        ContractorIdentityNumberTextBox.Clear();
-        BankAccountNumberTextBox.Clear();
         ContractWorkDaysTextBox.Clear();
         ContractTransportDailyPriceTextBox.Clear();
         ContractAmountTextBox.Clear();
@@ -451,17 +389,11 @@ public partial class MainWindow : Window
 
     private void UpdateRouteContractorSelector(ContractDraftData? contract)
     {
-        var contractors = contract is null
-            ? Array.Empty<ContractorDraft>()
-            : _contractors.Where(x =>
-                string.Equals(x.TaxOrIdentityNumber, contract.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase))
-              .ToArray();
-
         _suppressSelectionEvents = true;
         try
         {
-            RouteContractorListBox.ItemsSource = contractors;
-            RouteContractorListBox.SelectedIndex = contractors.Length > 0 ? 0 : -1;
+            RouteContractorListBox.ItemsSource = _contractors.ToArray();
+            RouteContractorListBox.SelectedIndex = -1;
         }
         finally
         {
@@ -470,9 +402,7 @@ public partial class MainWindow : Window
 
         UpdateRouteListView();
         RouteSelectedTenderTextBlock.Text = contract is null ? "İhale: seçilmedi" : $"İhale: {contract.TenderNumber}";
-        RouteSelectedContractorTextBlock.Text = contractors.Length > 0
-            ? $"Yüklenici: {contractors[0].Name}"
-            : "Yüklenici: firma seçilmemiş";
+        RouteSelectedContractorTextBlock.Text = "Yüklenici: firma seçilmemiş";
     }
 
     private void UpdateRouteListView()
@@ -529,7 +459,7 @@ public partial class MainWindow : Window
         }
 
         HomeSelectedTenderSummaryTextBlock.Text =
-            $"{contract.TenderNumber} • {contract.WorkName} • {contract.ContractorName} • " +
+            $"{contract.TenderNumber} • {contract.WorkName} • " +
             $"Sözleşme {FormatMoney(contract.ContractAmount)} • " +
             $"{contract.StartDate:dd.MM.yyyy}–{contract.EndDate:dd.MM.yyyy} • " +
             $"{(_routes.Count(x => string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase)))} hat";
@@ -590,9 +520,6 @@ public partial class MainWindow : Window
         }
 
         _editingContractorKey = null;
-        ContractorSelectionComboBox.ItemsSource = null;
-        ContractorSelectionComboBox.ItemsSource = _contractors;
-        ContractorSelectionComboBox.SelectedItem = updated;
         UpdateContractorSummary();
         SavePersistedData();
         UpdateContractSelectors();
@@ -622,12 +549,12 @@ public partial class MainWindow : Window
         if (sender is not Button { Tag: ContractorDraft contractor })
             return;
 
-        var usedByContract = _contracts.Any(x =>
+        var usedByRoute = _routes.Any(x =>
             string.Equals(x.ContractorTaxOrIdentityNumber, contractor.TaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase));
 
-        if (usedByContract)
+        if (usedByRoute)
         {
-            ShowAlreadyRegistered($"'{contractor.Name}' kayıtlı ihalelerde kullanılıyor. Önce ilişkili ihaleleri düzeltin; firma silinmedi.");
+            ShowAlreadyRegistered($"'{contractor.Name}' kayıtlı hatlarda kullanılıyor. Önce ilişkili hatları düzeltin; firma silinmedi.");
             return;
         }
 
@@ -659,20 +586,6 @@ public partial class MainWindow : Window
 
     private void UpdateReferencesForContractorEdit(ContractorDraft oldContractor, ContractorDraft updated)
     {
-        for (var i = 0; i < _contracts.Count; i++)
-        {
-            var contract = _contracts[i];
-            if (string.Equals(contract.ContractorTaxOrIdentityNumber, oldContractor.TaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase))
-            {
-                _contracts[i] = contract with
-                {
-                    ContractorName = updated.Name,
-                    ContractorTaxOrIdentityNumber = updated.TaxOrIdentityNumber,
-                    BankAccountNumber = updated.BankAccountNumber
-                };
-            }
-        }
-
         for (var i = 0; i < _routes.Count; i++)
         {
             var route = _routes[i];
@@ -719,7 +632,7 @@ public partial class MainWindow : Window
                 .FirstOrDefault();
 
             HomeWorkNameTextBlock.Text = contract.WorkName;
-            HomeContractorTextBlock.Text = contract.ContractorName;
+            HomeContractorTextBlock.Text = "Hat üzerinden seçilir";
             HomeProgressTextBlock.Text = latest?.ProgressPaymentNumber.HasValue == true
                 ? $"Hakediş No {latest.ProgressPaymentNumber.Value}"
                 : latest is null ? "Henüz hakediş yok" : "Son hesaplama";
@@ -750,7 +663,7 @@ public partial class MainWindow : Window
             : _routes.Count(x => string.Equals(x.TenderNumber, tender, StringComparison.OrdinalIgnoreCase)).ToString(CultureInfo.CurrentCulture);
 
         HomeWorkNameTextBlock.Text = contract?.WorkName ?? "—";
-        HomeContractorTextBlock.Text = contract?.ContractorName ?? "—";
+        HomeContractorTextBlock.Text = contract is null ? "—" : "Hat üzerinden seçilir";
         HomeNetPayableTextBlock.Text = FormatMoney(history.Sum(x => x.Calculation.NetPayable));
 
         var latest = history
@@ -802,13 +715,8 @@ public partial class MainWindow : Window
             : ContractNumberTextBox.Text.Trim() +
               (ContractDatePicker.SelectedDate.HasValue ? $" • {ContractDatePicker.SelectedDate.Value:dd.MM.yyyy}" : "");
 
-        ContractSummaryContractorTextBlock.Text = string.IsNullOrWhiteSpace(CurrentContractorName)
-            ? "Bekleniyor" : CurrentContractorName;
-
-        ContractSummaryIdentityTextBlock.Text = string.IsNullOrWhiteSpace(CurrentContractorTax) ? "—" : CurrentContractorTax;
         ContractSummaryAmountTextBlock.Text = TryParseDecimal(ContractAmountTextBox.Text, out var summaryAmount)
             ? FormatMoney(summaryAmount) : FormatMoney(0);
-        ContractSummaryBankTextBlock.Text = string.IsNullOrWhiteSpace(CurrentContractorBank) ? "—" : CurrentContractorBank;
 
         var workDaysText = int.TryParse(ContractWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var workDays)
             ? workDays.ToString(CultureInfo.CurrentCulture) : "0";
@@ -818,20 +726,6 @@ public partial class MainWindow : Window
         ContractSummaryWorkDaysTextBlock.Text = $"{workDaysText} gün • {transportPriceText}/gün";
         ContractSummaryVatTextBlock.Text =
             $"{(VatExemptCheckBox.IsChecked == true ? "KDV İstisnası" : "KDV Uygulanır")} • {_routes.Count(x => string.Equals(x.TenderNumber, TenderNumberTextBox.Text.Trim(), StringComparison.OrdinalIgnoreCase))} hat";
-    }
-
-    private void ContractorSelectionComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (_suppressSelectionEvents)
-            return;
-
-        if (ContractorSelectionComboBox.SelectedItem is ContractorDraft contractor)
-        {
-            ContractorIdentityNumberTextBox.Text = contractor.TaxOrIdentityNumber;
-            BankAccountNumberTextBox.Text = contractor.BankAccountNumber;
-        }
-
-        UpdateContractSummaryView();
     }
 
     private void HomeTenderListBox_RefreshSelection()
@@ -1139,9 +1033,6 @@ public partial class MainWindow : Window
             errors.Add("İşin Adı");
             MarkInvalid(WorkNameTextBox);
         }
-        if (GetSelectedContractor() is null)
-            errors.Add("Yüklenici Firma");
-
         if (!TryParseDecimal(ContractAmountTextBox.Text, out var contractAmount) || contractAmount < 0)
         {
             errors.Add("Sözleşme Bedeli");
@@ -1171,20 +1062,21 @@ public partial class MainWindow : Window
             return;
         }
 
-        var contractor = GetSelectedContractor()!;
+        var existingContractForLegacy = _contracts.FirstOrDefault(x =>
+            string.Equals(x.TenderNumber, TenderNumberTextBox.Text.Trim(), StringComparison.OrdinalIgnoreCase));
         var proposedContract = new ContractDraftData(
             TenderNumberTextBox.Text.Trim(),
             ContractNumberTextBox.Text.Trim(),
             WorkNameTextBox.Text.Trim(),
-            contractor.Name,
+            existingContractForLegacy?.ContractorName ?? string.Empty,
             contractAmount,
             DateOnly.FromDateTime(StartDatePicker.SelectedDate ?? DateTime.Today),
             DateOnly.FromDateTime(EndDatePicker.SelectedDate ?? DateTime.Today),
             VatExemptCheckBox.IsChecked == true,
             TenderDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(TenderDatePicker.SelectedDate.Value) : null,
             ContractDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(ContractDatePicker.SelectedDate.Value) : null,
-            contractor.TaxOrIdentityNumber,
-            contractor.BankAccountNumber,
+            existingContractForLegacy?.ContractorTaxOrIdentityNumber ?? string.Empty,
+            existingContractForLegacy?.BankAccountNumber ?? string.Empty,
             contractWorkDays,
             transportDailyPrice);
 
@@ -1229,8 +1121,6 @@ public partial class MainWindow : Window
                     _routes[routeIndex] = route with
                     {
                         TenderNumber = proposedContract.TenderNumber,
-                        ContractorTaxOrIdentityNumber = proposedContract.ContractorTaxOrIdentityNumber,
-                        ContractorName = proposedContract.ContractorName,
                         DailyPrice = proposedContract.TransportDailyPrice
                     };
                 }
@@ -1487,18 +1377,14 @@ public partial class MainWindow : Window
                 ContractAmount = updatedContract.ContractAmount,
                 IsVatExempt = updatedContract.VatExempt
             };
-            var contractor = FindContractor(updatedContract.ContractorTaxOrIdentityNumber);
             var updated = item with
             {
-                ContractorName = updatedContract.ContractorName,
                 TenderNumber = updatedContract.TenderNumber,
                 ContractNumber = updatedContract.ContractNumber,
                 TenderDate = updatedContract.TenderDate,
                 ContractDate = updatedContract.ContractDate,
                 ContractStartDate = updatedContract.StartDate,
-                ContractEndDate = updatedContract.EndDate,
-                BankAccountNumber = contractor?.BankAccountNumber ?? updatedContract.BankAccountNumber,
-                ContractorTaxOrIdentityNumber = updatedContract.ContractorTaxOrIdentityNumber
+                ContractEndDate = updatedContract.EndDate
             };
             RecalculateHistoryItem(i, input, updated);
         }
@@ -2203,8 +2089,7 @@ public partial class MainWindow : Window
         var routes = contract is null
             ? Array.Empty<RouteDraft>()
             : _routes.Where(x =>
-                string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(x.ContractorTaxOrIdentityNumber, contract.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase))
+                string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase))
               .ToArray();
 
         var previous = ReportRouteComboBox.SelectedItem as RouteDraft;
