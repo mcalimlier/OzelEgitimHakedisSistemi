@@ -453,10 +453,26 @@
                                             </Border>
                                             <Border Style="{StaticResource Card}" Margin="0,14,0,0">
                                                 <StackPanel>
-                                                    <TextBlock Text="SONRAKİ ADIMLAR" Style="{StaticResource CardTitle}"/>
-                                                    <TextBlock Text="01  Hatları tanımla" Style="{StaticResource CardSubtitle}" Margin="0,10,0,0"/>
-                                                    <TextBlock Text="02  Dönem bilgilerini gir" Style="{StaticResource CardSubtitle}" Margin="0,7,0,0"/>
-                                                    <TextBlock Text="03  Hakedişi oluştur" Style="{StaticResource CardSubtitle}" Margin="0,7,0,0"/>
+                                                    <TextBlock Text="KAYITLI İHALELER / DOSYALAR" Style="{StaticResource CardTitle}"/>
+                                                    <TextBlock Text="İhale / dosya no ana ayırt edicidir; her ihale kendi hatları ve yüklenicisiyle ilişkilidir." Style="{StaticResource CardSubtitle}" Margin="0,2,0,10" TextWrapping="Wrap"/>
+                                                    <ItemsControl x:Name="ContractsListBox">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,3">
+                                                                    <Grid>
+                                                                        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="74"/><ColumnDefinition Width="52"/></Grid.ColumnDefinitions>
+                                                                        <StackPanel>
+                                                                            <TextBlock Text="{Binding TenderNumber}" Foreground="White" FontSize="14" FontWeight="Bold"/>
+                                                                            <TextBlock Text="{Binding ContractorName}" Foreground="#C5D7E7" FontSize="12.5"/>
+                                                                            <TextBlock Text="{Binding WorkName}" Foreground="#C5D7E7" FontSize="11.5" TextWrapping="Wrap"/>
+                                                                        </StackPanel>
+                                                                        <Button Grid.Column="1" Content="DÜZENLE" Tag="{Binding}" Click="EditContractButton_Click" Style="{StaticResource SecondaryButton}" Height="34" FontSize="10.5" Margin="4,0"/>
+                                                                        <Button Grid.Column="2" Content="SİL" Tag="{Binding}" Click="DeleteContractButton_Click" Style="{StaticResource SecondaryButton}" Height="34" FontSize="10.5" Margin="4,0"/>
+                                                                    </Grid>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
                                                 </StackPanel>
                                             </Border>
                                         </StackPanel>
@@ -539,7 +555,10 @@
                                                     <TextBlock Grid.Row="7" Grid.Column="2" Text="Dönem Tarihi" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,8,0,8"/>
                                                     <DatePicker x:Name="ProgressPeriodDatePicker" Grid.Row="7" Grid.Column="3" Margin="8" Style="{StaticResource FieldDatePicker}"/>
                                                 </Grid>
-                                                <Border x:Name="ProgressValidationBanner" Visibility="Collapsed" Background="#FFF1F1" BorderBrush="#E53935" BorderThickness="1.5" CornerRadius="9" Padding="12,9" Margin="6,10,0,0"><StackPanel><TextBlock Text="HESAPLAMA GİRDİLERİNİ KONTROL EDİN" Foreground="#C62828" FontSize="12.5" FontWeight="Bold"/><TextBlock x:Name="ProgressValidationMessageTextBlock" Foreground="#8E1B1B" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,3,0,0"/></StackPanel></Border><Button Content="HAKEDİŞİ HESAPLA" Click="CalculateProgressButton_Click" Style="{StaticResource ModernButton}" Width="220" Margin="6,12,0,0" HorizontalAlignment="Left"/>
+                                                <Border x:Name="ProgressValidationBanner" Visibility="Collapsed" Background="#FFF1F1" BorderBrush="#E53935" BorderThickness="1.5" CornerRadius="9" Padding="12,9" Margin="6,10,0,0"><StackPanel><TextBlock Text="HESAPLAMA GİRDİLERİNİ KONTROL EDİN" Foreground="#C62828" FontSize="12.5" FontWeight="Bold"/><TextBlock x:Name="ProgressValidationMessageTextBlock" Foreground="#8E1B1B" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,3,0,0"/></StackPanel></Border><StackPanel Orientation="Horizontal" Margin="6,12,0,0">
+                                                    <Button Content="HAKEDİŞİ HESAPLA" Click="CalculateProgressButton_Click" Style="{StaticResource ModernButton}" Width="220"/>
+                                                    <Button Content="KAYITLI HAKEDİŞİ DÜZENLE" Click="EditCurrentProgressButton_Click" Style="{StaticResource SecondaryButton}" Width="190" Margin="10,0,0,0"/>
+                                                </StackPanel>
                                                 <TextBlock x:Name="CalculationStatusTextBlock" Style="{StaticResource ValidationText}"/>
                                             </StackPanel>
                                         </Border>
