@@ -50,6 +50,7 @@
         <Style TargetType="TextBox">
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontSize" Value="16.5"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Padding" Value="10,0"/>
         </Style>
@@ -190,46 +191,14 @@
             </Setter>
         </Style>
 
-        <Style x:Key="PremiumPanel" TargetType="Border">
-            <Setter Property="Background" Value="{StaticResource PremiumPanelBrush}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource PremiumGoldBorderBrush}"/>
-            <Setter Property="BorderThickness" Value="1.25"/>
+        <Style x:Key="PremiumPanel" TargetType="Border" BasedOn="{StaticResource Card}">
             <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="BorderThickness" Value="1.25"/>
         </Style>
 
-        <Style x:Key="PremiumFieldTextBox" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
-            <Setter Property="Background" Value="{StaticResource PremiumInputBrush}"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderBrush" Value="{StaticResource PremiumInputBorderBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
+        <Style x:Key="PremiumFieldTextBox" TargetType="TextBox" BasedOn="{StaticResource FieldTextBox}">
             <Setter Property="Height" Value="42"/>
-            <Setter Property="Padding" Value="10,0"/>
-            <Setter Property="CaretBrush" Value="White"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TextBox">
-                        <Border x:Name="Border"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="6">
-                            <ScrollViewer x:Name="PART_ContentHost"
-                                          Padding="{TemplateBinding Padding}"
-                                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                          Focusable="False"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource Gold500Brush}"/>
-                                <Setter TargetName="Border" Property="BorderThickness" Value="1.5"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="Border" Property="Opacity" Value="0.5"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
+            <Setter Property="FontSize" Value="16.5"/>
         </Style>
 
         <!-- ============================================================
@@ -321,13 +290,14 @@
         </Style>
 
         <Style x:Key="FieldDatePicker" TargetType="DatePicker">
-            <Setter Property="Background" Value="White"/>
+            <Setter Property="Background" Value="#FFFFFF"/>
             <Setter Property="Foreground" Value="{StaticResource Text900Brush}"/>
             <Setter Property="BorderBrush" Value="#D2DBE7"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Height" Value="42"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="15.5"/>
+            <Setter Property="FontSize" Value="16.5"/>
+            <Setter Property="Padding" Value="10,0"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
 
