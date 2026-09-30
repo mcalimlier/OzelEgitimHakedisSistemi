@@ -35,6 +35,9 @@ public partial class MainWindow : Window
     private RouteDraft? _editingRoute;
     private bool _suppressSelectionEvents;
     private readonly OehsApplicationDataStore _dataStore = new();
+    private readonly ProgressPaymentArchiveStore _archiveStore = new();
+    private readonly ObservableCollection<ArchiveRow> _archiveRows = new();
+    private Guid? _lastCalculatedHistoryId;
     private const double DocumentContentWidth = 690d;
     private static readonly double[] ThreeColumnWidths = { 58d, 438d, 194d };
     private static readonly double[] ThreeValueWidths = { 45d, 360d, 135d };
@@ -72,6 +75,7 @@ public partial class MainWindow : Window
         RouteTenderListBox.ItemsSource = _contracts;
         ProgressTenderListBox.ItemsSource = _contracts;
         HistoryItemsControl.ItemsSource = _historyRows;
+        ArchiveItemsControl.ItemsSource = _archiveRows;
         SummaryItemsControl.ItemsSource = _summaryRows;
         ReportItemsControl.ItemsSource = _reportRows;
         ProgressRouteComboBox.ItemsSource = _routes;
@@ -95,6 +99,7 @@ public partial class MainWindow : Window
         UpdateSummaryView();
         UpdateReportView();
         UpdateAcceptanceView();
+        UpdateArchiveView();
     }
 
     private void ConfigureWindow()
@@ -242,12 +247,13 @@ public partial class MainWindow : Window
         LinesPanel.Visibility = page == "Lines" ? Visibility.Visible : Visibility.Collapsed;
         ContractorsPanel.Visibility = page == "Contractors" ? Visibility.Visible : Visibility.Collapsed;
         HistoryPanel.Visibility = page == "History" ? Visibility.Visible : Visibility.Collapsed;
+        ArchivePanel.Visibility = page == "Archives" ? Visibility.Visible : Visibility.Collapsed;
         SummaryPanel.Visibility = page == "Summary" ? Visibility.Visible : Visibility.Collapsed;
         ReportsPanel.Visibility = page == "Reports" ? Visibility.Visible : Visibility.Collapsed;
         AcceptancePanel.Visibility = page == "Acceptance" ? Visibility.Visible : Visibility.Collapsed;
         SettingsPanel.Visibility = page == "Settings" ? Visibility.Visible : Visibility.Collapsed;
         PlaceholderPanel.Visibility = page is "Home" or "Contract" or "Progress" or "Lines" or "Contractors"
-            or "History" or "Summary" or "Reports" or "Acceptance" or "Settings"
+            or "History" or "Archives" or "Summary" or "Reports" or "Acceptance" or "Settings"
             ? Visibility.Collapsed
             : Visibility.Visible;
 
@@ -258,6 +264,7 @@ public partial class MainWindow : Window
             "Lines" => "Hatlar",
             "Contractors" => "Yüklenici Firmalar",
             "History" => "Hakediş Geçmişi",
+            "Archives" => "Arşivler",
             "Summary" => "İcmal",
             "Reports" => "Çıktılar",
             "Acceptance" => "Kabul Tutanağı",
@@ -283,7 +290,7 @@ public partial class MainWindow : Window
         foreach (var button in new[]
         {
             NavHome, NavContract, NavContractors, NavLines,
-            NavProgress, NavReports, NavHistory, NavAcceptance, NavSettings
+            NavProgress, NavReports, NavHistory, NavArchives, NavAcceptance, NavSettings
         })
         {
             button.Uid = button.Tag?.ToString() == page ? "Active" : string.Empty;
@@ -295,8 +302,12 @@ public partial class MainWindow : Window
         if (string.IsNullOrWhiteSpace(taxOrIdentityNumber))
             return null;
 
+        var identity = OehsIdentityService.NormalizeIdentity(taxOrIdentityNumber);
         return _contractors.FirstOrDefault(x =>
-            string.Equals(x.TaxOrIdentityNumber, taxOrIdentityNumber, StringComparison.OrdinalIgnoreCase));
+            string.Equals(
+                OehsIdentityService.NormalizeIdentity(x.TaxOrIdentityNumber),
+                identity,
+                StringComparison.Ordinal));
     }
 
     private ContractDraftData? GetSelectedContract()
@@ -596,22 +607,32 @@ public partial class MainWindow : Window
             }
         }
 
-        for (var i = 0; i < _progressHistory.Count; i++)
-        {
-            var item = _progressHistory[i];
-            if (!string.IsNullOrWhiteSpace(oldContractor.TaxOrIdentityNumber)
-                    ? string.Equals(item.ContractorTaxOrIdentityNumber, oldContractor.TaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase)
-                    : string.Equals(item.ContractorName, oldContractor.Name, StringComparison.OrdinalIgnoreCase))
-            {
-                var updatedHistory = item with
-                {
-                    ContractorName = updated.Name,
-                    BankAccountNumber = updated.BankAccountNumber,
-                    ContractorTaxOrIdentityNumber = updated.TaxOrIdentityNumber
-                };
-                RecalculateHistoryItem(i, item.Input, updatedHistory);
-            }
-        }
+        var oldCore = new Contractor(
+            oldContractor.Name,
+            oldContractor.TaxOrIdentityNumber,
+            oldContractor.Address,
+            oldContractor.Phone,
+            oldContractor.Email,
+            oldContractor.BankAccountNumber,
+            oldContractor.ContactPerson);
+
+        var newCore = new Contractor(
+            updated.Name,
+            updated.TaxOrIdentityNumber,
+            updated.Address,
+            updated.Phone,
+            updated.Email,
+            updated.BankAccountNumber,
+            updated.ContactPerson);
+
+        var propagated = ProgressPaymentPropagationService.RecalculateForContractorChange(
+            _progressHistory.ToArray(),
+            oldCore,
+            newCore);
+
+        _progressHistory.Clear();
+        foreach (var item in propagated)
+            _progressHistory.Add(item);
     }
 
     private void HomeTenderListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -1276,16 +1297,6 @@ public partial class MainWindow : Window
         return $"{tender}_{route}_Hakedis-{progress}_{period}_{item.Id:N}";
     }
 
-    private static void SaveProgressArchive(ProgressPaymentHistoryData item)
-    {
-        var archiveFolder = Path.Combine(OehsDesktopRoot, "Arsiv", "Hakedisler");
-        Directory.CreateDirectory(archiveFolder);
-
-        var filePath = Path.Combine(archiveFolder, BuildArchiveKey(item) + ".json");
-        var json = JsonSerializer.Serialize(item, JsonWriteOptions);
-        File.WriteAllText(filePath, json);
-    }
-
     private string SaveRouteDocumentsArchiveMetadata(RouteDraft route, ProgressPaymentHistoryData latest)
     {
         var folderName = BuildArchiveKey(latest);
@@ -1343,62 +1354,72 @@ public partial class MainWindow : Window
             Input = input,
             Calculation = result
         };
-        SaveProgressArchive(_progressHistory[index]);
     }
 
     private void RecalculateHistoriesForTenderChange(ContractDraftData oldContract, ContractDraftData updatedContract)
     {
-        for (var i = 0; i < _progressHistory.Count; i++)
-        {
-            var item = _progressHistory[i];
-            if (!string.Equals(item.TenderNumber, oldContract.TenderNumber, StringComparison.OrdinalIgnoreCase))
-                continue;
+        var propagated = ProgressPaymentPropagationService.RecalculateForContractChange(
+            _progressHistory.ToArray(),
+            _routes.Select(x => new RouteData(
+                x.RouteNumber,
+                x.Name,
+                x.DailyPrice,
+                x.GuideWorkDays,
+                x.GuideDailyPrice,
+                x.TransportWorkDays,
+                x.TenderNumber,
+                x.ContractorTaxOrIdentityNumber)).ToArray(),
+            oldContract,
+            updatedContract);
 
-            var input = item.Input with
-            {
-                ContractAmount = updatedContract.ContractAmount,
-                IsVatExempt = updatedContract.VatExempt
-            };
-            var updated = item with
-            {
-                TenderNumber = updatedContract.TenderNumber,
-                ContractNumber = updatedContract.ContractNumber,
-                WorkName = updatedContract.WorkName,
-                TenderDate = updatedContract.TenderDate,
-                ContractDate = updatedContract.ContractDate,
-                ContractStartDate = updatedContract.StartDate,
-                ContractEndDate = updatedContract.EndDate
-            };
-            RecalculateHistoryItem(i, input, updated);
-        }
+        _progressHistory.Clear();
+        foreach (var item in propagated)
+            _progressHistory.Add(item);
     }
 
     private void UpdateHistoryForRouteEdit(RouteDraft oldRoute, RouteDraft updatedRoute)
     {
-        for (var i = 0; i < _progressHistory.Count; i++)
-        {
-            var item = _progressHistory[i];
-            if (!string.Equals(item.TenderNumber, oldRoute.TenderNumber, StringComparison.OrdinalIgnoreCase) ||
-                !string.Equals(item.RouteNumber, oldRoute.RouteNumber, StringComparison.OrdinalIgnoreCase) ||
-                !string.Equals(item.ContractorTaxOrIdentityNumber, oldRoute.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase))
-                continue;
+        var oldData = new RouteData(
+            oldRoute.RouteNumber,
+            oldRoute.Name,
+            oldRoute.DailyPrice,
+            oldRoute.GuideWorkDays,
+            oldRoute.GuideDailyPrice,
+            oldRoute.TransportWorkDays,
+            oldRoute.TenderNumber,
+            oldRoute.ContractorTaxOrIdentityNumber);
 
-            var input = item.Input with
-            {
-                WorkDays = updatedRoute.TransportWorkDays,
-                DailyPrice = updatedRoute.DailyPrice,
-                GuideWorkDays = updatedRoute.GuideWorkDays,
-                GuideDailyPrice = updatedRoute.GuideDailyPrice
-            };
-            var updated = item with
-            {
-                RouteNumber = updatedRoute.RouteNumber,
-                RouteName = updatedRoute.Name,
-                ContractorName = updatedRoute.ContractorName,
-                ContractorTaxOrIdentityNumber = updatedRoute.ContractorTaxOrIdentityNumber
-            };
-            RecalculateHistoryItem(i, input, updated);
-        }
+        var newData = new RouteData(
+            updatedRoute.RouteNumber,
+            updatedRoute.Name,
+            updatedRoute.DailyPrice,
+            updatedRoute.GuideWorkDays,
+            updatedRoute.GuideDailyPrice,
+            updatedRoute.TransportWorkDays,
+            updatedRoute.TenderNumber,
+            updatedRoute.ContractorTaxOrIdentityNumber);
+
+        var contractor = FindContractor(updatedRoute.ContractorTaxOrIdentityNumber);
+        var contractorSnapshot = contractor is null
+            ? new Contractor(updatedRoute.ContractorName, updatedRoute.ContractorTaxOrIdentityNumber)
+            : new Contractor(
+                contractor.Name,
+                contractor.TaxOrIdentityNumber,
+                contractor.Address,
+                contractor.Phone,
+                contractor.Email,
+                contractor.BankAccountNumber,
+                contractor.ContactPerson);
+
+        var propagated = ProgressPaymentPropagationService.RecalculateForRouteChange(
+            _progressHistory.ToArray(),
+            oldData,
+            newData,
+            contractorSnapshot);
+
+        _progressHistory.Clear();
+        foreach (var item in propagated)
+            _progressHistory.Add(item);
     }
 
     private void CalculateProgressButton_Click(object sender, RoutedEventArgs e)
@@ -1583,7 +1604,7 @@ public partial class MainWindow : Window
             }
 
             SavePersistedData();
-            SaveProgressArchive(historyItem);
+            _lastCalculatedHistoryId = historyItem.Id;
             UpdateHistoryView();
             UpdateSummaryView();
             UpdateReportView();
@@ -1592,15 +1613,298 @@ public partial class MainWindow : Window
 
             CalculationStatusTextBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(36, 104, 216));
             CalculationStatusTextBlock.FontWeight = FontWeights.SemiBold;
-            CalculationStatusTextBlock.Text = "Hesaplama başarıyla tamamlandı ve kayıt oluşturuldu.";
-
-            NavigationButton_Click(NavHome, e);
+            CalculationStatusTextBlock.Text = "Hesaplama başarıyla tamamlandı. Arşivlemek veya düzeltmek için aşağıdaki işlemleri kullanın.";
+            ArchiveCurrentProgressButton.Visibility = Visibility.Visible;
+            CorrectCurrentProgressButton.Visibility = Visibility.Visible;
+            UpdateArchiveView();
         }
         catch (ArgumentOutOfRangeException ex)
         {
             ProgressCalculationSummaryTextBlock.Text = "KONTROL";
             CalculationStatusTextBlock.Text = ex.Message;
         }
+    }
+
+    private ProgressPaymentHistoryData? GetLastCalculatedProgress()
+    {
+        if (_lastCalculatedHistoryId is Guid id)
+            return _progressHistory.FirstOrDefault(x => x.Id == id);
+
+        return GetSelectedProgressLatestPayment();
+    }
+
+    private void ArchiveCurrentProgressButton_Click(object sender, RoutedEventArgs e)
+    {
+        var item = GetLastCalculatedProgress();
+        if (item is null)
+        {
+            MessageBox.Show("Arşivlenecek tamamlanmış bir hakediş bulunamadı. Önce HAKEDİŞİ HESAPLA düğmesine basın.", "OEHS",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var contract = _contracts.FirstOrDefault(x =>
+            string.Equals(x.TenderNumber, item.TenderNumber, StringComparison.OrdinalIgnoreCase));
+        var route = _routes.FirstOrDefault(x =>
+            string.Equals(
+                OehsIdentityService.BuildRouteKey(x.TenderNumber, x.RouteNumber, x.ContractorTaxOrIdentityNumber),
+                OehsIdentityService.BuildRouteKey(item.TenderNumber ?? string.Empty, item.RouteNumber ?? string.Empty, item.ContractorTaxOrIdentityNumber ?? string.Empty),
+                StringComparison.Ordinal));
+
+        var contractor = route is null ? FindContractor(item.ContractorTaxOrIdentityNumber ?? string.Empty) : FindContractor(route.ContractorTaxOrIdentityNumber);
+        if (contract is null || route is null || contractor is null)
+        {
+            MessageBox.Show("Arşiv için ihale, hat ve yüklenici snapshot'ı çözümlenemedi. Kaydı kontrol edin.", "OEHS",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        var routeData = new RouteData(
+            route.RouteNumber,
+            route.Name,
+            route.DailyPrice,
+            route.GuideWorkDays,
+            route.GuideDailyPrice,
+            route.TransportWorkDays,
+            route.TenderNumber,
+            route.ContractorTaxOrIdentityNumber);
+
+        var prior = _progressHistory
+            .Where(x => string.Equals(
+                OehsIdentityService.BuildRouteKey(
+                    x.TenderNumber ?? string.Empty,
+                    x.RouteNumber ?? string.Empty,
+                    x.ContractorTaxOrIdentityNumber ?? string.Empty),
+                OehsIdentityService.BuildRouteKey(route.TenderNumber, route.RouteNumber, route.ContractorTaxOrIdentityNumber),
+                StringComparison.Ordinal))
+            .Where(x => !x.Id.Equals(item.Id))
+            .Where(x => x.PeriodDate.HasValue && (!item.PeriodDate.HasValue || x.PeriodDate.Value < item.PeriodDate.Value))
+            .OrderBy(x => x.PeriodDate)
+            .ThenBy(x => x.CreatedAt)
+            .ToArray();
+
+        var archive = new ProgressPaymentArchive(
+            "1.0",
+            1,
+            DateTime.UtcNow,
+            "ActiveRecord",
+            contract,
+            new Contractor(
+                contractor.Name,
+                OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber),
+                contractor.Address,
+                contractor.Phone,
+                contractor.Email,
+                contractor.BankAccountNumber,
+                contractor.ContactPerson),
+            routeData,
+            item,
+            prior,
+            BuildPdfPrintTitle(route, item) + ".pdf",
+            new[]
+            {
+                "Hakediş Raporu",
+                "Hizmet İşleri Hakediş Raporu",
+                "Hizmet İşleri Kabul Tutanağı",
+                "Hakediş İcmali"
+            });
+
+        try
+        {
+            var path = _archiveStore.Save(archive);
+            ArchiveStatusTextBlock.Text = "ARŞİV OLUŞTURULDU";
+            CalculationStatusTextBlock.Text = $"Hakediş arşivlendi: {Path.GetFileName(path)}";
+            UpdateArchiveView();
+            NavigationButton_Click(NavArchives, new RoutedEventArgs(Button.ClickEvent, NavArchives));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ProgressPaymentArchiveException)
+        {
+            ArchiveStatusTextBlock.Text = "ARŞİV HATASI";
+            CalculationStatusTextBlock.Text = ex.Message;
+        }
+    }
+
+    private void CorrectCurrentProgressButton_Click(object sender, RoutedEventArgs e)
+    {
+        var item = GetLastCalculatedProgress();
+        if (item is null)
+        {
+            MessageBox.Show("Düzeltilecek hakediş bulunamadı.", "OEHS", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        EditProgressWithTarget(item);
+    }
+
+    private void EditProgressWithTarget(ProgressPaymentHistoryData item)
+    {
+        var target = AskHistoryEditTarget(item);
+        switch (target)
+        {
+            case ProgressCorrectionTarget.Tender:
+                BeginContractHistoryEdit(item);
+                break;
+            case ProgressCorrectionTarget.Contractor:
+                BeginContractorHistoryEdit(item);
+                break;
+            case ProgressCorrectionTarget.Route:
+                BeginRouteHistoryEdit(item);
+                break;
+            case ProgressCorrectionTarget.ProgressPayment:
+                BeginProgressHistoryEdit(item);
+                break;
+        }
+    }
+
+    private void UpdateArchiveView()
+    {
+        _archiveRows.Clear();
+        var files = _archiveStore.List();
+
+        foreach (var file in files)
+        {
+            try
+            {
+                var archive = _archiveStore.Load(file.FullName);
+                var progress = archive.ProgressPayment.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-";
+                var period = archive.ProgressPayment.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-";
+                _archiveRows.Add(new ArchiveRow(
+                    file.FullName,
+                    $"İhale/Dosya: {archive.ProgressPayment.TenderNumber ?? "-"} • Hat {archive.ProgressPayment.RouteNumber ?? "-"} • Hakediş {progress}",
+                    $"Dönem: {period} • Yüklenici: {archive.Contractor.Name}",
+                    FormatMoney(archive.ProgressPayment.Calculation.NetPayable),
+                    $"v{archive.Revision:00}"));
+            }
+            catch (ProgressPaymentArchiveException)
+            {
+                _archiveRows.Add(new ArchiveRow(
+                    file.FullName,
+                    Path.GetFileNameWithoutExtension(file.Name),
+                    "Geçersiz veya okunamayan arşiv",
+                    "-",
+                    "GEÇERSİZ"));
+            }
+        }
+
+        ArchiveCountTextBlock.Text = _archiveRows.Count.ToString(CultureInfo.CurrentCulture);
+        ArchiveLatestRevisionTextBlock.Text = _archiveRows.LastOrDefault()?.RevisionText ?? "-";
+        ArchiveStatusTextBlock.Text = _archiveRows.Count == 0 ? "HAZIR" : "GÜNCEL";
+        ArchiveEmptyStateBorder.Visibility = _archiveRows.Count == 0
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+    }
+
+    private void LoadArchiveButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: ArchiveRow row })
+            return;
+
+        ProgressPaymentArchive archive;
+        try
+        {
+            archive = _archiveStore.Load(row.FullPath);
+        }
+        catch (ProgressPaymentArchiveException ex)
+        {
+            MessageBox.Show(ex.Message, "OEHS", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        var liveContract = _contracts.FirstOrDefault(x =>
+            string.Equals(x.TenderNumber, archive.ProgressPayment.TenderNumber, StringComparison.OrdinalIgnoreCase));
+        var liveRoute = _routes.FirstOrDefault(x =>
+            string.Equals(
+                OehsIdentityService.BuildRouteKey(x.TenderNumber, x.RouteNumber, x.ContractorTaxOrIdentityNumber),
+                OehsIdentityService.BuildRouteKey(
+                    archive.Route.TenderNumber,
+                    archive.Route.RouteNumber,
+                    archive.Route.ContractorTaxOrIdentityNumber),
+                StringComparison.Ordinal));
+
+        if (liveContract is null || liveRoute is null)
+        {
+            MessageBox.Show("Arşiv çağrıldı ancak güncel ihale/hat ilişkisi bulunamadı. Önce kaynak kayıtları tanımlayın veya düzeltin.", "OEHS",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        var existing = _progressHistory.FirstOrDefault(x => x.Id == archive.ProgressPayment.Id);
+        _editingHistoryId = existing?.Id;
+        _lastCalculatedHistoryId = existing?.Id;
+
+        _suppressSelectionEvents = true;
+        try
+        {
+            ProgressTenderListBox.SelectedItem = liveContract;
+        }
+        finally
+        {
+            _suppressSelectionEvents = false;
+        }
+        UpdateProgressContractorAndRoutes(liveContract);
+        ProgressRouteComboBox.SelectedItem = liveRoute;
+
+        var input = archive.ProgressPayment.Input;
+        WorkDaysTextBox.Text = liveRoute.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
+        DailyPriceTextBox.Text = liveRoute.DailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+        GuideWorkDaysTextBox.Text = liveRoute.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
+        GuideDailyPriceTextBox.Text = liveRoute.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+        DiscountTextBox.Text = input.DiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
+        GuideDiscountTextBox.Text = input.GuideDiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
+        PriceDifferenceTextBox.Text = input.PriceDifference.ToString("N2", CultureInfo.CurrentCulture);
+        GuidePriceDifferenceTextBox.Text = input.GuidePriceDifference.ToString("N2", CultureInfo.CurrentCulture);
+        TaxDebtTextBox.Text = input.TaxDebt.ToString("N2", CultureInfo.CurrentCulture);
+        SocialSecurityDebtTextBox.Text = input.SocialSecurityDebt.ToString("N2", CultureInfo.CurrentCulture);
+        MinimumWageSupportTextBox.Text = input.MinimumWageSupport.ToString("N2", CultureInfo.CurrentCulture);
+        InspectionPenaltyTextBox.Text = input.InspectionPenalty.ToString("N2", CultureInfo.CurrentCulture);
+        ProgressNumberTextBox.Text = archive.ProgressPayment.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
+        ProgressPeriodDatePicker.SelectedDate = archive.ProgressPayment.PeriodDate?.ToDateTime(TimeOnly.MinValue);
+
+        NavigationButton_Click(NavProgress, new RoutedEventArgs(Button.ClickEvent, NavProgress));
+        CalculationStatusTextBlock.Text = "Arşiv çağrıldı. Kaydetmeden önce güncel ihale/hat/yüklenici ilişkisi doğrulanacaktır.";
+    }
+
+    private void EditArchiveButton_Click(object sender, RoutedEventArgs e)
+    {
+        LoadArchiveButton_Click(sender, e);
+        if (sender is Button { Tag: ArchiveRow row })
+        {
+            var item = _archiveRows.FirstOrDefault(x => string.Equals(x.FullPath, row.FullPath, StringComparison.OrdinalIgnoreCase));
+            if (item is not null)
+                BeginCorrectionFromArchive(item);
+        }
+    }
+
+    private void BeginCorrectionFromArchive(ArchiveRow row)
+    {
+        try
+        {
+            var archive = _archiveStore.Load(row.FullPath);
+            EditProgressWithTarget(archive.ProgressPayment);
+        }
+        catch (ProgressPaymentArchiveException ex)
+        {
+            MessageBox.Show(ex.Message, "OEHS", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private void OpenArchiveFolderButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: ArchiveRow row })
+            return;
+
+        var folder = Path.GetDirectoryName(row.FullPath) ?? Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
+            "OzelEgitimHakedisSistemi",
+            "Arsiv",
+            "Hakedisler");
+
+        Directory.CreateDirectory(folder);
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = folder,
+            UseShellExecute = true
+        });
     }
 
     private void UpdateHistoryView()
@@ -1672,40 +1976,23 @@ public partial class MainWindow : Window
 
     private void EditHistoryButton_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not Button { Tag: HistoryRow row })
-            return;
-
-        var item = _progressHistory.FirstOrDefault(x => x.Id == row.Id);
-        if (item is null)
-            return;
-
-        var target = AskHistoryEditTarget(item);
-        switch (target)
+        if (sender is Button { Tag: HistoryRow row })
         {
-            case "Contract":
-                BeginContractHistoryEdit(item);
-                break;
-            case "Contractor":
-                BeginContractorHistoryEdit(item);
-                break;
-            case "Route":
-                BeginRouteHistoryEdit(item);
-                break;
-            case "Progress":
-                BeginProgressHistoryEdit(item);
-                break;
+            var item = _progressHistory.FirstOrDefault(x => x.Id == row.Id);
+            if (item is not null)
+                EditProgressWithTarget(item);
         }
     }
 
-    private string? AskHistoryEditTarget(ProgressPaymentHistoryData item)
+    private ProgressCorrectionTarget? AskHistoryEditTarget(ProgressPaymentHistoryData item)
     {
-        string? selected = null;
+        ProgressCorrectionTarget? selected = null;
         var dialog = new Window
         {
-            Title = "Hakediş Düzenleme",
+            Title = "Hakediş Düzelt",
             Owner = this,
-            Width = 470,
-            Height = 360,
+            Width = 500,
+            Height = 430,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
             ResizeMode = ResizeMode.NoResize,
             Background = System.Windows.Media.Brushes.White
@@ -1731,19 +2018,20 @@ public partial class MainWindow : Window
 
         foreach (var option in new[]
         {
-            ("İhale Bilgileri", "Contract"),
-            ("Yüklenici Firma Bilgileri", "Contractor"),
-            ("Hat Bilgileri", "Route"),
-            ("Hakediş Oluştur", "Progress")
+            ("İHALE BİLGİLERİ", ProgressCorrectionTarget.Tender),
+            ("YÜKLENİCİ FİRMA", ProgressCorrectionTarget.Contractor),
+            ("HAT BİLGİLERİ", ProgressCorrectionTarget.Route),
+            ("HAKEDİŞ GİRDİLERİ", ProgressCorrectionTarget.ProgressPayment),
+            ("VAZGEÇ", ProgressCorrectionTarget.Cancel)
         })
         {
             var button = new Button
             {
                 Content = option.Item1,
-                Width = 390,
+                Width = 420,
                 Height = 42,
                 Margin = new Thickness(0, 4, 0, 4),
-                Style = (Style)FindResource("ModernButton")
+                Style = (Style)FindResource(option.Item2 == ProgressCorrectionTarget.Cancel ? "SecondaryButton" : "ModernButton")
             };
             button.Click += (_, _) =>
             {
@@ -3379,6 +3667,13 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         string Email = "",
         string BankAccountNumber = "",
         string ContactPerson = "");
+
+    private sealed record ArchiveRow(
+        string FullPath,
+        string DisplayTitle,
+        string DetailText,
+        string NetPayableText,
+        string RevisionText);
 
     private sealed record HistoryRow(
         Guid Id,
