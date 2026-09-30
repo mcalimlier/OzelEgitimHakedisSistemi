@@ -189,6 +189,12 @@
                                 <TextBlock Text="KABUL TUTANAĞI" FontSize="16.5" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
+                        <Button x:Name="NavArchives" Style="{StaticResource NavButton}" Tag="Archives" Click="NavigationButton_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8F4;" FontSize="23" Width="42"/>
+                                <TextBlock Text="ARŞİVLER" FontSize="16.5" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
                         <Button x:Name="NavSettings" Style="{StaticResource NavButton}" Tag="Settings" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE713;" FontSize="23" Width="42"/>
@@ -668,6 +674,10 @@
                                                     </Grid>
                                                 </StackPanel>
                                             </Border>
+                                            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                                <Button x:Name="ArchiveCurrentProgressButton" Content="ARŞİVLE" Click="ArchiveCurrentProgressButton_Click" Style="{StaticResource ModernButton}" Width="135" Height="42"/>
+                                                <Button x:Name="CorrectCurrentProgressButton" Content="DÜZELT" Click="CorrectCurrentProgressButton_Click" Style="{StaticResource SecondaryButton}" Width="135" Height="42" Margin="10,0,0,0"/>
+                                            </StackPanel>
                                         </StackPanel>
                                     </Grid>
                                 </StackPanel>
@@ -962,6 +972,73 @@
 
                             </ScrollViewer>
 </Grid>
+
+<Grid x:Name="ArchivePanel" Visibility="Collapsed">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0">
+                                <StackPanel>
+                                    <TextBlock Text="ARŞİVLER" Style="{StaticResource PageTitle}"/>
+                                    <TextBlock Text="Arşivlenen hakediş snapshotlarını revision bilgileriyle çağırın, düzeltin ve klasörlerini açın." Style="{StaticResource PageSubtitle}"/>
+                                    <Grid Margin="0,0,0,14">
+                                        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Style="{StaticResource CardCompact}" Margin="0,0,8,0">
+                                            <StackPanel>
+                                                <TextBlock Text="ARŞİV KAYDI" Style="{StaticResource CardTitle}"/>
+                                                <TextBlock x:Name="ArchiveCountTextBlock" Text="0" Foreground="White" FontSize="28" FontWeight="Bold" Margin="0,7,0,0"/>
+                                                <TextBlock Text="Dosya" Style="{StaticResource CardSubtitle}"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Grid.Column="1" Style="{StaticResource CardCompact}" Margin="4,0">
+                                            <StackPanel>
+                                                <TextBlock Text="SON REVİZYON" Style="{StaticResource CardTitle}"/>
+                                                <TextBlock x:Name="ArchiveLatestRevisionTextBlock" Text="-" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,7,0,0"/>
+                                                <TextBlock Text="Seçilen kayda ait" Style="{StaticResource CardSubtitle}"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Grid.Column="2" Style="{StaticResource CardCompact}" Margin="8,0,0,0">
+                                            <StackPanel>
+                                                <TextBlock Text="DURUM" Style="{StaticResource CardTitle}"/>
+                                                <TextBlock x:Name="ArchiveStatusTextBlock" Text="HAZIR" Foreground="{StaticResource Gold500Brush}" FontSize="20" FontWeight="Bold" Margin="0,8,0,0"/>
+                                                <TextBlock Text="Arşiv dosyaları korunur." Style="{StaticResource CardSubtitle}" TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+                                    <Border Style="{StaticResource Card}">
+                                        <StackPanel>
+                                            <TextBlock Text="HAKEDİŞ ARŞİV DOSYALARI" Style="{StaticResource CardTitle}"/>
+                                            <TextBlock Text="Her revision bağımsız snapshot olarak saklanır; eski sürümler silinmez." Style="{StaticResource CardSubtitle}" Margin="0,0,0,14" TextWrapping="Wrap"/>
+                                            <ItemsControl x:Name="ArchiveItemsControl">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border Background="#F7F9FC" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="0,3">
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="120"/><ColumnDefinition Width="90"/><ColumnDefinition Width="285"/></Grid.ColumnDefinitions>
+                                                                <StackPanel>
+                                                                    <TextBlock Text="{Binding DisplayTitle}" Foreground="{StaticResource Text900Brush}" FontSize="14" FontWeight="SemiBold"/>
+                                                                    <TextBlock Text="{Binding DetailText}" Foreground="{StaticResource Text600Brush}" FontSize="12.5" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                                                </StackPanel>
+                                                                <TextBlock Grid.Column="1" Text="{Binding NetPayableText}" Foreground="{StaticResource Blue700Brush}" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                                <TextBlock Grid.Column="2" Text="{Binding RevisionText}" Foreground="{StaticResource Gold600Brush}" FontSize="12.5" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                                    <Button Content="ÇAĞIR" Tag="{Binding}" Click="LoadArchiveButton_Click" Style="{StaticResource SecondaryButton}" Height="36" Width="74" Margin="3,0"/>
+                                                                    <Button Content="DÜZELT" Tag="{Binding}" Click="EditArchiveButton_Click" Style="{StaticResource SecondaryButton}" Height="36" Width="78" Margin="3,0"/>
+                                                                    <Button Content="KLASÖRÜ AÇ" Tag="{Binding}" Click="OpenArchiveFolderButton_Click" Style="{StaticResource SecondaryButton}" Height="36" Width="110" Margin="3,0,0,0"/>
+                                                                </StackPanel>
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                            <Border x:Name="ArchiveEmptyStateBorder" Style="{StaticResource InfoNote}" Margin="0,10,0,0" Padding="18,14">
+                                                <StackPanel HorizontalAlignment="Center">
+                                                    <TextBlock Text="HENÜZ ARŞİV KAYDI YOK" Foreground="{StaticResource Blue700Brush}" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                                    <TextBlock Text="Hakediş sonucundan ARŞİVLE düğmesine bastığınızda snapshot burada oluşur." Foreground="{StaticResource Text600Brush}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,5,0,0"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Grid>
 
 <Grid x:Name="SummaryPanel" Visibility="Collapsed">
                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0"><StackPanel>
