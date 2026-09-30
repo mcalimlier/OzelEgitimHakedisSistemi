@@ -38,77 +38,90 @@ public sealed class ProgressPaymentCalculator
                 "Kesinti ve denetim cezası tutarları negatif olamaz.");
         }
 
-        // Kaynak Excel Hesaplama:
-        // K = (G * H) + I - J
-        // I = Taşıma Fiyat Farkı KDV Hariç, J = Taşıma İskonto.
-        var transportServiceAmount = input.WorkDays * input.DailyPrice;
+        // Kaynak Excel hesap zinciri 2 ondalık basamakta ilerler.
+        // Ara hücrelerdeki ROUND(...,2) davranışını korumak önemlidir;
+        // aksi halde özellikle kesinti toplamında kuruş farkı oluşabilir.
+        //
+        // Taşıma:
+        // K = (G*H) + I - J
+        // L = IF(KDV uygulanır, K*10/100)
+        // M = L/2
+        // N = K+M
+        // O = K+L
+        var transportServiceAmount = Round(input.WorkDays * input.DailyPrice);
         var transportPriceDifference =
-            input.PriceDifference - input.DiscountAmount;
+            Round(input.PriceDifference - input.DiscountAmount);
         var transportNetAmount =
-            transportServiceAmount + transportPriceDifference;
+            Round(transportServiceAmount + transportPriceDifference);
 
-        // Kaynak Excel Hesaplama:
-        // T = (P * Q) + R - S
-        // R = Rehber Personel Fiyat Farkı KDV Hariç, S = Rehber Personel İskonto.
-        var guideServiceAmount = input.GuideWorkDays * input.GuideDailyPrice;
+        // Rehber:
+        // T = (P*Q) + R - S
+        // U = IF(KDV uygulanır, T*20/100)
+        // V = U*9/10
+        // W = T+V
+        // X = T+U
+        var guideServiceAmount = Round(input.GuideWorkDays * input.GuideDailyPrice);
         var guidePriceDifference =
-            input.GuidePriceDifference - input.GuideDiscountAmount;
+            Round(input.GuidePriceDifference - input.GuideDiscountAmount);
         var guideNetAmount =
-            guideServiceAmount + guidePriceDifference;
+            Round(guideServiceAmount + guidePriceDifference);
 
-        var totalAmount = transportNetAmount + guideNetAmount;
+        var totalAmount = Round(transportNetAmount + guideNetAmount);
 
-        // Excel: L = K*10%, U = T*20%.
         var transportVat = input.IncludeVat
-            ? transportNetAmount * TransportVatRate
+            ? Round(transportNetAmount * TransportVatRate)
             : 0m;
         var guideVat = input.IncludeVat
-            ? guideNetAmount * GuideVatRate
+            ? Round(guideNetAmount * GuideVatRate)
             : 0m;
 
-        // Excel: M = L/2 (%5), V = U*9/10 (%18).
         var transportWithholding = input.IncludeVat
-            ? transportVat * 0.5m
+            ? Round(transportVat * 0.5m)
             : 0m;
         var guideWithholding = input.IncludeVat
-            ? guideVat * 0.9m
+            ? Round(guideVat * 0.9m)
             : 0m;
 
-        var vat = transportVat + guideVat;
-        var withholding = transportWithholding + guideWithholding;
+        var vat = Round(transportVat + guideVat);
+        var withholding = Round(transportWithholding + guideWithholding);
 
-        // Excel: N = K+M, W = T+V.
-        var invoiceAmountAfterWithholding = totalAmount + withholding;
+        var transportInvoiceAmount = Round(transportNetAmount + transportWithholding);
+        var guideInvoiceAmount = Round(guideNetAmount + guideWithholding);
+        var invoiceAmountAfterWithholding =
+            Round(transportInvoiceAmount + guideInvoiceAmount);
 
-        // Excel: AD = (K*9.48/1000)+(T*9.48/1000).
-        var stampTax = totalAmount * StampTaxRate;
+        // Damga vergisi taşıma + rehber hakedişleri üzerinden yürür.
+        var transportStampTax = Round(transportNetAmount * StampTaxRate);
+        var guideStampTax = Round(guideNetAmount * StampTaxRate);
+        var stampTax = Round(transportStampTax + guideStampTax);
 
-        // Excel: AC = (I*6/100)+(R*6/100).
-        // I/R fiyat farkı KDV hariç alanlarıdır; Excel'deki gibi negatif değerler
-        // ayrıca sıfırlanmaz.
+        // Yeni Excel yapısındaki AC:
+        // (Taşıma Fiyat Farkı KDV Hariç × %6)
+        // + (Rehber Fiyat Farkı KDV Hariç × %6)
+        // Negatif değerler ayrıca sıfırlanmaz.
+        var transportAdditionalGuarantee =
+            Round(transportPriceDifference * AdditionalGuaranteeRate);
+        var guideAdditionalGuarantee =
+            Round(guidePriceDifference * AdditionalGuaranteeRate);
         var additionalGuarantee =
-            (transportPriceDifference + guidePriceDifference)
-            * AdditionalGuaranteeRate;
+            Round(transportAdditionalGuarantee + guideAdditionalGuarantee);
 
         // Excel: AE = M+V+Y+Z+AA+AB+AC+AD.
-        var exactTotalDeductions =
+        // Kesinti toplamı, yukarıdaki yuvarlanmış hücrelerin toplamından oluşur.
+        var totalDeductions = Round(
             withholding
             + stampTax
             + input.TaxDebt
             + input.InspectionPenalty
             + input.SocialSecurityDebt
             + input.MinimumWageSupport
-            + additionalGuarantee;
+            + additionalGuarantee);
 
-        var totalDeductions = Round(exactTotalDeductions);
-
-        // Excel: AF = O+X = (K+L)+(T+U).
-        // Excel: AG = AF-AE.
-        var grossAmount = transportNetAmount
-            + transportVat
-            + guideNetAmount
-            + guideVat;
-        var netPayable = grossAmount - exactTotalDeductions;
+        // Excel: AF = O+X; AG = AF-AE.
+        var transportGrossAmount = Round(transportNetAmount + transportVat);
+        var guideGrossAmount = Round(guideNetAmount + guideVat);
+        var grossAmount = Round(transportGrossAmount + guideGrossAmount);
+        var netPayable = Round(grossAmount - totalDeductions);
 
         var deductions = new DeductionBreakdown(
             Round(transportWithholding + guideWithholding),
