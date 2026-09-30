@@ -95,14 +95,16 @@ public sealed class ProgressPaymentCalculator
         var guideStampTax = Round(guideNetAmount * StampTaxRate);
         var stampTax = Round(transportStampTax + guideStampTax);
 
-        // Yeni Excel yapısındaki AC:
-        // (Taşıma Fiyat Farkı KDV Hariç × %6)
-        // + (Rehber Fiyat Farkı KDV Hariç × %6)
+        // Excel AC hücresi doğrudan I ve R sütunlarını kullanır:
+        // AC = (I*6/100) + (R*6/100).
+        // I/R, iskonto düşülmeden önceki fiyat farkı alanlarıdır.
+        // Bu nedenle ek kesin teminat, net fiyat farkından değil,
+        // kaynak Excel'deki ham fiyat farkı tutarlarından hesaplanır.
         // Negatif değerler ayrıca sıfırlanmaz.
         var transportAdditionalGuarantee =
-            Round(transportPriceDifference * AdditionalGuaranteeRate);
+            Round(input.PriceDifference * AdditionalGuaranteeRate);
         var guideAdditionalGuarantee =
-            Round(guidePriceDifference * AdditionalGuaranteeRate);
+            Round(input.GuidePriceDifference * AdditionalGuaranteeRate);
         var additionalGuarantee =
             Round(transportAdditionalGuarantee + guideAdditionalGuarantee);
 
