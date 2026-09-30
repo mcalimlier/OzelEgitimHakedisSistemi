@@ -2614,6 +2614,14 @@ public partial class MainWindow : Window
         };
     }
 
+    private static bool IsBeforePayment(ProgressPaymentHistoryData item, ProgressPaymentHistoryData current)
+    {
+        if (current.PeriodDate.HasValue && item.PeriodDate.HasValue)
+            return item.PeriodDate.Value < current.PeriodDate.Value;
+
+        return item.CreatedAt < current.CreatedAt;
+    }
+
     private static bool TryShowDocument(FlowDocument document, string title, bool requirePdfPrinter = false)
     {
         var dialog = new System.Windows.Controls.PrintDialog
@@ -2746,7 +2754,7 @@ public partial class MainWindow : Window
     {
         var payments = GetSelectedRoutePayments();
         var previousPayments = payments
-            .Where(x => x.Id != latest.Id && x.CreatedAt < latest.CreatedAt)
+            .Where(x => x.Id != latest.Id && IsBeforePayment(x, latest))
             .ToList();
 
         // Excel Hakediş Raporu'nda A/B/C kümülatif, D önceki toplam,
@@ -3025,7 +3033,7 @@ public partial class MainWindow : Window
             ("A", "T O P L A M", FormatMoney(total))));
 
         var previousDeduction = payments
-            .Where(x => x.Id != latest.Id && x.CreatedAt < latest.CreatedAt)
+            .Where(x => x.Id != latest.Id && IsBeforePayment(x, latest))
             .Sum(x => x.Calculation.TotalDeductions);
         var currentDeduction = latest.Calculation.TotalDeductions;
         var totalDeduction = previousDeduction + currentDeduction;
