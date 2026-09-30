@@ -744,11 +744,11 @@
                                                                 <StackPanel Grid.Column="1" Margin="8,0">
                                                                     <TextBlock Text="{Binding Name}" Foreground="{StaticResource Text900Brush}" FontSize="15.5" FontWeight="SemiBold" TextWrapping="Wrap"/>
                                                                     <TextBlock Text="{Binding RelationshipText}" Foreground="{StaticResource Gold500Brush}" FontSize="12.5" TextWrapping="Wrap"/>
-                                                                    <TextBlock Text="{Binding TransportSummaryText}" Foreground="#B9CBDA" FontSize="12.5" TextWrapping="Wrap"/>
-                                                                    <TextBlock Text="{Binding GuideSummaryText}" Foreground="#B9CBDA" FontSize="12.5" TextWrapping="Wrap"/>
+                                                                    <TextBlock Text="{Binding TransportSummaryText}" Foreground="{StaticResource Text700Brush}" FontSize="12.5" TextWrapping="Wrap"/>
+                                                                    <TextBlock Text="{Binding GuideSummaryText}" Foreground="{StaticResource Text700Brush}" FontSize="12.5" TextWrapping="Wrap"/>
                                                                 </StackPanel>
                                                                 <StackPanel Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                                                    <TextBlock Text="{Binding TransportAnnualPriceText}" Foreground="#B9CBDA" FontSize="12.5" HorizontalAlignment="Right"/>
+                                                                    <TextBlock Text="{Binding TransportAnnualPriceText}" Foreground="{StaticResource Text700Brush}" FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Right"/>
                                                                 </StackPanel>
                                                                 <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                                                                     <Button Content="DÜZENLE" Tag="{Binding}" Click="EditRouteButton_Click" Style="{StaticResource SecondaryButton}" Height="38" FontSize="11.5" Width="72" Margin="0,0,6,0"/>
