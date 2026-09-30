@@ -439,6 +439,7 @@ public partial class MainWindow : Window
 
             UpdateRouteContractorSelector(contract);
             UpdateProgressContractorAndRoutes(contract);
+            UpdateOutputRoutesForContract(contract);
             UpdateHomeTenderSummary(contract);
         }
         else
@@ -973,6 +974,7 @@ public partial class MainWindow : Window
         UpdateRouteSummary();
         UpdateRouteListView();
         UpdateProgressContractorAndRoutes(contract);
+        UpdateOutputRoutesForContract(contract);
         UpdateContractSummaryView();
         UpdateHomeSummaryView();
         ClearRouteButton_Click(sender, e);
@@ -1671,6 +1673,20 @@ public partial class MainWindow : Window
 
             if (_editingHistoryId.HasValue)
             {
+                var duplicate = _progressHistory.FirstOrDefault(x =>
+                    x.Id != _editingHistoryId.Value &&
+                    string.Equals(x.TenderNumber, selectedContract.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(x.RouteNumber, selectedRoute.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(x.ContractorTaxOrIdentityNumber, selectedContract.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase) &&
+                    x.ProgressPaymentNumber == progressNumber &&
+                    x.PeriodDate == periodDate);
+
+                if (duplicate is not null)
+                {
+                    ShowAlreadyRegistered($"Bu ihale/hat için Hakediş No {progressNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"} ve dönem zaten kayıtlı. Mükerrer kayıt oluşturulmadı.");
+                    return;
+                }
+
                 var editIndex = _progressHistory.IndexOf(_progressHistory.First(x => x.Id == _editingHistoryId.Value));
                 _progressHistory[editIndex] = historyItem;
                 _editingHistoryId = null;
@@ -2177,7 +2193,13 @@ public partial class MainWindow : Window
         if (_suppressSelectionEvents)
             return;
 
-        var contract = OutputTenderListBox.SelectedItem as ContractDraftData;
+        UpdateOutputRoutesForContract(OutputTenderListBox.SelectedItem as ContractDraftData);
+        UpdateReportView();
+        UpdateAcceptanceView();
+    }
+
+    private void UpdateOutputRoutesForContract(ContractDraftData? contract)
+    {
         var routes = contract is null
             ? Array.Empty<RouteDraft>()
             : _routes.Where(x =>
@@ -2185,12 +2207,12 @@ public partial class MainWindow : Window
                 string.Equals(x.ContractorTaxOrIdentityNumber, contract.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase))
               .ToArray();
 
+        var previous = ReportRouteComboBox.SelectedItem as RouteDraft;
         ReportRouteComboBox.ItemsSource = routes;
-        if (routes.Length > 0)
+        if (previous is not null)
+            ReportRouteComboBox.SelectedItem = routes.FirstOrDefault(x => x.RouteNumber == previous.RouteNumber);
+        if (ReportRouteComboBox.SelectedItem is null && routes.Length > 0)
             ReportRouteComboBox.SelectedIndex = 0;
-
-        UpdateReportView();
-        UpdateAcceptanceView();
     }
 
     private void ReportRouteComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
