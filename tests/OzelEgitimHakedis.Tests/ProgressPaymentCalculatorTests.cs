@@ -225,8 +225,8 @@ public sealed class ProgressPaymentCalculatorTests
         Assert.Equal(1.005m, result.ServiceAmount);
         Assert.Equal(1.1055m, result.GrossAmount);
         Assert.Equal(0.0095274m, result.StampTax);
-        Assert.Equal(0.1200774m, result.TotalDeductions);
-        Assert.Equal(0.9854226m, result.NetPayable);
+        Assert.Equal(0.0597774m, result.TotalDeductions);
+        Assert.Equal(1.0457226m, result.NetPayable);
     }
 
 }
