@@ -2768,9 +2768,14 @@ public partial class MainWindow : Window
         var currentPriceDifference = latest.Calculation.CombinedPriceDifferenceExcludingVat;
         var currentTotal = latest.Calculation.TotalAmount;
 
-        var cumulativeServiceAmount = RoundMoney(previousServiceAmount + currentServiceAmount);
-        var cumulativePriceDifference = RoundMoney(previousPriceDifference + currentPriceDifference);
-        var cumulativeTotal = RoundMoney(cumulativeServiceAmount + cumulativePriceDifference);
+        // Kaynak Excel'in Hakediş Raporu yapısı:
+        // A = önceki hizmet tutarları + cari hizmet,
+        // B = cari dönemin fiyat farkı,
+        // C = A + B,
+        // D = önceki hakedişlerin kümülatif toplamı,
+        // E = cari hakediş tutarı.
+        var cumulativeServiceAmount = previousServiceAmount + currentServiceAmount;
+        var cumulativeTotal = cumulativeServiceAmount + currentPriceDifference;
 
         var doc = CreateBaseDocument("HAK EDİŞ RAPORU", "");
 
@@ -2782,7 +2787,7 @@ public partial class MainWindow : Window
         var mainRows = new List<(string, string, string)>
         {
             ("A", "Sözleşme Fiyatları İle Yapılan İş", FormatMoney(cumulativeServiceAmount)),
-            ("B", "Fiyat Farkı Tutarı", FormatMoney(cumulativePriceDifference)),
+            ("B", "Fiyat Farkı Tutarı", FormatMoney(currentPriceDifference)),
             ("C", "Toplam Tutar  ( A + B )", FormatMoney(cumulativeTotal)),
             ("D", "Bir Önceki Hakedişlerin Toplam Tutarı", FormatMoney(previousTotal)),
             ("E", "Bu Hakedişin Tutarı  ( C - D )", FormatMoney(currentTotal)),
