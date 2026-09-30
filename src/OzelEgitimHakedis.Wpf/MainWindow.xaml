@@ -285,6 +285,8 @@
                                             <TextBlock x:Name="HomePeriodTextBlock" Text="—" Foreground="#C5D7E7" FontSize="12.5"/>
                                             <TextBlock Text="Son Net Ödeme" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
                                             <TextBlock x:Name="HomeLatestNetTextBlock" Text="0,00 ₺" Foreground="{StaticResource Blue600Brush}" FontSize="17" FontWeight="Bold"/>
+                                            <TextBlock Text="Kayıtlı Net Toplam" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
+                                            <TextBlock x:Name="HomeNetPayableTextBlock" Text="0,00 ₺" Foreground="{StaticResource Blue600Brush}" FontSize="15" FontWeight="Bold"/>
                                             <TextBlock Text="Sözleşme / Hat Durumu" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
                                             <TextBlock x:Name="HomeContractStatusTextBlock" Text="Bekleniyor" Foreground="{StaticResource Gold500Brush}" FontSize="12.5" FontWeight="Bold"/>
                                             <TextBlock x:Name="HomeRouteCountTextBlock" Text="0" Foreground="White" FontSize="12" FontWeight="Bold" Margin="0,2,0,0"/>
