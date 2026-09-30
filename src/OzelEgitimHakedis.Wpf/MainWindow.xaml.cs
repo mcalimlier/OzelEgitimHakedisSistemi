@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
@@ -387,10 +388,10 @@ public partial class MainWindow : Window
             MarkInvalid(RouteTransportWorkDaysTextBox);
         }
 
-        if (!TryParseDecimal(RouteDailyPriceTextBox.Text, out var dailyPrice) || dailyPrice < 0)
+        if (!TryParseDecimal(ContractTransportDailyPriceTextBox.Text, out var dailyPrice) || dailyPrice < 0)
         {
-            errors.Add("Taşıma Günlük Birim Fiyat");
-            MarkInvalid(RouteDailyPriceTextBox);
+            errors.Add("İhale Bilgileri → Taşıma Günlük Fiyatı");
+            MarkInvalid(ContractTransportDailyPriceTextBox);
         }
 
         if (!int.TryParse(RouteGuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var guideWorkDays) ||
@@ -442,7 +443,6 @@ public partial class MainWindow : Window
             RouteNumberTextBox,
             RouteNameTextBox,
             RouteTransportWorkDaysTextBox,
-            RouteDailyPriceTextBox,
             RouteGuideWorkDaysTextBox,
             RouteGuideDailyPriceTextBox
         })
@@ -524,6 +524,12 @@ public partial class MainWindow : Window
             MarkInvalid(ContractWorkDaysTextBox);
         }
 
+        if (!TryParseDecimal(ContractTransportDailyPriceTextBox.Text, out var transportDailyPrice) || transportDailyPrice < 0)
+        {
+            errors.Add("Taşıma Günlük Fiyatı");
+            MarkInvalid(ContractTransportDailyPriceTextBox);
+        }
+
         if (StartDatePicker.SelectedDate.HasValue && EndDatePicker.SelectedDate.HasValue &&
             EndDatePicker.SelectedDate.Value.Date < StartDatePicker.SelectedDate.Value.Date)
         {
@@ -573,6 +579,7 @@ public partial class MainWindow : Window
             ContractorIdentityNumberTextBox.Text = data.Contract.ContractorTaxOrIdentityNumber;
             BankAccountNumberTextBox.Text = data.Contract.BankAccountNumber;
             ContractWorkDaysTextBox.Text = data.Contract.ContractWorkDays.ToString(CultureInfo.CurrentCulture);
+            ContractTransportDailyPriceTextBox.Text = data.Contract.TransportDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
             StartDatePicker.SelectedDate = data.Contract.StartDate.ToDateTime(TimeOnly.MinValue);
             EndDatePicker.SelectedDate = data.Contract.EndDate.ToDateTime(TimeOnly.MinValue);
             TenderDatePicker.SelectedDate = data.Contract.TenderDate?.ToDateTime(TimeOnly.MinValue);
@@ -602,7 +609,8 @@ public partial class MainWindow : Window
                 ContractDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(ContractDatePicker.SelectedDate.Value) : null,
                 ContractorIdentityNumberTextBox.Text.Trim(),
                 BankAccountNumberTextBox.Text.Trim(),
-                int.TryParse(ContractWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var contractWorkDays) ? contractWorkDays : 0);
+                int.TryParse(ContractWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var contractWorkDays) ? contractWorkDays : 0,
+                TryParseDecimal(ContractTransportDailyPriceTextBox.Text, out var transportDailyPrice) ? transportDailyPrice : 0m);
 
         var data = new OehsApplicationData(
             contract,
@@ -622,6 +630,7 @@ public partial class MainWindow : Window
         ContractorIdentityNumberTextBox.Clear();
         BankAccountNumberTextBox.Clear();
         ContractWorkDaysTextBox.Clear();
+        ContractTransportDailyPriceTextBox.Clear();
         ContractAmountTextBox.Clear();
         StartDatePicker.SelectedDate = DateTime.Today;
         EndDatePicker.SelectedDate = DateTime.Today;
@@ -912,6 +921,51 @@ public partial class MainWindow : Window
         HistoryEmptyStateBorder.Visibility = _progressHistory.Count == 0
             ? Visibility.Visible
             : Visibility.Collapsed;
+    }
+
+    private ProgressPaymentHistoryData? GetHistoryItemFromRow(object? tag)
+    {
+        return tag is HistoryRow row
+            ? _progressHistory.FirstOrDefault(x => x.Id == row.Id)
+            : null;
+    }
+
+    private string GetHistoryArchiveFolder(ProgressPaymentHistoryData item) =>
+        Path.Combine(OehsDesktopRoot, "Belgeler", BuildArchiveKey(item));
+
+    private void OpenHistoryExcelButton_Click(object sender, RoutedEventArgs e)
+    {
+        var item = GetHistoryItemFromRow((sender as Button)?.Tag);
+        if (item is null)
+            return;
+
+        var excelPath = Path.Combine(GetHistoryArchiveFolder(item), "OEHS_Hakediş_Belgeleri.xlsx");
+        if (!File.Exists(excelPath))
+        {
+            MessageBox.Show("Bu hakediş için Excel arşivi henüz oluşturulmamış.", "OEHS Arşiv", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = excelPath,
+            UseShellExecute = true
+        });
+    }
+
+    private void OpenHistoryFolderButton_Click(object sender, RoutedEventArgs e)
+    {
+        var item = GetHistoryItemFromRow((sender as Button)?.Tag);
+        if (item is null)
+            return;
+
+        var folder = GetHistoryArchiveFolder(item);
+        Directory.CreateDirectory(folder);
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = folder,
+            UseShellExecute = true
+        });
     }
 
     private void EditHistoryButton_Click(object sender, RoutedEventArgs e)
@@ -2118,7 +2172,6 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
             DiscountTextBox,
             PriceDifferenceTextBox,
             RouteTransportWorkDaysTextBox,
-            RouteDailyPriceTextBox,
             RouteGuideWorkDaysTextBox,
             RouteGuideDailyPriceTextBox
         })
