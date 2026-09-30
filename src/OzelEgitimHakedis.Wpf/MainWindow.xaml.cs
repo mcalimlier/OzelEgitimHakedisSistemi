@@ -22,6 +22,7 @@ public partial class MainWindow : Window
     private const int WmGetMinMaxInfo = 0x0024;
     private const uint MonitorDefaultToNearest = 0x00000002;
     private HwndSource? _windowSource;
+    private readonly ObservableCollection<ContractDraftData> _contracts = new();
     private readonly ObservableCollection<RouteDraft> _routes = new();
     private readonly ObservableCollection<ContractorDraft> _contractors = new();
     private readonly ObservableCollection<ProgressPaymentHistoryData> _progressHistory = new();
@@ -29,6 +30,10 @@ public partial class MainWindow : Window
     private readonly ObservableCollection<SummaryRow> _summaryRows = new();
     private readonly ObservableCollection<ReportRow> _reportRows = new();
     private Guid? _editingHistoryId;
+    private string? _editingContractTender;
+    private string? _editingContractorKey;
+    private RouteDraft? _editingRoute;
+    private bool _suppressSelectionEvents;
     private readonly OehsApplicationDataStore _dataStore = new();
     private const double DocumentContentWidth = 690d;
     private static readonly double[] ThreeColumnWidths = { 58d, 438d, 194d };
@@ -63,6 +68,10 @@ public partial class MainWindow : Window
         UpdateShellText("Ana Ekran");
         RoutesListBox.ItemsSource = _routes;
         ContractorsListBox.ItemsSource = _contractors;
+        ContractorSelectionComboBox.ItemsSource = _contractors;
+        HomeTenderListBox.ItemsSource = _contracts;
+        RouteTenderListBox.ItemsSource = _contracts;
+        ProgressTenderListBox.ItemsSource = _contracts;
         HistoryItemsControl.ItemsSource = _historyRows;
         SummaryItemsControl.ItemsSource = _summaryRows;
         ReportItemsControl.ItemsSource = _reportRows;
@@ -70,6 +79,7 @@ public partial class MainWindow : Window
         ReportRouteComboBox.ItemsSource = _routes;
         LoadPersistedData();
 
+        UpdateContractSelectors();
         if (_routes.Count > 0)
         {
             ProgressRouteComboBox.SelectedIndex = 0;
@@ -244,10 +254,10 @@ public partial class MainWindow : Window
             "Contract" => "İhale / Sözleşme",
             "Progress" => "Hakediş Oluştur",
             "Lines" => "Hatlar",
-            "Contractors" => "Yükleniciler",
+            "Contractors" => "Yüklenici Firmalar",
             "History" => "Hakediş Geçmişi",
             "Summary" => "İcmal",
-            "Reports" => "Raporlar",
+            "Reports" => "Çıktılar",
             "Acceptance" => "Kabul Tutanağı",
             "Settings" => "Ayarlar",
             _ => "Ana Ekran"
@@ -270,8 +280,8 @@ public partial class MainWindow : Window
     {
         foreach (var button in new[]
         {
-            NavHome, NavContract, NavLines,
-            NavProgress, NavHistory, NavReports, NavAcceptance, NavSettings
+            NavHome, NavContract, NavContractors, NavLines,
+            NavProgress, NavReports, NavHistory, NavAcceptance, NavSettings
         })
         {
             button.Uid = button.Tag?.ToString() == page ? "Active" : string.Empty;
