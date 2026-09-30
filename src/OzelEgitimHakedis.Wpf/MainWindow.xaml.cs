@@ -425,7 +425,10 @@ public partial class MainWindow : Window
             contract is not null &&
             string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
             contractor is not null &&
-            string.Equals(x.ContractorTaxOrIdentityNumber, contractor.TaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase))
+            string.Equals(
+                    OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
+                    OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber),
+                    StringComparison.Ordinal))
             .ToArray();
     }
 
@@ -866,7 +869,7 @@ public partial class MainWindow : Window
             guideDailyPrice,
             transportWorkDays,
             contract.TenderNumber,
-            contractor!.TaxOrIdentityNumber,
+            OehsIdentityService.NormalizeIdentity(contractor!.TaxOrIdentityNumber),
             contractor.Name);
 
         var duplicate = _routes.FirstOrDefault(x =>
@@ -1660,43 +1663,77 @@ public partial class MainWindow : Window
                 selectedContract.StartDate,
                 selectedContract.EndDate,
                 routeContractor?.BankAccountNumber ?? string.Empty,
-                selectedRoute.ContractorTaxOrIdentityNumber);
+                OehsIdentityService.NormalizeIdentity(selectedRoute.ContractorTaxOrIdentityNumber));
+
+            var validationProbe = historyItem with
+            {
+                Calculation = new ProgressPaymentCalculation(
+                    0m, 0m, 0m, 0m, 0m, 0m, 0m, 0m, 0m, 0m, 0m,
+                    new DeductionBreakdown(0m, 0m, 0m, 0m, 0m, 0m, 0m))
+            };
+
+            var dataForValidation = new OehsApplicationData(
+                selectedContract,
+                _routes.Select(x => new RouteData(
+                    x.RouteNumber,
+                    x.Name,
+                    x.DailyPrice,
+                    x.GuideWorkDays,
+                    x.GuideDailyPrice,
+                    x.TransportWorkDays,
+                    x.TenderNumber,
+                    x.ContractorTaxOrIdentityNumber)).ToArray(),
+                _contractors.Select(x => new Contractor(
+                    x.Name,
+                    x.TaxOrIdentityNumber,
+                    x.Address,
+                    x.Phone,
+                    x.Email,
+                    x.BankAccountNumber,
+                    x.ContactPerson)).ToArray(),
+                _progressHistory.ToArray(),
+                _contracts.ToArray());
+
+            var validationErrors = ProgressPaymentValidationService.ValidateCreation(
+                dataForValidation,
+                selectedContract,
+                new RouteData(
+                    selectedRoute.RouteNumber,
+                    selectedRoute.Name,
+                    selectedRoute.DailyPrice,
+                    selectedRoute.GuideWorkDays,
+                    selectedRoute.GuideDailyPrice,
+                    selectedRoute.TransportWorkDays,
+                    selectedRoute.TenderNumber,
+                    OehsIdentityService.NormalizeIdentity(selectedRoute.ContractorTaxOrIdentityNumber)),
+                validationProbe,
+                _editingHistoryId.HasValue);
+
+            if (validationErrors.Count > 0)
+            {
+                ProgressCalculationSummaryTextBlock.Text = "KONTROL GEREKLİ";
+                ProgressValidationMessageTextBlock.Text = string.Join(Environment.NewLine, validationErrors);
+                ProgressValidationBanner.Visibility = Visibility.Visible;
+                CalculationStatusTextBlock.Foreground =
+                    new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(198, 40, 40));
+                CalculationStatusTextBlock.FontWeight = FontWeights.Bold;
+                CalculationStatusTextBlock.Text = string.Join(" ", validationErrors);
+                return;
+            }
+
+            ProgressValidationBanner.Visibility = Visibility.Collapsed;
+            ProgressValidationMessageTextBlock.Text =
+                $"Kontrol tamam: İhale/Dosya {selectedContract.TenderNumber} • Hat {selectedRoute.RouteNumber} • " +
+                $"Yüklenici {selectedRoute.ContractorName} • Hakediş {progressNumber} • Dönem {periodDate:dd.MM.yyyy}.";
 
             if (_editingHistoryId.HasValue)
             {
-                var duplicate = _progressHistory.FirstOrDefault(x =>
-                    x.Id != _editingHistoryId.Value &&
-                    string.Equals(x.TenderNumber, selectedContract.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(x.RouteNumber, selectedRoute.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(x.ContractorTaxOrIdentityNumber, selectedRoute.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase) &&
-                    x.ProgressPaymentNumber == progressNumber &&
-                    x.PeriodDate == periodDate);
-
-                if (duplicate is not null)
-                {
-                    ShowAlreadyRegistered($"Bu ihale/hat için Hakediş No {progressNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"} ve dönem zaten kayıtlı. Mükerrer kayıt oluşturulmadı.");
-                    return;
-                }
-
                 var editIndex = _progressHistory.IndexOf(_progressHistory.First(x => x.Id == _editingHistoryId.Value));
                 _progressHistory[editIndex] = historyItem;
                 _editingHistoryId = null;
             }
             else
             {
-                var duplicate = _progressHistory.FirstOrDefault(x =>
-                    string.Equals(x.TenderNumber, selectedContract.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(x.RouteNumber, selectedRoute.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(x.ContractorTaxOrIdentityNumber, selectedRoute.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase) &&
-                    x.ProgressPaymentNumber == progressNumber &&
-                    x.PeriodDate == periodDate);
-
-                if (duplicate is not null)
-                {
-                    ShowAlreadyRegistered($"Bu ihale/hat için Hakediş No {progressNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"} ve dönem zaten kayıtlı. Mükerrer hakediş oluşturulmadı.");
-                    return;
-                }
-
                 _progressHistory.Add(historyItem);
             }
 
@@ -1710,7 +1747,7 @@ public partial class MainWindow : Window
 
             CalculationStatusTextBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(36, 104, 216));
             CalculationStatusTextBlock.FontWeight = FontWeights.SemiBold;
-            CalculationStatusTextBlock.Text = "Hesaplama başarıyla tamamlandı. Arşivlemek veya düzeltmek için aşağıdaki işlemleri kullanın.";
+            CalculationStatusTextBlock.Text = "Hesaplama tamamlandı. Arşivlemek veya düzeltmek için aşağıdaki işlemleri kullanın.";
             ArchiveCurrentProgressButton.Visibility = Visibility.Visible;
             CorrectCurrentProgressButton.Visibility = Visibility.Visible;
             UpdateArchiveView();
@@ -2458,6 +2495,17 @@ public partial class MainWindow : Window
         // Rehber iş günü de seçilen hattın varsayılanı olmalı.
         // Aksi halde bir hattan diğerine geçerken önceki hattın rehber günü kalabilir.
         GuideWorkDaysTextBox.Text = route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
+
+        if (!_editingHistoryId.HasValue)
+        {
+            var suggested = ProgressPaymentValidationService.SuggestNextProgressPaymentNumber(
+                _progressHistory,
+                route.TenderNumber,
+                route.RouteNumber,
+                route.ContractorTaxOrIdentityNumber);
+
+            ProgressNumberTextBox.Text = suggested.ToString(CultureInfo.CurrentCulture);
+        }
     }
 
     private void OutputTenderListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -3141,29 +3189,13 @@ public partial class MainWindow : Window
     private FlowDocument BuildHakedişRaporu(RouteDraft route, ProgressPaymentHistoryData latest)
     {
         var payments = GetSelectedRoutePayments();
-        var previousPayments = payments
-            .Where(x => x.Id != latest.Id && IsBeforePayment(x, latest))
-            .ToList();
+        var reportTotals = ProgressPaymentReportService.Calculate(latest, payments);
 
-        // Excel Hakediş Raporu'nda A/B/C kümülatif, D önceki toplam,
-        // E ise yalnızca cari hakediş tutarıdır:
-        // C = A + B, E = C - D.
-        var previousServiceAmount = previousPayments.Sum(x => x.Calculation.CombinedServiceAmount);
-        var previousPriceDifference = previousPayments.Sum(x => x.Calculation.CombinedPriceDifferenceExcludingVat);
-        var previousTotal = RoundMoney(previousServiceAmount + previousPriceDifference);
-
-        var currentServiceAmount = latest.Calculation.CombinedServiceAmount;
-        var currentPriceDifference = latest.Calculation.CombinedPriceDifferenceExcludingVat;
-        var currentTotal = latest.Calculation.TotalAmount;
-
-        // Kaynak Excel'in Hakediş Raporu yapısı:
-        // A = önceki hizmet tutarları + cari hizmet,
-        // B = cari dönemin fiyat farkı,
-        // C = A + B,
-        // D = önceki hakedişlerin kümülatif toplamı,
-        // E = cari hakediş tutarı.
-        var cumulativeServiceAmount = previousServiceAmount + currentServiceAmount;
-        var cumulativeTotal = cumulativeServiceAmount + currentPriceDifference;
+        var cumulativeServiceAmount = reportTotals.CumulativeServiceAmount;
+        var currentPriceDifference = reportTotals.CurrentPriceDifference;
+        var cumulativeTotal = reportTotals.CumulativeTotal;
+        var previousTotal = reportTotals.PreviousTotal;
+        var currentTotal = reportTotals.CurrentTotal;
 
         var doc = CreateBaseDocument("HAK EDİŞ RAPORU", "");
 
@@ -3714,20 +3746,15 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
     private static string FormatMoney(decimal value) => $"{RoundMoney(value):N2} ₺";
     private static string BuildPdfPrintTitle(RouteDraft route, ProgressPaymentHistoryData latest)
     {
-        var tender = SanitizePrintTitlePart(latest.TenderNumber);
-        var routeNumber = SanitizePrintTitlePart(route.RouteNumber);
-        var progress = latest.ProgressPaymentNumber?.ToString(CultureInfo.InvariantCulture) ?? "-";
-        return $"OEHS_{tender}_Hat-{routeNumber}_Hakedis-{progress}_4-Belge";
-    }
+        if (!latest.ProgressPaymentNumber.HasValue || !latest.PeriodDate.HasValue)
+            return "OEHS_Hakediş";
 
-    private static string SanitizePrintTitlePart(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-            return "Kayitsiz";
-
-        var invalid = Path.GetInvalidFileNameChars();
-        var chars = value.Trim().Select(ch => invalid.Contains(ch) ? '_' : ch).ToArray();
-        return new string(chars);
+        return Path.GetFileNameWithoutExtension(
+            OehsFileNameService.BuildProgressPdfFileName(
+                latest.TenderNumber ?? string.Empty,
+                route.RouteNumber,
+                latest.ProgressPaymentNumber.Value,
+                latest.PeriodDate.Value));
     }
 
 
