@@ -11,7 +11,7 @@ public sealed class PdfFileNameTests
         var name = OehsFileNameService.BuildProgressPdfFileName(
             "123", "01", 3, new DateOnly(2026, 11, 30));
 
-        Assert.Equal("OEHS_123_Hat-01_Hakedis-3_2026-11-30.pdf", name);
+        Assert.Equal("OEHS_123_Hat-01_Hakediş-03_2026-11-30.pdf", name);
     }
 
     [Fact]
