@@ -1899,31 +1899,15 @@ public partial class MainWindow : Window
     private void UpdateArchiveView()
     {
         _archiveRows.Clear();
-        var files = _archiveStore.List();
 
-        foreach (var file in files)
+        foreach (var row in ArchiveDisplayService.BuildRows(_archiveStore))
         {
-            try
-            {
-                var archive = _archiveStore.Load(file.FullName);
-                var progress = archive.ProgressPayment.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-";
-                var period = archive.ProgressPayment.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-";
-                _archiveRows.Add(new ArchiveRow(
-                    file.FullName,
-                    $"İhale/Dosya: {archive.ProgressPayment.TenderNumber ?? "-"} • Hat {archive.ProgressPayment.RouteNumber ?? "-"} • Hakediş {progress}",
-                    $"Dönem: {period} • Yüklenici: {archive.Contractor.Name}",
-                    FormatMoney(archive.ProgressPayment.Calculation.NetPayable),
-                    $"v{archive.Revision:00}"));
-            }
-            catch (ProgressPaymentArchiveException)
-            {
-                _archiveRows.Add(new ArchiveRow(
-                    file.FullName,
-                    Path.GetFileNameWithoutExtension(file.Name),
-                    "Geçersiz veya okunamayan arşiv",
-                    "-",
-                    "GEÇERSİZ"));
-            }
+            _archiveRows.Add(new ArchiveRow(
+                row.FullPath,
+                row.DisplayTitle,
+                row.DetailText,
+                row.NetPayableText,
+                row.RevisionText));
         }
 
         ArchiveCountTextBlock.Text = _archiveRows.Count.ToString(CultureInfo.CurrentCulture);
@@ -2051,9 +2035,11 @@ public partial class MainWindow : Window
     {
         _historyRows.Clear();
 
-        for (var index = 0; index < _progressHistory.Count; index++)
+        var orderedHistory = ProgressPaymentReportService.OrderByPaymentPeriod(_progressHistory);
+
+        for (var index = 0; index < orderedHistory.Count; index++)
         {
-            var item = _progressHistory[index];
+            var item = orderedHistory[index];
             var displayNumber = item.ProgressPaymentNumber.HasValue
                 ? $"Hakediş No {item.ProgressPaymentNumber.Value} • İhale/Dosya: {item.TenderNumber ?? "-"} • Hat: {item.RouteNumber ?? "-"}"
                 : $"Hesaplama {index + 1} • İhale/Dosya: {item.TenderNumber ?? "-"} • Hat: {item.RouteNumber ?? "-"}";
