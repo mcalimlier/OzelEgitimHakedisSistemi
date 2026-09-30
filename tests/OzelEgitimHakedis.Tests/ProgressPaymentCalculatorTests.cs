@@ -43,18 +43,20 @@ public sealed class ProgressPaymentCalculatorTests
 
         var result = ProgressPaymentCalculator.Calculate(input);
 
+        // Bu senaryo sentetik bir regresyon testidir; Excel zincirindeki
+        // T = (P*Q)+R-S ve ortak kesinti kurallarının doğrudan uygulanmasını doğrular.
         Assert.Equal(75639.54m, result.ServiceAmount);
-        Assert.Equal(42374.70m, result.GuideServiceAmount);
+        Assert.Equal(40874.70m, result.GuideServiceAmount);
         Assert.Equal(1500m, result.PriceDifferenceExcludingVat);
         Assert.Equal(1500m, result.GuidePriceDifferenceExcludingVat);
         Assert.Equal(3000m, result.CombinedPriceDifferenceExcludingVat);
-        Assert.Equal(121014.24m, result.TotalAmount);
-        Assert.Equal(16488.89m, result.Vat);
-        Assert.Equal(11754.42m, result.Withholding);
+        Assert.Equal(119514.24m, result.TotalAmount);
+        Assert.Equal(16188.89m, result.Vat);
+        Assert.Equal(11484.43m, result.Withholding);
         Assert.Equal(180m, result.AdditionalGuarantee);
-        Assert.Equal(1147.21m, result.StampTax);
-        Assert.Equal(13081.63m, result.TotalDeductions);
-        Assert.Equal(124421.50m, result.NetPayable);
+        Assert.Equal(1132.99m, result.StampTax);
+        Assert.Equal(12797.42m, result.TotalDeductions);
+        Assert.Equal(122905.71m, result.NetPayable);
     }
 
     [Fact]
