@@ -30,10 +30,11 @@ public partial class MainWindow : Window
     private readonly ObservableCollection<ReportRow> _reportRows = new();
     private Guid? _editingHistoryId;
     private readonly OehsApplicationDataStore _dataStore = new();
-    private static readonly double[] ThreeColumnWidths = { 60d, 455d, 203.11d };
+    private const double DocumentContentWidth = 690d;
+    private static readonly double[] ThreeColumnWidths = { 58d, 438d, 194d };
     private static readonly double[] ThreeValueWidths = { 45d, 360d, 135d };
-    private static readonly double[] FourColumnWidths = { 58d, 320d, 170d, 170.11d };
-    private static readonly double[] FiveColumnWidths = { 42d, 290d, 128d, 128d, 130.11d };
+    private static readonly double[] FourColumnWidths = { 55d, 308d, 163d, 164d };
+    private static readonly double[] FiveColumnWidths = { 40d, 278d, 124d, 124d, 124d };
     private static readonly string[] MainReportHeaders = { "", "Kalem", "Tutar" };
     private static readonly string[] DeductionHeaders = { "", "KESİNTİLER VE MAHSUPLAR", "Tutar" };
     private static readonly string[] ContractHeaders = { "Sözleşme Bedeli", "Sözleşme Artış Onayının Tarihi No.su", "Ek Sözleşme Bedeli", "Toplam Sözleşme Bedeli" };
@@ -332,9 +333,6 @@ public partial class MainWindow : Window
         HomeInvoiceTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.InvoiceAmountAfterWithholding);
         HomeGuaranteeTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.AdditionalGuarantee);
         HomeStampTaxTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.StampTax);
-        HomeGrossTextBlock2.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.GrossAmount);
-        HomeDeductionsTextBlock2.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.TotalDeductions);
-        HomeNetPayableTextBlock2.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.NetPayable);
     }
 
     private void UpdateContractSummaryView()
@@ -355,10 +353,40 @@ public partial class MainWindow : Window
                   (TenderDatePicker.SelectedDate.HasValue
                       ? $" • {TenderDatePicker.SelectedDate.Value:dd.MM.yyyy}"
                       : "");
+
+        ContractSummaryContractTextBlock.Text =
+            string.IsNullOrWhiteSpace(ContractNumberTextBox.Text)
+                ? "Bekleniyor"
+                : $"{ContractNumberTextBox.Text.Trim()}" +
+                  (ContractDatePicker.SelectedDate.HasValue
+                      ? $" • {ContractDatePicker.SelectedDate.Value:dd.MM.yyyy}"
+                      : "");
+
         ContractSummaryContractorTextBlock.Text =
             string.IsNullOrWhiteSpace(ContractorTextBox.Text) ? "Bekleniyor" : ContractorTextBox.Text.Trim();
-        ContractSummaryVatTextBlock.Text =
-            VatExemptCheckBox.IsChecked == true ? "KDV İstisnası" : "KDV Dahil";
+
+        ContractSummaryIdentityTextBlock.Text =
+            string.IsNullOrWhiteSpace(ContractorIdentityNumberTextBox.Text)
+                ? "—" : ContractorIdentityNumberTextBox.Text.Trim();
+
+        ContractSummaryAmountTextBlock.Text =
+            TryParseDecimal(ContractAmountTextBox.Text, out var summaryAmount)
+                ? FormatMoney(summaryAmount) : FormatMoney(0);
+
+        ContractSummaryBankTextBlock.Text =
+            string.IsNullOrWhiteSpace(BankAccountNumberTextBox.Text)
+                ? "—" : BankAccountNumberTextBox.Text.Trim();
+
+        var workDaysText = int.TryParse(ContractWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var workDays)
+            ? workDays.ToString(CultureInfo.CurrentCulture)
+            : "0";
+        var transportPriceText = TryParseDecimal(ContractTransportDailyPriceTextBox.Text, out var transportPrice)
+            ? FormatMoney(transportPrice)
+            : FormatMoney(0);
+        ContractSummaryWorkDaysTextBlock.Text = $"{workDaysText} gün • {transportPriceText}/gün";
+
+        var vatText = VatExemptCheckBox.IsChecked == true ? "KDV İstisnası" : "KDV Uygulanır";
+        ContractSummaryVatTextBlock.Text = $"{vatText} • {_routes.Count.ToString(CultureInfo.CurrentCulture)} hat";
     }
 
     private void AddRouteButton_Click(object sender, RoutedEventArgs e)
@@ -544,13 +572,41 @@ public partial class MainWindow : Window
             return;
         }
 
+        var proposedContract = new ContractDraftData(
+            TenderNumberTextBox.Text.Trim(),
+            ContractNumberTextBox.Text.Trim(),
+            WorkNameTextBox.Text.Trim(),
+            ContractorTextBox.Text.Trim(),
+            contractAmount,
+            DateOnly.FromDateTime(StartDatePicker.SelectedDate ?? DateTime.Today),
+            DateOnly.FromDateTime(EndDatePicker.SelectedDate ?? DateTime.Today),
+            VatExemptCheckBox.IsChecked == true,
+            TenderDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(TenderDatePicker.SelectedDate.Value) : null,
+            ContractDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(ContractDatePicker.SelectedDate.Value) : null,
+            ContractorIdentityNumberTextBox.Text.Trim(),
+            BankAccountNumberTextBox.Text.Trim(),
+            contractWorkDays,
+            transportDailyPrice);
+
+        var existingContract = _dataStore.Load().Contract;
+        if (existingContract is not null && existingContract.Equals(proposedContract))
+        {
+            UpdateContractSummaryView();
+            UpdateHomeSummaryView();
+            UpdateAcceptanceView();
+            ContractStatusSummaryTextBlock.Text = "KAYITLI";
+            ContractStatusTextBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(36, 104, 216));
+            ContractStatusTextBlock.Text = "Sözleşme zaten kayıtlı; mükerrer kayıt oluşturulmadı.";
+            return;
+        }
+
         SavePersistedData();
         UpdateContractSummaryView();
         UpdateHomeSummaryView();
         UpdateAcceptanceView();
         ContractStatusTextBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(36, 104, 216));
         ContractStatusTextBlock.Text =
-            $"Sözleşme taslağı kaydedildi: {WorkNameTextBox.Text.Trim()} — {contractAmount:N2} ₺.";
+            $"Sözleşme kaydedildi: {WorkNameTextBox.Text.Trim()} — {contractAmount:N2} ₺.";
     }
 
     private void LoadPersistedData()
@@ -676,17 +732,31 @@ public partial class MainWindow : Window
         File.WriteAllText(filePath, json);
     }
 
+    private static void SaveFlowDocumentAsRtf(FlowDocument document, string filePath)
+    {
+        using var stream = File.Create(filePath);
+        var range = new TextRange(document.ContentStart, document.ContentEnd);
+        range.Save(stream, System.Windows.DataFormats.Rtf);
+    }
+
     private string SaveRouteDocumentsArchive(RouteDraft route, ProgressPaymentHistoryData latest)
     {
         var folderName = BuildArchiveKey(latest);
         var documentFolder = Path.Combine(OehsDesktopRoot, "Belgeler", folderName);
         Directory.CreateDirectory(documentFolder);
 
-        var workbookPath = Path.Combine(documentFolder, "OEHS_Hakediş_Belgeleri.xlsx");
         var contractor = string.IsNullOrWhiteSpace(latest.ContractorName) ? ContractorTextBox.Text.Trim() : latest.ContractorName.Trim();
-        var workName = string.IsNullOrWhiteSpace(latest.WorkName) ? WorkNameTextBox.Text.Trim() : latest.WorkName.Trim();
 
-        ExcelDocumentExporter.Save(workbookPath, route.RouteNumber, route.Name, contractor, workName, latest);
+        var wordFiles = new[]
+        {
+            (Name: "Hakediş Raporu.rtf", Document: BuildHakedişRaporu(route, latest)),
+            (Name: "Hizmet İşleri Hakediş Raporu.rtf", Document: BuildHizmetIsleriHakedisRaporu(route, latest)),
+            (Name: "Hizmet İşleri Kabul Tutanağı.rtf", Document: BuildKabulTutanağı(route, latest)),
+            (Name: "Hakediş İcmali.rtf", Document: BuildHakedişIcmali(route, latest))
+        };
+
+        foreach (var word in wordFiles)
+            SaveFlowDocumentAsRtf(word.Document, Path.Combine(documentFolder, word.Name));
 
         var metadataPath = Path.Combine(documentFolder, "OEHS_Hakediş_Bilgi.json");
         var metadata = JsonSerializer.Serialize(new
@@ -700,7 +770,7 @@ public partial class MainWindow : Window
             latest.ContractorName,
             latest.BankAccountNumber,
             TransportDailyPrice = latest.Input.DailyPrice,
-            ExcelFile = workbookPath,
+            WordFiles = wordFiles.Select(x => Path.Combine(documentFolder, x.Name)).ToArray(),
             SavedAt = DateTime.Now
         }, JsonWriteOptions);
         File.WriteAllText(metadataPath, metadata);
@@ -936,25 +1006,26 @@ public partial class MainWindow : Window
     private string GetHistoryArchiveFolder(ProgressPaymentHistoryData item) =>
         Path.Combine(OehsDesktopRoot, "Belgeler", BuildArchiveKey(item));
 
-    private void OpenHistoryExcelButton_Click(object sender, RoutedEventArgs e)
+    private void OpenHistoryWordButton_Click(object sender, RoutedEventArgs e)
     {
         var item = GetHistoryItemFromRow((sender as Button)?.Tag);
         if (item is null)
             return;
 
-        var excelPath = Path.Combine(GetHistoryArchiveFolder(item), "OEHS_Hakediş_Belgeleri.xlsx");
-        if (!File.Exists(excelPath))
+        var wordPath = Path.Combine(GetHistoryArchiveFolder(item), "Hakediş Raporu.rtf");
+        if (!File.Exists(wordPath))
         {
-            MessageBox.Show("Bu hakediş için Excel arşivi henüz oluşturulmamış.", "OEHS Arşiv", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("Bu hakediş için Word arşivi henüz oluşturulmamış.", "OEHS Arşiv", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
         Process.Start(new ProcessStartInfo
         {
-            FileName = excelPath,
+            FileName = wordPath,
             UseShellExecute = true
         });
     }
+
 
     private void OpenHistoryFolderButton_Click(object sender, RoutedEventArgs e)
     {
@@ -1244,8 +1315,8 @@ public partial class MainWindow : Window
     private static Table CreateDocumentTable(params (string Label, string Value)[] rows)
     {
         var table = new Table { CellSpacing = 0, BorderBrush = System.Windows.Media.Brushes.Black, BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 0, 10) };
-        table.Columns.Add(new TableColumn { Width = new GridLength(359.055) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(359.055) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(345) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(345) });
         var group = new TableRowGroup();
         foreach (var (label, value) in rows)
         {
@@ -1305,10 +1376,10 @@ public partial class MainWindow : Window
             BorderThickness = new Thickness(1),
             Margin = new Thickness(0, 0, 0, 10)
         };
-        table.Columns.Add(new TableColumn { Width = new GridLength(60) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(38) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(440) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(180.11) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(56) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(36) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(426) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(172) });
 
         var group = new TableRowGroup();
         const int deductionItemCount = 12;
@@ -1384,8 +1455,8 @@ public partial class MainWindow : Window
             BorderThickness = new Thickness(1),
             Margin = new Thickness(0, 0, 0, 8)
         };
-        table.Columns.Add(new TableColumn { Width = new GridLength(500) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(218.11) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(480) });
+        table.Columns.Add(new TableColumn { Width = new GridLength(210) });
 
         var group = new TableRowGroup();
         var left = CreateCell(route.Name, true);
@@ -1632,7 +1703,7 @@ public partial class MainWindow : Window
         const double a4Width = 793.7008;
         const double a4Height = 1122.5197;
         const double margin = 37.7953;
-        const double contentWidth = 718.1102;
+        const double contentWidth = DocumentContentWidth;
         // A4 sabit: 210 x 297 mm. Sol/sağ/üst/alt 1 cm; içerik 190 mm.
 
         var document = new FlowDocument
@@ -2113,12 +2184,12 @@ public partial class MainWindow : Window
         try
         {
             var savedFolder = SaveRouteDocumentsArchive(route, latest);
-            CalculationStatusTextBlock.Text = $"4 belge tek Excel dosyasında arşivlendi: {savedFolder}";
+            CalculationStatusTextBlock.Text = $"4 Word belgesi A4 uyumlu olarak arşivlendi: {savedFolder}";
         }
         catch (Exception ex)
         {
             MessageBox.Show(
-                $"Excel arşivi oluşturulurken hata oluştu. Yazdırma işlemi yine devam edecek.\n\n{ex.Message}",
+                $"Word arşivi oluşturulurken hata oluştu. Yazdırma işlemi yine devam edecek.\n\n{ex.Message}",
                 "OEHS Arşiv Uyarısı",
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
@@ -2312,8 +2383,10 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         public string TransportAnnualPriceText => $"Taşıma Yıllık: {TransportAnnualPrice:N2} ₺";
         public string DailyPriceText => $"Taşıma Günlük: {DailyPrice:N2} ₺";
         public string GuideDailyPriceText => $"Rehber: {GuideDailyPrice:N2} ₺";
+        public string TransportSummaryText => $"Taşıma: {TransportWorkDays} gün × {DailyPrice:N2} ₺";
+        public string GuideSummaryText => $"Rehber: {GuideWorkDays} gün × {GuideDailyPrice:N2} ₺";
         public string ServiceSummaryText =>
-            $"Hizmet hattı • Taşıma {TransportWorkDays} gün • Rehber {GuideWorkDays} gün";
+            $"Taşıma {TransportWorkDays} gün • Rehber {GuideWorkDays} gün";
         public string DisplayText => $"Hat {RouteNumber} — {Name}";
     }
 
