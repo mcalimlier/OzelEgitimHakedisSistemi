@@ -108,8 +108,8 @@ public sealed class ProgressPaymentArchiveStoreTests
         var list = store.List();
 
         Assert.Equal(3, list.Count);
-        Assert.Equal(other, list[0].FullName);
         Assert.Contains(v2, list.Select(x => x.FullName));
+        Assert.Equal(other, list[^1].FullName);
         Assert.Contains(v3, list.Select(x => x.FullName));
     }
 
