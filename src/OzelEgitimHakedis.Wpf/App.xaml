@@ -191,9 +191,13 @@
             </Setter>
         </Style>
 
-        <Style x:Key="PremiumPanel" TargetType="Border" BasedOn="{StaticResource Card}">
-            <Setter Property="CornerRadius" Value="12"/>
+        <Style x:Key="PremiumPanel" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource PremiumPanelBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PremiumGoldBorderBrush}"/>
             <Setter Property="BorderThickness" Value="1.25"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
         </Style>
 
         <Style x:Key="PremiumFieldTextBox" TargetType="TextBox" BasedOn="{StaticResource FieldTextBox}">
