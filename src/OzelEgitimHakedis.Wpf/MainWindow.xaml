@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Özel Eğitim Hakediş Sistemi (OEHS)"
         Width="1792"
-        Height="968"
+        Height="997"
         MinWidth="966"
         MinHeight="536"
         SizeToContent="Manual"
@@ -21,7 +21,7 @@
              HorizontalAlignment="Stretch"
              VerticalAlignment="Stretch">
         <Border Width="1846.4"
-                Height="1063.3"
+                Height="1095.2"
                 CornerRadius="15"
                 BorderBrush="#35546F"
                 BorderThickness="1"
