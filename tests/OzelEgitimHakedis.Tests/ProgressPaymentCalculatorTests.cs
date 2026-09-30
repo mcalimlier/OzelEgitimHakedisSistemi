@@ -128,9 +128,11 @@ public sealed class ProgressPaymentCalculatorTests
 
         var result = ProgressPaymentCalculator.Calculate(input);
 
-        Assert.Equal(10100m, result.TransportNetAmount);
+        Assert.Equal(10400m, result.TransportNetAmount);
         Assert.Equal(2550m, result.GuideNetAmount);
-        Assert.Equal(12650m, result.TotalAmount);
+        Assert.Equal(12950m, result.TotalAmount);
+        // AC = I*6% + R*6%; iskonto AC hesabından düşülmez.
+        Assert.Equal(36m, result.AdditionalGuarantee);
     }
 
     [Fact]
