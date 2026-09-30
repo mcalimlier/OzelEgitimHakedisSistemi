@@ -110,13 +110,16 @@ public sealed class ProgressPaymentCalculator
 
         // Excel: AE = M+V+Y+Z+AA+AB+AC+AD.
         // Kesinti toplamı, yukarıdaki yuvarlanmış hücrelerin toplamından oluşur.
+        // Excel'deki kesinti hücreleri iki ondalık basamakla ilerler.
+        // Kullanıcı üç veya daha fazla basamak girse bile toplam kesinti
+        // aynı hücre yuvarlama sırasını izlemelidir.
         var totalDeductions = Round(
             withholding
             + stampTax
-            + input.TaxDebt
-            + input.InspectionPenalty
-            + input.SocialSecurityDebt
-            + input.MinimumWageSupport
+            + Round(input.TaxDebt)
+            + Round(input.InspectionPenalty)
+            + Round(input.SocialSecurityDebt)
+            + Round(input.MinimumWageSupport)
             + additionalGuarantee);
 
         // Excel: AF = O+X; AG = AF-AE.
