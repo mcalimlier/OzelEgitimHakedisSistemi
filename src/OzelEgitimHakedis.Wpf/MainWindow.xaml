@@ -1009,7 +1009,7 @@
 <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="8" Padding="14">
 <StackPanel>
 <TextBlock x:Name="AcceptanceDetailTextBlock" Text="Sözleşme ve hakediş kaydı oluşturulduğunda bilgiler burada görünür." Foreground="{StaticResource Text900Brush}" FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap"/>
-<Button Content="RAPORLARA GİT" Style="{StaticResource ModernButton}" Height="42" Margin="0,14,0,0" Click="ReportActionButton_Click" Tag="Reports"/>
+<Button Content="RAPORLARA GİT" Style="{StaticResource ModernButton}" Height="42" Margin="0,14,0,0" Click="NavigationButton_Click" Tag="Reports"/>
 </StackPanel></Border>
 </StackPanel></Border>
 </StackPanel>
