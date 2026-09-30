@@ -38,20 +38,21 @@ public sealed class ProgressPaymentCalculator
                 "Kesinti ve denetim cezası tutarları negatif olamaz.");
         }
 
-        // Kaynak Excel'deki Hesaplama hücreleri ara adımlarda ROUND kullanmıyor.
-        // Bu nedenle zincir tam hassasiyetle ilerler; 2 ondalık yuvarlama yalnızca
-        // ekranda/raporda gösterim sınırında yapılır. Bu, özellikle tevkifat,
-        // damga vergisi ve net ödemede kuruş farkını önler.
-
+        // Kaynak Excel hesap zinciri 2 ondalık basamakta ilerler.
+        // Ara hücrelerdeki ROUND(...,2) davranışını korumak önemlidir;
+        // aksi halde özellikle kesinti toplamında kuruş farkı oluşabilir.
+        //
         // Taşıma:
         // K = (G*H) + I - J
         // L = IF(KDV uygulanır, K*10/100)
         // M = L/2
         // N = K+M
         // O = K+L
-        var transportServiceAmount = input.WorkDays * input.DailyPrice;
-        var transportPriceDifference = input.PriceDifference - input.DiscountAmount;
-        var transportNetAmount = transportServiceAmount + transportPriceDifference;
+        var transportServiceAmount = Round(input.WorkDays * input.DailyPrice);
+        var transportPriceDifference =
+            Round(input.PriceDifference - input.DiscountAmount);
+        var transportNetAmount =
+            Round(transportServiceAmount + transportPriceDifference);
 
         // Rehber:
         // T = (P*Q) + R - S
@@ -59,90 +60,101 @@ public sealed class ProgressPaymentCalculator
         // V = U*9/10
         // W = T+V
         // X = T+U
-        var guideServiceAmount = input.GuideWorkDays * input.GuideDailyPrice;
-        var guidePriceDifference = input.GuidePriceDifference - input.GuideDiscountAmount;
-        var guideNetAmount = guideServiceAmount + guidePriceDifference;
+        var guideServiceAmount = Round(input.GuideWorkDays * input.GuideDailyPrice);
+        var guidePriceDifference =
+            Round(input.GuidePriceDifference - input.GuideDiscountAmount);
+        var guideNetAmount =
+            Round(guideServiceAmount + guidePriceDifference);
 
-        var totalAmount = transportNetAmount + guideNetAmount;
+        var totalAmount = Round(transportNetAmount + guideNetAmount);
 
         var transportVat = input.IncludeVat
-            ? transportNetAmount * TransportVatRate
+            ? Round(transportNetAmount * TransportVatRate)
             : 0m;
         var guideVat = input.IncludeVat
-            ? guideNetAmount * GuideVatRate
+            ? Round(guideNetAmount * GuideVatRate)
             : 0m;
 
         var transportWithholding = input.IncludeVat
-            ? transportVat * 0.5m
+            ? Round(transportVat * 0.5m)
             : 0m;
         var guideWithholding = input.IncludeVat
-            ? guideVat * 0.9m
+            ? Round(guideVat * 0.9m)
             : 0m;
 
-        var vat = transportVat + guideVat;
-        var withholding = transportWithholding + guideWithholding;
+        var vat = Round(transportVat + guideVat);
+        var withholding = Round(transportWithholding + guideWithholding);
 
-        var transportInvoiceAmount = transportNetAmount + transportWithholding;
-        var guideInvoiceAmount = guideNetAmount + guideWithholding;
+        var transportInvoiceAmount = Round(transportNetAmount + transportWithholding);
+        var guideInvoiceAmount = Round(guideNetAmount + guideWithholding);
         var invoiceAmountAfterWithholding =
-            transportInvoiceAmount + guideInvoiceAmount;
+            Round(transportInvoiceAmount + guideInvoiceAmount);
 
-        // Damga vergisi:
-        // AD = (K*9.48/1000) + (T*9.48/1000)
-        var transportStampTax = transportNetAmount * StampTaxRate;
-        var guideStampTax = guideNetAmount * StampTaxRate;
-        var stampTax = transportStampTax + guideStampTax;
+        // Damga vergisi taşıma + rehber hakedişleri üzerinden yürür.
+        var transportStampTax = Round(transportNetAmount * StampTaxRate);
+        var guideStampTax = Round(guideNetAmount * StampTaxRate);
+        var stampTax = Round(transportStampTax + guideStampTax);
 
         // Excel AC hücresi doğrudan I ve R sütunlarını kullanır:
         // AC = (I*6/100) + (R*6/100).
         // I/R, iskonto düşülmeden önceki fiyat farkı alanlarıdır.
         // Bu nedenle ek kesin teminat, net fiyat farkından değil,
         // kaynak Excel'deki ham fiyat farkı tutarlarından hesaplanır.
+        // Negatif değerler ayrıca sıfırlanmaz.
         var transportAdditionalGuarantee =
-            input.PriceDifference * AdditionalGuaranteeRate;
+            Round(input.PriceDifference * AdditionalGuaranteeRate);
         var guideAdditionalGuarantee =
-            input.GuidePriceDifference * AdditionalGuaranteeRate;
+            Round(input.GuidePriceDifference * AdditionalGuaranteeRate);
         var additionalGuarantee =
-            transportAdditionalGuarantee + guideAdditionalGuarantee;
+            Round(transportAdditionalGuarantee + guideAdditionalGuarantee);
 
         // Excel: AE = M+V+Y+Z+AA+AB+AC+AD.
-        // Kesinti toplamı ara hücreler yuvarlanmadan oluşur.
-        var totalDeductions =
+        // Kesinti toplamı, yukarıdaki yuvarlanmış hücrelerin toplamından oluşur.
+        var totalDeductions = Round(
             withholding
             + stampTax
             + input.TaxDebt
             + input.InspectionPenalty
             + input.SocialSecurityDebt
             + input.MinimumWageSupport
-            + additionalGuarantee;
+            + additionalGuarantee);
 
         // Excel: AF = O+X; AG = AF-AE.
-        var transportGrossAmount = transportNetAmount + transportVat;
-        var guideGrossAmount = guideNetAmount + guideVat;
-        var grossAmount = transportGrossAmount + guideGrossAmount;
-        var netPayable = grossAmount - totalDeductions;
+        var transportGrossAmount = Round(transportNetAmount + transportVat);
+        var guideGrossAmount = Round(guideNetAmount + guideVat);
+        var grossAmount = Round(transportGrossAmount + guideGrossAmount);
+        var netPayable = Round(grossAmount - totalDeductions);
+
+        var deductions = new DeductionBreakdown(
+            Round(transportWithholding + guideWithholding),
+            Round(stampTax),
+            Round(input.TaxDebt),
+            Round(input.InspectionPenalty),
+            Round(input.SocialSecurityDebt),
+            Round(input.MinimumWageSupport),
+            Round(additionalGuarantee));
 
         return new ProgressPaymentCalculation(
-            transportServiceAmount,
-            transportPriceDifference,
-            totalAmount,
-            vat,
-            withholding,
-            invoiceAmountAfterWithholding,
-            stampTax,
-            grossAmount,
+            Round(transportServiceAmount),
+            Round(transportPriceDifference),
+            Round(totalAmount),
+            Round(vat),
+            Round(withholding),
+            Round(invoiceAmountAfterWithholding),
+            Round(stampTax),
+            Round(grossAmount),
             totalDeductions,
-            netPayable,
-            additionalGuarantee,
+            Round(netPayable),
+            Round(additionalGuarantee),
             deductions,
-            guideServiceAmount,
-            guidePriceDifference,
-            transportNetAmount,
-            guideNetAmount,
-            transportVat,
-            guideVat,
-            transportWithholding,
-            guideWithholding);
+            Round(guideServiceAmount),
+            Round(guidePriceDifference),
+            Round(transportNetAmount),
+            Round(guideNetAmount),
+            Round(transportVat),
+            Round(guideVat),
+            Round(transportWithholding),
+            Round(guideWithholding));
     }
 
     private static decimal Round(decimal value) =>
