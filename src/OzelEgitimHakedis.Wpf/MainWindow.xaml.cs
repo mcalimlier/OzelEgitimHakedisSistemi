@@ -2078,8 +2078,9 @@ public partial class MainWindow : Window
 
         WorkDaysTextBox.Text = route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
 
-        if (string.IsNullOrWhiteSpace(GuideWorkDaysTextBox.Text) || GuideWorkDaysTextBox.Text == "0")
-            GuideWorkDaysTextBox.Text = route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
+        // Rehber iş günü de seçilen hattın varsayılanı olmalı.
+        // Aksi halde bir hattan diğerine geçerken önceki hattın rehber günü kalabilir.
+        GuideWorkDaysTextBox.Text = route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
     }
 
     private void OutputTenderListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
