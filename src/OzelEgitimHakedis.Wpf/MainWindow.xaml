@@ -379,7 +379,7 @@
                                                     <TextBox x:Name="WorkNameTextBox" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="8" Style="{StaticResource FieldTextBox}"/>
 
                                                     <TextBlock Grid.Row="2" Grid.Column="0" Text="Yüklenici Firma" Style="{StaticResource FieldLabel}" Margin="0,8"/>
-                                                    <ComboBox x:Name="ContractorSelectionComboBox" Grid.Row="2" Grid.Column="1" Margin="8" Height="42" Style="{StaticResource FieldComboBox}" SelectionChanged="ContractorSelectionComboBox_SelectionChanged"/>
+                                                    <ComboBox x:Name="ContractorSelectionComboBox" Grid.Row="2" Grid.Column="1" Margin="8" Height="42" DisplayMemberPath="Name" Style="{StaticResource FieldComboBox}" SelectionChanged="ContractorSelectionComboBox_SelectionChanged"/>
                                                     <TextBlock Grid.Row="2" Grid.Column="2" Text="Sözleşme Bedeli" Style="{StaticResource FieldLabel}" Margin="18,8,0,8"/>
                                                     <TextBox x:Name="ContractAmountTextBox" Grid.Row="2" Grid.Column="3" Margin="8" Style="{StaticResource FieldTextBox}"/>
 
@@ -1011,7 +1011,7 @@
                 </ScrollViewer>
 
                 <Border x:Name="ReportEmptyStateBorder" Grid.Row="2" Style="{StaticResource InfoNote}" Margin="0,8,0,0" Padding="12,10">
-                    <TextBlock Text="Rapor oluşturmak için önce bir hakediş kaydedin." Foreground="{StaticResource Text900Brush}" FontSize="13.5" FontWeight="SemiBold"/>
+                    <TextBlock Text="Belge oluşturmak için önce bir hakediş kaydedin." Foreground="{StaticResource Text900Brush}" FontSize="13.5" FontWeight="SemiBold"/>
                 </Border>
             </Grid>
         </Border>
