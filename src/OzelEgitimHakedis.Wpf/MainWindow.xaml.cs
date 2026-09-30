@@ -1190,6 +1190,93 @@ public partial class MainWindow : Window
         ContractStatusTextBlock.Text = $"İhale kaydedildi: {proposedContract.TenderNumber}.";
     }
 
+    private void LoadPersistedData()
+    {
+        var data = _dataStore.Load();
+
+        _contracts.Clear();
+        var persistedContracts = data.Contracts ?? Array.Empty<ContractDraftData>();
+        if (persistedContracts.Count > 0)
+        {
+            foreach (var contract in persistedContracts)
+                _contracts.Add(contract);
+        }
+        else if (data.Contract is not null)
+        {
+            _contracts.Add(data.Contract);
+        }
+
+        _contractors.Clear();
+        foreach (var contractor in data.Contractors)
+        {
+            _contractors.Add(new ContractorDraft(
+                contractor.Name,
+                contractor.TaxOrIdentityNumber,
+                contractor.Address,
+                contractor.Phone,
+                contractor.Email,
+                contractor.BankAccountNumber,
+                contractor.ContactPerson));
+        }
+
+        _routes.Clear();
+        foreach (var route in data.Routes)
+        {
+            var tender = route.TenderNumber;
+            if (string.IsNullOrWhiteSpace(tender))
+                tender = _contracts.FirstOrDefault()?.TenderNumber ?? string.Empty;
+
+            var contractorTax = route.ContractorTaxOrIdentityNumber;
+            if (string.IsNullOrWhiteSpace(contractorTax))
+            {
+                contractorTax = _contracts
+                    .FirstOrDefault(x => string.Equals(x.TenderNumber, tender, StringComparison.OrdinalIgnoreCase))
+                    ?.ContractorTaxOrIdentityNumber ?? string.Empty;
+            }
+
+            var contractorName = FindContractor(contractorTax)?.Name
+                                 ?? _contracts.FirstOrDefault(x => string.Equals(x.TenderNumber, tender, StringComparison.OrdinalIgnoreCase))?.ContractorName
+                                 ?? string.Empty;
+
+            _routes.Add(new RouteDraft(
+                route.RouteNumber,
+                route.Name,
+                route.DailyPrice,
+                route.GuideWorkDays,
+                route.GuideDailyPrice,
+                route.TransportWorkDays,
+                tender,
+                contractorTax,
+                contractorName));
+        }
+
+        _progressHistory.Clear();
+        foreach (var history in data.ProgressPayments ?? Array.Empty<ProgressPaymentHistoryData>())
+        {
+            var contract = _contracts.FirstOrDefault(x =>
+                string.Equals(x.TenderNumber, history.TenderNumber, StringComparison.OrdinalIgnoreCase));
+            var contractorTax = history.ContractorTaxOrIdentityNumber ?? contract?.ContractorTaxOrIdentityNumber;
+            var contractor = FindContractor(contractorTax ?? string.Empty);
+
+            _progressHistory.Add(history with
+            {
+                ContractorTaxOrIdentityNumber = contractorTax,
+                ContractorName = contractor?.Name ?? history.ContractorName ?? contract?.ContractorName,
+                BankAccountNumber = contractor?.BankAccountNumber ?? history.BankAccountNumber ?? contract?.BankAccountNumber
+            });
+        }
+
+        if (_contracts.Count > 0)
+            ApplyContractToForm(_contracts[0]);
+        else
+            ClearContractFormOnly();
+
+        UpdateContractSelectors();
+        UpdateRouteListView();
+        UpdateContractSummaryView();
+        UpdateHomeSummaryView();
+    }
+
     private void SavePersistedData()
     {
         var activeContract = GetSelectedContract() ?? _contracts.FirstOrDefault();
