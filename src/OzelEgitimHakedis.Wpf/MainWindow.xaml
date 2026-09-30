@@ -33,7 +33,7 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="270"/>
+                    <ColumnDefinition Width="290"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
@@ -42,7 +42,7 @@
                       Background="{StaticResource Navy900Brush}"
                       MouseLeftButtonDown="Header_MouseLeftButtonDown">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="270"/>
+                        <ColumnDefinition Width="290"/>
                         <ColumnDefinition Width="220"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
@@ -224,7 +224,7 @@
                                                 <TextBlock Text="HAZIR" Foreground="{StaticResource Gold500Brush}" FontSize="11.5" FontWeight="Bold"/>
                                             </StackPanel>
                                             <TextBlock Text="Önce sözleşmeyi tanımlayın" Foreground="White" FontSize="23" FontWeight="SemiBold" Margin="0,5,0,0"/>
-                                            <TextBlock Text="Sözleşme → Hatlar → Hakediş akışı burada ilerleyecek." Foreground="#C5D7E7" FontSize="13" Margin="0,5,0,0"/>
+                                            <TextBlock Text="İhale → Yüklenici → Hat → Hakediş → Çıktı akışı burada ilerleyecek." Foreground="#C5D7E7" FontSize="13" Margin="0,5,0,0"/>
                                             <Button Content="İHALE BİLGİLERİ TANIMLA" Tag="Contract" Click="NavigationButton_Click"
                                                     Style="{StaticResource ModernButton}" Width="250" Height="42"
                                                     HorizontalAlignment="Left" Margin="0,18,0,0"/>
@@ -492,14 +492,14 @@
                                                             <DataTemplate>
                                                                 <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,3">
                                                                     <Grid>
-                                                                        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="74"/><ColumnDefinition Width="52"/></Grid.ColumnDefinitions>
+                                                                        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="86"/><ColumnDefinition Width="58"/></Grid.ColumnDefinitions>
                                                                         <StackPanel>
                                                                             <TextBlock Text="{Binding TenderNumber}" Foreground="White" FontSize="14" FontWeight="Bold"/>
 
                                                                             <TextBlock Text="{Binding WorkName}" Foreground="#C5D7E7" FontSize="11.5" TextWrapping="Wrap"/>
                                                                         </StackPanel>
-                                                                        <Button Grid.Column="1" Content="DÜZENLE" Tag="{Binding}" Click="EditContractButton_Click" Style="{StaticResource SecondaryButton}" Height="34" FontSize="10.5" Margin="4,0"/>
-                                                                        <Button Grid.Column="2" Content="SİL" Tag="{Binding}" Click="DeleteContractButton_Click" Style="{StaticResource SecondaryButton}" Height="34" FontSize="10.5" Margin="4,0"/>
+                                                                        <Button Grid.Column="1" Content="DÜZENLE" Tag="{Binding}" Click="EditContractButton_Click" Style="{StaticResource SecondaryButton}" Height="34" FontSize="10.5" Width="80" Margin="3,0"/>
+                                                                        <Button Grid.Column="2" Content="SİL" Tag="{Binding}" Click="DeleteContractButton_Click" Style="{StaticResource SecondaryButton}" Height="34" FontSize="10.5" Width="56" Margin="3,0"/>
                                                                     </Grid>
                                                                 </Border>
                                                             </DataTemplate>
@@ -522,7 +522,7 @@
                                     <TextBlock Text="Dönem hesabını girin, sonucu kontrol edin ve ödeme tutarını oluşturun." Style="{StaticResource PageSubtitle}"/>
 
                                     <UniformGrid Columns="4" Margin="0,0,0,12">
-                                        <Border Style="{StaticResource MetricCard}" Margin="0,0,8,0"><StackPanel><TextBlock Text="DÖNEM" Style="{StaticResource FieldLabel}"/><TextBlock Text="YENİ HAKEDİŞ" FontSize="22" FontWeight="Bold" Foreground="{StaticResource Blue600Brush}"/><TextBlock Text="Hesaplama hazırlığı" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
+                                        <Border Style="{StaticResource MetricCard}" Margin="0,0,8,0"><StackPanel><TextBlock Text="DÖNEM" Style="{StaticResource FieldLabel}"/><TextBlock Text="HAKEDİŞ GİRİŞİ" FontSize="22" FontWeight="Bold" Foreground="{StaticResource Blue600Brush}"/><TextBlock Text="Hesaplama hazırlığı" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
                                         <Border Style="{StaticResource MetricCard}" Margin="4,0"><StackPanel><TextBlock Text="İŞ GÜNÜ" Style="{StaticResource FieldLabel}"/><TextBlock x:Name="ProgressWorkDaysSummaryTextBlock" Text="0" FontSize="22" FontWeight="Bold" Foreground="White"/><TextBlock Text="Çalışılan gün" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
                                         <Border Style="{StaticResource MetricCard}" Margin="4,0"><StackPanel><TextBlock Text="HESAP DURUMU" Style="{StaticResource FieldLabel}"/><TextBlock x:Name="ProgressCalculationSummaryTextBlock" Text="HAZIR" FontSize="22" FontWeight="Bold" Foreground="{StaticResource Gold600Brush}"/><TextBlock Text="Sonuç bekleniyor" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
                                         <Border Style="{StaticResource MetricCard}" Margin="8,0,0,0"><StackPanel><TextBlock Text="NET ÖDEME" Style="{StaticResource FieldLabel}"/><TextBlock x:Name="ProgressNetSummaryTextBlock" Text="0,00 ₺" FontSize="22" FontWeight="Bold" Foreground="{StaticResource Blue600Brush}"/><TextBlock Text="Hesap sonrası" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
@@ -576,30 +576,30 @@
                                                     <TextBox x:Name="GuideWorkDaysTextBox" Grid.Row="2" Grid.Column="1" Margin="6" Style="{StaticResource PremiumFieldTextBox}" IsReadOnly="True" ToolTip="Tanımlı hattan otomatik alınır." Visibility="Collapsed"/>
                                                     <TextBlock Grid.Row="2" Grid.Column="2" Text="Rehber Günlük Fiyat (otomatik)" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,5,0,5" Visibility="Collapsed"/>
                                                     <TextBox x:Name="GuideDailyPriceTextBox" Grid.Row="2" Grid.Column="3" Margin="6" Style="{StaticResource PremiumFieldTextBox}" IsReadOnly="True" ToolTip="Tanımlı hattan otomatik alınır." Visibility="Collapsed"/>
-                                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Taşıma İskonto" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,8"/>
-                                                    <TextBox x:Name="DiscountTextBox" Grid.Row="3" Grid.Column="1" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
-                                                    <TextBlock Grid.Row="3" Grid.Column="2" Text="Taşıma Fiyat Farkı" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,5,0,5"/>
-                                                    <TextBox x:Name="PriceDifferenceTextBox" Grid.Row="3" Grid.Column="3" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
-                                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Rehber İskonto" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,8"/>
-                                                    <TextBox x:Name="GuideDiscountTextBox" Grid.Row="4" Grid.Column="1" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
-                                                    <TextBlock Grid.Row="4" Grid.Column="2" Text="Rehber Fiyat Farkı" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,5,0,5"/>
-                                                    <TextBox x:Name="GuidePriceDifferenceTextBox" Grid.Row="4" Grid.Column="3" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
-                                                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Vergi Borcu" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,8"/>
-                                                    <TextBox x:Name="TaxDebtTextBox" Grid.Row="5" Grid.Column="1" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
-                                                    <TextBlock Grid.Row="5" Grid.Column="2" Text="SGK Borcu" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,8,0,8"/>
-                                                    <TextBox x:Name="SocialSecurityDebtTextBox" Grid.Row="5" Grid.Column="3" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
-                                                    <TextBlock Grid.Row="6" Grid.Column="0" Text="Asgari Ücret Desteği" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,8"/>
-                                                    <TextBox x:Name="MinimumWageSupportTextBox" Grid.Row="6" Grid.Column="1" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
-                                                    <TextBlock Grid.Row="6" Grid.Column="2" Text="Denetim Cezası" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,8,0,8"/>
-                                                    <TextBox x:Name="InspectionPenaltyTextBox" Grid.Row="6" Grid.Column="3" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
-                                                    <TextBlock Grid.Row="7" Grid.Column="0" Text="Hakediş No" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,8"/>
-                                                    <TextBox x:Name="ProgressNumberTextBox" Grid.Row="7" Grid.Column="1" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
-                                                    <TextBlock Grid.Row="7" Grid.Column="2" Text="Dönem Tarihi" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,8,0,8"/>
-                                                    <DatePicker x:Name="ProgressPeriodDatePicker" Grid.Row="7" Grid.Column="3" Margin="8" Style="{StaticResource FieldDatePicker}"/>
+                                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Hakediş No" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,8"/>
+                                                    <TextBox x:Name="ProgressNumberTextBox" Grid.Row="3" Grid.Column="1" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
+                                                    <TextBlock Grid.Row="3" Grid.Column="2" Text="Dönem Tarihi" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,8,0,8"/>
+                                                    <DatePicker x:Name="ProgressPeriodDatePicker" Grid.Row="3" Grid.Column="3" Margin="8" Style="{StaticResource FieldDatePicker}"/>
+                                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Taşıma İskonto" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,8"/>
+                                                    <TextBox x:Name="DiscountTextBox" Grid.Row="4" Grid.Column="1" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
+                                                    <TextBlock Grid.Row="4" Grid.Column="2" Text="Taşıma Fiyat Farkı" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,5,0,5"/>
+                                                    <TextBox x:Name="PriceDifferenceTextBox" Grid.Row="4" Grid.Column="3" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
+                                                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Rehber İskonto" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,8"/>
+                                                    <TextBox x:Name="GuideDiscountTextBox" Grid.Row="5" Grid.Column="1" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
+                                                    <TextBlock Grid.Row="5" Grid.Column="2" Text="Rehber Fiyat Farkı" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,5,0,5"/>
+                                                    <TextBox x:Name="GuidePriceDifferenceTextBox" Grid.Row="5" Grid.Column="3" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
+                                                    <TextBlock Grid.Row="6" Grid.Column="0" Text="Vergi Borcu" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,8"/>
+                                                    <TextBox x:Name="TaxDebtTextBox" Grid.Row="6" Grid.Column="1" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
+                                                    <TextBlock Grid.Row="6" Grid.Column="2" Text="SGK Borcu" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,8,0,8"/>
+                                                    <TextBox x:Name="SocialSecurityDebtTextBox" Grid.Row="6" Grid.Column="3" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
+                                                    <TextBlock Grid.Row="7" Grid.Column="0" Text="Asgari Ücret Desteği" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,8"/>
+                                                    <TextBox x:Name="MinimumWageSupportTextBox" Grid.Row="7" Grid.Column="1" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
+                                                    <TextBlock Grid.Row="7" Grid.Column="2" Text="Denetim Cezası" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,8,0,8"/>
+                                                    <TextBox x:Name="InspectionPenaltyTextBox" Grid.Row="7" Grid.Column="3" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
                                                 </Grid>
                                                 <Border x:Name="ProgressValidationBanner" Visibility="Collapsed" Background="#FFF1F1" BorderBrush="#E53935" BorderThickness="1.5" CornerRadius="9" Padding="12,9" Margin="6,10,0,0"><StackPanel><TextBlock Text="HESAPLAMA GİRDİLERİNİ KONTROL EDİN" Foreground="#C62828" FontSize="12.5" FontWeight="Bold"/><TextBlock x:Name="ProgressValidationMessageTextBlock" Foreground="#8E1B1B" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,3,0,0"/></StackPanel></Border><StackPanel Orientation="Horizontal" Margin="6,12,0,0">
-                                                    <Button Content="HAKEDİŞİ HESAPLA" Click="CalculateProgressButton_Click" Style="{StaticResource ModernButton}" Width="220"/>
-                                                    <Button Content="KAYITLI HAKEDİŞİ DÜZENLE" Click="EditCurrentProgressButton_Click" Style="{StaticResource SecondaryButton}" Width="190" Margin="10,0,0,0"/>
+                                                    <Button Content="HAKEDİŞİ HESAPLA" Click="CalculateProgressButton_Click" Style="{StaticResource ModernButton}" Width="230"/>
+                                                    <Button Content="KAYITLI HAKEDİŞİ DÜZENLE" Click="EditCurrentProgressButton_Click" Style="{StaticResource SecondaryButton}" Width="235" Margin="10,0,0,0"/>
                                                 </StackPanel>
                                                 <TextBlock x:Name="CalculationStatusTextBlock" Style="{StaticResource ValidationText}"/>
                                             </StackPanel>
@@ -679,7 +679,7 @@
                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0">
                             <StackPanel>
                                     <TextBlock Text="HATLAR" Style="{StaticResource PageTitle}"/>
-                                    <TextBlock Text="Sözleşmeye bağlı hizmet hatlarını tanımlayın ve günlük birim fiyatlarını yönetin." Style="{StaticResource PageSubtitle}"/>
+                                    <TextBlock Text="İhale ve yüklenici seçimini yapın; ardından bu ilişkiye bağlı hizmet hatlarını tanımlayın." Style="{StaticResource PageSubtitle}"/>
 
                                     <UniformGrid Columns="3" Margin="0,0,0,16">
                                         <Border Style="{StaticResource MetricCard}" Margin="0,0,8,0">
@@ -692,7 +692,7 @@
                                         <Border Style="{StaticResource PremiumPanel}" Margin="8,0,0,0" Padding="16">
                                             <StackPanel>
                                                 <TextBlock Text="AKIŞ" Foreground="{StaticResource Gold500Brush}" FontSize="11" FontWeight="Bold"/>
-                                                <TextBlock Text="Sözleşme → Hat → Hakediş" Foreground="White" FontSize="16" FontWeight="SemiBold" Margin="0,6,0,0"/>
+                                                <TextBlock Text="İhale → Yüklenici → Hat → Hakediş" Foreground="White" FontSize="16" FontWeight="SemiBold" Margin="0,6,0,0"/>
                                                 <TextBlock Text="Hatlar sonraki hakediş hesabında kullanılacak." Foreground="#C5D7E7" FontSize="12.5" Margin="0,4,0,0" TextWrapping="Wrap"/>
                                             </StackPanel>
                                         </Border>
@@ -765,8 +765,8 @@
                                                 <TextBox x:Name="RouteGuideDailyPriceTextBox" Style="{StaticResource FieldTextBox}" Margin="0,7,0,18"/>
 
                                                 <StackPanel Orientation="Horizontal">
-                                                    <Button Content="HAT EKLE" Click="AddRouteButton_Click" Style="{StaticResource ModernButton}" Width="130"/>
-                                                    <Button Content="TEMİZLE" Click="ClearRouteButton_Click" Style="{StaticResource SecondaryButton}" Width="105" Margin="10,0,0,0"/>
+                                                    <Button Content="HAT EKLE" Click="AddRouteButton_Click" Style="{StaticResource ModernButton}" Width="140"/>
+                                                    <Button Content="TEMİZLE" Click="ClearRouteButton_Click" Style="{StaticResource SecondaryButton}" Width="120" Margin="10,0,0,0"/>
                                                 </StackPanel>
                                                 <TextBlock x:Name="RouteStatusTextBlock" Margin="0,14,0,0" Foreground="{StaticResource Blue600Brush}" TextWrapping="Wrap"/>
                                             </StackPanel>
@@ -798,8 +798,8 @@
                                                                     <TextBlock Text="{Binding TransportAnnualPriceText}" Foreground="{StaticResource Text700Brush}" FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Right"/>
                                                                 </StackPanel>
                                                                 <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                                                    <Button Content="DÜZENLE" Tag="{Binding}" Click="EditRouteButton_Click" Style="{StaticResource SecondaryButton}" Height="38" FontSize="11.5" Width="72" Margin="0,0,6,0"/>
-                                                                    <Button Content="SİL" Tag="{Binding}" Click="RemoveRouteButton_Click" Style="{StaticResource SecondaryButton}" Height="38" FontSize="11.5" Width="48"/>
+                                                                    <Button Content="DÜZENLE" Tag="{Binding}" Click="EditRouteButton_Click" Style="{StaticResource SecondaryButton}" Height="38" FontSize="11.5" Width="82" Margin="0,0,6,0"/>
+                                                                    <Button Content="SİL" Tag="{Binding}" Click="RemoveRouteButton_Click" Style="{StaticResource SecondaryButton}" Height="38" FontSize="11.5" Width="56"/>
                                                                 </StackPanel>
                                                             </Grid>
                                                             </Border>
@@ -868,15 +868,15 @@
                                 <DataTemplate>
                                     <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,3">
                                         <Grid>
-                                            <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="115"/><ColumnDefinition Width="82"/><ColumnDefinition Width="55"/></Grid.ColumnDefinitions>
+                                            <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="125"/><ColumnDefinition Width="92"/><ColumnDefinition Width="62"/></Grid.ColumnDefinitions>
                                             <StackPanel>
                                                 <TextBlock Text="{Binding Name}" Foreground="White" FontSize="14.5" FontWeight="Bold"/>
                                                 <TextBlock Text="{Binding TaxOrIdentityNumber}" Foreground="#C5D7E7" FontSize="12.5"/>
                                                 <TextBlock Text="{Binding BankAccountNumber}" Foreground="#C5D7E7" FontSize="11.5"/>
                                             </StackPanel>
                                             <TextBlock Grid.Column="1" Text="{Binding Phone}" Foreground="#C5D7E7" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                            <Button Grid.Column="2" Content="DÜZENLE" Tag="{Binding}" Click="EditContractorButton_Click" Style="{StaticResource SecondaryButton}" Height="36" FontSize="11" Margin="4,0"/>
-                                            <Button Grid.Column="3" Content="SİL" Tag="{Binding}" Click="DeleteContractorButton_Click" Style="{StaticResource SecondaryButton}" Height="36" FontSize="11" Margin="4,0"/>
+                                            <Button Grid.Column="2" Content="DÜZENLE" Tag="{Binding}" Click="EditContractorButton_Click" Style="{StaticResource SecondaryButton}" Height="36" FontSize="11" Width="84" Margin="4,0"/>
+                                            <Button Grid.Column="3" Content="SİL" Tag="{Binding}" Click="DeleteContractorButton_Click" Style="{StaticResource SecondaryButton}" Height="36" FontSize="11" Width="56" Margin="4,0"/>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
@@ -943,7 +943,7 @@
                                     </StackPanel>
                                     <TextBlock Grid.Column="2" Text="{Binding TotalAmountText}" Foreground="{StaticResource Text900Brush}" FontSize="14" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                     <TextBlock Grid.Column="3" Text="{Binding NetPayableText}" Foreground="{StaticResource Blue700Brush}" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                    <TextBlock Grid.Column="4" Text="HESAPLANDI" Foreground="{StaticResource Gold600Brush}" FontSize="12.5" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center"/><StackPanel Grid.Column="5" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center"><Button Content="KLASÖR" Tag="{Binding}" Click="OpenHistoryFolderButton_Click" Style="{StaticResource SecondaryButton}" Height="38" FontSize="12" Width="75" Margin="3,0,3,0"/><Button Content="DÜZENLE" Tag="{Binding}" Click="EditHistoryButton_Click" Style="{StaticResource SecondaryButton}" Height="38" FontSize="12" Width="82" Margin="3,0,3,0"/><Button Content="SİL" Tag="{Binding}" Click="DeleteHistoryButton_Click" Style="{StaticResource SecondaryButton}" Height="38" FontSize="12" Width="55" Margin="3,0,0,0"/></StackPanel>
+                                    <TextBlock Grid.Column="4" Text="HESAPLANDI" Foreground="{StaticResource Gold600Brush}" FontSize="12.5" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center"/><StackPanel Grid.Column="5" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center"><Button Content="KLASÖR" Tag="{Binding}" Click="OpenHistoryFolderButton_Click" Style="{StaticResource SecondaryButton}" Height="38" FontSize="12" Width="82" Margin="3,0,3,0"/><Button Content="DÜZENLE" Tag="{Binding}" Click="EditHistoryButton_Click" Style="{StaticResource SecondaryButton}" Height="38" FontSize="12" Width="90" Margin="3,0,3,0"/><Button Content="SİL" Tag="{Binding}" Click="DeleteHistoryButton_Click" Style="{StaticResource SecondaryButton}" Height="38" FontSize="12" Width="60" Margin="3,0,0,0"/></StackPanel>
                                 </Grid>
                             </Border>
                         </DataTemplate>
@@ -1025,7 +1025,7 @@
 
     <StackPanel Grid.Row="0">
         <TextBlock Text="ÇIKTILAR" Style="{StaticResource PageTitle}"/>
-        <TextBlock Text="Seçilen ihale, yüklenici ve hat için dört belgeyi doğrudan Word olarak oluşturup kaydedin." Style="{StaticResource PageSubtitle}"/>
+        <TextBlock Text="Seçilen ihale, yüklenici ve hat için dört belgeyi A4 düzeninde önizleyin ve PDF olarak kaydedin." Style="{StaticResource PageSubtitle}"/>
     </StackPanel>
 
     <Grid Grid.Row="1" Margin="0,0,0,12">
@@ -1092,7 +1092,7 @@
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                 <StackPanel>
                     <TextBlock Text="4 BELGE ÇIKTISI" Style="{StaticResource CardTitle}" FontSize="17"/>
-                    <TextBlock Text="Seçilen hat için dört kurum belgesi Word olarak kaydedilir." Style="{StaticResource CardSubtitle}" FontSize="13.5" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                    <TextBlock Text="Seçilen hat için dört kurum belgesi A4 düzeninde hazırlanır ve tek PDF yazdırma akışıyla kaydedilir." Style="{StaticResource CardSubtitle}" FontSize="13.5" TextWrapping="Wrap" Margin="0,0,0,12"/>
                     <TextBlock Text="İHALE / DOSYA NO" Style="{StaticResource FieldLabel}" FontSize="12.5"/>
                     <ComboBox x:Name="OutputTenderListBox"
                               Height="44"
@@ -1110,8 +1110,8 @@
                     <ComboBox x:Name="ReportRouteComboBox" DisplayMemberPath="DisplayText" Height="44" Margin="0,7,0,12" Style="{StaticResource FieldComboBox}" SelectionChanged="ReportRouteComboBox_SelectionChanged"/>
                     <Grid Margin="0,0,0,2">
                         <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-                        <Button Grid.Column="0" Content="BELGE ÖZETİ" Style="{StaticResource ModernButton}" Height="54" FontSize="14.5" FontWeight="SemiBold" Margin="0,0,6,0" Click="ShowOutputSummaryButton_Click"/>
-                        <Button Grid.Column="1" Content="BELGELERİ OLUŞTUR / KAYDET" Style="{StaticResource ModernButton}" Height="54" FontSize="14.5" FontWeight="Bold" Margin="6,0,0,0" Click="CreateSaveAllRouteDocumentsButton_Click"/>
+                        <Button Grid.Column="0" Content="BELGE ÖNİZLEME" Style="{StaticResource ModernButton}" Height="54" FontSize="14.5" FontWeight="SemiBold" Margin="0,0,6,0" Click="PreviewAllRouteDocumentsButton_Click"/>
+                        <Button Grid.Column="1" Content="PDF OLARAK KAYDET" Style="{StaticResource ModernButton}" Width="230" Height="54" FontSize="14.5" FontWeight="Bold" Margin="6,0,0,0" Click="CreateSaveAllRouteDocumentsButton_Click"/>
                     </Grid>
                     <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,12,0,0">
                         <StackPanel>
