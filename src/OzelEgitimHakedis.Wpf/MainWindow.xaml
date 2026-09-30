@@ -440,7 +440,7 @@
                                             <Border Style="{StaticResource Card}" Margin="0,14,0,0">
                                                 <StackPanel>
                                                     <TextBlock Text="KAYITLI İHALELER / DOSYALAR" Style="{StaticResource CardTitle}"/>
-                                                    <TextBlock Text="İhale / dosya no ana ayırt edicidir; her ihale kendi hatları ve yüklenicisiyle ilişkilidir." Style="{StaticResource CardSubtitle}" Margin="0,2,0,10" TextWrapping="Wrap"/>
+                                                    <TextBlock Text="İhale / dosya no ana ayırt edicidir; hatlar seçilen ihale ve yüklenici ilişkisi üzerinden tanımlanır." Style="{StaticResource CardSubtitle}" Margin="0,2,0,10" TextWrapping="Wrap"/>
                                                     <ItemsControl x:Name="ContractsListBox">
                                                         <ItemsControl.ItemTemplate>
                                                             <DataTemplate>
