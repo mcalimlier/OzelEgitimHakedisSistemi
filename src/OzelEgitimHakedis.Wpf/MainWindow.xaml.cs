@@ -208,7 +208,7 @@ public partial class MainWindow : Window
         }
 
         AcceptanceContractTextBlock.Text = string.IsNullOrWhiteSpace(latest.ContractorName)
-            ? (string.IsNullOrWhiteSpace(ContractorTextBox.Text) ? "Sözleşme bilgisi" : ContractorTextBox.Text.Trim())
+            ? (string.IsNullOrWhiteSpace(CurrentContractorName) ? "Sözleşme bilgisi" : CurrentContractorName.Trim())
             : latest.ContractorName.Trim();
 
         AcceptanceProgressTextBlock.Text = latest.ProgressPaymentNumber.HasValue
@@ -898,50 +898,39 @@ public partial class MainWindow : Window
         ClearContractValidationVisuals();
 
         var errors = new List<string>();
-
         if (string.IsNullOrWhiteSpace(TenderNumberTextBox.Text))
         {
             errors.Add("İhale / Dosya No");
             MarkInvalid(TenderNumberTextBox);
         }
-
         if (string.IsNullOrWhiteSpace(ContractNumberTextBox.Text))
         {
             errors.Add("Sözleşme No");
             MarkInvalid(ContractNumberTextBox);
         }
-
         if (string.IsNullOrWhiteSpace(WorkNameTextBox.Text))
         {
             errors.Add("İşin Adı");
             MarkInvalid(WorkNameTextBox);
         }
-
-        if (string.IsNullOrWhiteSpace(ContractorTextBox.Text))
-        {
-            errors.Add("Yüklenici");
-            MarkInvalid(ContractorTextBox);
-        }
+        if (GetSelectedContractor() is null)
+            errors.Add("Yüklenici Firma");
 
         if (!TryParseDecimal(ContractAmountTextBox.Text, out var contractAmount) || contractAmount < 0)
         {
             errors.Add("Sözleşme Bedeli");
             MarkInvalid(ContractAmountTextBox);
         }
-
-        if (!int.TryParse(ContractWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var contractWorkDays) ||
-            contractWorkDays < 0)
+        if (!int.TryParse(ContractWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var contractWorkDays) || contractWorkDays < 0)
         {
             errors.Add("Sözleşme İş Günü");
             MarkInvalid(ContractWorkDaysTextBox);
         }
-
         if (!TryParseDecimal(ContractTransportDailyPriceTextBox.Text, out var transportDailyPrice) || transportDailyPrice < 0)
         {
             errors.Add("Taşıma Günlük Fiyatı");
             MarkInvalid(ContractTransportDailyPriceTextBox);
         }
-
         if (StartDatePicker.SelectedDate.HasValue && EndDatePicker.SelectedDate.HasValue &&
             EndDatePicker.SelectedDate.Value.Date < StartDatePicker.SelectedDate.Value.Date)
         {
@@ -956,176 +945,86 @@ public partial class MainWindow : Window
             return;
         }
 
+        var contractor = GetSelectedContractor()!;
         var proposedContract = new ContractDraftData(
             TenderNumberTextBox.Text.Trim(),
             ContractNumberTextBox.Text.Trim(),
             WorkNameTextBox.Text.Trim(),
-            ContractorTextBox.Text.Trim(),
+            contractor.Name,
             contractAmount,
             DateOnly.FromDateTime(StartDatePicker.SelectedDate ?? DateTime.Today),
             DateOnly.FromDateTime(EndDatePicker.SelectedDate ?? DateTime.Today),
             VatExemptCheckBox.IsChecked == true,
             TenderDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(TenderDatePicker.SelectedDate.Value) : null,
             ContractDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(ContractDatePicker.SelectedDate.Value) : null,
-            ContractorIdentityNumberTextBox.Text.Trim(),
-            BankAccountNumberTextBox.Text.Trim(),
+            contractor.TaxOrIdentityNumber,
+            contractor.BankAccountNumber,
             contractWorkDays,
             transportDailyPrice);
 
-        var existingContract = _dataStore.Load().Contract;
-        if (existingContract is not null && existingContract.Equals(proposedContract))
+        var existingByTender = _contracts.FirstOrDefault(x =>
+            string.Equals(x.TenderNumber, proposedContract.TenderNumber, StringComparison.OrdinalIgnoreCase));
+
+        if (_editingContractTender is null)
         {
-            UpdateContractSummaryView();
-            UpdateHomeSummaryView();
-            UpdateAcceptanceView();
-            ContractStatusSummaryTextBlock.Text = "KAYITLI";
-            ContractStatusTextBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(36, 104, 216));
-            ContractStatusTextBlock.Text = "Sözleşme zaten kayıtlı; mükerrer kayıt oluşturulmadı.";
-            return;
-        }
-
-        SavePersistedData();
-        UpdateContractSummaryView();
-        UpdateHomeSummaryView();
-        UpdateAcceptanceView();
-        ContractStatusTextBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(36, 104, 216));
-        ContractStatusTextBlock.Text =
-            $"Sözleşme kaydedildi: {WorkNameTextBox.Text.Trim()} — {contractAmount:N2} ₺.";
-    }
-
-    private void LoadPersistedData()
-    {
-        var data = _dataStore.Load();
-
-        _contracts.Clear();
-        var persistedContracts = data.Contracts ?? Array.Empty<ContractDraftData>();
-        if (persistedContracts.Count > 0)
-        {
-            foreach (var contract in persistedContracts)
-                _contracts.Add(contract);
-        }
-        else if (data.Contract is not null)
-        {
-            _contracts.Add(data.Contract);
-        }
-
-        _routes.Clear();
-        foreach (var route in data.Routes)
-        {
-            var tender = route.TenderNumber;
-            var contractorTax = route.ContractorTaxOrIdentityNumber;
-
-            if (string.IsNullOrWhiteSpace(tender) && _contracts.Count > 0)
-                tender = _contracts[0].TenderNumber;
-            if (string.IsNullOrWhiteSpace(contractorTax) && !string.IsNullOrWhiteSpace(tender))
+            if (existingByTender is not null)
             {
-                var contract = _contracts.FirstOrDefault(x => string.Equals(x.TenderNumber, tender, StringComparison.OrdinalIgnoreCase));
-                contractorTax = contract?.ContractorTaxOrIdentityNumber ?? string.Empty;
+                ShowAlreadyRegistered($"İhale / Dosya No {proposedContract.TenderNumber} zaten kayıtlı. Mükerrer kayıt oluşturulmadı.");
+                return;
             }
 
-            var contractorName = FindContractor(contractorTax)?.Name
-                                 ?? _contracts.FirstOrDefault(x => string.Equals(x.TenderNumber, tender, StringComparison.OrdinalIgnoreCase))?.ContractorName
-                                 ?? string.Empty;
-
-            _routes.Add(new RouteDraft(
-                route.RouteNumber,
-                route.Name,
-                route.DailyPrice,
-                route.GuideWorkDays,
-                route.GuideDailyPrice,
-                route.TransportWorkDays,
-                tender,
-                contractorTax,
-                contractorName));
-        }
-
-        _contractors.Clear();
-        foreach (var contractor in data.Contractors)
-        {
-            _contractors.Add(new ContractorDraft(
-                contractor.Name,
-                contractor.TaxOrIdentityNumber,
-                contractor.Address,
-                contractor.Phone,
-                contractor.Email,
-                contractor.BankAccountNumber,
-                contractor.ContactPerson));
-        }
-
-        _progressHistory.Clear();
-        foreach (var history in data.ProgressPayments ?? Array.Empty<ProgressPaymentHistoryData>())
-            _progressHistory.Add(history);
-
-        if (_contracts.Count > 0)
-        {
-            var contract = _contracts[0];
-            ApplyContractToForm(contract);
+            _contracts.Add(proposedContract);
         }
         else
         {
-            ClearContractFormOnly();
+            if (existingByTender is not null &&
+                !string.Equals(existingByTender.TenderNumber, _editingContractTender, StringComparison.OrdinalIgnoreCase))
+            {
+                ShowAlreadyRegistered($"İhale / Dosya No {proposedContract.TenderNumber} zaten kayıtlı. Mükerrer kayıt oluşturulmadı.");
+                return;
+            }
+
+            var oldTender = _editingContractTender;
+            var oldContract = _contracts.FirstOrDefault(x =>
+                string.Equals(x.TenderNumber, oldTender, StringComparison.OrdinalIgnoreCase));
+
+            if (oldContract is null)
+            {
+                _contracts.Add(proposedContract);
+            }
+            else
+            {
+                var index = _contracts.IndexOf(oldContract);
+                _contracts[index] = proposedContract;
+
+                foreach (var route in _routes.Where(x => string.Equals(x.TenderNumber, oldTender, StringComparison.OrdinalIgnoreCase)).ToArray())
+                {
+                    var routeIndex = _routes.IndexOf(route);
+                    _routes[routeIndex] = route with
+                    {
+                        TenderNumber = proposedContract.TenderNumber,
+                        ContractorTaxOrIdentityNumber = proposedContract.ContractorTaxOrIdentityNumber,
+                        ContractorName = proposedContract.ContractorName,
+                        DailyPrice = proposedContract.TransportDailyPrice
+                    };
+                }
+
+                RecalculateHistoriesForTenderChange(oldContract, proposedContract);
+            }
         }
 
+        _editingContractTender = null;
+        ApplyContractToForm(proposedContract);
+        SavePersistedData();
         UpdateContractSelectors();
         UpdateRouteListView();
+        UpdateRouteSummary();
         UpdateContractSummaryView();
         UpdateHomeSummaryView();
-    }
+        UpdateAcceptanceView();
 
-    private void SavePersistedData()
-    {
-        var activeContract = GetSelectedContract()
-                             ?? _contracts.FirstOrDefault();
-
-        var contract = BuildContractFromFormOrNull();
-
-        if (contract is not null)
-        {
-            activeContract = contract;
-            if (_editingContractTender is not null)
-            {
-                var existing = _contracts.FirstOrDefault(x =>
-                    string.Equals(x.TenderNumber, _editingContractTender, StringComparison.OrdinalIgnoreCase));
-
-                if (existing is not null)
-                {
-                    var index = _contracts.IndexOf(existing);
-                    _contracts[index] = contract;
-                }
-                else
-                {
-                    _contracts.Add(contract);
-                }
-            }
-            else if (!_contracts.Any(x => string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase)))
-            {
-                _contracts.Add(contract);
-            }
-        }
-
-        var data = new OehsApplicationData(
-            activeContract,
-            _routes.Select(x => new RouteData(
-                x.RouteNumber,
-                x.Name,
-                x.DailyPrice,
-                x.GuideWorkDays,
-                x.GuideDailyPrice,
-                x.TransportWorkDays,
-                x.TenderNumber,
-                x.ContractorTaxOrIdentityNumber)).ToArray(),
-            _contractors.Select(x => new Contractor(
-                x.Name,
-                x.TaxOrIdentityNumber,
-                x.Address,
-                x.Phone,
-                x.Email,
-                x.BankAccountNumber,
-                x.ContactPerson)).ToArray(),
-            _progressHistory.ToArray(),
-            _contracts.ToArray());
-
-        _dataStore.Save(data);
+        ContractStatusTextBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(36, 104, 216));
+        ContractStatusTextBlock.Text = $"İhale kaydedildi: {proposedContract.TenderNumber}.";
     }
 
     private void ClearContractButton_Click(object sender, RoutedEventArgs e)
@@ -1134,30 +1033,6 @@ public partial class MainWindow : Window
         ClearContractFormOnly();
         UpdateContractSummaryView();
         ContractStatusTextBlock.Text = "Yeni ihale/dosya kaydı için alanlar temizlendi.";
-    }
-
-    private void ClearContractButton_Click(object sender, RoutedEventArgs e)
-    {
-        TenderNumberTextBox.Clear();
-        ContractNumberTextBox.Clear();
-        WorkNameTextBox.Clear();
-        ContractorTextBox.Clear();
-        ContractorIdentityNumberTextBox.Clear();
-        BankAccountNumberTextBox.Clear();
-        ContractWorkDaysTextBox.Clear();
-        ContractTransportDailyPriceTextBox.Clear();
-        ContractAmountTextBox.Clear();
-        StartDatePicker.SelectedDate = DateTime.Today;
-        EndDatePicker.SelectedDate = DateTime.Today;
-        TenderDatePicker.SelectedDate = DateTime.Today;
-        ContractDatePicker.SelectedDate = DateTime.Today;
-        VatExemptCheckBox.IsChecked = false;
-        ClearContractValidationVisuals();
-        SavePersistedData();
-        UpdateContractSummaryView();
-        UpdateHomeSummaryView();
-        UpdateAcceptanceView();
-        ContractStatusTextBlock.Text = "Sözleşme taslağı temizlendi.";
     }
 
     private static string OehsDesktopRoot =>
@@ -1380,7 +1255,7 @@ public partial class MainWindow : Window
                 routeNumber,
                 routeName,
                 WorkNameTextBox.Text.Trim(),
-                ContractorTextBox.Text.Trim(),
+                CurrentContractorName.Trim(),
                 TenderNumberTextBox.Text.Trim(),
                 ContractNumberTextBox.Text.Trim(),
                 TenderDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(TenderDatePicker.SelectedDate.Value) : null,
@@ -2381,7 +2256,7 @@ public partial class MainWindow : Window
         doc.Blocks.Add(CreateDeductionTable(hRows.ToArray()));
 
         var contractor = string.IsNullOrWhiteSpace(latest.ContractorName)
-            ? ContractorTextBox.Text.Trim()
+            ? CurrentContractorName.Trim()
             : latest.ContractorName.Trim();
 
         doc.Blocks.Add(CreateDocumentTable(
@@ -2432,7 +2307,7 @@ public partial class MainWindow : Window
             ("Uygulama Yılı", (latest.PeriodDate?.Year ?? DateTime.Today.Year).ToString(CultureInfo.CurrentCulture)),
             ("Yapılan Hizmetin Adı", route.Name),
             ("Yapılan Hizmetin Etüt / Proje No.su", "Proje Dışıdır."),
-            ("Yüklenicinin Adı / Ticari Unvanı", string.IsNullOrWhiteSpace(latest.ContractorName) ? ContractorTextBox.Text : latest.ContractorName),
+            ("Yüklenicinin Adı / Ticari Unvanı", string.IsNullOrWhiteSpace(latest.ContractorName) ? CurrentContractorName : latest.ContractorName),
             ("Sözleşme Bedeli", FormatMoney(latest.Input.ContractAmount)),
             ("İhale Tarihi", latest.TenderDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
             ("Sözleşme Tarihi ve No.su", latest.ContractDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? StartDatePicker.SelectedDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"),
@@ -2477,9 +2352,9 @@ public partial class MainWindow : Window
 
         var contractAmount = latest.Input.ContractAmount;
         var contractor = string.IsNullOrWhiteSpace(latest.ContractorName)
-            ? (string.IsNullOrWhiteSpace(ContractorTextBox.Text)
+            ? (string.IsNullOrWhiteSpace(CurrentContractorName)
                 ? "S.S. Selçikler Min. Kar. Yolcu Taşıma Kooperatifi"
-                : ContractorTextBox.Text.Trim())
+                : CurrentContractorName.Trim())
             : latest.ContractorName.Trim();
 
         doc.Blocks.Add(CreateDocumentTable(
