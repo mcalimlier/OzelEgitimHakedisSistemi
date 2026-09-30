@@ -1530,7 +1530,9 @@ public partial class MainWindow : Window
                 ? DateOnly.FromDateTime(selectedPeriodDate)
                 : (DateOnly?)null;
 
-            var contractor = FindContractor(selectedContract.ContractorTaxOrIdentityNumber);
+            // Yüklenici artık ihale kaydında değil, seçilen Hat ilişkisinde tutulur.
+            // Bu nedenle hakediş geçmişi ve çıktılar daima seçilen hattın yüklenicisini kullanır.
+            var routeContractor = FindContractor(selectedRoute.ContractorTaxOrIdentityNumber);
 
             var historyItem = new ProgressPaymentHistoryData(
                 _editingHistoryId ?? Guid.NewGuid(),
@@ -1542,15 +1544,15 @@ public partial class MainWindow : Window
                 selectedRoute.RouteNumber,
                 selectedRoute.Name,
                 selectedContract.WorkName,
-                selectedContract.ContractorName,
-                selectedContract.TenderNumber,
+                selectedRoute.ContractorName,
+                selectedRoute.TenderNumber,
                 selectedContract.ContractNumber,
                 selectedContract.TenderDate,
                 selectedContract.ContractDate,
                 selectedContract.StartDate,
                 selectedContract.EndDate,
-                contractor?.BankAccountNumber ?? selectedContract.BankAccountNumber,
-                selectedContract.ContractorTaxOrIdentityNumber);
+                routeContractor?.BankAccountNumber ?? string.Empty,
+                selectedRoute.ContractorTaxOrIdentityNumber);
 
             if (_editingHistoryId.HasValue)
             {
@@ -1576,7 +1578,7 @@ public partial class MainWindow : Window
             {
                 var duplicate = _progressHistory.FirstOrDefault(x =>
                     string.Equals(x.TenderNumber, selectedContract.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(x.ContractorTaxOrIdentityNumber, selectedContract.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(x.ContractorTaxOrIdentityNumber, selectedRoute.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase) &&
                     string.Equals(x.RouteNumber, selectedRoute.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
                     x.ProgressPaymentNumber == progressNumber &&
                     x.PeriodDate == periodDate &&
@@ -1821,7 +1823,8 @@ public partial class MainWindow : Window
         {
             route = _routes.FirstOrDefault(x =>
                 string.Equals(x.TenderNumber, item.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(x.RouteNumber, item.RouteNumber, StringComparison.OrdinalIgnoreCase));
+                string.Equals(x.RouteNumber, item.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(x.ContractorTaxOrIdentityNumber, item.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase));
         }
 
         if (route is null)
@@ -1870,7 +1873,8 @@ public partial class MainWindow : Window
         _editingHistoryId = item.Id;
         ProgressRouteComboBox.SelectedItem = _routes.FirstOrDefault(x =>
             string.Equals(x.TenderNumber, item.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
-            string.Equals(x.RouteNumber, item.RouteNumber, StringComparison.OrdinalIgnoreCase));
+            string.Equals(x.RouteNumber, item.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(x.ContractorTaxOrIdentityNumber, item.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase));
 
         WorkDaysTextBox.Text = item.Input.WorkDays.ToString(CultureInfo.CurrentCulture);
         DailyPriceTextBox.Text = item.Input.DailyPrice.ToString("N2", CultureInfo.CurrentCulture);
@@ -2099,7 +2103,9 @@ public partial class MainWindow : Window
         var previous = ReportRouteComboBox.SelectedItem as RouteDraft;
         ReportRouteComboBox.ItemsSource = routes;
         if (previous is not null)
-            ReportRouteComboBox.SelectedItem = routes.FirstOrDefault(x => x.RouteNumber == previous.RouteNumber);
+            ReportRouteComboBox.SelectedItem = routes.FirstOrDefault(x =>
+                x.RouteNumber == previous.RouteNumber &&
+                string.Equals(x.ContractorTaxOrIdentityNumber, previous.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase));
         if (ReportRouteComboBox.SelectedItem is null && routes.Length > 0)
             ReportRouteComboBox.SelectedIndex = 0;
     }
@@ -2158,7 +2164,10 @@ public partial class MainWindow : Window
         IEnumerable<ProgressPaymentHistoryData> query = _progressHistory;
 
         if (route is not null)
-            query = query.Where(x => string.Equals(x.RouteNumber, route.RouteNumber, StringComparison.OrdinalIgnoreCase));
+            query = query.Where(x =>
+                string.Equals(x.TenderNumber, route.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(x.RouteNumber, route.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(x.ContractorTaxOrIdentityNumber, route.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase));
 
         return query.OrderBy(x => x.PeriodDate ?? DateOnly.MinValue).ThenBy(x => x.CreatedAt).ToList();
     }
