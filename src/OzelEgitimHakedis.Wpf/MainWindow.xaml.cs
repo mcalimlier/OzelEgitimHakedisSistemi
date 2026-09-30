@@ -2198,10 +2198,6 @@ public partial class MainWindow : Window
     private void BeginContractorHistoryEdit(ProgressPaymentHistoryData item)
     {
         var contractor = FindContractor(item.ContractorTaxOrIdentityNumber ?? string.Empty);
-        if (contractor is null)
-        {
-            contractor = _contractors.FirstOrDefault(x => string.Equals(x.Name, item.ContractorName, StringComparison.OrdinalIgnoreCase));
-        }
 
         if (contractor is null)
         {
