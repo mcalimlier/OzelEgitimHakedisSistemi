@@ -68,7 +68,7 @@ public static class ProgressPaymentValidationService
 
         if (candidate.PeriodDate is not null)
         {
-            var previousPeriod = data.ProgressPayments?
+            var latestExistingPeriod = data.ProgressPayments?
                 .Where(x => !editingExisting || x.Id != candidate.Id)
                 .Where(x => string.Equals(x.TenderNumber?.Trim(), tenderNumber, StringComparison.OrdinalIgnoreCase))
                 .Where(x => string.Equals(x.RouteNumber?.Trim(), routeNumber, StringComparison.OrdinalIgnoreCase))
@@ -78,28 +78,14 @@ public static class ProgressPaymentValidationService
                     StringComparison.Ordinal))
                 .Where(x => x.PeriodDate.HasValue)
                 .Select(x => x.PeriodDate!.Value)
-                .Where(x => x < candidate.PeriodDate.Value)
                 .DefaultIfEmpty(DateOnly.MinValue)
                 .Max();
 
-            var laterPeriod = data.ProgressPayments?
-                .Where(x => !editingExisting || x.Id != candidate.Id)
-                .Where(x => string.Equals(x.TenderNumber?.Trim(), tenderNumber, StringComparison.OrdinalIgnoreCase))
-                .Where(x => string.Equals(x.RouteNumber?.Trim(), routeNumber, StringComparison.OrdinalIgnoreCase))
-                .Where(x => string.Equals(
-                    OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber ?? string.Empty),
-                    identity,
-                    StringComparison.Ordinal))
-                .Where(x => x.PeriodDate.HasValue)
-                .Select(x => x.PeriodDate!.Value)
-                .Where(x => x > candidate.PeriodDate.Value)
-                .Any();
-
-            if (previousPeriod != DateOnly.MinValue && candidate.PeriodDate.Value < previousPeriod)
+            if (latestExistingPeriod != DateOnly.MinValue &&
+                candidate.PeriodDate.Value < latestExistingPeriod)
+            {
                 errors.Add("Hakediş dönemi önceki hakedişlerin sırasından önce olamaz.");
-
-            if (laterPeriod == true)
-                errors.Add("Hakediş dönemi mevcut sonraki hakedişlerin önüne alınamaz.");
+            }
         }
 
         return errors;
