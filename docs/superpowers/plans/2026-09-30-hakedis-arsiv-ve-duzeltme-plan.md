@@ -47,18 +47,14 @@
 - Produces: `ProgressPaymentCalculation` with no artificial intermediate rounding.
 
 - [ ] **Step 1: Write the failing tests.**
-  - Replace/add a route-1 exact XLSM regression using:
-    - transport 29 × 2608.26 + 1500,
-    - guide 30 × 1362.49,
-    - `IsVatExempt = false`,
-    - no manual deductions.
-  - Assert raw chain-equivalent values needed by reports, including transport/guide net, VAT, withholding, stamp, additional guarantee, total deductions, gross and net.
-  - Add a test whose expected result distinguishes unrounded intermediate calculation from early `ROUND(2)`.
-  - Keep a VAT-exempt case and negative-price-difference case.
+  - Create `FinalXlsmRoute1_ShouldMatchExactCalculationChain` and assert the final XLSM route-1 chain values.
+  - Create `IntermediatePrecision_ShouldNotRoundAtTwoDecimals` with an input where early 2-decimal rounding changes the final result.
+  - Create `VatExempt_ShouldNotCalculateVatOrWithholding`.
+  - Create `NegativePriceDifference_ShouldFlowThroughLikeExcel`.
 
-- [ ] **Step 2: Run the calculator tests and verify they fail.**
-  - Run: `dotnet test tests/OzelEgitimHakedis.Tests/OzelEgitimHakedis.Tests.csproj --configuration Debug --filter FullyQualifiedName~ProgressPaymentCalculatorTests`
-  - Expected: at least the precision regression fails against the current calculator.
+- [ ] **Step 2: Run `IntermediatePrecision_ShouldNotRoundAtTwoDecimals` and verify it fails.**
+  - Run: `dotnet test tests/OzelEgitimHakedis.Tests/OzelEgitimHakedis.Tests.csproj --configuration Debug --filter "FullyQualifiedName~OzelEgitimHakedis.Tests.ProgressPaymentCalculatorTests.IntermediatePrecision_ShouldNotRoundAtTwoDecimals"`
+  - Expected: FAIL against the current calculator because an intermediate value is rounded too early.
 
 - [ ] **Step 3: Implement the exact XLSM calculation chain.**
   - Implement:
@@ -81,8 +77,8 @@
   - Retain current input validation for negative days/prices/debts, while allowing negative price difference when the XLSM allows it.
 
 - [ ] **Step 4: Run the calculator tests and verify they pass.**
-  - Run the same filtered command.
-  - Expected: all calculator tests PASS.
+  - Run: `dotnet test tests/OzelEgitimHakedis.Tests/OzelEgitimHakedis.Tests.csproj --configuration Debug --filter FullyQualifiedName~ProgressPaymentCalculatorTests`
+  - Expected: all `ProgressPaymentCalculatorTests` PASS.
 
 - [ ] **Step 5: Commit.**
   - Commit message: `fix: align calculator precision with final xlsm`
@@ -106,16 +102,15 @@
   - `public static int SuggestNextProgressPaymentNumber(IEnumerable<ProgressPaymentHistoryData> history, string tenderNumber, string routeNumber, string contractorIdentity)`
 
 - [ ] **Step 1: Write failing tests.**
-  - `NormalizeIdentity` must make common presentation variants of the same VKN/TCKN equal.
-  - A contractor using route 1 in tender A and route 1 in tender B must generate different route keys.
-  - Same tender/route/identity with different progress no or period must be distinguishable.
-  - Duplicate exact key must be rejected, but editing the same record must not reject itself.
-  - Next progress number must be max existing number + 1 for the same tender/route/identity, not global max.
-  - A period before the immediately previous period must return a validation message/error.
-  - A period outside contract start/end must return a validation message/error.
+  - `NormalizeIdentity_ShouldCollapseFormattingDifferences`
+  - `RouteKey_ShouldIncludeTenderNumberAndNormalizedIdentity`
+  - `DuplicateProgressPaymentKey_ShouldRejectNewRecordButAllowCurrentEdit`
+  - `SuggestNextProgressPaymentNumber_ShouldUseSameTenderRouteIdentity`
+  - `PeriodBeforePrevious_ShouldBeRejected`
+  - `PeriodOutsideContract_ShouldBeRejected`
 
-- [ ] **Step 2: Run the focused validation tests and verify they fail.**
-  - Run: `dotnet test tests/OzelEgitimHakedis.Tests/OzelEgitimHakedis.Tests.csproj --configuration Debug --filter FullyQualifiedName~ProgressPaymentValidationTests`
+- [ ] **Step 2: Run `NormalizeIdentity_ShouldCollapseFormattingDifferences` and verify it fails.**
+  - Run: `dotnet test tests/OzelEgitimHakedis.Tests/OzelEgitimHakedis.Tests.csproj --configuration Debug --filter "FullyQualifiedName~OzelEgitimHakedis.Tests.ProgressPaymentValidationTests.NormalizeIdentity_ShouldCollapseFormattingDifferences"`
   - Expected: FAIL because the new service does not yet exist.
 
 - [ ] **Step 3: Implement `OehsIdentityService` and `ProgressPaymentValidationService`.**
@@ -151,17 +146,17 @@
   - `public static string BuildFileStem(ProgressPaymentArchive archive)`
 
 - [ ] **Step 1: Write failing tests.**
-  - Saving first archive produces `..._v01.json`.
-  - Saving a revision produces `..._v02.json` and leaves v01 intact.
-  - The JSON contains all data required to reconstruct the hakediş independently: schema version, revision, key identity, contract, contractor, route, input, calculation, deductions and output identity metadata.
-  - Filename sanitizes invalid Windows path characters.
-  - Loading a valid file round-trips to the same archive data.
-  - Loading malformed JSON throws a controlled domain exception.
-  - Archive listing ignores unrelated files and orders by tender/route/progress/period/revision.
+  - `FirstSave_ShouldCreateV01WithoutOverwriting`
+  - `SecondSave_ShouldCreateV02AndKeepV01`
+  - `Archive_ShouldContainSelfContainedSnapshotFields`
+  - `BuildFileStem_ShouldSanitizeWindowsInvalidCharacters`
+  - `Load_ShouldRoundTripValidArchive`
+  - `Load_ShouldRejectMalformedJsonWithControlledException`
+  - `List_ShouldIgnoreUnrelatedFilesAndOrderByRevisionKey`
 
-- [ ] **Step 2: Run the archive tests and verify they fail.**
-  - Run: `dotnet test tests/OzelEgitimHakedis.Tests/OzelEgitimHakedis.Tests.csproj --configuration Debug --filter FullyQualifiedName~ProgressPaymentArchiveStoreTests`
-  - Expected: FAIL because archive model/store do not yet exist.
+- [ ] **Step 2: Run `FirstSave_ShouldCreateV01WithoutOverwriting` and verify it fails.**
+  - Run: `dotnet test tests/OzelEgitimHakedis.Tests/OzelEgitimHakedis.Tests.csproj --configuration Debug --filter "FullyQualifiedName~OzelEgitimHakedis.Tests.ProgressPaymentArchiveStoreTests.FirstSave_ShouldCreateV01WithoutOverwriting"`
+  - Expected: FAIL because the archive store does not yet exist.
 
 - [ ] **Step 3: Implement the archive model/store.**
   - Root path default: `Environment.SpecialFolder.DesktopDirectory/OzelEgitimHakedisSistemi/Arsiv/Hakedisler`.
@@ -195,14 +190,14 @@
   - No method mutates a history record in place.
 
 - [ ] **Step 1: Write failing tests.**
-  - Changing route daily price updates affected histories' calculation while keeping discount/price-difference/debt inputs unchanged.
-  - Changing contractor display name with same normalized VKN/TCKN updates display metadata without breaking the relationship.
-  - Changing tender VAT exemption recalculates VAT/withholding of affected histories.
-  - Changing work-name/contract metadata updates official output identity metadata.
-  - A source change that causes two histories to collide on the same key is rejected before persistence.
+  - `RouteDailyPriceChange_ShouldRecalculateWithoutChangingUserInputs`
+  - `ContractorRename_ShouldKeepStableIdentityAndUpdateDisplayName`
+  - `VatExemptionChange_ShouldRecalculateVatAndWithholding`
+  - `ContractMetadataChange_ShouldRefreshOutputIdentity`
+  - `SourceChangeCreatingDuplicateKey_ShouldBeRejected`
 
-- [ ] **Step 2: Run the propagation tests and verify they fail.**
-  - Run: `dotnet test tests/OzelEgitimHakedis.Tests/OzelEgitimHakedis.Tests.csproj --configuration Debug --filter FullyQualifiedName~ProgressPaymentPropagationTests`
+- [ ] **Step 2: Run `RouteDailyPriceChange_ShouldRecalculateWithoutChangingUserInputs` and verify it fails.**
+  - Run: `dotnet test tests/OzelEgitimHakedis.Tests/OzelEgitimHakedis.Tests.csproj --configuration Debug --filter "FullyQualifiedName~OzelEgitimHakedis.Tests.ProgressPaymentPropagationTests.RouteDailyPriceChange_ShouldRecalculateWithoutChangingUserInputs"`
   - Expected: FAIL because the propagation service does not yet exist.
 
 - [ ] **Step 3: Implement propagation.**
@@ -223,12 +218,17 @@
 ### Task 5: WPF Hakediş Giriş Akışı, ARŞİVLE ve DÜZELT
 
 **Files:**
+- Create: `src/OzelEgitimHakedis.Core/Services/ProgressCorrectionTargetService.cs`
+- Create: `tests/OzelEgitimHakedis.Tests/ProgressCorrectionTargetServiceTests.cs`
 - Modify: `src/OzelEgitimHakedis.Wpf/MainWindow.xaml`
 - Modify: `src/OzelEgitimHakedis.Wpf/MainWindow.xaml.cs`
 - Modify: `src/OzelEgitimHakedis.Wpf/App.xaml` only if shared button/style resources are needed.
-- Modify: `tests/OzelEgitimHakedis.Tests/` only for additional Core-level workflow helpers; do not introduce WPF UI test framework.
 
 **Interfaces:**
+- Core produces:
+  - `public enum ProgressCorrectionTarget { Tender, Contractor, Route, ProgressPayment, Cancel }`
+  - `public sealed record ProgressCorrectionTargetSelection(ProgressCorrectionTarget Target, string? TenderNumber, string? ContractorTaxOrIdentityNumber, string? RouteNumber, Guid? ProgressPaymentId)`
+  - `public static ProgressCorrectionTargetSelection Select(ProgressCorrectionTarget target, ProgressPaymentHistoryData item)`
 - WPF handlers/flows:
   - `ArchiveCurrentProgressButton_Click`
   - `CorrectCurrentProgressButton_Click`
@@ -245,9 +245,9 @@
     - VAZGEÇ -> no data mutation
   - Add a test proving next suggested hakedis number is shown as max+1.
 
-- [ ] **Step 2: Run these tests and verify they fail.**
-  - Run the relevant filtered test command.
-  - Expected: FAIL until the shared workflow helper exists.
+- [ ] **Step 2: Run `SelectRoute_ShouldReturnTenderRouteAndContractorIdentity` and verify it fails.**
+  - Run: `dotnet test tests/OzelEgitimHakedis.Tests/OzelEgitimHakedis.Tests.csproj --configuration Debug --filter "FullyQualifiedName~OzelEgitimHakedis.Tests.ProgressCorrectionTargetServiceTests.SelectRoute_ShouldReturnTenderRouteAndContractorIdentity"`
+  - Expected: FAIL because `ProgressCorrectionTargetService` does not yet exist.
 
 - [ ] **Step 3: Implement the WPF flow.**
   - On selected tender, filter routes by tender and contractor identity; never match by contractor name alone.
@@ -262,10 +262,9 @@
   - Archive load fills the existing progress editor with all user inputs and source snapshot fields, while re-resolving the live relationship key before persistence.
   - Existing history `KLASÖR` action remains and points to the existing document folder.
 
-- [ ] **Step 4: Run tests and build the WPF project.**
-  - Run: `dotnet test .\\OzelEgitimHakedisSistemi.sln --configuration Debug --no-build` after a build.
+- [ ] **Step 4: Run the solution build.**
   - Run: `dotnet build .\\OzelEgitimHakedisSistemi.sln --configuration Debug`
-  - Expected: BUILD succeeded and all tests PASS.
+  - Expected: BUILD succeeded.
 
 - [ ] **Step 5: Commit.**
   - Commit message: `feat: add hakedis archive and correction workflow`
@@ -292,14 +291,14 @@
   - action command target.
 
 - [ ] **Step 1: Write failing tests for archive list mapping.**
-  - v01 and v02 of the same hakedis must display as separate revisions.
-  - Latest revision can be identified without deleting older revisions.
-  - Loading the selected revision returns the exact saved user inputs.
-  - A malformed archive is excluded or shown with a clear invalid status; it must not crash the panel.
+  - `ArchiveList_ShouldShowV01AndV02AsSeparateRows`
+  - `LatestRevision_ShouldBeIdentifiedWithoutDeletingOlderRevisions`
+  - `LoadRevision_ShouldRestoreExactUserInputs`
+  - `MalformedArchive_ShouldBecomeControlledInvalidEntry`
 
-- [ ] **Step 2: Run the archive-list tests and verify they fail.**
-  - Run the focused test filter.
-  - Expected: FAIL until the archive display mapping exists.
+- [ ] **Step 2: Run `ArchiveList_ShouldShowV01AndV02AsSeparateRows` and verify it fails.**
+  - Run the archive-list test command after adding the test method.
+  - Expected: FAIL until the list mapping exists.
 
 - [ ] **Step 3: Implement the `ARŞİVLER` panel.**
   - Add a left-navigation `ARŞİVLER` item and panel.
@@ -320,6 +319,7 @@
 ### Task 7: Excel-Compatible Cumulative Reports, PDF Filename and General Regression Cleanup
 
 **Files:**
+- Create: `src/OzelEgitimHakedis.Core/Services/OehsFileNameService.cs`
 - Modify: `src/OzelEgitimHakedis.Wpf/MainWindow.xaml.cs`
 - Modify: `src/OzelEgitimHakedis.Wpf/ExcelDocumentExporter.cs` only where output identity/value sourcing must be corrected.
 - Modify: `src/OzelEgitimHakedis.Core/Services/OehsApplicationDataStore.cs` only if archive/live-save atomic behavior integration requires it.
@@ -330,26 +330,21 @@
 
 **Interfaces:**
 - Produces:
-  - `public static string BuildProgressPdfFileName(string tenderNumber, string routeNumber, int progressPaymentNumber, DateOnly periodDate)`
+  - `public static string BuildProgressPdfFileName(string tenderNumber, string routeNumber, int progressPaymentNumber, DateOnly periodDate)` in `OehsFileNameService`.
   - report builder behavior using period-sorted histories.
   - final general-control document recording commands/results and any remaining minor findings.
 
 - [ ] **Step 1: Write failing tests.**
-  - PDF filename exact pattern:
-    `OEHS_[İhale]_Hat-01_Hakediş-03_2026-11-30.pdf`
-  - Invalid filename characters are sanitized.
-  - Report cumulative values follow `PeriodDate`, not edit timestamp.
-  - Current period price difference appears in the current report row according to the XLSM flow.
-  - Route-1 reference values match the final XLSM workbook.
-  - Four document names remain exactly:
-    - Hakediş Raporu
-    - Hizmet İşleri Hakediş Raporu
-    - Hizmet İşleri Kabul Tutanağı
-    - Hakediş İcmali
+  - `BuildProgressPdfFileName_ShouldUseExactDescriptivePattern`
+  - `BuildProgressPdfFileName_ShouldSanitizeInvalidCharacters`
+  - `ReportHistory_ShouldOrderByPeriodDateNotCreatedAt`
+  - `CurrentPeriodPriceDifference_ShouldRemainInCurrentReport`
+  - `FinalXlsmRoute1Report_ShouldMatchWorkbookReference`
+  - `OfficialDocumentNames_ShouldContainTheFourRequiredDocuments`
 
-- [ ] **Step 2: Run the report/PDF tests and verify they fail.**
-  - Run: `dotnet test tests/OzelEgitimHakedis.Tests/OzelEgitimHakedis.Tests.csproj --configuration Debug --filter FullyQualifiedName~ProgressPaymentReportTests|FullyQualifiedName~PdfFileNameTests`
-  - Expected: FAIL until the exact PDF naming/report helpers are implemented.
+- [ ] **Step 2: Run `BuildProgressPdfFileName_ShouldUseExactDescriptivePattern` and verify it fails.**
+  - Run: `dotnet test tests/OzelEgitimHakedis.Tests/OzelEgitimHakedis.Tests.csproj --configuration Debug --filter "FullyQualifiedName~OzelEgitimHakedis.Tests.PdfFileNameTests.BuildProgressPdfFileName_ShouldUseExactDescriptivePattern"`
+  - Expected: FAIL until `OehsFileNameService` exists.
 
 - [ ] **Step 3: Implement report/PDF corrections.**
   - Keep existing 4-document A4 PrintDialog flow.
@@ -358,18 +353,20 @@
   - Ensure cumulative report calculations consume period-sorted history and do not accidentally use row order or edit timestamp.
   - Preserve the current PDF output behavior already working in the application.
 
-- [ ] **Step 4: Run focused tests and verify they pass.**
-  - Run the same filtered report/PDF command.
-  - Expected: PASS.
+- [ ] **Step 4: Run the report/PDF tests and verify they pass.**
+  - Run: `dotnet test tests/OzelEgitimHakedis.Tests/OzelEgitimHakedis.Tests.csproj --configuration Debug --filter "FullyQualifiedName~OzelEgitimHakedis.Tests.ProgressPaymentReportTests|FullyQualifiedName~OzelEgitimHakedis.Tests.PdfFileNameTests"`
+  - Expected: all selected report/PDF tests PASS.
 
-- [ ] **Step 5: Run the entire solution test/build verification.**
-  - Run:
-    - `dotnet restore`
-    - `dotnet build .\\OzelEgitimHakedisSistemi.sln --configuration Debug`
-    - `dotnet test .\\OzelEgitimHakedisSistemi.sln --configuration Debug --no-build`
-  - Expected: all commands succeed; all tests PASS.
+- [ ] **Step 5: Run `dotnet restore`.**
+  - Expected: restore succeeds.
+- [ ] **Step 6: Run the full solution build.**
+  - Run: `dotnet build .\\OzelEgitimHakedisSistemi.sln --configuration Debug`
+  - Expected: BUILD succeeded.
+- [ ] **Step 7: Run the full solution test suite.**
+  - Run: `dotnet test .\\OzelEgitimHakedisSistemi.sln --configuration Debug --no-build`
+  - Expected: all tests PASS.
 
-- [ ] **Step 6: Perform manual general control.**
+- [ ] **Step 8: Perform manual general control.**
   - Open the WPF app and verify:
     - navigation and button text do not clip,
     - tender -> route -> contractor selection is correct,
@@ -385,7 +382,7 @@
   - Compare a controlled route-1 scenario directly with the final XLSM.
   - Verify existing DogruTemin behavior is not touched/broken by this feature work.
 
-- [ ] **Step 7: Write the general-control report.**
+- [ ] **Step 9: Write the general-control report.**
   - Record:
     - tested commands,
     - pass/fail results,
@@ -395,7 +392,7 @@
     - fixes made during control,
     - remaining low-risk improvement suggestions.
 
-- [ ] **Step 8: Commit.**
+- [ ] **Step 10: Commit.**
   - Commit message: `test: complete oehs final regression and general control`
 
 ---
