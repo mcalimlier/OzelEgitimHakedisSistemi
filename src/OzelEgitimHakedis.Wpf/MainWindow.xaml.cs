@@ -741,7 +741,7 @@ public partial class MainWindow : Window
 
         var tender = contract?.TenderNumber;
         var history = string.IsNullOrWhiteSpace(tender)
-            ? _progressHistory
+            ? _progressHistory.ToList()
             : _progressHistory.Where(x => string.Equals(x.TenderNumber, tender, StringComparison.OrdinalIgnoreCase)).ToList();
 
         HomeContractStatusTextBlock.Text = contract is null ? "İhale seçilmedi" : "KAYITLI";
