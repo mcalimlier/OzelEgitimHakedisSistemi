@@ -650,7 +650,7 @@
                                                 <TextBlock Text="2. YÜKLENİCİ FİRMA SEÇ" Style="{StaticResource CardTitle}"/>
                                                 <ListBox x:Name="RouteContractorListBox" Height="78" Margin="0,7,0,0" SelectionChanged="RouteContractorListBox_SelectionChanged"
                                                          Background="#0A2A49" Foreground="White" BorderBrush="#335A79" BorderThickness="1">
-                                                    <ListBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Name}" Foreground="White" FontSize="14" FontWeight="SemiBold" Margin="8,5"/></DataTemplate.ItemTemplate>
+                                                    <ListBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Name}" Foreground="White" FontSize="14" FontWeight="SemiBold" Margin="8,5"/></DataTemplate></ListBox.ItemTemplate>
                                                 </ListBox>
                                             </StackPanel>
                                         </Grid>
@@ -746,6 +746,10 @@
             <TextBlock Text="Firma bilgilerini bir kez tanımlayın. Aynı firma birden fazla ihale/dosya numarasıyla ilişkilendirilebilir." Style="{StaticResource PageSubtitle}"/>
             <Grid Margin="0,0,0,14">
                 <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
                 <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,8,0" Padding="18">
                     <StackPanel>
                         <TextBlock Text="FİRMA BİLGİLERİ" Style="{StaticResource CardTitle}"/>
