@@ -1941,58 +1941,146 @@ public partial class MainWindow : Window
             return;
         }
 
-        var liveContract = _contracts.FirstOrDefault(x =>
-            string.Equals(x.TenderNumber, archive.ProgressPayment.TenderNumber, StringComparison.OrdinalIgnoreCase));
-        var liveRoute = _routes.FirstOrDefault(x =>
-            string.Equals(
-                OehsIdentityService.BuildRouteKey(x.TenderNumber, x.RouteNumber, x.ContractorTaxOrIdentityNumber),
-                OehsIdentityService.BuildRouteKey(
-                    archive.Route.TenderNumber,
-                    archive.Route.RouteNumber,
-                    archive.Route.ContractorTaxOrIdentityNumber),
-                StringComparison.Ordinal));
-
-        if (liveContract is null || liveRoute is null)
-        {
-            MessageBox.Show("Arşiv çağrıldı ancak güncel ihale/hat ilişkisi bulunamadı. Önce kaynak kayıtları tanımlayın veya düzeltin.", "OEHS",
-                MessageBoxButton.OK, MessageBoxImage.Warning);
-            return;
-        }
-
-        var existing = _progressHistory.FirstOrDefault(x => x.Id == archive.ProgressPayment.Id);
-        _editingHistoryId = existing?.Id;
-        _lastCalculatedHistoryId = existing?.Id;
-
-        _suppressSelectionEvents = true;
         try
         {
-            ProgressTenderListBox.SelectedItem = liveContract;
+            var currentData = new OehsApplicationData(
+                _contracts.FirstOrDefault(),
+                _routes.Select(x => new RouteData(
+                    x.RouteNumber,
+                    x.Name,
+                    x.DailyPrice,
+                    x.GuideWorkDays,
+                    x.GuideDailyPrice,
+                    x.TransportWorkDays,
+                    x.TenderNumber,
+                    x.ContractorTaxOrIdentityNumber)).ToArray(),
+                _contractors.Select(x => new Contractor(
+                    x.Name,
+                    OehsIdentityService.NormalizeIdentity(x.TaxOrIdentityNumber),
+                    x.Address,
+                    x.Phone,
+                    x.Email,
+                    x.BankAccountNumber,
+                    x.ContactPerson)).ToArray(),
+                _progressHistory.ToArray(),
+                _contracts.ToArray());
+
+            var restored = ProgressPaymentArchiveRestoreService.Restore(currentData, archive);
+
+            _contracts.Clear();
+            foreach (var contract in restored.Data.Contracts ?? Array.Empty<ContractDraftData>())
+                _contracts.Add(contract);
+
+            _contractors.Clear();
+            foreach (var contractor in restored.Data.Contractors ?? Array.Empty<Contractor>())
+                _contractors.Add(new ContractorDraft(
+                    contractor.Name,
+                    OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber),
+                    contractor.Address,
+                    contractor.Phone,
+                    contractor.Email,
+                    contractor.BankAccountNumber,
+                    contractor.ContactPerson));
+
+            _routes.Clear();
+            foreach (var route in restored.Data.Routes ?? Array.Empty<RouteData>())
+            {
+                var contractor = FindContractor(route.ContractorTaxOrIdentityNumber);
+                _routes.Add(new RouteDraft(
+                    route.RouteNumber,
+                    route.Name,
+                    route.DailyPrice,
+                    route.GuideWorkDays,
+                    route.GuideDailyPrice,
+                    route.TransportWorkDays,
+                    route.TenderNumber,
+                    OehsIdentityService.NormalizeIdentity(route.ContractorTaxOrIdentityNumber),
+                    contractor?.Name ?? archive.Contractor.Name));
+            }
+
+            _progressHistory.Clear();
+            foreach (var item in restored.Data.ProgressPayments ?? Array.Empty<ProgressPaymentHistoryData>())
+                _progressHistory.Add(item);
+
+            SavePersistedData();
+
+            var liveContract = _contracts.FirstOrDefault(x =>
+                string.Equals(x.TenderNumber, archive.Contract.TenderNumber, StringComparison.OrdinalIgnoreCase))
+                ?? archive.Contract;
+
+            var liveRoute = _routes.FirstOrDefault(x =>
+                string.Equals(
+                    OehsIdentityService.BuildRouteKey(
+                        x.TenderNumber,
+                        x.RouteNumber,
+                        x.ContractorTaxOrIdentityNumber),
+                    OehsIdentityService.BuildRouteKey(
+                        archive.Route.TenderNumber,
+                        archive.Route.RouteNumber,
+                        archive.Route.ContractorTaxOrIdentityNumber),
+                    StringComparison.Ordinal))
+                ?? new RouteDraft(
+                    archive.Route.RouteNumber,
+                    archive.Route.Name,
+                    archive.Route.DailyPrice,
+                    archive.Route.GuideWorkDays,
+                    archive.Route.GuideDailyPrice,
+                    archive.Route.TransportWorkDays,
+                    archive.Route.TenderNumber,
+                    OehsIdentityService.NormalizeIdentity(archive.Route.ContractorTaxOrIdentityNumber),
+                    archive.Contractor.Name);
+
+            var existing = _progressHistory.FirstOrDefault(x => x.Id == archive.ProgressPayment.Id);
+            _editingHistoryId = existing?.Id;
+            _lastCalculatedHistoryId = archive.ProgressPayment.Id;
+
+            _suppressSelectionEvents = true;
+            try
+            {
+                ProgressTenderListBox.SelectedItem = liveContract;
+            }
+            finally
+            {
+                _suppressSelectionEvents = false;
+            }
+
+            UpdateProgressContractorAndRoutes(liveContract);
+            ProgressRouteComboBox.SelectedItem = liveRoute;
+
+            var input = archive.ProgressPayment.Input;
+            // Arşiv bir snapshot olduğundan hesabın otomatik alanları canlı kaydın
+            // güncel değerlerinden değil, arşivlenen hat snapshot'ından yüklenir.
+            WorkDaysTextBox.Text = archive.Route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
+            DailyPriceTextBox.Text = archive.Route.DailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+            GuideWorkDaysTextBox.Text = archive.Route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
+            GuideDailyPriceTextBox.Text = archive.Route.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+            DiscountTextBox.Text = input.DiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
+            GuideDiscountTextBox.Text = input.GuideDiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
+            PriceDifferenceTextBox.Text = input.PriceDifference.ToString("N2", CultureInfo.CurrentCulture);
+            GuidePriceDifferenceTextBox.Text = input.GuidePriceDifference.ToString("N2", CultureInfo.CurrentCulture);
+            TaxDebtTextBox.Text = input.TaxDebt.ToString("N2", CultureInfo.CurrentCulture);
+            SocialSecurityDebtTextBox.Text = input.SocialSecurityDebt.ToString("N2", CultureInfo.CurrentCulture);
+            MinimumWageSupportTextBox.Text = input.MinimumWageSupport.ToString("N2", CultureInfo.CurrentCulture);
+            InspectionPenaltyTextBox.Text = input.InspectionPenalty.ToString("N2", CultureInfo.CurrentCulture);
+            ProgressNumberTextBox.Text = archive.ProgressPayment.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
+            ProgressPeriodDatePicker.SelectedDate = archive.ProgressPayment.PeriodDate?.ToDateTime(TimeOnly.MinValue);
+
+            UpdateContractSelectors();
+            UpdateHistoryView();
+            UpdateArchiveView();
+            UpdateHomeSummaryView();
+            UpdateAcceptanceView();
+            NavigationButton_Click(NavProgress, new RoutedEventArgs(Button.ClickEvent, NavProgress));
+
+            CalculationStatusTextBlock.Text =
+                restored.AddedAnything
+                    ? $"Arşiv çağrıldı ve aktif veriyle birleştirildi. {restored.Message} Kaydetmeden önce ön kontrol yapılacaktır."
+                    : $"Arşiv çağrıldı. {restored.Message} Kaydetmeden önce ön kontrol yapılacaktır.";
         }
-        finally
+        catch (Exception ex) when (ex is ProgressPaymentArchiveException or IOException or UnauthorizedAccessException)
         {
-            _suppressSelectionEvents = false;
+            MessageBox.Show($"Arşiv geri yüklenemedi.\n\n{ex.Message}", "OEHS", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
-        UpdateProgressContractorAndRoutes(liveContract);
-        ProgressRouteComboBox.SelectedItem = liveRoute;
-
-        var input = archive.ProgressPayment.Input;
-        WorkDaysTextBox.Text = liveRoute.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
-        DailyPriceTextBox.Text = liveRoute.DailyPrice.ToString("N2", CultureInfo.CurrentCulture);
-        GuideWorkDaysTextBox.Text = liveRoute.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
-        GuideDailyPriceTextBox.Text = liveRoute.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
-        DiscountTextBox.Text = input.DiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
-        GuideDiscountTextBox.Text = input.GuideDiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
-        PriceDifferenceTextBox.Text = input.PriceDifference.ToString("N2", CultureInfo.CurrentCulture);
-        GuidePriceDifferenceTextBox.Text = input.GuidePriceDifference.ToString("N2", CultureInfo.CurrentCulture);
-        TaxDebtTextBox.Text = input.TaxDebt.ToString("N2", CultureInfo.CurrentCulture);
-        SocialSecurityDebtTextBox.Text = input.SocialSecurityDebt.ToString("N2", CultureInfo.CurrentCulture);
-        MinimumWageSupportTextBox.Text = input.MinimumWageSupport.ToString("N2", CultureInfo.CurrentCulture);
-        InspectionPenaltyTextBox.Text = input.InspectionPenalty.ToString("N2", CultureInfo.CurrentCulture);
-        ProgressNumberTextBox.Text = archive.ProgressPayment.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
-        ProgressPeriodDatePicker.SelectedDate = archive.ProgressPayment.PeriodDate?.ToDateTime(TimeOnly.MinValue);
-
-        NavigationButton_Click(NavProgress, new RoutedEventArgs(Button.ClickEvent, NavProgress));
-        CalculationStatusTextBlock.Text = "Arşiv çağrıldı. Kaydetmeden önce güncel ihale/hat/yüklenici ilişkisi doğrulanacaktır.";
     }
 
     private void EditArchiveButton_Click(object sender, RoutedEventArgs e)
