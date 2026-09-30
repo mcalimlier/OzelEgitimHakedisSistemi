@@ -65,7 +65,7 @@ public sealed class ArchiveDisplayServiceTests
         Assert.Equal("-", invalid.NetPayableText);
     }
 
-    private static ProgressPaymentArchive Archive() =>
+    private static ProgressPaymentArchive Archive(int progressNumber = 1, DateOnly? period = null) =>
         new(
             "1.0",
             1,
@@ -85,10 +85,10 @@ public sealed class ArchiveDisplayServiceTests
                     20000m, 90m, 20090m, 2009m, 1004.5m, 21094.5m, 190.4532m,
                     22099m, 1194.9532m, 20904.0468m, 6m,
                     new DeductionBreakdown(1004.5m, 190.4532m, 0m, 0m, 0m, 0m, 6m)),
-                1, new DateOnly(2026, 10, 31), "01", "Hat 01", "İş", "Firma", "TENDER", "SOZ-01",
+                progressNumber, period ?? new DateOnly(2026, 10, 31), "01", "Hat 01", "İş", "Firma", "TENDER", "SOZ-01",
                 ContractorTaxOrIdentityNumber: "12345678901"),
             Array.Empty<ProgressPaymentHistoryData>(),
-            "OEHS_TENDER_Hat-01_Hakedis-1_2026-10-31.pdf",
+            "OEHS_TENDER_Hat-01_Hakediş-01_2026-10-31.pdf",
             new[] { "Hakediş Raporu", "Hizmet İşleri Hakediş Raporu", "Hizmet İşleri Kabul Tutanağı", "Hakediş İcmali" });
 
     private sealed class TempDirectory : IDisposable
@@ -104,4 +104,22 @@ public sealed class ArchiveDisplayServiceTests
                 Directory.Delete(Path, recursive: true);
         }
     }
+
+    [Fact]
+    public void ArchiveList_ShouldOrderByPaymentPeriodAndRevision()
+    {
+        using var temp = new TempDirectory();
+        var store = new ProgressPaymentArchiveStore(temp.Path);
+
+        store.Save(Archive(2, new DateOnly(2026, 11, 30)));
+        store.Save(Archive(1, new DateOnly(2026, 10, 31)));
+        store.Save(Archive(2, new DateOnly(2026, 11, 30)));
+
+        var rows = ArchiveDisplayService.BuildRows(store);
+
+        Assert.Equal("v01", rows[0].RevisionText);
+        Assert.Equal("v02", rows[1].RevisionText);
+        Assert.Equal("v01", rows[2].RevisionText);
+    }
+
 }
