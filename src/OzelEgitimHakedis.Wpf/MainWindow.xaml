@@ -983,8 +983,7 @@
 </Grid>
 
 <Grid x:Name="ReportsPanel" Visibility="Collapsed">
-                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0">
-    <Grid.RowDefinitions>
+                            <Grid.RowDefinitions>
         <RowDefinition Height="Auto"/>
         <RowDefinition Height="Auto"/>
         <RowDefinition Height="*"/>
@@ -1107,7 +1106,6 @@
         </Border>
     </Grid>
 
-                            </ScrollViewer>
 </Grid>
 
 <Grid x:Name="SettingsPanel" Visibility="Collapsed">
