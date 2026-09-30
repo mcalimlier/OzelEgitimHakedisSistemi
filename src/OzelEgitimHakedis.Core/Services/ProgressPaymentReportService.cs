@@ -49,10 +49,12 @@ public static class ProgressPaymentReportService
 
         var currentServiceAmount = current.Calculation.CombinedServiceAmount;
         var currentPriceDifference = current.Calculation.CombinedPriceDifferenceExcludingVat;
-        var currentTotal = current.Calculation.TotalAmount;
-
         var cumulativeServiceAmount = previousServiceAmount + currentServiceAmount;
         var cumulativeTotal = cumulativeServiceAmount + currentPriceDifference;
+
+        // XLSM Hakediş Raporu:
+        // E = C - D (cari tahakkuk hizmet tutarı).
+        var currentTotal = cumulativeTotal - previousTotal;
 
         return new ProgressPaymentReportTotals(
             cumulativeServiceAmount,
