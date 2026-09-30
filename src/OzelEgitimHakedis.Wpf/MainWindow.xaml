@@ -226,7 +226,7 @@
                                             <TextBlock Text="Önce sözleşmeyi tanımlayın" Foreground="White" FontSize="23" FontWeight="SemiBold" Margin="0,5,0,0"/>
                                             <TextBlock Text="İhale → Yüklenici → Hat → Hakediş → Çıktı akışı burada ilerleyecek." Foreground="#C5D7E7" FontSize="13" Margin="0,5,0,0"/>
                                             <Button Content="İHALE BİLGİLERİ TANIMLA" Tag="Contract" Click="NavigationButton_Click"
-                                                    Style="{StaticResource ModernButton}" Width="250" Height="42"
+                                                    Style="{StaticResource ModernButton}" Width="275" Height="42"
                                                     HorizontalAlignment="Left" Margin="0,18,0,0"/>
                                         </StackPanel>
                                         <Border Grid.Column="1" Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="11" Padding="15,12" VerticalAlignment="Center">
@@ -953,7 +953,7 @@
                     <StackPanel HorizontalAlignment="Center">
                         <TextBlock Text="HENÜZ HAKEDİŞ KAYDI YOK" Foreground="{StaticResource Blue700Brush}" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center"/>
                         <TextBlock Text="İlk hesaplamayı yaptığınızda kayıt burada görünecek." Foreground="{StaticResource Text600Brush}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,5,0,0"/>
-                        <Button Content="HAKEDİŞ OLUŞTUR" Tag="Progress" Click="NavigationButton_Click" Style="{StaticResource ModernButton}" Width="170" Height="38" Margin="0,10,0,0"/>
+                        <Button Content="HAKEDİŞ OLUŞTUR" Tag="Progress" Click="NavigationButton_Click" Style="{StaticResource ModernButton}" Width="190" Height="38" Margin="0,10,0,0"/>
                     </StackPanel>
                 </Border>
             </StackPanel>
@@ -1158,7 +1158,7 @@
                                 <TextBlock x:Name="PlaceholderTitleTextBlock" Text="Modül" Style="{StaticResource PageTitle}"/>
                                 <TextBlock Text="Bu bölüm sonraki geliştirme adımında aktif hale getirilecek." Style="{StaticResource PageSubtitle}"/>
                                 <Border Background="#F7F9FC" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="12" Padding="24">
-                                    <TextBlock Text="Bu modül sözleşme → hatlar → hakediş akışındaki kalıcı veri katmanını kullanır."
+                                    <TextBlock Text="Bu modül İhale → Yüklenici → Hat → Hakediş akışındaki kalıcı veri katmanını kullanır."
                                                TextWrapping="Wrap" FontSize="16" Foreground="{StaticResource Text600Brush}"/>
                                 </Border>
                             </StackPanel>
