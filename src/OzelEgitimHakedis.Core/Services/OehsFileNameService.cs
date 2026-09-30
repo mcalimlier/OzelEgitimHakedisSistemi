@@ -13,7 +13,7 @@ public static class OehsFileNameService
         if (progressPaymentNumber <= 0)
             throw new ArgumentOutOfRangeException(nameof(progressPaymentNumber));
 
-        return $"OEHS_{Safe(tenderNumber, "Ihale")}_Hat-{Safe(routeNumber, "Hat")}_Hakedis-{progressPaymentNumber.ToString(CultureInfo.InvariantCulture)}_{periodDate:yyyy-MM-dd}.pdf";
+        return $"OEHS_{Safe(tenderNumber, "Ihale")}_Hat-{Safe(routeNumber, "Hat")}_Hakediş-{progressPaymentNumber.ToString("00", CultureInfo.InvariantCulture)}_{periodDate:yyyy-MM-dd}.pdf";
     }
 
     public static string SanitizeFileName(string value, string fallback = "Kayitsiz") =>
