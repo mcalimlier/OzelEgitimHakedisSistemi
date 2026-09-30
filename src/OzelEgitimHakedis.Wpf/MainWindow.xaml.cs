@@ -546,10 +546,12 @@ public partial class MainWindow : Window
 
         var usedByRoute = _routes.Any(x =>
             string.Equals(x.ContractorTaxOrIdentityNumber, contractor.TaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase));
+        var usedByHistory = _progressHistory.Any(x =>
+            string.Equals(x.ContractorTaxOrIdentityNumber, contractor.TaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase));
 
-        if (usedByRoute)
+        if (usedByRoute || usedByHistory)
         {
-            ShowAlreadyRegistered($"'{contractor.Name}' kayıtlı hatlarda kullanılıyor. Önce ilişkili hatları düzeltin; firma silinmedi.");
+            ShowAlreadyRegistered($"'{contractor.Name}' kayıtlı hat/hakediş kayıtlarında kullanılıyor. Önce ilişkili kayıtları düzeltin; firma silinmedi.");
             return;
         }
 
@@ -597,8 +599,9 @@ public partial class MainWindow : Window
         for (var i = 0; i < _progressHistory.Count; i++)
         {
             var item = _progressHistory[i];
-            if (string.Equals(item.ContractorTaxOrIdentityNumber, oldContractor.TaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(item.ContractorName, oldContractor.Name, StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(oldContractor.TaxOrIdentityNumber)
+                    ? string.Equals(item.ContractorTaxOrIdentityNumber, oldContractor.TaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase)
+                    : string.Equals(item.ContractorName, oldContractor.Name, StringComparison.OrdinalIgnoreCase))
             {
                 var updatedHistory = item with
                 {
@@ -1360,6 +1363,7 @@ public partial class MainWindow : Window
             {
                 TenderNumber = updatedContract.TenderNumber,
                 ContractNumber = updatedContract.ContractNumber,
+                WorkName = updatedContract.WorkName,
                 TenderDate = updatedContract.TenderDate,
                 ContractDate = updatedContract.ContractDate,
                 ContractStartDate = updatedContract.StartDate,
@@ -1564,15 +1568,14 @@ public partial class MainWindow : Window
             {
                 var duplicate = _progressHistory.FirstOrDefault(x =>
                     string.Equals(x.TenderNumber, selectedContract.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(x.ContractorTaxOrIdentityNumber, selectedRoute.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase) &&
                     string.Equals(x.RouteNumber, selectedRoute.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(x.ContractorTaxOrIdentityNumber, selectedRoute.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase) &&
                     x.ProgressPaymentNumber == progressNumber &&
-                    x.PeriodDate == periodDate &&
-                    x.Input.Equals(input));
+                    x.PeriodDate == periodDate);
 
                 if (duplicate is not null)
                 {
-                    ShowAlreadyRegistered($"Hakediş No {progressNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"} / {selectedContract.TenderNumber} / Hat {selectedRoute.RouteNumber} zaten kayıtlı. Mükerrer kayıt oluşturulmadı.");
+                    ShowAlreadyRegistered($"Bu ihale/hat için Hakediş No {progressNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"} ve dönem zaten kayıtlı. Mükerrer hakediş oluşturulmadı.");
                     return;
                 }
 
