@@ -1,3 +1,5 @@
+#pragma warning disable CA1707 // xUnit test adlarında alt çizgi okunabilirlik için bilinçlidir.
+
 using OzelEgitimHakedis.Core.Models;
 using OzelEgitimHakedis.Core.Services;
 using Xunit;
@@ -33,7 +35,7 @@ public sealed class ArchiveDisplayServiceTests
         var rows = ArchiveDisplayService.BuildRows(store);
 
         Assert.True(File.Exists(second));
-        Assert.Equal("v02", rows.Last().RevisionText);
+        Assert.Equal("v02", rows[^1].RevisionText);
     }
 
     [Fact]
