@@ -11,6 +11,35 @@ public sealed record ArchiveDisplayRow(
 
 public static class ArchiveDisplayService
 {
+    private static DateOnly GetPeriod(ArchiveDisplayRow row)
+    {
+        try
+        {
+            var archive = new ProgressPaymentArchiveStore().Load(row.FullPath);
+            return archive.ProgressPayment.PeriodDate ?? DateOnly.MaxValue;
+        }
+        catch (ProgressPaymentArchiveException)
+        {
+            return DateOnly.MaxValue;
+        }
+    }
+
+    private static int GetProgressNumber(ArchiveDisplayRow row)
+    {
+        var prefix = "• Hakediş ";
+        var index = row.DisplayTitle.IndexOf(prefix, StringComparison.Ordinal);
+        if (index < 0)
+            return int.MaxValue;
+
+        var value = row.DisplayTitle[(index + prefix.Length)..];
+        return int.TryParse(value, out var number) ? number : int.MaxValue;
+    }
+
+    private static int ParseRevision(string value) =>
+        value.StartsWith("v", StringComparison.OrdinalIgnoreCase)
+            && int.TryParse(value[1..], out var revision)
+                ? revision
+                : int.MaxValue;
     public static IReadOnlyList<ArchiveDisplayRow> BuildRows(ProgressPaymentArchiveStore store)
     {
         ArgumentNullException.ThrowIfNull(store);
@@ -42,7 +71,10 @@ public static class ArchiveDisplayService
         }
 
         return rows
-            .OrderBy(row => row.FullPath, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(row => GetPeriod(row))
+            .ThenBy(row => GetProgressNumber(row))
+            .ThenBy(row => ParseRevision(row.RevisionText))
+            .ThenBy(row => row.FullPath, StringComparer.OrdinalIgnoreCase)
             .ToArray();
     }
 }
