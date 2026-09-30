@@ -61,7 +61,11 @@ public static class ProgressPaymentArchiveRestoreService
             payments.Add(archive.ProgressPayment);
 
         var merged = new OehsApplicationData(
-            contracts.FirstOrDefault(),
+            contracts.FirstOrDefault(x =>
+                string.Equals(
+                    x.TenderNumber,
+                    archive.Contract.TenderNumber,
+                    StringComparison.OrdinalIgnoreCase)),
             routes,
             contractors,
             payments,
