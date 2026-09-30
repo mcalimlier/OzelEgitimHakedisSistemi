@@ -244,10 +244,18 @@
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="1.1*"/><ColumnDefinition Width="1.8*"/></Grid.ColumnDefinitions>
                                         <StackPanel Grid.Column="0">
                                             <TextBlock Text="AKTİF İHALE / DOSYA NO" Style="{StaticResource CardTitle}"/>
-                                            <ListBox x:Name="HomeTenderListBox" Height="72" Margin="0,7,10,0" SelectionChanged="HomeTenderListBox_SelectionChanged"
-                                                     Background="#0A2A49" Foreground="White" BorderBrush="#335A79" BorderThickness="1">
-                                                <ListBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding TenderNumber}" Foreground="White" FontSize="14" FontWeight="SemiBold" Margin="8,5"/></DataTemplate></ListBox.ItemTemplate>
-                                            </ListBox>
+                                            <ComboBox x:Name="HomeTenderListBox"
+                                                      Height="44"
+                                                      Margin="0,7,10,0"
+                                                      SelectionChanged="HomeTenderListBox_SelectionChanged"
+                                                      Style="{StaticResource FieldComboBox}"
+                                                      ToolTip="İhale / dosya numarasını seçin">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding TenderNumber}" FontSize="14" FontWeight="SemiBold"/>
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
                                         </StackPanel>
                                         <Border Grid.Column="1" Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="9" Padding="14">
                                             <StackPanel>
@@ -485,10 +493,18 @@
                                             <Grid.ColumnDefinitions><ColumnDefinition Width="1.05*"/><ColumnDefinition Width="0.9*"/><ColumnDefinition Width="1.25*"/></Grid.ColumnDefinitions>
                                             <StackPanel Grid.Column="0" Margin="0,0,8,0">
                                                 <TextBlock Text="İHALE / DOSYA NO" Style="{StaticResource CardTitle}"/>
-                                                <ListBox x:Name="ProgressTenderListBox" Height="72" Margin="0,7,0,0" SelectionChanged="ProgressTenderListBox_SelectionChanged"
-                                                         Background="#0A2A49" Foreground="White" BorderBrush="#335A79" BorderThickness="1">
-                                                    <ListBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding TenderNumber}" Foreground="White" FontSize="14" FontWeight="SemiBold" Margin="8,5"/></DataTemplate></ListBox.ItemTemplate>
-                                                </ListBox>
+                                                <ComboBox x:Name="ProgressTenderListBox"
+                                                          Height="44"
+                                                          Margin="0,7,0,0"
+                                                          SelectionChanged="ProgressTenderListBox_SelectionChanged"
+                                                          Style="{StaticResource FieldComboBox}"
+                                                          ToolTip="İhale / dosya numarasını seçin">
+                                                    <ComboBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding TenderNumber}" FontSize="14" FontWeight="SemiBold"/>
+                                                        </DataTemplate>
+                                                    </ComboBox.ItemTemplate>
+                                                </ComboBox>
                                             </StackPanel>
                                             <StackPanel Grid.Column="1" Margin="8,0">
                                                 <TextBlock Text="YÜKLENİCİ FİRMA" Style="{StaticResource CardTitle}"/>
@@ -650,16 +666,11 @@
                                                           Height="44"
                                                           Margin="0,7,0,0"
                                                           SelectionChanged="RouteTenderListBox_SelectionChanged"
-                                                          Style="{StaticResource RouteSelectorComboBox}"
-                                                          ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                                          Style="{StaticResource FieldComboBox}"
                                                           ToolTip="İhale / dosya numarasını seçin">
                                                     <ComboBox.ItemTemplate>
                                                         <DataTemplate>
-                                                            <TextBlock Text="{Binding TenderNumber}"
-                                                                       Foreground="{StaticResource Text900Brush}"
-                                                                       FontSize="14"
-                                                                       FontWeight="SemiBold"
-                                                                       TextWrapping="NoWrap"/>
+                                                            <TextBlock Text="{Binding TenderNumber}" FontSize="14" FontWeight="SemiBold" TextWrapping="NoWrap"/>
                                                         </DataTemplate>
                                                     </ComboBox.ItemTemplate>
                                                 </ComboBox>
@@ -670,16 +681,11 @@
                                                           Height="44"
                                                           Margin="0,7,0,0"
                                                           SelectionChanged="RouteContractorListBox_SelectionChanged"
-                                                          Style="{StaticResource RouteSelectorComboBox}"
-                                                          ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                                          Style="{StaticResource FieldComboBox}"
                                                           ToolTip="Yüklenici firmayı seçin">
                                                     <ComboBox.ItemTemplate>
                                                         <DataTemplate>
-                                                            <TextBlock Text="{Binding Name}"
-                                                                       Foreground="{StaticResource Text900Brush}"
-                                                                       FontSize="14"
-                                                                       FontWeight="SemiBold"
-                                                                       TextWrapping="NoWrap"/>
+                                                            <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold" TextWrapping="NoWrap"/>
                                                         </DataTemplate>
                                                     </ComboBox.ItemTemplate>
                                                 </ComboBox>
@@ -697,24 +703,24 @@
                                             <StackPanel>
                                                 <TextBlock Text="YENİ HAT" Style="{StaticResource CardTitle}"/>
                                                 <TextBlock Text="Hat bilgilerini girin" Style="{StaticResource CardSubtitle}" Margin="0,0,0,8"/>
-                                                <TextBlock x:Name="RouteSelectedTenderTextBlock" Text="İhale: seçilmedi" Foreground="{StaticResource Text900Brush}" FontSize="12.5" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                                                <TextBlock x:Name="RouteSelectedContractorTextBlock" Text="Yüklenici: seçilmedi" Foreground="{StaticResource Text900Brush}" FontSize="12.5" FontWeight="SemiBold" Margin="0,0,0,12"/><Border x:Name="RouteValidationBanner" Visibility="Collapsed" Background="#FFF1F1" BorderBrush="#E53935" BorderThickness="1.5" CornerRadius="9" Padding="12,9" Margin="0,0,0,14"><StackPanel><TextBlock Text="EKSİK / HATALI HAT BİLGİSİ" Foreground="#C62828" FontSize="12.5" FontWeight="Bold"/><TextBlock x:Name="RouteValidationMessageTextBlock" Foreground="#8E1B1B" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,3,0,0"/></StackPanel></Border>
+                                                <TextBlock x:Name="RouteSelectedTenderTextBlock" Text="İhale: seçilmedi" Style="{StaticResource FieldLabel}" FontSize="13.5" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                                                <TextBlock x:Name="RouteSelectedContractorTextBlock" Text="Yüklenici: seçilmedi" Style="{StaticResource FieldLabel}" FontSize="13.5" Margin="0,0,0,12"/><Border x:Name="RouteValidationBanner" Visibility="Collapsed" Background="#FFF1F1" BorderBrush="#E53935" BorderThickness="1.5" CornerRadius="9" Padding="12,9" Margin="0,0,0,14"><StackPanel><TextBlock Text="EKSİK / HATALI HAT BİLGİSİ" Foreground="#C62828" FontSize="12.5" FontWeight="Bold"/><TextBlock x:Name="RouteValidationMessageTextBlock" Foreground="#8E1B1B" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,3,0,0"/></StackPanel></Border>
 
-                                                <TextBlock Text="Hat No" Foreground="{StaticResource Text900Brush}" FontSize="15" FontWeight="Bold"/>
+                                                <TextBlock Text="Hat No" Style="{StaticResource FieldLabel}"/>
                                                 <TextBox x:Name="RouteNumberTextBox" Style="{StaticResource FieldTextBox}" Margin="0,7,0,14"/>
 
-                                                <TextBlock Text="Hat Adı" Foreground="{StaticResource Text900Brush}" FontSize="15" FontWeight="Bold"/>
+                                                <TextBlock Text="Hat Adı" Style="{StaticResource FieldLabel}"/>
                                                 <TextBox x:Name="RouteNameTextBox" Style="{StaticResource FieldTextBox}" Margin="0,7,0,14"/>
 
-                                                <TextBlock Text="Taşıma İş Günü" Foreground="{StaticResource Text900Brush}" FontSize="15" FontWeight="Bold"/>
+                                                <TextBlock Text="Taşıma İş Günü" Style="{StaticResource FieldLabel}"/>
                                                 <TextBox x:Name="RouteTransportWorkDaysTextBox"
                                                          Style="{StaticResource FieldTextBox}"
                                                          Margin="0,7,0,14"/>
 
-                                                <TextBlock Text="Rehber Yıllık İş Günü" Foreground="{StaticResource Text900Brush}" FontSize="15" FontWeight="Bold"/>
+                                                <TextBlock Text="Rehber Yıllık İş Günü" Style="{StaticResource FieldLabel}"/>
                                                 <TextBox x:Name="RouteGuideWorkDaysTextBox" Style="{StaticResource FieldTextBox}" Margin="0,7,0,12"/>
 
-                                                <TextBlock Text="Rehber Personel Günlük Fiyat" Foreground="{StaticResource Text900Brush}" FontSize="15" FontWeight="Bold"/>
+                                                <TextBlock Text="Rehber Personel Günlük Fiyat" Style="{StaticResource FieldLabel}"/>
                                                 <TextBox x:Name="RouteGuideDailyPriceTextBox" Style="{StaticResource FieldTextBox}" Margin="0,7,0,18"/>
 
                                                 <StackPanel Orientation="Horizontal">
@@ -1036,10 +1042,18 @@
                     <TextBlock Text="4 BELGE ÇIKTISI" Style="{StaticResource CardTitle}" FontSize="17"/>
                     <TextBlock Text="Seçilen hat için dört kurum belgesi Word olarak kaydedilir." Style="{StaticResource CardSubtitle}" FontSize="13.5" TextWrapping="Wrap" Margin="0,0,0,12"/>
                     <TextBlock Text="İHALE / DOSYA NO" Style="{StaticResource FieldLabel}" FontSize="12.5"/>
-                    <ListBox x:Name="OutputTenderListBox" Height="70" Margin="0,7,0,10" SelectionChanged="OutputTenderListBox_SelectionChanged"
-                             Background="#0A2A49" Foreground="White" BorderBrush="#335A79" BorderThickness="1">
-                        <ListBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding TenderNumber}" Foreground="White" FontSize="14" FontWeight="SemiBold" Margin="8,5"/></DataTemplate></ListBox.ItemTemplate>
-                    </ListBox>
+                    <ComboBox x:Name="OutputTenderListBox"
+                              Height="44"
+                              Margin="0,7,0,10"
+                              SelectionChanged="OutputTenderListBox_SelectionChanged"
+                              Style="{StaticResource FieldComboBox}"
+                              ToolTip="İhale / dosya numarasını seçin">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding TenderNumber}" FontSize="14" FontWeight="SemiBold"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
                     <TextBlock Text="HAT SEÇİMİ" Style="{StaticResource FieldLabel}" FontSize="12.5"/>
                     <ComboBox x:Name="ReportRouteComboBox" DisplayMemberPath="DisplayText" Height="44" Margin="0,7,0,12" Style="{StaticResource FieldComboBox}" SelectionChanged="ReportRouteComboBox_SelectionChanged"/>
                     <Grid Margin="0,0,0,2">
