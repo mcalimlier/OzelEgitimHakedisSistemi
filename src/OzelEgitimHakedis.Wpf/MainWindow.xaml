@@ -280,7 +280,11 @@
                                     <Border Style="{StaticResource Card}" Padding="14" Margin="6,0,0,0">
                                         <StackPanel>
                                             <TextBlock Text="SONUÇ / DURUM" Style="{StaticResource CardTitle}"/>
-                                            <TextBlock Text="Son Hakediş" Style="{StaticResource FieldLabel}" Margin="0,8,0,0"/>
+                                            <TextBlock Text="İş" Style="{StaticResource FieldLabel}" Margin="0,8,0,0"/>
+                                            <TextBlock x:Name="HomeWorkNameTextBlock" Text="—" Foreground="White" FontSize="14.5" FontWeight="Bold" TextWrapping="Wrap"/>
+                                            <TextBlock Text="Yüklenici" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
+                                            <TextBlock x:Name="HomeContractorTextBlock" Text="—" Foreground="#C5D7E7" FontSize="12.5" TextWrapping="Wrap"/>
+                                            <TextBlock Text="Son Hakediş" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
                                             <TextBlock x:Name="HomeProgressTextBlock" Text="—" Foreground="{StaticResource Gold500Brush}" FontSize="16" FontWeight="Bold"/>
                                             <TextBlock x:Name="HomePeriodTextBlock" Text="—" Foreground="#C5D7E7" FontSize="12.5"/>
                                             <TextBlock Text="Son Net Ödeme" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
