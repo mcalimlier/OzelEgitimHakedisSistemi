@@ -128,12 +128,14 @@
 
 ---
 
-### Task 3: Self-Contained Revision'lı Arşiv Modeli ve Store
+### Task 3: Self-Contained Revision'lı Arşiv Modeli, Store ve Snapshot Restore
 
 **Files:**
 - Create: `src/OzelEgitimHakedis.Core/Models/ProgressPaymentArchive.cs`
 - Create: `src/OzelEgitimHakedis.Core/Services/ProgressPaymentArchiveStore.cs`
+- Create: `src/OzelEgitimHakedis.Core/Services/ProgressPaymentArchiveRestoreService.cs`
 - Create: `tests/OzelEgitimHakedis.Tests/ProgressPaymentArchiveStoreTests.cs`
+- Create: `tests/OzelEgitimHakedis.Tests/ProgressPaymentArchiveRestoreServiceTests.cs`
 - Modify: `src/OzelEgitimHakedis.Core/Models/OehsApplicationData.cs` only if a shared immutable archive DTO must be referenced.
 
 **Interfaces:**
@@ -169,7 +171,14 @@
   - Run the same command.
   - Expected: PASS.
 
-- [ ] **Step 5: Commit.**
+- [ ] **Step 5: Implement snapshot restore.**
+  - Restore missing tender, contractor, route and payment records from the archive snapshot using stable keys.
+  - Repeated restore must not create duplicates.
+  - Restore must select the archived tender as the active contract context.
+- [ ] **Step 6: Run archive store and restore tests and verify they pass.**
+  - Run the focused archive filters.
+  - Expected: PASS.
+- [ ] **Step 7: Commit.**
   - Commit message: `feat: add self-contained hakedis archive revisions`
 
 ---
