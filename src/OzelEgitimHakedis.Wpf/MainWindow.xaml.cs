@@ -1772,7 +1772,7 @@ public partial class MainWindow : Window
 
     private void EditCurrentProgressButton_Click(object sender, RoutedEventArgs e)
     {
-        var latest = GetSelectedRouteLatestPayment();
+        var latest = GetSelectedProgressLatestPayment();
         if (latest is null)
         {
             MessageBox.Show("Seçilen ihale/hat için düzenlenecek kayıt bulunamadı.", "OEHS", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -2200,6 +2200,23 @@ public partial class MainWindow : Window
 
         UpdateReportView();
         UpdateAcceptanceView();
+    }
+
+    private ProgressPaymentHistoryData? GetSelectedProgressLatestPayment()
+    {
+        var contract = ProgressTenderListBox.SelectedItem as ContractDraftData;
+        var route = ProgressRouteComboBox.SelectedItem as RouteDraft;
+        if (contract is null || route is null)
+            return null;
+
+        return _progressHistory
+            .Where(x =>
+                string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(x.RouteNumber, route.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(x.ContractorTaxOrIdentityNumber, contract.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(x => x.PeriodDate ?? DateOnly.MinValue)
+            .ThenByDescending(x => x.CreatedAt)
+            .FirstOrDefault();
     }
 
     private ProgressPaymentHistoryData? GetSelectedRouteLatestPayment()
