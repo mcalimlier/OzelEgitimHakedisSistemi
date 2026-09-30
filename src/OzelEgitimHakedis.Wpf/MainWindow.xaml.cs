@@ -734,9 +734,25 @@ public partial class MainWindow : Window
 
     private static void SaveFlowDocumentAsRtf(FlowDocument document, string filePath)
     {
-        using var stream = File.Create(filePath);
+        using var memory = new MemoryStream();
         var range = new TextRange(document.ContentStart, document.ContentEnd);
-        range.Save(stream, System.Windows.DataFormats.Rtf);
+        range.Save(memory, System.Windows.DataFormats.Rtf);
+
+        var rtfBytes = memory.ToArray();
+        var marker = System.Text.Encoding.ASCII.GetBytes(@"\rtf1");
+        var a4Controls = System.Text.Encoding.ASCII.GetBytes(@"\paperw11907\paperh16840\margl777\margr777\margt777\margb777");
+
+        var markerIndex = rtfBytes.AsSpan().IndexOf(marker);
+        if (markerIndex < 0)
+        {
+            File.WriteAllBytes(filePath, rtfBytes);
+            return;
+        }
+
+        using var stream = File.Create(filePath);
+        stream.Write(rtfBytes, 0, markerIndex + marker.Length);
+        stream.Write(a4Controls, 0, a4Controls.Length);
+        stream.Write(rtfBytes, markerIndex + marker.Length, rtfBytes.Length - markerIndex - marker.Length);
     }
 
     private string SaveRouteDocumentsArchive(RouteDraft route, ProgressPaymentHistoryData latest)
@@ -1702,9 +1718,9 @@ public partial class MainWindow : Window
     {
         const double a4Width = 793.7008;
         const double a4Height = 1122.5197;
-        const double margin = 37.7953;
+        const margin = 51.8504;
         const double contentWidth = DocumentContentWidth;
-        // A4 sabit: 210 x 297 mm. Sol/sağ/üst/alt 1 cm; içerik 190 mm.
+        // A4 sabit: 210 x 297 mm. Yaklaşık 13,7 mm güvenli kenar boşluğu; tablo içeriği 690 pt.
 
         var document = new FlowDocument
         {
