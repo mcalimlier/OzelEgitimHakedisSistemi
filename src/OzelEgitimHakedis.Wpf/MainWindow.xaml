@@ -512,7 +512,7 @@
                                             </StackPanel>
                                             <StackPanel Grid.Column="2" Margin="8,0,0,0">
                                                 <TextBlock Text="TANIMLI HATLAR" Style="{StaticResource CardTitle}"/>
-                                                <ComboBox x:Name="ProgressRouteComboBox" DisplayMemberPath="DisplayText" Height="42" Margin="0,7,0,0" SelectionChanged="ProgressRouteComboBox_SelectionChanged" Style="{StaticResource FieldComboBox}"/>
+                                                <ComboBox x:Name="ProgressRouteComboBox" DisplayMemberPath="DisplayText" Height="44" Margin="0,7,0,0" SelectionChanged="ProgressRouteComboBox_SelectionChanged" Style="{StaticResource FieldComboBox}"/>
                                                 <TextBlock x:Name="ProgressRouteRelationTextBlock" Text="Hat seçiniz." Foreground="#C5D7E7" FontSize="12.5" TextWrapping="Wrap" Margin="0,5,0,0"/>
                                             </StackPanel>
                                         </Grid>
