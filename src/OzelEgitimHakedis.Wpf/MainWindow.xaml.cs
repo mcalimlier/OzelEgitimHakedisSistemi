@@ -1575,11 +1575,11 @@ public partial class MainWindow : Window
         {
             var item = _progressHistory[index];
             var displayNumber = item.ProgressPaymentNumber.HasValue
-                ? $"Hakediş No {item.ProgressPaymentNumber.Value}"
-                : $"Hesaplama {index + 1}";
+                ? $"Hakediş No {item.ProgressPaymentNumber.Value} • İhale/Dosya: {item.TenderNumber ?? "-"} • Hat: {item.RouteNumber ?? "-"}"
+                : $"Hesaplama {index + 1} • İhale/Dosya: {item.TenderNumber ?? "-"} • Hat: {item.RouteNumber ?? "-"}";
             var periodText = item.PeriodDate.HasValue
-                ? $"Dönem: {item.PeriodDate.Value:dd.MM.yyyy} • Kayıt: {item.CreatedAt:dd.MM.yyyy HH:mm}"
-                : $"Kayıt: {item.CreatedAt:dd.MM.yyyy HH:mm}";
+                ? $"Dönem: {item.PeriodDate.Value:dd.MM.yyyy} • Yüklenici: {item.ContractorName ?? "-"} • Kayıt: {item.CreatedAt:dd.MM.yyyy HH:mm}"
+                : $"Yüklenici: {item.ContractorName ?? "-"} • Kayıt: {item.CreatedAt:dd.MM.yyyy HH:mm}";
 
             _historyRows.Add(new HistoryRow(
                 item.Id,
@@ -1607,27 +1607,6 @@ public partial class MainWindow : Window
     private static string GetHistoryArchiveFolder(ProgressPaymentHistoryData item) =>
         Path.Combine(OehsDesktopRoot, "Belgeler", BuildArchiveKey(item));
 
-    private void OpenHistoryWordButton_Click(object sender, RoutedEventArgs e)
-    {
-        var item = GetHistoryItemFromRow((sender as Button)?.Tag);
-        if (item is null)
-            return;
-
-        var wordPath = Path.Combine(GetHistoryArchiveFolder(item), "Hakediş Raporu.rtf");
-        if (!File.Exists(wordPath))
-        {
-            MessageBox.Show("Bu hakediş için Word arşivi henüz oluşturulmamış.", "OEHS Arşiv", MessageBoxButton.OK, MessageBoxImage.Information);
-            return;
-        }
-
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = wordPath,
-            UseShellExecute = true
-        });
-    }
-
-
     private void OpenHistoryFolderButton_Click(object sender, RoutedEventArgs e)
     {
         var item = GetHistoryItemFromRow((sender as Button)?.Tag);
@@ -1652,11 +1631,189 @@ public partial class MainWindow : Window
         if (item is null)
             return;
 
-        _editingHistoryId = item.Id;
+        var target = AskHistoryEditTarget(item);
+        switch (target)
+        {
+            case "Contract":
+                BeginContractHistoryEdit(item);
+                break;
+            case "Contractor":
+                BeginContractorHistoryEdit(item);
+                break;
+            case "Route":
+                BeginRouteHistoryEdit(item);
+                break;
+            case "Progress":
+                BeginProgressHistoryEdit(item);
+                break;
+        }
+    }
 
-        if (!string.IsNullOrWhiteSpace(item.RouteNumber))
-            ProgressRouteComboBox.SelectedItem = _routes.FirstOrDefault(x =>
+    private string? AskHistoryEditTarget(ProgressPaymentHistoryData item)
+    {
+        string? selected = null;
+        var dialog = new Window
+        {
+            Title = "Hakediş Düzenleme",
+            Owner = this,
+            Width = 470,
+            Height = 360,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            ResizeMode = ResizeMode.NoResize,
+            Background = System.Windows.Media.Brushes.White
+        };
+
+        var panel = new StackPanel { Margin = new Thickness(24) };
+        panel.Children.Add(new TextBlock
+        {
+            Text = "Hangi bölümde düzeltme yapmak istiyorsunuz?",
+            FontSize = 19,
+            FontWeight = FontWeights.Bold,
+            Foreground = System.Windows.Media.Brushes.DarkSlateGray,
+            Margin = new Thickness(0, 0, 0, 6)
+        });
+        panel.Children.Add(new TextBlock
+        {
+            Text = $"İhale/Dosya: {item.TenderNumber ?? "-"} • Hat: {item.RouteNumber ?? "-"} • Hakediş: {item.ProgressPaymentNumber?.ToString() ?? "-"}",
+            FontSize = 12.5,
+            Foreground = System.Windows.Media.Brushes.DimGray,
+            TextWrapping = TextWrapping.Wrap,
+            Margin = new Thickness(0, 0, 0, 16)
+        });
+
+        foreach (var option in new[]
+        {
+            ("İhale Bilgileri", "Contract"),
+            ("Yüklenici Firma Bilgileri", "Contractor"),
+            ("Hat Bilgileri", "Route"),
+            ("Hakediş Oluştur", "Progress")
+        })
+        {
+            var button = new Button
+            {
+                Content = option.Item1,
+                Width = 390,
+                Height = 42,
+                Margin = new Thickness(0, 4, 0, 4),
+                Style = (Style)FindResource("ModernButton")
+            };
+            button.Click += (_, _) =>
+            {
+                selected = option.Item2;
+                dialog.DialogResult = true;
+                dialog.Close();
+            };
+            panel.Children.Add(button);
+        }
+
+        dialog.Content = panel;
+        dialog.ShowDialog();
+        return selected;
+    }
+
+    private void BeginContractHistoryEdit(ProgressPaymentHistoryData item)
+    {
+        var contract = _contracts.FirstOrDefault(x =>
+            string.Equals(x.TenderNumber, item.TenderNumber, StringComparison.OrdinalIgnoreCase));
+        if (contract is null)
+        {
+            ShowAlreadyRegistered("Bu hakedişin bağlı olduğu ihale kaydı bulunamadı.");
+            return;
+        }
+
+        _editingContractTender = contract.TenderNumber;
+        ApplyContractToForm(contract);
+        NavigationButton_Click(NavContract, new RoutedEventArgs(Button.ClickEvent, NavContract));
+        ContractStatusTextBlock.Text = "Hakedişten gelen düzenleme: yalnızca İhale Bilgileri alanlarını düzeltin ve KAYDET'e basın.";
+    }
+
+    private void BeginContractorHistoryEdit(ProgressPaymentHistoryData item)
+    {
+        var contractor = FindContractor(item.ContractorTaxOrIdentityNumber ?? string.Empty);
+        if (contractor is null)
+        {
+            contractor = _contractors.FirstOrDefault(x => string.Equals(x.Name, item.ContractorName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (contractor is null)
+        {
+            ShowAlreadyRegistered("Bu hakedişin bağlı olduğu yüklenici firma bulunamadı.");
+            return;
+        }
+
+        _editingContractorKey = contractor.TaxOrIdentityNumber;
+        ContractorNameTextBox.Text = contractor.Name;
+        ContractorTaxTextBox.Text = contractor.TaxOrIdentityNumber;
+        ContractorAddressTextBox.Text = contractor.Address;
+        ContractorPhoneTextBox.Text = contractor.Phone;
+        ContractorEmailTextBox.Text = contractor.Email;
+        ContractorBankTextBox.Text = contractor.BankAccountNumber;
+        ContractorContactTextBox.Text = contractor.ContactPerson;
+        NavigationButton_Click(NavContractors, new RoutedEventArgs(Button.ClickEvent, NavContractors));
+        ContractorStatusTextBlock.Text = "Hakedişten gelen düzenleme: firma bilgilerini düzeltin ve KAYDET'e basın.";
+    }
+
+    private void BeginRouteHistoryEdit(ProgressPaymentHistoryData item)
+    {
+        var route = _routes.FirstOrDefault(x =>
+            string.Equals(x.TenderNumber, item.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(x.RouteNumber, item.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(x.ContractorTaxOrIdentityNumber, item.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase));
+
+        if (route is null)
+        {
+            route = _routes.FirstOrDefault(x =>
+                string.Equals(x.TenderNumber, item.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(x.RouteNumber, item.RouteNumber, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (route is null)
+        {
+            ShowAlreadyRegistered("Bu hakedişin bağlı olduğu hat bulunamadı.");
+            return;
+        }
+
+        _editingRoute = route;
+        var contract = _contracts.FirstOrDefault(x => string.Equals(x.TenderNumber, route.TenderNumber, StringComparison.OrdinalIgnoreCase));
+        var contractor = FindContractor(route.ContractorTaxOrIdentityNumber);
+
+        _suppressSelectionEvents = true;
+        try
+        {
+            RouteTenderListBox.SelectedItem = contract;
+            RouteContractorListBox.ItemsSource = contractor is null ? Array.Empty<ContractorDraft>() : new[] { contractor };
+            RouteContractorListBox.SelectedItem = contractor;
+        }
+        finally
+        {
+            _suppressSelectionEvents = false;
+        }
+
+        RouteNumberTextBox.Text = route.RouteNumber;
+        RouteNameTextBox.Text = route.Name;
+        RouteTransportWorkDaysTextBox.Text = route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
+        RouteGuideWorkDaysTextBox.Text = route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
+        RouteGuideDailyPriceTextBox.Text = route.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+        NavigationButton_Click(NavLines, new RoutedEventArgs(Button.ClickEvent, NavLines));
+        RouteStatusTextBlock.Text = "Hakedişten gelen düzenleme: hat bilgilerini düzeltin ve KAYDET'e basın.";
+    }
+
+    private void BeginProgressHistoryEdit(ProgressPaymentHistoryData item)
+    {
+        var contract = _contracts.FirstOrDefault(x =>
+            string.Equals(x.TenderNumber, item.TenderNumber, StringComparison.OrdinalIgnoreCase));
+        if (contract is not null)
+        {
+            _suppressSelectionEvents = true;
+            ProgressTenderListBox.SelectedItem = contract;
+            _suppressSelectionEvents = false;
+            UpdateProgressContractorAndRoutes(contract);
+        }
+
+        _editingHistoryId = item.Id;
+        ProgressRouteComboBox.SelectedItem = _routes.FirstOrDefault(x =>
+            string.Equals(x.TenderNumber, item.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(x.RouteNumber, item.RouteNumber, StringComparison.OrdinalIgnoreCase));
 
         WorkDaysTextBox.Text = item.Input.WorkDays.ToString(CultureInfo.CurrentCulture);
         DailyPriceTextBox.Text = item.Input.DailyPrice.ToString("N2", CultureInfo.CurrentCulture);
@@ -1666,18 +1823,15 @@ public partial class MainWindow : Window
         GuideDiscountTextBox.Text = item.Input.GuideDiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
         PriceDifferenceTextBox.Text = item.Input.PriceDifference.ToString("N2", CultureInfo.CurrentCulture);
         GuidePriceDifferenceTextBox.Text = item.Input.GuidePriceDifference.ToString("N2", CultureInfo.CurrentCulture);
-        ContractAmountTextBox.Text = item.Input.ContractAmount.ToString("N2", CultureInfo.CurrentCulture);
         TaxDebtTextBox.Text = item.Input.TaxDebt.ToString("N2", CultureInfo.CurrentCulture);
         SocialSecurityDebtTextBox.Text = item.Input.SocialSecurityDebt.ToString("N2", CultureInfo.CurrentCulture);
         MinimumWageSupportTextBox.Text = item.Input.MinimumWageSupport.ToString("N2", CultureInfo.CurrentCulture);
         InspectionPenaltyTextBox.Text = item.Input.InspectionPenalty.ToString("N2", CultureInfo.CurrentCulture);
-        VatExemptCheckBox.IsChecked = item.Input.IsVatExempt;
-
         ProgressNumberTextBox.Text = item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
         ProgressPeriodDatePicker.SelectedDate = item.PeriodDate?.ToDateTime(TimeOnly.MinValue);
 
-        NavigationButton_Click(NavProgress, e);
-        CalculationStatusTextBlock.Text = "Düzenleme modu: bilgileri kontrol edip HAKEDİŞİ HESAPLA ile kaydı güncelleyin.";
+        NavigationButton_Click(NavProgress, new RoutedEventArgs(Button.ClickEvent, NavProgress));
+        CalculationStatusTextBlock.Text = "Düzenleme modu: yalnızca hakediş girdilerini düzeltin ve HAKEDİŞİ HESAPLA'ya basın.";
     }
 
     private void DeleteHistoryButton_Click(object sender, RoutedEventArgs e)
