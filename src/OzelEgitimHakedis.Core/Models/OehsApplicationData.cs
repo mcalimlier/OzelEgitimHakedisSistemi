@@ -23,7 +23,8 @@ public sealed record ContractDraftData(
     DateOnly? ContractDate = null,
     string ContractorTaxOrIdentityNumber = "",
     string BankAccountNumber = "",
-    int ContractWorkDays = 0);
+    int ContractWorkDays = 0,
+    decimal TransportDailyPrice = 0m);
 
 public sealed record RouteData(
     string RouteNumber,
