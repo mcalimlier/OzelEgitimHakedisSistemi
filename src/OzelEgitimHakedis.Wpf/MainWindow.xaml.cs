@@ -417,6 +417,7 @@ public partial class MainWindow : Window
         RouteTenderListBox.ItemsSource = _contracts.ToArray();
         ProgressTenderListBox.ItemsSource = _contracts.ToArray();
         OutputTenderListBox.ItemsSource = _contracts.ToArray();
+        ContractsListBox.ItemsSource = _contracts.ToArray();
 
         var contract = _contracts.FirstOrDefault(x => string.Equals(x.TenderNumber, selectedTender, StringComparison.OrdinalIgnoreCase))
                        ?? _contracts.FirstOrDefault();
@@ -1007,6 +1008,17 @@ public partial class MainWindow : Window
         if (sender is not System.Windows.Controls.Button { Tag: RouteDraft route })
             return;
 
+        var historyCount = _progressHistory.Count(x =>
+            string.Equals(x.TenderNumber, route.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(x.RouteNumber, route.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(x.ContractorTaxOrIdentityNumber, route.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase));
+
+        if (historyCount > 0)
+        {
+            ShowAlreadyRegistered($"Bu hat için {historyCount} hakediş kaydı bulunduğu için hat silinmedi.");
+            return;
+        }
+
         _routes.Remove(route);
         SavePersistedData();
         UpdateRouteSummary();
@@ -1059,6 +1071,50 @@ public partial class MainWindow : Window
     private void UpdateRouteSummary()
     {
         RouteCountTextBlock.Text = _routes.Count.ToString(CultureInfo.CurrentCulture);
+    }
+
+    private void EditContractButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: ContractDraftData contract })
+            return;
+
+        _editingContractTender = contract.TenderNumber;
+        ApplyContractToForm(contract);
+        NavigationButton_Click(NavContract, new RoutedEventArgs(Button.ClickEvent, NavContract));
+        ContractStatusTextBlock.Text = $"Düzenleme modu: {contract.TenderNumber}. Değiştirip KAYDET'e basın.";
+    }
+
+    private void DeleteContractButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: ContractDraftData contract })
+            return;
+
+        var routeCount = _routes.Count(x => string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase));
+        var historyCount = _progressHistory.Count(x => string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase));
+
+        if (routeCount > 0 || historyCount > 0)
+        {
+            MessageBox.Show(
+                $"'{contract.TenderNumber}' ihalesi {routeCount} hat ve {historyCount} hakediş kaydıyla ilişkili. Önce ilişkili kayıtları düzeltin; ihale silinmedi.",
+                "OEHS",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        var result = MessageBox.Show(
+            $"'{contract.TenderNumber}' kaydı silinsin mi?",
+            "İhale Kaydını Sil",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+        if (result != MessageBoxResult.Yes)
+            return;
+
+        _contracts.Remove(contract);
+        SavePersistedData();
+        UpdateContractSelectors();
+        UpdateHomeSummaryView();
+        UpdateContractSummaryView();
     }
 
     private void SaveContractButton_Click(object sender, RoutedEventArgs e)
@@ -1712,6 +1768,18 @@ public partial class MainWindow : Window
             FileName = folder,
             UseShellExecute = true
         });
+    }
+
+    private void EditCurrentProgressButton_Click(object sender, RoutedEventArgs e)
+    {
+        var latest = GetSelectedRouteLatestPayment();
+        if (latest is null)
+        {
+            MessageBox.Show("Seçilen ihale/hat için düzenlenecek kayıt bulunamadı.", "OEHS", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        BeginProgressHistoryEdit(latest);
     }
 
     private void EditHistoryButton_Click(object sender, RoutedEventArgs e)
