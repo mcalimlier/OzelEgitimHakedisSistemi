@@ -1301,12 +1301,10 @@ public partial class MainWindow : Window
 
         var invalidFields = new List<(Control Control, string Name)>();
 
-        if (!int.TryParse(WorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var workDays) ||
-            workDays < 0)
+        if (!int.TryParse(WorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var workDays) || workDays < 0)
             invalidFields.Add((WorkDaysTextBox, "Taşıma İş Günü"));
 
-        if (!int.TryParse(GuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var guideWorkDays) ||
-            guideWorkDays < 0)
+        if (!int.TryParse(GuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var guideWorkDays) || guideWorkDays < 0)
             invalidFields.Add((GuideWorkDaysTextBox, "Rehber İş Günü"));
 
         if (!TryParseDecimal(DailyPriceTextBox.Text, out var dailyPrice) || dailyPrice < 0)
@@ -1321,8 +1319,6 @@ public partial class MainWindow : Window
             invalidFields.Add((PriceDifferenceTextBox, "Taşıma Fiyat Farkı"));
         if (!TryParseDecimal(GuidePriceDifferenceTextBox.Text, out var guidePriceDifference))
             invalidFields.Add((GuidePriceDifferenceTextBox, "Rehber Fiyat Farkı"));
-        if (!TryParseDecimal(ContractAmountTextBox.Text, out var contractAmount) || contractAmount < 0)
-            invalidFields.Add((ContractAmountTextBox, "Sözleşme Bedeli"));
         if (!TryParseDecimal(TaxDebtTextBox.Text, out var taxDebt) || taxDebt < 0)
             invalidFields.Add((TaxDebtTextBox, "Vergi Borcu"));
         if (!TryParseDecimal(SocialSecurityDebtTextBox.Text, out var socialSecurityDebt) || socialSecurityDebt < 0)
@@ -1348,16 +1344,30 @@ public partial class MainWindow : Window
             return;
         }
 
+        var selectedContract = ProgressTenderListBox.SelectedItem as ContractDraftData;
+        if (selectedContract is null)
+        {
+            ShowAlreadyRegistered("Önce İhale / Dosya No seçin.");
+            return;
+        }
+
         try
         {
             RequireSelectedRoute();
+            var selectedRoute = ProgressRouteComboBox.SelectedItem as RouteDraft;
+            if (selectedRoute is null)
+            {
+                ShowAlreadyRegistered($"'{selectedContract.TenderNumber}' ihalesine bağlı bir hat seçin.");
+                return;
+            }
+
             var input = new ProgressPaymentInput(
                 workDays,
                 dailyPrice,
                 discount,
                 priceDifference,
-                contractAmount,
-                VatExemptCheckBox.IsChecked != true,
+                selectedContract.ContractAmount,
+                !selectedContract.VatExempt,
                 taxDebt,
                 socialSecurityDebt,
                 minimumWageSupport,
@@ -1394,66 +1404,57 @@ public partial class MainWindow : Window
             int? progressNumber = null;
             if (int.TryParse(ProgressNumberTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var parsedProgressNumber) &&
                 parsedProgressNumber > 0)
-            {
                 progressNumber = parsedProgressNumber;
-            }
 
-            var selectedRoute = ProgressRouteComboBox.SelectedItem as RouteDraft;
-            var routeNumber = selectedRoute?.RouteNumber;
-            var routeName = selectedRoute?.Name;
             var periodDate = ProgressPeriodDatePicker.SelectedDate is DateTime selectedPeriodDate
                 ? DateOnly.FromDateTime(selectedPeriodDate)
                 : (DateOnly?)null;
 
+            var contractor = FindContractor(selectedContract.ContractorTaxOrIdentityNumber);
+
             var historyItem = new ProgressPaymentHistoryData(
                 _editingHistoryId ?? Guid.NewGuid(),
-                _editingHistoryId.HasValue
-                    ? _progressHistory.First(x => x.Id == _editingHistoryId.Value).CreatedAt
-                    : DateTime.Now,
+                _editingHistoryId.HasValue ? _progressHistory.First(x => x.Id == _editingHistoryId.Value).CreatedAt : DateTime.Now,
                 input,
                 result,
                 progressNumber,
                 periodDate,
-                routeNumber,
-                routeName,
-                WorkNameTextBox.Text.Trim(),
-                CurrentContractorName.Trim(),
-                TenderNumberTextBox.Text.Trim(),
-                ContractNumberTextBox.Text.Trim(),
-                TenderDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(TenderDatePicker.SelectedDate.Value) : null,
-                ContractDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(ContractDatePicker.SelectedDate.Value) : null,
-                StartDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(StartDatePicker.SelectedDate.Value) : null,
-                EndDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(EndDatePicker.SelectedDate.Value) : null,
-                BankAccountNumberTextBox.Text.Trim());
+                selectedRoute.RouteNumber,
+                selectedRoute.Name,
+                selectedContract.WorkName,
+                selectedContract.ContractorName,
+                selectedContract.TenderNumber,
+                selectedContract.ContractNumber,
+                selectedContract.TenderDate,
+                selectedContract.ContractDate,
+                selectedContract.StartDate,
+                selectedContract.EndDate,
+                contractor?.BankAccountNumber ?? selectedContract.BankAccountNumber,
+                selectedContract.ContractorTaxOrIdentityNumber);
 
-            var wasEditing = _editingHistoryId.HasValue;
-            if (wasEditing)
+            if (_editingHistoryId.HasValue)
             {
-                var editingId = _editingHistoryId.GetValueOrDefault();
-                var editIndex = _progressHistory.IndexOf(_progressHistory.First(x => x.Id == editingId));
+                var editIndex = _progressHistory.IndexOf(_progressHistory.First(x => x.Id == _editingHistoryId.Value));
                 _progressHistory[editIndex] = historyItem;
                 _editingHistoryId = null;
             }
             else
             {
                 var duplicate = _progressHistory.FirstOrDefault(x =>
-                    string.Equals(x.RouteNumber, routeNumber, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(x.TenderNumber, selectedContract.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(x.ContractorTaxOrIdentityNumber, selectedContract.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(x.RouteNumber, selectedRoute.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
                     x.ProgressPaymentNumber == progressNumber &&
                     x.PeriodDate == periodDate &&
-                    x.Input.Equals(input) &&
-                    x.Calculation.Equals(result));
+                    x.Input.Equals(input));
 
                 if (duplicate is not null)
                 {
-                    historyItem = historyItem with { Id = duplicate.Id, CreatedAt = duplicate.CreatedAt };
-                    var duplicateIndex = _progressHistory.IndexOf(duplicate);
-                    _progressHistory[duplicateIndex] = historyItem;
-                    wasEditing = true;
+                    ShowAlreadyRegistered($"Hakediş No {progressNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"} / {selectedContract.TenderNumber} / Hat {selectedRoute.RouteNumber} zaten kayıtlı. Mükerrer kayıt oluşturulmadı.");
+                    return;
                 }
-                else
-                {
-                    _progressHistory.Add(historyItem);
-                }
+
+                _progressHistory.Add(historyItem);
             }
 
             SavePersistedData();
@@ -1464,14 +1465,10 @@ public partial class MainWindow : Window
             UpdateHomeSummaryView();
             UpdateAcceptanceView();
 
-            ProgressValidationBanner.Visibility = Visibility.Collapsed;
             CalculationStatusTextBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(36, 104, 216));
             CalculationStatusTextBlock.FontWeight = FontWeights.SemiBold;
-            CalculationStatusTextBlock.Text = wasEditing
-                ? "Hakediş kaydı güncellendi."
-                : "Hesaplama başarıyla tamamlandı ve geçmişe kaydedildi.";
+            CalculationStatusTextBlock.Text = "Hesaplama başarıyla tamamlandı ve kayıt oluşturuldu.";
 
-            // Kullanıcı hakedişi hesapladığında kritik kontrol özeti ana sayfada tek ekranda gösterilir.
             NavigationButton_Click(NavHome, e);
         }
         catch (ArgumentOutOfRangeException ex)
