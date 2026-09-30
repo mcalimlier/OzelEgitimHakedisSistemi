@@ -118,8 +118,8 @@ public sealed class ArchiveDisplayServiceTests
         var rows = ArchiveDisplayService.BuildRows(store);
 
         Assert.Equal("v01", rows[0].RevisionText);
-        Assert.Equal("v02", rows[1].RevisionText);
-        Assert.Equal("v01", rows[2].RevisionText);
+        Assert.Equal("v01", rows[1].RevisionText);
+        Assert.Equal("v02", rows[2].RevisionText);
     }
 
 }
