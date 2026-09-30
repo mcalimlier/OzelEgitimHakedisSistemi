@@ -1180,8 +1180,9 @@ public partial class MainWindow : Window
             return;
         }
 
+        var sourceTenderForEdit = _editingContractTender ?? TenderNumberTextBox.Text.Trim();
         var existingContractForLegacy = _contracts.FirstOrDefault(x =>
-            string.Equals(x.TenderNumber, TenderNumberTextBox.Text.Trim(), StringComparison.OrdinalIgnoreCase));
+            string.Equals(x.TenderNumber, sourceTenderForEdit, StringComparison.OrdinalIgnoreCase));
         var proposedContract = new ContractDraftData(
             TenderNumberTextBox.Text.Trim(),
             ContractNumberTextBox.Text.Trim(),
