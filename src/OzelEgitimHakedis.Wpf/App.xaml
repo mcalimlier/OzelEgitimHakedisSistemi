@@ -42,7 +42,8 @@
 
         <Style TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="14.5"/>
+            <Setter Property="FontSize" Value="15.5"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
 
@@ -150,13 +151,13 @@
         <Style x:Key="SectionTitle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontSize" Value="18.5"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Foreground" Value="{StaticResource Text900Brush}"/>
         </Style>
 
         <Style x:Key="FieldLabel" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="FontSize" Value="14.5"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="#D8E4EF"/>
         </Style>
