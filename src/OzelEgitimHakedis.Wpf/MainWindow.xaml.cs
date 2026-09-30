@@ -611,19 +611,6 @@ public partial class MainWindow : Window
 
     private void UpdateReferencesForContractorEdit(ContractorDraft oldContractor, ContractorDraft updated)
     {
-        for (var i = 0; i < _routes.Count; i++)
-        {
-            var route = _routes[i];
-            if (string.Equals(route.ContractorTaxOrIdentityNumber, oldContractor.TaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase))
-            {
-                _routes[i] = route with
-                {
-                    ContractorTaxOrIdentityNumber = updated.TaxOrIdentityNumber,
-                    ContractorName = updated.Name
-                };
-            }
-        }
-
         var oldCore = new Contractor(
             oldContractor.Name,
             oldContractor.TaxOrIdentityNumber,
@@ -642,10 +629,29 @@ public partial class MainWindow : Window
             updated.BankAccountNumber,
             updated.ContactPerson);
 
+        // Önce tüm türetilmiş hakedişler doğrulanır; hata halinde hiçbir kaynak
+        // koleksiyonu değiştirilmez.
         var propagated = ProgressPaymentPropagationService.RecalculateForContractorChange(
             _progressHistory.ToArray(),
             oldCore,
             newCore);
+
+        var normalizedOld = OehsIdentityService.NormalizeIdentity(oldContractor.TaxOrIdentityNumber);
+        var routeUpdates = _routes
+            .Select((route, index) => (route, index))
+            .Where(x => string.Equals(
+                OehsIdentityService.NormalizeIdentity(x.route.ContractorTaxOrIdentityNumber),
+                normalizedOld,
+                StringComparison.Ordinal))
+            .Select(x => (x.index, route: x.route with
+            {
+                ContractorTaxOrIdentityNumber = newCore.TaxOrIdentityNumber,
+                ContractorName = newCore.Name
+            }))
+            .ToArray();
+
+        foreach (var item in routeUpdates)
+            _routes[item.index] = item.route;
 
         _progressHistory.Clear();
         foreach (var item in propagated)
