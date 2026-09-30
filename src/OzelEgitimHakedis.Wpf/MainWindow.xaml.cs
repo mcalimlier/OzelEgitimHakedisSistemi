@@ -1446,6 +1446,13 @@ public partial class MainWindow : Window
             latest.ContractorName,
             latest.BankAccountNumber,
             TransportDailyPrice = latest.Input.DailyPrice,
+            PdfFileName = latest.ProgressPaymentNumber.HasValue && latest.PeriodDate.HasValue
+                ? OehsFileNameService.BuildProgressPdfFileName(
+                    latest.TenderNumber ?? string.Empty,
+                    latest.RouteNumber ?? string.Empty,
+                    latest.ProgressPaymentNumber.Value,
+                    latest.PeriodDate.Value)
+                : "OEHS_Hakediş.pdf",
             PdfPrinter = "Microsoft Print to PDF",
             Documents = OfficialDocumentNames,
             SavedAt = DateTime.Now
