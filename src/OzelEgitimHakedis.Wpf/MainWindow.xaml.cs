@@ -48,6 +48,8 @@ public partial class MainWindow : Window
     private static readonly string[] ContractHeaders = { "Sözleşme Bedeli", "Sözleşme Artış Onayının Tarihi No.su", "Ek Sözleşme Bedeli", "Toplam Sözleşme Bedeli" };
     private static readonly string[] ExtensionHeaders = { "Tarih", "Sayısı", "Verilen Süre", "İş Bitim Tarihi" };
     private static readonly string[] IcmalHeaders = { "Sıra No", "İşin Cinsi", "İş Tutarı (a)", "Fiyat Farkı Tutarı (b)", "Toplam (a+b)" };
+    private static readonly string[] OfficialDocumentNames =
+        ProgressPaymentReportService.RequiredDocumentNames.ToArray();
 
 
 
@@ -1421,7 +1423,7 @@ public partial class MainWindow : Window
         return $"{tender}_{route}_Hakedis-{progress}_{period}_{item.Id:N}";
     }
 
-    private string SaveRouteDocumentsArchiveMetadata(RouteDraft route, ProgressPaymentHistoryData latest)
+    private static string SaveRouteDocumentsArchiveMetadata(ProgressPaymentHistoryData latest)
     {
         var folderName = BuildArchiveKey(latest);
         var documentFolder = Path.Combine(OehsDesktopRoot, "Belgeler", folderName);
@@ -1440,13 +1442,7 @@ public partial class MainWindow : Window
             latest.BankAccountNumber,
             TransportDailyPrice = latest.Input.DailyPrice,
             PdfPrinter = "Microsoft Print to PDF",
-            Documents = new[]
-            {
-                "Hakediş Raporu",
-                "Hizmet İşleri Hakediş Raporu",
-                "Hizmet İşleri Kabul Tutanağı",
-                "Hakediş İcmali"
-            },
+            Documents = OfficialDocumentNames,
             SavedAt = DateTime.Now
         }, JsonWriteOptions);
         File.WriteAllText(metadataPath, metadata);
@@ -2177,7 +2173,7 @@ public partial class MainWindow : Window
         });
         panel.Children.Add(new TextBlock
         {
-            Text = $"İhale/Dosya: {item.TenderNumber ?? "-"} • Hat: {item.RouteNumber ?? "-"} • Hakediş: {item.ProgressPaymentNumber?.ToString() ?? "-"}",
+            Text = $"İhale/Dosya: {item.TenderNumber ?? "-"} • Hat: {item.RouteNumber ?? "-"} • Hakediş: {item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"}",
             FontSize = 12.5,
             Foreground = System.Windows.Media.Brushes.DimGray,
             TextWrapping = TextWrapping.Wrap,
@@ -3618,7 +3614,7 @@ public partial class MainWindow : Window
             if (!TryShowDocument(combined, pdfTitle, requirePdfPrinter: true))
                 return;
 
-            var savedFolder = SaveRouteDocumentsArchiveMetadata(route, latest);
+            var savedFolder = SaveRouteDocumentsArchiveMetadata(latest);
             CalculationStatusTextBlock.Text =
                 $"4 belge PDF yazdırma akışı çalıştırıldı. Arşiv bilgisi: {savedFolder}";
 
