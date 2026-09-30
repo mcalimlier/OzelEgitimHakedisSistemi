@@ -455,7 +455,10 @@ public partial class MainWindow : Window
         if (previous is not null)
             ProgressRouteComboBox.SelectedItem = routes.FirstOrDefault(x =>
                 x.RouteNumber == previous.RouteNumber &&
-                string.Equals(x.ContractorTaxOrIdentityNumber, previous.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase));
+                string.Equals(
+                    OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
+                    OehsIdentityService.NormalizeIdentity(previous.ContractorTaxOrIdentityNumber),
+                    StringComparison.Ordinal));
         if (ProgressRouteComboBox.SelectedItem is null && routes.Length > 0)
             ProgressRouteComboBox.SelectedIndex = 0;
 
@@ -889,7 +892,10 @@ public partial class MainWindow : Window
 
         var duplicate = _routes.FirstOrDefault(x =>
             string.Equals(x.TenderNumber, proposed.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
-            string.Equals(x.ContractorTaxOrIdentityNumber, proposed.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(
+                OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
+                OehsIdentityService.NormalizeIdentity(proposed.ContractorTaxOrIdentityNumber),
+                StringComparison.Ordinal) &&
             string.Equals(x.RouteNumber, proposed.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
             !ReferenceEquals(x, _editingRoute));
 
