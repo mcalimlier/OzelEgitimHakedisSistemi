@@ -4,10 +4,11 @@ public sealed record OehsApplicationData(
     ContractDraftData? Contract,
     IReadOnlyList<RouteData> Routes,
     IReadOnlyList<Contractor> Contractors,
-    IReadOnlyList<ProgressPaymentHistoryData>? ProgressPayments = null)
+    IReadOnlyList<ProgressPaymentHistoryData>? ProgressPayments = null,
+    IReadOnlyList<ContractDraftData>? Contracts = null)
 {
     public static OehsApplicationData Empty =>
-        new(null, Array.Empty<RouteData>(), Array.Empty<Contractor>());
+        new(null, Array.Empty<RouteData>(), Array.Empty<Contractor>(), null, Array.Empty<ContractDraftData>());
 }
 
 public sealed record ContractDraftData(
@@ -32,7 +33,9 @@ public sealed record RouteData(
     decimal DailyPrice,
     int GuideWorkDays = 0,
     decimal GuideDailyPrice = 0m,
-    int TransportWorkDays = 0);
+    int TransportWorkDays = 0,
+    string TenderNumber = "",
+    string ContractorTaxOrIdentityNumber = "");
 
 public sealed record ProgressPaymentHistoryData(
     Guid Id,
