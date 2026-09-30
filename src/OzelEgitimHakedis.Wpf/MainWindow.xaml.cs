@@ -1503,45 +1503,9 @@ public partial class MainWindow : Window
 
     private void UpdateHistoryForRouteEdit(RouteDraft oldRoute, RouteDraft updatedRoute)
     {
-        var oldData = new RouteData(
-            oldRoute.RouteNumber,
-            oldRoute.Name,
-            oldRoute.DailyPrice,
-            oldRoute.GuideWorkDays,
-            oldRoute.GuideDailyPrice,
-            oldRoute.TransportWorkDays,
-            oldRoute.TenderNumber,
-            oldRoute.ContractorTaxOrIdentityNumber);
-
-        var newData = new RouteData(
-            updatedRoute.RouteNumber,
-            updatedRoute.Name,
-            updatedRoute.DailyPrice,
-            updatedRoute.GuideWorkDays,
-            updatedRoute.GuideDailyPrice,
-            updatedRoute.TransportWorkDays,
-            updatedRoute.TenderNumber,
-            updatedRoute.ContractorTaxOrIdentityNumber);
-
-        var contractor = FindContractor(updatedRoute.ContractorTaxOrIdentityNumber);
-        var contractorSnapshot = contractor is null
-            ? new Contractor(updatedRoute.ContractorName, updatedRoute.ContractorTaxOrIdentityNumber)
-            : new Contractor(
-                contractor.Name,
-                contractor.TaxOrIdentityNumber,
-                contractor.Address,
-                contractor.Phone,
-                contractor.Email,
-                contractor.BankAccountNumber,
-                contractor.ContactPerson);
-
-        var propagated = ProgressPaymentPropagationService.RecalculateForRouteChange(
-            _progressHistory.ToArray(),
-            oldData,
-            newData,
-            contractorSnapshot);
-
+        var propagated = BuildRoutePropagation(oldRoute, updatedRoute);
         _progressHistory.Clear();
+
         foreach (var item in propagated)
             _progressHistory.Add(item);
     }
