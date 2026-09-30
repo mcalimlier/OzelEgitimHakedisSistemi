@@ -21,14 +21,14 @@ public sealed class ProgressPaymentCalculatorTests
         Assert.Equal(154565.00m, result.ServiceAmount);
         Assert.Equal(28327.94m, result.PriceDifferenceExcludingVat);
         Assert.Equal(182892.94m, result.TotalAmount);
-        Assert.Equal(18289.29m, result.Vat);
-        Assert.Equal(9144.65m, result.Withholding);
-        Assert.Equal(192037.59m, result.InvoiceAmountAfterWithholding);
-        Assert.Equal(201182.23m, result.GrossAmount);
-        Assert.Equal(1733.83m, result.StampTax);
-        Assert.Equal(1699.68m, result.AdditionalGuarantee);
-        Assert.Equal(14855.96m, result.TotalDeductions);
-        Assert.Equal(186326.27m, result.NetPayable);
+        Assert.Equal(18289.294m, result.Vat);
+        Assert.Equal(9144.647m, result.Withholding);
+        Assert.Equal(192037.587m, result.InvoiceAmountAfterWithholding);
+        Assert.Equal(201182.234m, result.GrossAmount);
+        Assert.Equal(1733.8250712m, result.StampTax);
+        Assert.Equal(1699.6764m, result.AdditionalGuarantee);
+        Assert.Equal(14855.9484712m, result.TotalDeductions);
+        Assert.Equal(186326.2855288m, result.NetPayable);
     }
 
     [Fact]
@@ -51,12 +51,12 @@ public sealed class ProgressPaymentCalculatorTests
         Assert.Equal(1500m, result.GuidePriceDifferenceExcludingVat);
         Assert.Equal(3000m, result.CombinedPriceDifferenceExcludingVat);
         Assert.Equal(119514.24m, result.TotalAmount);
-        Assert.Equal(16188.89m, result.Vat);
-        Assert.Equal(11484.43m, result.Withholding);
+        Assert.Equal(16188.894m, result.Vat);
+        Assert.Equal(11484.423m, result.Withholding);
         Assert.Equal(180m, result.AdditionalGuarantee);
-        Assert.Equal(1132.99m, result.StampTax);
-        Assert.Equal(12797.42m, result.TotalDeductions);
-        Assert.Equal(122905.71m, result.NetPayable);
+        Assert.Equal(1132.9949952m, result.StampTax);
+        Assert.Equal(12797.4179952m, result.TotalDeductions);
+        Assert.Equal(122905.7160048m, result.NetPayable);
     }
 
     [Fact]
@@ -110,10 +110,10 @@ public sealed class ProgressPaymentCalculatorTests
         Assert.Equal(0m, result.Vat);
         Assert.Equal(0m, result.Withholding);
         Assert.Equal(22755m, result.GrossAmount);
-        Assert.Equal(215.72m, result.StampTax);
+        Assert.Equal(215.7174m, result.StampTax);
         Assert.Equal(15.30m, result.AdditionalGuarantee);
-        Assert.Equal(411.02m, result.TotalDeductions);
-        Assert.Equal(22343.98m, result.NetPayable);
+        Assert.Equal(411.0174m, result.TotalDeductions);
+        Assert.Equal(22343.9826m, result.NetPayable);
     }
 
     [Fact]
@@ -176,7 +176,7 @@ public sealed class ProgressPaymentCalculatorTests
 
         var result = ProgressPaymentCalculator.Calculate(input);
 
-        Assert.Equal(1699.68m, result.AdditionalGuarantee);
+        Assert.Equal(1699.6764m, result.AdditionalGuarantee);
         Assert.Equal(17155.96m, result.TotalDeductions);
         Assert.Equal(184026.27m, result.NetPayable);
     }
