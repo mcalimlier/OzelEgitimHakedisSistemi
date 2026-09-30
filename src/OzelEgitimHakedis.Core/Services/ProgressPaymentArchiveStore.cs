@@ -158,7 +158,7 @@ public sealed class ProgressPaymentArchiveStore
     {
         var tender = SafeFilePart(archive.ProgressPayment.TenderNumber, "Ihale");
         var route = SafeFilePart(archive.ProgressPayment.RouteNumber, "Hat");
-        var progress = archive.ProgressPayment.ProgressPaymentNumber?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "Yeni";
+        var progress = archive.ProgressPayment.ProgressPaymentNumber?.ToString("00", System.Globalization.CultureInfo.InvariantCulture) ?? "Yeni";
         var period = archive.ProgressPayment.PeriodDate?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) ?? "Donemsiz";
         return $"OEHS_{tender}_Hat-{route}_Hakediş-{progress}_{period}";
     }
