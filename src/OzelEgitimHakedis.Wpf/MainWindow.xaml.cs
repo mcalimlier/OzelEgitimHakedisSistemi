@@ -3640,7 +3640,8 @@ public partial class MainWindow : Window
         };
 
         var combined = BuildCombinedRouteDocuments(documents);
-        TryShowDocument(combined, "OEHS - 4 Belge Tek Yazdırma");
+        var pdfTitle = BuildPdfPrintTitle(route, latest);
+        TryShowDocument(combined, pdfTitle, requirePdfPrinter: true);
     }
 
     private void CreateSaveAllRouteDocumentsButton_Click(object sender, RoutedEventArgs e)
