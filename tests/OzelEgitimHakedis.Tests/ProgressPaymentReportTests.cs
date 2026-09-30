@@ -81,4 +81,33 @@ public sealed class ProgressPaymentReportTests
             "TENDER",
             "SOZ",
             ContractorTaxOrIdentityNumber: "12345678901");
+
+    [Fact]
+    public void FinalXlsmRoute1Report_ShouldMatchWorkbookReference()
+    {
+        var previous = History(
+            1,
+            new DateOnly(2026, 9, 30),
+            new DateTime(2026, 10, 1),
+            116514.24m,
+            0m);
+
+        var current = History(
+            2,
+            new DateOnly(2026, 10, 31),
+            new DateTime(2026, 11, 1),
+            116514.24m,
+            1500m);
+
+        var totals = ProgressPaymentReportService.Calculate(
+            current,
+            new[] { previous, current });
+
+        Assert.Equal(233028.48m, totals.CumulativeServiceAmount);
+        Assert.Equal(1500m, totals.CurrentPriceDifference);
+        Assert.Equal(234528.48m, totals.CumulativeTotal);
+        Assert.Equal(116514.24m, totals.PreviousTotal);
+        Assert.Equal(119514.24m, totals.CurrentTotal);
+    }
+
 }
