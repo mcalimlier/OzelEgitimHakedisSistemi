@@ -1560,7 +1560,7 @@ public partial class MainWindow : Window
                     x.Id != _editingHistoryId.Value &&
                     string.Equals(x.TenderNumber, selectedContract.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
                     string.Equals(x.RouteNumber, selectedRoute.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(x.ContractorTaxOrIdentityNumber, selectedContract.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(x.ContractorTaxOrIdentityNumber, selectedRoute.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase) &&
                     x.ProgressPaymentNumber == progressNumber &&
                     x.PeriodDate == periodDate);
 
