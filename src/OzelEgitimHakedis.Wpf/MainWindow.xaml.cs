@@ -479,17 +479,23 @@ public partial class MainWindow : Window
     private void SaveContractorButton_Click(object sender, RoutedEventArgs e)
     {
         var name = ContractorNameTextBox.Text.Trim();
-        var tax = ContractorTaxTextBox.Text.Trim();
+        var tax = OehsIdentityService.NormalizeIdentity(ContractorTaxTextBox.Text);
         if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(tax))
         {
             ContractorStatusTextBlock.Text = "Firma adı ve TC / Vergi No zorunludur.";
             return;
         }
 
+        var normalizedEditingKey = OehsIdentityService.NormalizeIdentity(_editingContractorKey ?? string.Empty);
         var duplicate = _contractors.FirstOrDefault(x =>
-            (string.Equals(x.TaxOrIdentityNumber, tax, StringComparison.OrdinalIgnoreCase) ||
-             (string.IsNullOrWhiteSpace(x.TaxOrIdentityNumber) && string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase))) &&
-            !string.Equals(x.TaxOrIdentityNumber, _editingContractorKey, StringComparison.OrdinalIgnoreCase));
+            string.Equals(
+                OehsIdentityService.NormalizeIdentity(x.TaxOrIdentityNumber),
+                tax,
+                StringComparison.Ordinal) &&
+            !string.Equals(
+                OehsIdentityService.NormalizeIdentity(x.TaxOrIdentityNumber),
+                normalizedEditingKey,
+                StringComparison.Ordinal));
 
         if (duplicate is not null)
         {
@@ -520,8 +526,16 @@ public partial class MainWindow : Window
             else
             {
                 var index = _contractors.IndexOf(existing);
-                _contractors[index] = updated;
-                UpdateReferencesForContractorEdit(existing, updated);
+                try
+                {
+                    UpdateReferencesForContractorEdit(existing, updated);
+                    _contractors[index] = updated;
+                }
+                catch (ProgressPaymentPropagationException ex)
+                {
+                    ContractorStatusTextBlock.Text = $"Firma kaydedilmedi: {ex.Message}";
+                    return;
+                }
             }
         }
 
