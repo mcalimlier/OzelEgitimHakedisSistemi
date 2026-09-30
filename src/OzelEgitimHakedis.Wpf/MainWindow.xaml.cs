@@ -1915,7 +1915,11 @@ public partial class MainWindow : Window
     private void EditProgressWithTarget(ProgressPaymentHistoryData item)
     {
         var target = AskHistoryEditTarget(item);
-        switch (target)
+        if (!target.HasValue)
+            return;
+
+        var selection = ProgressCorrectionTargetService.Select(target.Value, item);
+        switch (selection.Target)
         {
             case ProgressCorrectionTarget.Tender:
                 BeginContractHistoryEdit(item);
@@ -1928,6 +1932,8 @@ public partial class MainWindow : Window
                 break;
             case ProgressCorrectionTarget.ProgressPayment:
                 BeginProgressHistoryEdit(item);
+                break;
+            case ProgressCorrectionTarget.Cancel:
                 break;
         }
     }
