@@ -5,7 +5,7 @@ namespace OzelEgitimHakedis.Core.Services;
 
 public static class OehsIdentityService
 {
-    public static string NormalizeIdentity(string value)
+    public static string NormalizeIdentity(string? value)
     {
         if (string.IsNullOrWhiteSpace(value))
             return string.Empty;
