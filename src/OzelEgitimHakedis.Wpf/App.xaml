@@ -57,6 +57,8 @@
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontSize" Value="15.5"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Height" Value="44"/>
         </Style>
 
         <Style x:Key="StandardButtonBase" TargetType="Button">
@@ -310,10 +312,11 @@
             <Setter Property="Foreground" Value="{StaticResource Text900Brush}"/>
             <Setter Property="BorderBrush" Value="#D2DBE7"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Height" Value="42"/>
+            <Setter Property="Height" Value="44"/>
             <Setter Property="Padding" Value="10,3"/>
-            <Setter Property="FontSize" Value="17"/>
+            <Setter Property="FontSize" Value="15.5"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
         </Style>
 
         <Style x:Key="FieldDatePicker" TargetType="DatePicker">
