@@ -314,6 +314,48 @@
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
 
+        <Style x:Key="RouteSelectorComboBoxItem" TargetType="ComboBoxItem">
+            <Setter Property="Foreground" Value="{StaticResource Text900Brush}"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Padding" Value="10,9"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="14.5"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Border x:Name="ItemBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="Transparent"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="#EEF5FF"/>
+                                <Setter TargetName="ItemBorder" Property="BorderBrush" Value="#C8DCF5"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource Blue600Brush}"/>
+                                <Setter TargetName="ItemBorder" Property="BorderBrush" Value="{StaticResource Blue700Brush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="RouteSelectorComboBox" TargetType="ComboBox" BasedOn="{StaticResource FieldComboBox}">
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="MaxDropDownHeight" Value="320"/>
+            <Setter Property="ItemContainerStyle" Value="{StaticResource RouteSelectorComboBoxItem}"/>
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+        </Style>
+
         <Style x:Key="FieldDatePicker" TargetType="DatePicker">
             <Setter Property="Background" Value="White"/>
             <Setter Property="Foreground" Value="{StaticResource Text900Brush}"/>
