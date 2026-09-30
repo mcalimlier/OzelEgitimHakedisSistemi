@@ -229,4 +229,22 @@ public sealed class ProgressPaymentCalculatorTests
         Assert.Equal(1.0457226m, result.NetPayable);
     }
 
+
+    [Fact]
+    public void GuideWithholding_ShouldBeNineTenthsOfGuideVat()
+    {
+        var input = new ProgressPaymentInput(
+            WorkDays: 0, DailyPrice: 0m, DiscountAmount: 0m, PriceDifference: 0m,
+            ContractAmount: 10000m, IsVatExempt: false, TaxDebt: 0m,
+            SocialSecurityDebt: 0m, MinimumWageSupport: 0m,
+            GuideWorkDays: 10, GuideDailyPrice: 1000m, GuideDiscountAmount: 0m,
+            GuidePriceDifference: 0m);
+
+        var result = ProgressPaymentCalculator.Calculate(input);
+
+        Assert.Equal(2000m, result.GuideVat);
+        Assert.Equal(1800m, result.GuideWithholding);
+        Assert.Equal(1800m, result.Withholding);
+    }
+
 }
