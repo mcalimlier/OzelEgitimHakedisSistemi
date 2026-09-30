@@ -1022,7 +1022,7 @@ public partial class MainWindow : Window
             : null;
     }
 
-    private string GetHistoryArchiveFolder(ProgressPaymentHistoryData item) =>
+    private static string GetHistoryArchiveFolder(ProgressPaymentHistoryData item) =>
         Path.Combine(OehsDesktopRoot, "Belgeler", BuildArchiveKey(item));
 
     private void OpenHistoryWordButton_Click(object sender, RoutedEventArgs e)
