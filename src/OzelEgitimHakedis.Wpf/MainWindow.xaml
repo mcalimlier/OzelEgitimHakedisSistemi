@@ -1260,7 +1260,7 @@
                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0">
                             <StackPanel>
                                 <TextBlock x:Name="PlaceholderTitleTextBlock" Text="Modül" Style="{StaticResource PageTitle}"/>
-                                <TextBlock Text="Bu bölüm sonraki geliştirme adımında aktif hale getirilecek." Style="{StaticResource PageSubtitle}"/>
+                                <TextBlock Text="Bu bölüm için tanımlı bir OEHS ekranı bulunmuyor." Style="{StaticResource PageSubtitle}"/>
                                 <Border Background="#F7F9FC" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="12" Padding="24">
                                     <TextBlock Text="Bu modül İhale → Yüklenici → Hat → Hakediş akışındaki kalıcı veri katmanını kullanır."
                                                TextWrapping="Wrap" FontSize="16" Foreground="{StaticResource Text600Brush}"/>
