@@ -146,10 +146,15 @@ public partial class MainWindow : Window
         ProgressPayment
     }
 
-    private bool IsArchiveCorrection =>
-        _archiveCorrectionSection != ArchiveCorrectionSection.None &&
+    // Arşiv düzeltme işlemi başladıysa bölüm durumu yanlışlıkla sıfırlansa bile
+    // canlı kayıt oluşturma akışına düşülmemelidir. Bu bayrak kayıt kaynağını kilitler.
+    private bool IsArchiveEditing =>
         !string.IsNullOrWhiteSpace(_editingArchiveSourcePath) &&
         _editingArchiveSnapshot is not null;
+
+    private bool IsArchiveCorrection =>
+        IsArchiveEditing &&
+        _archiveCorrectionSection != ArchiveCorrectionSection.None;
 
     private bool IsArchiveCorrectionFor(ArchiveCorrectionSection section) =>
         IsArchiveCorrection && _archiveCorrectionSection == section;
@@ -186,6 +191,7 @@ public partial class MainWindow : Window
         SaveContractButton.Content = editing ? "DÜZENLE" : "KAYDET";
         CancelContractEditButton.Visibility = editing ? Visibility.Visible : Visibility.Collapsed;
         ClearContractButton.IsEnabled = !editing;
+        ClearContractButton.Visibility = editing ? Visibility.Collapsed : Visibility.Visible;
         ContractEditorTitleTextBlock.Text = editing ? "İHALE / SÖZLEŞME DÜZENLE" : "Sözleşme Bilgileri";
         ContractEditorSubtitleTextBlock.Text = editing
             ? "Mevcut kaydı düzenliyorsunuz. Vazgeçerseniz DÜZENLEME İPTAL düğmesini kullanın."
@@ -197,6 +203,7 @@ public partial class MainWindow : Window
         SaveContractorButton.Content = editing ? "DÜZENLE" : "KAYDET";
         CancelContractorEditButton.Visibility = editing ? Visibility.Visible : Visibility.Collapsed;
         ClearContractorButton.IsEnabled = !editing;
+        ClearContractorButton.Visibility = editing ? Visibility.Collapsed : Visibility.Visible;
         ContractorEditorTitleTextBlock.Text = editing ? "YÜKLENİCİ FİRMA DÜZENLE" : "FİRMA BİLGİLERİ";
     }
 
@@ -205,6 +212,7 @@ public partial class MainWindow : Window
         AddRouteButton.Content = editing ? "DÜZENLE" : "HAT EKLE";
         CancelRouteEditButton.Visibility = editing ? Visibility.Visible : Visibility.Collapsed;
         ClearRouteButton.IsEnabled = !editing;
+        ClearRouteButton.Visibility = editing ? Visibility.Collapsed : Visibility.Visible;
         RouteEditorTitleTextBlock.Text = editing
             ? (archiveCorrection ? "ARŞİVDEKİ HAT DÜZENLE" : "HAT DÜZENLE")
             : "YENİ HAT";
@@ -892,9 +900,16 @@ public partial class MainWindow : Window
 
     private void SaveContractorButton_Click(object sender, RoutedEventArgs e)
     {
-        if (IsArchiveCorrectionFor(ArchiveCorrectionSection.Contractor))
+        if (IsArchiveEditing)
         {
-            SaveArchivedContractorCorrection();
+            if (IsArchiveCorrectionFor(ArchiveCorrectionSection.Contractor))
+            {
+                SaveArchivedContractorCorrection();
+            }
+            else
+            {
+                ShowAlreadyRegistered("Arşiv düzeltmesi devam ediyor. Önce ilgili düzenleme panelindeki DÜZENLEME İPTAL işlemini tamamlayın.");
+            }
             return;
         }
 
@@ -1318,9 +1333,18 @@ public partial class MainWindow : Window
 
     private void AddRouteButton_Click(object sender, RoutedEventArgs e)
     {
-        if (IsArchiveCorrectionFor(ArchiveCorrectionSection.Route))
+        // Arşiv düzeltme kilidi aktifken herhangi bir nedenle bölüm bayrağı değişse bile
+        // canlı HAT EKLE akışına kesinlikle düşülmez.
+        if (IsArchiveEditing)
         {
-            SaveArchivedRouteCorrection();
+            if (IsArchiveCorrectionFor(ArchiveCorrectionSection.Route))
+            {
+                SaveArchivedRouteCorrection();
+            }
+            else
+            {
+                ShowAlreadyRegistered("Arşiv düzeltmesi devam ediyor. Önce ilgili düzenleme panelindeki DÜZENLEME İPTAL işlemini tamamlayın.");
+            }
             return;
         }
 
@@ -1705,9 +1729,16 @@ public partial class MainWindow : Window
 
     private void SaveContractButton_Click(object sender, RoutedEventArgs e)
     {
-        if (IsArchiveCorrectionFor(ArchiveCorrectionSection.Contract))
+        if (IsArchiveEditing)
         {
-            SaveArchivedContractCorrection();
+            if (IsArchiveCorrectionFor(ArchiveCorrectionSection.Contract))
+            {
+                SaveArchivedContractCorrection();
+            }
+            else
+            {
+                ShowAlreadyRegistered("Arşiv düzeltmesi devam ediyor. Önce ilgili düzenleme panelindeki DÜZENLEME İPTAL işlemini tamamlayın.");
+            }
             return;
         }
 
@@ -2276,6 +2307,12 @@ public partial class MainWindow : Window
 
     private void CalculateProgressButton_Click(object sender, RoutedEventArgs e)
     {
+        if (IsArchiveEditing && !IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment))
+        {
+            ShowAlreadyRegistered("Arşiv düzeltmesi devam ediyor. Önce mevcut düzenlemeyi kaydedin veya DÜZENLEME İPTAL işlemini tamamlayın.");
+            return;
+        }
+
         var wasArchiveCorrection = IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment);
 
         ClearProgressValidationVisuals();
@@ -3180,8 +3217,9 @@ public partial class MainWindow : Window
             var archivedContract = _editingArchiveSnapshot!.Contract;
             _editingContractTender = null;
             ApplyContractToForm(archivedContract);
-            SetContractEditorMode(true);
             NavigationButton_Click(NavContract, new RoutedEventArgs(Button.ClickEvent, NavContract));
+            // Panel geçişinden sonra editör modunu son kez uygula.
+            SetContractEditorMode(true);
             ContractStatusTextBlock.Text =
                 "ARŞİV DÜZELTME MODU: İhale bilgilerini güncelleyin. DÜZENLE mevcut arşiv revision'ını aynı kayıt üzerinde güncelleyecektir.";
             return;
@@ -3216,8 +3254,9 @@ public partial class MainWindow : Window
             ContractorEmailTextBox.Text = archivedContractor.Email;
             ContractorBankTextBox.Text = archivedContractor.BankAccountNumber;
             ContractorContactTextBox.Text = archivedContractor.ContactPerson;
-            SetContractorEditorMode(true);
             NavigationButton_Click(NavContractors, new RoutedEventArgs(Button.ClickEvent, NavContractors));
+            // Panel geçişinden sonra editör modunu son kez uygula.
+            SetContractorEditorMode(true);
             ContractorStatusTextBlock.Text =
                 "ARŞİV DÜZELTME MODU: firma bilgilerini güncelleyin. DÜZENLE mevcut arşiv revision'ını aynı kayıt üzerinde güncelleyecektir.";
             return;
@@ -3264,8 +3303,10 @@ public partial class MainWindow : Window
             RouteSelectedContractorTextBlock.Text = $"Arşiv yüklenici: {archive.Contractor.Name}";
 
             _editingRoute = null;
-            SetRouteEditorMode(true, archiveCorrection: true);
             NavigationButton_Click(NavLines, new RoutedEventArgs(Button.ClickEvent, NavLines));
+            // Panel açıldıktan sonra editör modunu son kez uygula. Böylece panel geçişi
+            // veya seçim olayları DÜZENLE / DÜZENLEME İPTAL durumunu bozamaz.
+            SetRouteEditorMode(true, archiveCorrection: true);
             RouteStatusTextBlock.Text =
                 "ARŞİV DÜZELTME MODU: Hat No dahil ilgili alanları değiştirebilirsiniz. DÜZENLE seçili arşiv dosyasını aynı revision numarasıyla günceller; yeni hat oluşturmaz.";
             return;
@@ -3344,8 +3385,9 @@ public partial class MainWindow : Window
             ProgressNumberTextBox.Text = payment.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
             ProgressPeriodDatePicker.SelectedDate = payment.PeriodDate?.ToDateTime(TimeOnly.MinValue);
 
-            SetProgressEditorMode(true, archiveCorrection: true);
             NavigationButton_Click(NavProgress, new RoutedEventArgs(Button.ClickEvent, NavProgress));
+            // Panel geçişinden sonra editör modunu son kez uygula.
+            SetProgressEditorMode(true, archiveCorrection: true);
             CalculationStatusTextBlock.Text =
                 "ARŞİV DÜZELTME MODU: Hakediş girdilerini güncelleyin. DÜZENLE mevcut arşiv revision'ını aynı kayıt üzerinde güncelleyecektir.";
             return;
