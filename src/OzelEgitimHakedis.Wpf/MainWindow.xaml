@@ -504,7 +504,7 @@
 
                                                                             <TextBlock Text="{Binding WorkName}" Foreground="#C5D7E7" FontSize="11.5" TextWrapping="Wrap"/>
                                                                         </StackPanel>
-                                                                        <Button Grid.Column="1" Content="DÜZENLE" Tag="{Binding}" Click="EditContractButton_Click" Style="{StaticResource SecondaryButton}" Height="34" FontSize="10.5" Width="80" Margin="3,0"/>
+                                                                        <Button Grid.Column="1" Content="DÜZENLE" Tag="{Binding}" Click="EditContractButton_Click" Style="{StaticResource SecondaryButton}" Height="34" FontSize="10.5" Width="96" Margin="3,0"/>
                                                                         <Button Grid.Column="2" Content="SİL" Tag="{Binding}" Click="DeleteContractButton_Click" Style="{StaticResource SecondaryButton}" Height="34" FontSize="10.5" Width="56" Margin="3,0"/>
                                                                     </Grid>
                                                                 </Border>
@@ -828,7 +828,7 @@
                                                                     <TextBlock Text="{Binding TransportAnnualPriceText}" Foreground="{StaticResource Text700Brush}" FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Right"/>
                                                                 </StackPanel>
                                                                 <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                                                    <Button Content="DÜZENLE" Tag="{Binding}" Click="EditRouteButton_Click" Style="{StaticResource SecondaryButton}" Height="38" FontSize="11.5" Width="82" Margin="0,0,6,0"/>
+                                                                    <Button Content="DÜZENLE" Tag="{Binding}" Click="EditRouteButton_Click" Style="{StaticResource SecondaryButton}" Height="38" FontSize="11.5" Width="96" Margin="0,0,6,0"/>
                                                                     <Button Content="SİL" Tag="{Binding}" Click="RemoveRouteButton_Click" Style="{StaticResource SecondaryButton}" Height="38" FontSize="11.5" Width="56"/>
                                                                 </StackPanel>
                                                             </Grid>
@@ -905,7 +905,7 @@
                                                 <TextBlock Text="{Binding BankAccountNumber}" Foreground="#C5D7E7" FontSize="11.5"/>
                                             </StackPanel>
                                             <TextBlock Grid.Column="1" Text="{Binding Phone}" Foreground="#C5D7E7" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                            <Button Grid.Column="2" Content="DÜZENLE" Tag="{Binding}" Click="EditContractorButton_Click" Style="{StaticResource SecondaryButton}" Height="36" FontSize="11" Width="84" Margin="4,0"/>
+                                            <Button Grid.Column="2" Content="DÜZENLE" Tag="{Binding}" Click="EditContractorButton_Click" Style="{StaticResource SecondaryButton}" Height="36" FontSize="11" Width="96" Margin="4,0"/>
                                             <Button Grid.Column="3" Content="SİL" Tag="{Binding}" Click="DeleteContractorButton_Click" Style="{StaticResource SecondaryButton}" Height="36" FontSize="11" Width="56" Margin="4,0"/>
                                         </Grid>
                                     </Border>
