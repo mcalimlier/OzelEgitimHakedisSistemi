@@ -3913,14 +3913,18 @@ public partial class MainWindow : Window
         var combined = BuildCombinedRouteDocuments(documents);
         var pages = OehsPdfExportService.RenderDocumentPages(combined);
 
+        var workArea = SystemParameters.WorkArea;
+        var previewWidth = Math.Min(1180d, Math.Max(760d, workArea.Width - 40d));
+        var previewHeight = Math.Min(900d, Math.Max(620d, workArea.Height - 60d));
+
         var previewWindow = new Window
         {
             Title = "OEHS — Belge Önizleme",
             Owner = this,
-            Width = 1180,
-            Height = 900,
-            MinWidth = 960,
-            MinHeight = 700,
+            Width = previewWidth,
+            Height = previewHeight,
+            MinWidth = Math.Min(900d, previewWidth),
+            MinHeight = Math.Min(620d, previewHeight),
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
             Background = System.Windows.Media.Brushes.White
         };
