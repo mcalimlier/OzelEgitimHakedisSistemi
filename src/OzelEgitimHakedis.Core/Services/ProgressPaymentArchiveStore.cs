@@ -81,6 +81,45 @@ public sealed class ProgressPaymentArchiveStore
         }
     }
 
+    public string Replace(string filePath, ProgressPaymentArchive archive)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
+        ArgumentNullException.ThrowIfNull(archive);
+
+        if (archive.Revision < 1)
+            throw new ArgumentOutOfRangeException(nameof(archive), "Revision 1 veya daha büyük olmalıdır.");
+
+        var fullPath = Path.GetFullPath(filePath);
+        var folder = Path.GetDirectoryName(fullPath);
+        if (string.IsNullOrWhiteSpace(folder))
+            throw new ProgressPaymentArchiveException("Arşiv dosya klasörü çözümlenemedi.");
+
+        Directory.CreateDirectory(folder);
+
+        var json = JsonSerializer.Serialize(archive, JsonOptions);
+        var tempPath = Path.Combine(folder, Path.GetFileName(fullPath) + "." + Guid.NewGuid().ToString("N") + ".tmp");
+
+        try
+        {
+            File.WriteAllText(tempPath, json);
+            File.Move(tempPath, fullPath, overwrite: true);
+            return fullPath;
+        }
+        catch (IOException ex)
+        {
+            throw new ProgressPaymentArchiveException("Mevcut arşiv dosyası güncellenemedi.", ex);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            throw new ProgressPaymentArchiveException("Mevcut arşiv dosyasına yazma izni yok.", ex);
+        }
+        finally
+        {
+            if (File.Exists(tempPath))
+                File.Delete(tempPath);
+        }
+    }
+
     public string Save(ProgressPaymentArchive archive)
     {
         ArgumentNullException.ThrowIfNull(archive);
