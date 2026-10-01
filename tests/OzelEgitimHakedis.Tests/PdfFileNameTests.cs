@@ -15,6 +15,26 @@ public sealed class PdfFileNameTests
     }
 
     [Fact]
+    public void SanitizeFileName_ShouldPreventDotTraversalAndReservedDeviceNames()
+    {
+        Assert.Equal("Ihale", OehsFileNameService.SanitizeFileName("..", "Ihale"));
+        Assert.Equal("Ihale", OehsFileNameService.SanitizeFileName(".", "Ihale"));
+        Assert.Equal("_CON", OehsFileNameService.SanitizeFileName("CON", "Ihale"));
+        Assert.DoesNotContain("/", OehsFileNameService.SanitizeFileName("A/B"));
+        Assert.DoesNotContain("\\", OehsFileNameService.SanitizeFileName("A\\B"));
+    }
+
+    [Fact]
+    public void SanitizeFileName_ShouldLimitPathPartLength()
+    {
+        var input = new string('X', 200);
+
+        var sanitized = OehsFileNameService.SanitizeFileName(input);
+
+        Assert.True(sanitized.Length <= 80);
+    }
+
+    [Fact]
     public void BuildProgressPdfFileName_ShouldSanitizeInvalidCharacters()
     {
         var name = OehsFileNameService.BuildProgressPdfFileName(
