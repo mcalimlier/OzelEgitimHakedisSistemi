@@ -970,6 +970,7 @@ public partial class MainWindow : Window
         UpdateHomeSummaryView();
         ClearContractorButton_Click(sender, e);
         ContractorStatusTextBlock.Text = $"Firma kaydedildi: {name}.";
+    }
 
     private void EditContractorButton_Click(object sender, RoutedEventArgs e)
     {
@@ -1433,6 +1434,7 @@ public partial class MainWindow : Window
         UpdateHomeSummaryView();
         ClearRouteButton_Click(sender, e);
         RouteStatusTextBlock.Text = $"Hat kaydedildi: {routeNumber} — {routeName}.";
+    }
 
     private IReadOnlyList<ProgressPaymentHistoryData> BuildRoutePropagation(RouteDraft oldRoute, RouteDraft updatedRoute)
     {
@@ -1882,6 +1884,7 @@ public partial class MainWindow : Window
 
         ContractStatusTextBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(36, 104, 216));
         ContractStatusTextBlock.Text = $"İhale kaydedildi: {proposedContract.TenderNumber}.";
+    }
 
     private void LoadPersistedData()
     {
