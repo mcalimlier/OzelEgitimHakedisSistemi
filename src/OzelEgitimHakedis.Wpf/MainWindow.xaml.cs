@@ -1954,7 +1954,7 @@ public partial class MainWindow : Window
         ProgressPaymentArchive archive;
         try
         {
-            archive = _archiveStore.Load(row.FullPath);
+            archive = ProgressPaymentArchiveStore.Load(row.FullPath);
         }
         catch (ProgressPaymentArchiveException ex)
         {
