@@ -1249,22 +1249,37 @@ public partial class MainWindow : Window
                         oldContract,
                         proposedContract);
 
+                    var routeData = _routes.Select(x => new RouteData(
+                        x.RouteNumber,
+                        x.Name,
+                        x.DailyPrice,
+                        x.GuideWorkDays,
+                        x.GuideDailyPrice,
+                        x.TransportWorkDays,
+                        x.TenderNumber,
+                        x.ContractorTaxOrIdentityNumber)).ToArray();
+
+                    var propagatedRoutes = TenderRoutePropagationService.UpdateTenderNumber(
+                        routeData,
+                        oldTender,
+                        proposedContract.TenderNumber);
+
                     var affectedRouteIndices = _routes
                         .Select((route, routeIndex) => (route, routeIndex))
                         .Where(x => string.Equals(x.route.TenderNumber, oldTender, StringComparison.OrdinalIgnoreCase))
                         .ToArray();
 
-                    var affectedRoutes = affectedRouteIndices
-                        .Select(x => x.route with
-                        {
-                            TenderNumber = proposedContract.TenderNumber
-                        })
-                        .ToArray();
-
                     _contracts[index] = proposedContract;
 
                     for (var routeIndex = 0; routeIndex < affectedRouteIndices.Length; routeIndex++)
-                        _routes[affectedRouteIndices[routeIndex].routeIndex] = affectedRoutes[routeIndex];
+                    {
+                        var updatedRoute = propagatedRoutes[affectedRouteIndices[routeIndex].routeIndex];
+                        var oldRoute = affectedRouteIndices[routeIndex].route;
+                        _routes[affectedRouteIndices[routeIndex].routeIndex] = oldRoute with
+                        {
+                            TenderNumber = updatedRoute.TenderNumber
+                        };
+                    }
 
                     _progressHistory.Clear();
                     foreach (var item in proposedHistories)
