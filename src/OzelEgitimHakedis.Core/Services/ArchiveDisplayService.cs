@@ -30,12 +30,13 @@ public static class ArchiveDisplayService
             {
                 var archive = ProgressPaymentArchiveStore.Load(file.FullName);
                 var progress = archive.ProgressPayment.ProgressPaymentNumber ?? int.MaxValue;
+                var progressDisplay = archive.ProgressPayment.ProgressPaymentNumber?.ToString(System.Globalization.CultureInfo.CurrentCulture) ?? "-";
                 var period = archive.ProgressPayment.PeriodDate ?? DateOnly.MaxValue;
 
                 validRows.Add(new LoadedRow(
                     new ArchiveDisplayRow(
                         file.FullName,
-                        $"İhale/Dosya: {archive.ProgressPayment.TenderNumber ?? "-"} • Hat {archive.ProgressPayment.RouteNumber ?? "-"} • Hakediş {progress.ToString(System.Globalization.CultureInfo.CurrentCulture)}",
+                        $"İhale/Dosya: {archive.ProgressPayment.TenderNumber ?? "-"} • Hat {archive.ProgressPayment.RouteNumber ?? "-"} • Hakediş {progressDisplay}",
                         $"Dönem: {period.ToString("dd.MM.yyyy", System.Globalization.CultureInfo.CurrentCulture)} • Yüklenici: {archive.Contractor.Name}",
                         archive.ProgressPayment.Calculation.NetPayable.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("tr-TR")) + " ₺",
                         $"v{archive.Revision:00}"),
