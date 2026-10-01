@@ -43,7 +43,8 @@ public static class OehsFileNameService
         if (string.IsNullOrWhiteSpace(sanitized) || sanitized is "." or "..")
             return fallback;
 
-        if (ReservedWindowsNames.Contains(sanitized))
+        var deviceStem = sanitized.Split('.', 2)[0];
+        if (ReservedWindowsNames.Contains(deviceStem))
             sanitized = "_" + sanitized;
 
         if (sanitized.Length > MaxPartLength)
