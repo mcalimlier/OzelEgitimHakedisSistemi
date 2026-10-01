@@ -850,6 +850,7 @@ public partial class MainWindow : Window
 
     private void EditContractorButton_Click(object sender, RoutedEventArgs e)
     {
+        ClearArchiveCorrectionState();
         if (sender is not Button { Tag: ContractorDraft contractor })
             return;
 
@@ -896,6 +897,7 @@ public partial class MainWindow : Window
 
     private void ClearContractorButton_Click(object sender, RoutedEventArgs e)
     {
+        ClearArchiveCorrectionState();
         _editingContractorKey = null;
         ContractorNameTextBox.Clear();
         ContractorTaxTextBox.Clear();
@@ -1369,6 +1371,7 @@ public partial class MainWindow : Window
 
     private void EditRouteButton_Click(object sender, RoutedEventArgs e)
     {
+        ClearArchiveCorrectionState();
         if (sender is not System.Windows.Controls.Button { Tag: RouteDraft route })
             return;
 
@@ -1399,6 +1402,7 @@ public partial class MainWindow : Window
 
     private void ClearRouteButton_Click(object sender, RoutedEventArgs e)
     {
+        ClearArchiveCorrectionState();
         _editingRoute = null;
         _editingArchiveRouteCorrection = false;
         _archiveRouteCorrectionSourceKey = null;
@@ -1418,6 +1422,7 @@ public partial class MainWindow : Window
 
     private void EditContractButton_Click(object sender, RoutedEventArgs e)
     {
+        ClearArchiveCorrectionState();
         if (sender is not Button { Tag: ContractDraftData contract })
             return;
 
@@ -1761,6 +1766,7 @@ public partial class MainWindow : Window
 
     private void ClearContractButton_Click(object sender, RoutedEventArgs e)
     {
+        ClearArchiveCorrectionState();
         _editingContractTender = null;
         ClearContractFormOnly();
         UpdateContractSummaryView();
@@ -2779,6 +2785,7 @@ public partial class MainWindow : Window
 
     private void EditCurrentProgressButton_Click(object sender, RoutedEventArgs e)
     {
+        ClearArchiveCorrectionState();
         var latest = GetSelectedProgressLatestPayment();
         if (latest is null)
         {
@@ -2791,6 +2798,7 @@ public partial class MainWindow : Window
 
     private void EditHistoryButton_Click(object sender, RoutedEventArgs e)
     {
+        ClearArchiveCorrectionState();
         if (sender is Button { Tag: HistoryRow row })
         {
             var item = _progressHistory.FirstOrDefault(x => x.Id == row.Id);
