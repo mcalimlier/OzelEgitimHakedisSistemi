@@ -460,7 +460,7 @@
                                                 <StackPanel Orientation="Horizontal" Margin="8,20,8,0">
                                                     <Button x:Name="SaveContractButton" Content="KAYDET" Click="SaveContractButton_Click" Style="{StaticResource ModernButton}" Width="140"/>
                                                     <Button x:Name="CancelContractEditButton" Content="DÜZENLEME İPTAL" Click="CancelContractEditButton_Click" Style="{StaticResource SecondaryButton}" Width="160" Margin="10,0,0,0" Visibility="Collapsed"/>
-                                                    <Button Content="TEMİZLE" Click="ClearContractButton_Click" Style="{StaticResource SecondaryButton}" Width="120" Margin="10,0,0,0"/>
+                                                    <Button x:Name="ClearContractButton" Content="TEMİZLE" Click="ClearContractButton_Click" Style="{StaticResource SecondaryButton}" Width="120" Margin="10,0,0,0"/>
                                                 </StackPanel>
                                                 <TextBlock x:Name="ContractStatusTextBlock" Margin="8,10,8,0" Foreground="{StaticResource Blue600Brush}" FontWeight="SemiBold" TextWrapping="Wrap"/>
                                             </StackPanel>
@@ -627,7 +627,7 @@
                                                 <Border x:Name="ProgressValidationBanner" Visibility="Collapsed" Background="#FFF1F1" BorderBrush="#E53935" BorderThickness="1.5" CornerRadius="9" Padding="12,9" Margin="6,10,0,0"><StackPanel><TextBlock Text="HESAPLAMA GİRDİLERİNİ KONTROL EDİN" Foreground="#C62828" FontSize="12.5" FontWeight="Bold"/><TextBlock x:Name="ProgressValidationMessageTextBlock" Foreground="#8E1B1B" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,3,0,0"/></StackPanel></Border><StackPanel Orientation="Horizontal" Margin="6,12,0,0">
                                                     <Button x:Name="CalculateProgressButton" Content="HAKEDİŞİ HESAPLA" Click="CalculateProgressButton_Click" Style="{StaticResource ModernButton}" MinWidth="245"/>
                                                     <Button x:Name="CancelProgressEditButton" Content="DÜZENLEME İPTAL" Click="CancelProgressEditButton_Click" Style="{StaticResource SecondaryButton}" MinWidth="170" Margin="10,0,0,0" Visibility="Collapsed"/>
-                                                    <Button Content="KAYITLI HAKEDİŞİ DÜZENLE" Click="EditCurrentProgressButton_Click" Style="{StaticResource SecondaryButton}" MinWidth="255" Margin="10,0,0,0"/>
+                                                    <Button x:Name="EditCurrentProgressButton" Content="KAYITLI HAKEDİŞİ DÜZENLE" Click="EditCurrentProgressButton_Click" Style="{StaticResource SecondaryButton}" MinWidth="255" Margin="10,0,0,0"/>
                                                 </StackPanel>
                                                 <TextBlock x:Name="CalculationStatusTextBlock" Style="{StaticResource ValidationText}"/>
                                             </StackPanel>
@@ -799,7 +799,7 @@
                                                 <StackPanel Orientation="Horizontal">
                                                     <Button x:Name="AddRouteButton" Content="HAT EKLE" Click="AddRouteButton_Click" Style="{StaticResource ModernButton}" Width="140"/>
                                                     <Button x:Name="CancelRouteEditButton" Content="DÜZENLEME İPTAL" Click="CancelRouteEditButton_Click" Style="{StaticResource SecondaryButton}" Width="160" Margin="10,0,0,0" Visibility="Collapsed"/>
-                                                    <Button Content="TEMİZLE" Click="ClearRouteButton_Click" Style="{StaticResource SecondaryButton}" Width="120" Margin="10,0,0,0"/>
+                                                    <Button x:Name="ClearRouteButton" Content="TEMİZLE" Click="ClearRouteButton_Click" Style="{StaticResource SecondaryButton}" Width="120" Margin="10,0,0,0"/>
                                                 </StackPanel>
                                                 <TextBlock x:Name="RouteStatusTextBlock" Margin="0,14,0,0" Foreground="{StaticResource Blue600Brush}" TextWrapping="Wrap"/>
                                             </StackPanel>
@@ -888,7 +888,7 @@
                         <StackPanel Orientation="Horizontal" Margin="6,10,0,0">
                             <Button x:Name="SaveContractorButton" Content="KAYDET" Click="SaveContractorButton_Click" Style="{StaticResource ModernButton}" Width="130"/>
                             <Button x:Name="CancelContractorEditButton" Content="DÜZENLEME İPTAL" Click="CancelContractorEditButton_Click" Style="{StaticResource SecondaryButton}" Width="160" Margin="10,0,0,0" Visibility="Collapsed"/>
-                            <Button Content="TEMİZLE" Click="ClearContractorButton_Click" Style="{StaticResource SecondaryButton}" Width="120" Margin="10,0,0,0"/>
+                            <Button x:Name="ClearContractorButton" Content="TEMİZLE" Click="ClearContractorButton_Click" Style="{StaticResource SecondaryButton}" Width="120" Margin="10,0,0,0"/>
                         </StackPanel>
                         <TextBlock x:Name="ContractorStatusTextBlock" Margin="6,10,0,0" Foreground="{StaticResource Blue600Brush}" FontWeight="SemiBold" TextWrapping="Wrap"/>
                     </StackPanel>
