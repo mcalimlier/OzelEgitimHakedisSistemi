@@ -39,6 +39,8 @@ public partial class MainWindow : Window
     private readonly ObservableCollection<ArchiveRow> _archiveRows = new();
     private Guid? _lastCalculatedHistoryId;
     private string? _editingArchiveSourcePath;
+    private bool _editingArchiveRouteCorrection;
+    private string? _archiveRouteCorrectionSourceKey;
     private const double DocumentContentWidth = PdfLayoutService.SafeContentWidth;
     private static readonly double[] ThreeColumnWidths = { 58d, 438d, 194d };
     private static readonly double[] ThreeValueWidths = { 45d, 360d, 135d };
@@ -125,7 +127,7 @@ public partial class MainWindow : Window
             button.Width = double.NaN;
             button.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
 
-            var desiredWidth = Math.Ceiling(button.DesiredSize.Width + 8);
+            var desiredWidth = Math.Ceiling(button.DesiredSize.Width + 24);
             button.Width = Math.Max(originalWidth, desiredWidth);
         }
 
@@ -927,6 +929,12 @@ public partial class MainWindow : Window
             return;
         }
 
+        if (_editingArchiveRouteCorrection && _editingRoute is not null)
+        {
+            routeNumber = _editingRoute.RouteNumber;
+            RouteNumberTextBox.Text = routeNumber;
+        }
+
         var proposed = new RouteDraft(
             routeNumber,
             routeName,
@@ -996,8 +1004,8 @@ public partial class MainWindow : Window
         if (routeArchiveCorrection)
         {
             MessageBox.Show(
-                $"Hat {routeNumber} — {routeName} başarıyla güncellendi.\n\nÖnceki arşiv revision'ı değiştirilmedi ve korunuyor. İlgili hakedişi yeniden hesaplayıp ARŞİVLE ile yeni revision oluşturabilirsiniz.",
-                "OEHS — Arşiv Düzeltme Bilgisi",
+                $"Arşivdeki Hat {routeNumber} — {routeName} başarıyla güncellendi.\n\nYeni bir hat kaydı oluşturulmadı. Aynı hat ilişkisi korunuyor.\nÖnceki arşiv revision'ı değiştirilmedi; ilgili hakedişi yeniden hesaplayıp ARŞİVLE ile yeni revision oluşturabilirsiniz.",
+                "OEHS — Arşiv Hat Düzeltme",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
         }
@@ -1128,6 +1136,9 @@ public partial class MainWindow : Window
     private void ClearRouteButton_Click(object sender, RoutedEventArgs e)
     {
         _editingRoute = null;
+        _editingArchiveRouteCorrection = false;
+        _archiveRouteCorrectionSourceKey = null;
+        RouteNumberTextBox.IsReadOnly = false;
         RouteNumberTextBox.Clear();
         RouteNameTextBox.Clear();
         RouteTransportWorkDaysTextBox.Text = "0";
@@ -1548,6 +1559,105 @@ public partial class MainWindow : Window
 
         File.WriteAllText(metadataPath, metadata);
         return documentFolder;
+    }
+
+    private void ShowPdfSaveInfoDialog(string targetFolder, string fileName)
+    {
+        var dialog = new Window
+        {
+            Title = "OEHS — PDF Kayıt Bilgisi",
+            Owner = this,
+            Width = 680,
+            Height = 390,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            ResizeMode = ResizeMode.NoResize,
+            Background = System.Windows.Media.Brushes.White
+        };
+
+        var panel = new StackPanel { Margin = new Thickness(24) };
+        panel.Children.Add(new TextBlock
+        {
+            Text = "PDF KAYIT YERİ HAZIR",
+            FontSize = 20,
+            FontWeight = FontWeights.Bold,
+            Foreground = System.Windows.Media.Brushes.DarkSlateGray
+        });
+        panel.Children.Add(new TextBlock
+        {
+            Text = "Bu işlemde yazıcı açılmaz. OEHS için güvenli kayıt klasörü ve önerilen dosya adı hazırlandı.",
+            FontSize = 13.5,
+            Foreground = System.Windows.Media.Brushes.DimGray,
+            TextWrapping = TextWrapping.Wrap,
+            Margin = new Thickness(0, 8, 0, 16)
+        });
+        panel.Children.Add(new TextBlock
+        {
+            Text = "KAYIT KLASÖRÜ",
+            FontSize = 12,
+            FontWeight = FontWeights.Bold,
+            Foreground = System.Windows.Media.Brushes.SteelBlue
+        });
+        panel.Children.Add(new TextBlock
+        {
+            Text = targetFolder,
+            FontSize = 13.5,
+            Foreground = System.Windows.Media.Brushes.DarkSlateGray,
+            TextWrapping = TextWrapping.Wrap,
+            Margin = new Thickness(0, 4, 0, 12)
+        });
+        panel.Children.Add(new TextBlock
+        {
+            Text = "ÖNERİLEN DOSYA ADI",
+            FontSize = 12,
+            FontWeight = FontWeights.Bold,
+            Foreground = System.Windows.Media.Brushes.SteelBlue
+        });
+        panel.Children.Add(new TextBlock
+        {
+            Text = fileName,
+            FontSize = 14,
+            FontWeight = FontWeights.SemiBold,
+            Foreground = System.Windows.Media.Brushes.DarkSlateGray,
+            TextWrapping = TextWrapping.Wrap,
+            Margin = new Thickness(0, 4, 0, 18)
+        });
+
+        var buttons = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
+        var folderButton = new Button
+        {
+            Content = "KLASÖRÜ AÇ",
+            Width = 150,
+            Height = 42,
+            Style = (Style)FindResource("SecondaryButton"),
+            Margin = new Thickness(0, 0, 10, 0)
+        };
+        folderButton.Click += (_, _) =>
+        {
+            Directory.CreateDirectory(targetFolder);
+            Process.Start(new ProcessStartInfo { FileName = targetFolder, UseShellExecute = true });
+            dialog.DialogResult = true;
+            dialog.Close();
+        };
+
+        var okButton = new Button
+        {
+            Content = "TAMAM",
+            Width = 120,
+            Height = 42,
+            Style = (Style)FindResource("ModernButton")
+        };
+        okButton.Click += (_, _) =>
+        {
+            dialog.DialogResult = true;
+            dialog.Close();
+        };
+
+        buttons.Children.Add(folderButton);
+        buttons.Children.Add(okButton);
+        panel.Children.Add(buttons);
+
+        dialog.Content = panel;
+        dialog.ShowDialog();
     }
 
     private static bool TryEnsurePdfPrinter()
@@ -2041,6 +2151,8 @@ public partial class MainWindow : Window
                 MessageBoxImage.Information);
 
             _editingArchiveSourcePath = null;
+            _editingArchiveRouteCorrection = false;
+            _archiveRouteCorrectionSourceKey = null;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ProgressPaymentArchiveException)
         {
@@ -2314,11 +2426,7 @@ public partial class MainWindow : Window
         if (sender is not Button { Tag: ArchiveRow row })
             return;
 
-        var folder = Path.GetDirectoryName(row.FullPath) ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
-            "OzelEgitimHakedisSistemi",
-            "Arsiv",
-            "Hakedisler");
+        var folder = Path.GetDirectoryName(row.FullPath) ?? OehsOutputPathService.PdfRoot;
 
         Directory.CreateDirectory(folder);
         Process.Start(new ProcessStartInfo
@@ -2533,6 +2641,9 @@ public partial class MainWindow : Window
         }
 
         _editingRoute = route;
+        _editingArchiveRouteCorrection = !string.IsNullOrWhiteSpace(_editingArchiveSourcePath);
+        _archiveRouteCorrectionSourceKey = historyRouteKey;
+
         var contract = _contracts.FirstOrDefault(x =>
             string.Equals(x.TenderNumber, route.TenderNumber, StringComparison.OrdinalIgnoreCase));
         var contractor = FindContractor(route.ContractorTaxOrIdentityNumber);
@@ -2552,12 +2663,15 @@ public partial class MainWindow : Window
         }
 
         RouteNumberTextBox.Text = route.RouteNumber;
+        RouteNumberTextBox.IsReadOnly = _editingArchiveRouteCorrection;
         RouteNameTextBox.Text = route.Name;
         RouteTransportWorkDaysTextBox.Text = route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
         RouteGuideWorkDaysTextBox.Text = route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
         RouteGuideDailyPriceTextBox.Text = route.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
         NavigationButton_Click(NavLines, new RoutedEventArgs(Button.ClickEvent, NavLines));
-        RouteStatusTextBlock.Text = "Hakedişten gelen düzenleme: hat bilgilerini düzeltin ve KAYDET'e basın.";
+        RouteStatusTextBlock.Text = _editingArchiveRouteCorrection
+            ? "ARŞİV DÜZELTME MODU: aynı İhale/Dosya + Hat + Yüklenici ilişkisi korunur. Hat No değiştirilemez; değişiklik yeni hat oluşturmaz, yeni arşiv revision'ına uygulanır."
+            : "Hakedişten gelen düzenleme: hat bilgilerini düzeltin ve KAYDET'e basın.";
     }
 
     private void BeginProgressHistoryEdit(ProgressPaymentHistoryData item)
@@ -3877,6 +3991,27 @@ public partial class MainWindow : Window
         try
         {
             var pdfTitle = BuildPdfPrintTitle(route, latest);
+    private void CreateSaveAllRouteDocumentsButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (!EnsureRouteForOutput())
+            return;
+
+        var route = (RouteDraft)ReportRouteComboBox.SelectedItem;
+        var latest = GetSelectedRouteLatestPayment()!;
+
+        var documents = new (FlowDocument Document, string Title)[]
+        {
+            (BuildHakedişRaporu(route, latest), "Hakediş Raporu"),
+            (BuildHizmetIsleriHakedisRaporu(route, latest), "Hizmet İşleri Hakediş Raporu"),
+            (BuildKabulTutanağı(route, latest), "Hizmet İşleri Kabul Tutanağı"),
+            (BuildHakedişIcmali(route, latest), "Hakediş İcmali")
+        };
+
+        var combined = BuildCombinedRouteDocuments(documents);
+
+        try
+        {
+            var pdfTitle = BuildPdfPrintTitle(route, latest);
             var targetFolder = OehsOutputPathService.BuildPdfDirectory(
                 latest.TenderNumber ?? string.Empty,
                 latest.RouteNumber ?? string.Empty);
@@ -3888,18 +4023,12 @@ public partial class MainWindow : Window
                     latest.PeriodDate.Value)
                 : Path.Combine(targetFolder, pdfTitle);
 
-            if (!TryShowDocument(combined, pdfTitle, requirePdfPrinter: true))
-                return;
-
+            Directory.CreateDirectory(targetFolder);
             var savedFolder = SaveRouteDocumentsArchiveMetadata(latest);
             CalculationStatusTextBlock.Text =
-                $"4 belge PDF yazdırma akışı çalıştırıldı. Hedef klasör: {savedFolder}";
+                $"PDF kayıt hedefi hazırlandı: {savedFolder}";
 
-            MessageBox.Show(
-                $"4 belge A4 düzeninde Microsoft Print to PDF'e gönderildi.\n\nÖnerilen kayıt klasörü:\n{targetFolder}\n\nÖnerilen dosya adı:\n{Path.GetFileName(targetPath)}\n\nNot: Microsoft Print to PDF kendi Windows kayıt penceresini açar; yukarıdaki klasör ve adı kullanın.",
-                "OEHS PDF Çıktılar",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+            ShowPdfSaveInfoDialog(targetFolder, Path.GetFileName(targetPath));
         }
         catch (Exception ex)
         {
