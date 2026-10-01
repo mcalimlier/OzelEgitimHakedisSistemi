@@ -234,8 +234,21 @@ public partial class MainWindow : Window
         CalculateProgressButton.Content = editing ? "DÜZENLE" : "HAKEDİŞİ HESAPLA";
         CancelProgressEditButton.Visibility = editing ? Visibility.Visible : Visibility.Collapsed;
         EditCurrentProgressButton.IsEnabled = !editing;
-        ArchiveCurrentProgressButton.Visibility = editing ? Visibility.Collapsed : ArchiveCurrentProgressButton.Visibility;
-        CorrectCurrentProgressButton.Visibility = editing ? Visibility.Collapsed : CorrectCurrentProgressButton.Visibility;
+
+        if (editing)
+        {
+            ArchiveCurrentProgressButton.Visibility = Visibility.Collapsed;
+            CorrectCurrentProgressButton.Visibility = Visibility.Collapsed;
+        }
+        else
+        {
+            var hasCalculatedProgress = GetLastCalculatedProgress() is not null;
+            ArchiveCurrentProgressButton.Visibility =
+                hasCalculatedProgress ? Visibility.Visible : Visibility.Collapsed;
+            CorrectCurrentProgressButton.Visibility =
+                hasCalculatedProgress ? Visibility.Visible : Visibility.Collapsed;
+        }
+
         ProgressEditorTitleTextBlock.Text = editing
             ? (archiveCorrection ? "ARŞİV HAKEDİŞ DÜZENLE" : "HAKEDİŞ DÜZENLE")
             : "DÖNEM HESAP BİLGİLERİ";
