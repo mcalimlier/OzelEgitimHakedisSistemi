@@ -5,6 +5,7 @@ namespace OzelEgitimHakedis.Tests;
 
 public sealed class PdfLayoutServiceTests
 {
+    private static readonly double[] IcmalHeaderWidths = { 500d, 218.11d };
     [Fact]
     public void A4PrintableWidth_ShouldLeaveDriverSafetyMargin()
     {
@@ -15,7 +16,7 @@ public sealed class PdfLayoutServiceTests
     [Fact]
     public void FitColumns_ShouldPreserveProportionsAndNeverExceedSafeWidth()
     {
-        var fitted = PdfLayoutService.FitColumns(new[] { 500d, 218.11d });
+        var fitted = PdfLayoutService.FitColumns(IcmalHeaderWidths);
 
         Assert.Equal(PdfLayoutService.SafeContentWidth, fitted.Sum(), precision: 6);
         Assert.Equal(500d / 218.11d, fitted[0] / fitted[1], precision: 10);
