@@ -106,7 +106,8 @@ public static class ProgressPaymentPropagationService
         var input = item.Input with
         {
             ContractAmount = contract.ContractAmount,
-            IsVatExempt = contract.VatExempt
+            IsVatExempt = contract.VatExempt,
+            DailyPrice = contract.TransportDailyPrice
         };
 
         var calculation = ProgressPaymentCalculator.Calculate(input);
