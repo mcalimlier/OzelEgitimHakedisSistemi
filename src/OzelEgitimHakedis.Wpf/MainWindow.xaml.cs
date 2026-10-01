@@ -590,9 +590,19 @@ public partial class MainWindow : Window
         UpdateContractSelectors();
         UpdateHomeSummaryView();
         ClearContractorButton_Click(sender, e);
-        ContractorStatusTextBlock.Text = !string.IsNullOrWhiteSpace(_editingArchiveSourcePath)
+        var contractorArchiveCorrection = !string.IsNullOrWhiteSpace(_editingArchiveSourcePath);
+        ContractorStatusTextBlock.Text = contractorArchiveCorrection
             ? $"Firma kaydedildi: {name}. Canlı hakediş ilişkileri güncellendi; önceki arşiv revision'ı korunuyor. İlgili hakedişi yeniden hesaplayıp ARŞİVLE ile yeni revision oluşturun."
             : $"Firma kaydedildi: {name}.";
+
+        if (contractorArchiveCorrection)
+        {
+            MessageBox.Show(
+                $"'{name}' başarıyla güncellendi.\n\nÖnceki arşiv revision'ı değiştirilmedi ve korunuyor. İlgili hakedişi yeniden hesaplayıp ARŞİVLE ile yeni revision oluşturabilirsiniz.",
+                "OEHS — Arşiv Düzeltme Bilgisi",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
     }
 
     private void EditContractorButton_Click(object sender, RoutedEventArgs e)
@@ -978,9 +988,19 @@ public partial class MainWindow : Window
         UpdateContractSummaryView();
         UpdateHomeSummaryView();
         ClearRouteButton_Click(sender, e);
-        RouteStatusTextBlock.Text = !string.IsNullOrWhiteSpace(_editingArchiveSourcePath)
+        var routeArchiveCorrection = !string.IsNullOrWhiteSpace(_editingArchiveSourcePath);
+        RouteStatusTextBlock.Text = routeArchiveCorrection
             ? $"Hat kaydedildi: {routeNumber} — {routeName}. İlişkili canlı hakedişler güncellendi; önceki arşiv revision'ı korunuyor. İlgili hakedişi yeniden hesaplayıp ARŞİVLE ile yeni revision oluşturun."
             : $"Hat kaydedildi: {routeNumber} — {routeName}.";
+
+        if (routeArchiveCorrection)
+        {
+            MessageBox.Show(
+                $"Hat {routeNumber} — {routeName} başarıyla güncellendi.\n\nÖnceki arşiv revision'ı değiştirilmedi ve korunuyor. İlgili hakedişi yeniden hesaplayıp ARŞİVLE ile yeni revision oluşturabilirsiniz.",
+                "OEHS — Arşiv Düzeltme Bilgisi",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
     }
 
     private IReadOnlyList<ProgressPaymentHistoryData> BuildRoutePropagation(RouteDraft oldRoute, RouteDraft updatedRoute)
@@ -1338,9 +1358,19 @@ public partial class MainWindow : Window
         UpdateAcceptanceView();
 
         ContractStatusTextBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(36, 104, 216));
-        ContractStatusTextBlock.Text = !string.IsNullOrWhiteSpace(_editingArchiveSourcePath)
+        var contractArchiveCorrection = !string.IsNullOrWhiteSpace(_editingArchiveSourcePath);
+        ContractStatusTextBlock.Text = contractArchiveCorrection
             ? $"İhale kaydedildi: {proposedContract.TenderNumber}. İlişkili canlı hakedişler güncellendi; önceki arşiv revision'ı korunuyor. İlgili hakedişi yeniden hesaplayıp ARŞİVLE ile yeni revision oluşturun."
             : $"İhale kaydedildi: {proposedContract.TenderNumber}.";
+
+        if (contractArchiveCorrection)
+        {
+            MessageBox.Show(
+                $"İhale/Dosya {proposedContract.TenderNumber} başarıyla güncellendi.\n\nÖnceki arşiv revision'ı değiştirilmedi ve korunuyor. İlgili hakedişi yeniden hesaplayıp ARŞİVLE ile yeni revision oluşturabilirsiniz.",
+                "OEHS — Arşiv Düzeltme Bilgisi",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
     }
 
     private void LoadPersistedData()
@@ -2087,6 +2117,12 @@ public partial class MainWindow : Window
     {
         if (sender is not Button { Tag: ArchiveRow row })
             return;
+
+        if (sender is Button loadButton &&
+            string.Equals(loadButton.Content?.ToString(), "ÇAĞIR", StringComparison.OrdinalIgnoreCase))
+        {
+            _editingArchiveSourcePath = null;
+        }
 
         ProgressPaymentArchive archive;
         try
