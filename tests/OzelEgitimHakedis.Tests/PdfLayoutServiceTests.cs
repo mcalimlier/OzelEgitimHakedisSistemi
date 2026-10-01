@@ -23,6 +23,19 @@ public sealed class PdfLayoutServiceTests
     }
 
     [Fact]
+    public void OfficialFourAndFiveColumnLayouts_ShouldNeverExceedSafeWidth()
+    {
+        var four = new[] { 55d, 308d, 163d, 164d };
+        var five = new[] { 40d, 278d, 124d, 124d, 124d };
+
+        Assert.Equal(690d, four.Sum(), precision: 6);
+        Assert.Equal(690d, five.Sum(), precision: 6);
+
+        Assert.True(PdfLayoutService.FitColumns(four).Sum() <= PdfLayoutService.SafeContentWidth);
+        Assert.True(PdfLayoutService.FitColumns(five).Sum() <= PdfLayoutService.SafeContentWidth);
+    }
+
+    [Fact]
     public void FitColumns_ShouldNotChangeAlreadyFittingColumns()
     {
         var widths = new[] { 55d, 308d, 163d, 134d };
