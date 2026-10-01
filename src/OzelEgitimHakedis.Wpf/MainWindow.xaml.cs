@@ -158,15 +158,18 @@ public partial class MainWindow : Window
     {
         SaveContractButton.Content = "KAYDET";
         CancelContractEditButton.Visibility = Visibility.Collapsed;
+        ClearContractButton.IsEnabled = true;
         ContractEditorTitleTextBlock.Text = "Sözleşme Bilgileri";
         ContractEditorSubtitleTextBlock.Text = "Temel ihale ve sözleşme alanları";
 
         SaveContractorButton.Content = "KAYDET";
         CancelContractorEditButton.Visibility = Visibility.Collapsed;
+        ClearContractorButton.IsEnabled = true;
         ContractorEditorTitleTextBlock.Text = "FİRMA BİLGİLERİ";
 
         AddRouteButton.Content = "HAT EKLE";
         CancelRouteEditButton.Visibility = Visibility.Collapsed;
+        ClearRouteButton.IsEnabled = true;
         RouteEditorTitleTextBlock.Text = "YENİ HAT";
         RouteEditorSubtitleTextBlock.Text = "Hat bilgilerini girin";
         RouteSelectionCard.Visibility = Visibility.Visible;
@@ -174,6 +177,7 @@ public partial class MainWindow : Window
 
         CalculateProgressButton.Content = "HAKEDİŞİ HESAPLA";
         CancelProgressEditButton.Visibility = Visibility.Collapsed;
+        EditCurrentProgressButton.IsEnabled = true;
         ProgressEditorTitleTextBlock.Text = "DÖNEM HESAP BİLGİLERİ";
     }
 
@@ -181,6 +185,7 @@ public partial class MainWindow : Window
     {
         SaveContractButton.Content = editing ? "DÜZENLE" : "KAYDET";
         CancelContractEditButton.Visibility = editing ? Visibility.Visible : Visibility.Collapsed;
+        ClearContractButton.IsEnabled = !editing;
         ContractEditorTitleTextBlock.Text = editing ? "İHALE / SÖZLEŞME DÜZENLE" : "Sözleşme Bilgileri";
         ContractEditorSubtitleTextBlock.Text = editing
             ? "Mevcut kaydı düzenliyorsunuz. Vazgeçerseniz DÜZENLEME İPTAL düğmesini kullanın."
@@ -191,6 +196,7 @@ public partial class MainWindow : Window
     {
         SaveContractorButton.Content = editing ? "DÜZENLE" : "KAYDET";
         CancelContractorEditButton.Visibility = editing ? Visibility.Visible : Visibility.Collapsed;
+        ClearContractorButton.IsEnabled = !editing;
         ContractorEditorTitleTextBlock.Text = editing ? "YÜKLENİCİ FİRMA DÜZENLE" : "FİRMA BİLGİLERİ";
     }
 
@@ -198,6 +204,7 @@ public partial class MainWindow : Window
     {
         AddRouteButton.Content = editing ? "DÜZENLE" : "HAT EKLE";
         CancelRouteEditButton.Visibility = editing ? Visibility.Visible : Visibility.Collapsed;
+        ClearRouteButton.IsEnabled = !editing;
         RouteEditorTitleTextBlock.Text = editing
             ? (archiveCorrection ? "ARŞİVDEKİ HAT DÜZENLE" : "HAT DÜZENLE")
             : "YENİ HAT";
@@ -214,6 +221,7 @@ public partial class MainWindow : Window
     {
         CalculateProgressButton.Content = editing ? "DÜZENLE" : "HAKEDİŞİ HESAPLA";
         CancelProgressEditButton.Visibility = editing ? Visibility.Visible : Visibility.Collapsed;
+        EditCurrentProgressButton.IsEnabled = !editing;
         ProgressEditorTitleTextBlock.Text = editing
             ? (archiveCorrection ? "ARŞİV HAKEDİŞ DÜZENLE" : "HAKEDİŞ DÜZENLE")
             : "DÖNEM HESAP BİLGİLERİ";
