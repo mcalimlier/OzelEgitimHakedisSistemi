@@ -369,6 +369,32 @@ public partial class MainWindow : Window
 
         var page = button.Tag?.ToString() ?? "Home";
 
+        if (IsArchiveCorrection)
+        {
+            var correctionPage = _archiveCorrectionSection switch
+            {
+                ArchiveCorrectionSection.Contract => "Contract",
+                ArchiveCorrectionSection.Contractor => "Contractors",
+                ArchiveCorrectionSection.Route => "Lines",
+                ArchiveCorrectionSection.ProgressPayment => "Progress",
+                _ => string.Empty
+            };
+
+            if (page == "Archives")
+            {
+                ClearArchiveCorrectionState();
+            }
+            else if (!string.Equals(page, correctionPage, StringComparison.Ordinal))
+            {
+                MessageBox.Show(
+                    "Arşiv düzeltmesi devam ediyor. Önce DÜZENLEME İPTAL veya düzenleme kaydetme işlemini tamamlayın.",
+                    "OEHS — Düzenleme Devam Ediyor",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+        }
+
         HomePanel.Visibility = page == "Home" ? Visibility.Visible : Visibility.Collapsed;
         ContractPanel.Visibility = page == "Contract" ? Visibility.Visible : Visibility.Collapsed;
         ProgressPanel.Visibility = page == "Progress" ? Visibility.Visible : Visibility.Collapsed;
@@ -638,14 +664,9 @@ public partial class MainWindow : Window
             NavigationButton_Click(NavArchives, new RoutedEventArgs(Button.ClickEvent, NavArchives));
 
             MessageBox.Show(
-                $"{sectionName} başarıyla güncellendi.
-
-" +
-                $"Mevcut arşiv v{updatedArchive.Revision:00} aynı revision numarasıyla güncellendi.
-" +
-                "Yeni arşiv/revision oluşturulmadı.
-
-" +
+                $"{sectionName} başarıyla güncellendi.\n\n" +
+                $"Mevcut arşiv v{updatedArchive.Revision:00} aynı revision numarasıyla güncellendi.\n" +
+                "Yeni arşiv/revision oluşturulmadı.\n\n" +
                 $"Dosya: {Path.GetFileName(finalPath)}",
                 "OEHS — Arşiv Güncellendi",
                 MessageBoxButton.OK,
@@ -656,9 +677,7 @@ public partial class MainWindow : Window
             ArchiveStatusTextBlock.Text = "ARŞİV HATASI";
             CalculationStatusTextBlock.Text = ex.Message;
             MessageBox.Show(
-                $"Arşiv güncellenemedi.
-
-{ex.Message}",
+                $"Arşiv güncellenemedi.\n\n{ex.Message}",
                 "OEHS — Arşiv Hatası",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
@@ -2284,7 +2303,7 @@ public partial class MainWindow : Window
 
     private void CalculateProgressButton_Click(object sender, RoutedEventArgs e)
     {
-        var wasArchiveCorrection = IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment)For(ArchiveCorrectionSection.ProgressPayment);
+        var wasArchiveCorrection = IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment);
 
         ClearProgressValidationVisuals();
         ProgressValidationBanner.Visibility = Visibility.Collapsed;
