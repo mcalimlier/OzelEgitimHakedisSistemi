@@ -39,6 +39,7 @@ public partial class MainWindow : Window
     private readonly ObservableCollection<ArchiveRow> _archiveRows = new();
     private Guid? _lastCalculatedHistoryId;
     private string? _editingArchiveSourcePath;
+    private ProgressPaymentArchive? _editingArchiveSnapshot;
     private bool _editingArchiveRouteCorrection;
     private string? _archiveRouteCorrectionSourceKey;
     private const double DocumentContentWidth = PdfLayoutService.SafeContentWidth;
@@ -127,13 +128,26 @@ public partial class MainWindow : Window
             button.Width = double.NaN;
             button.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
 
-            var desiredWidth = Math.Ceiling(button.DesiredSize.Width + 24);
+            var desiredWidth = Math.Ceiling(button.DesiredSize.Width + 32);
             button.Width = Math.Max(originalWidth, desiredWidth);
         }
 
         var childCount = System.Windows.Media.VisualTreeHelper.GetChildrenCount(root);
         for (var i = 0; i < childCount; i++)
             NormalizeButtonWidths(System.Windows.Media.VisualTreeHelper.GetChild(root, i));
+    }
+
+    private bool IsArchiveCorrection =>
+        !string.IsNullOrWhiteSpace(_editingArchiveSourcePath) &&
+        _editingArchiveSnapshot is not null;
+
+    private void ClearArchiveCorrectionState()
+    {
+        _editingArchiveSourcePath = null;
+        _editingArchiveSnapshot = null;
+        _editingArchiveRouteCorrection = false;
+        _archiveRouteCorrectionSourceKey = null;
+        RouteNumberTextBox.IsReadOnly = false;
     }
 
     private void ConfigureWindow()
@@ -519,8 +533,236 @@ public partial class MainWindow : Window
         MessageBox.Show(message, "OEHS", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
+    private static string BuildArchivePdfFileName(ProgressPaymentHistoryData payment)
+    {
+        if (payment.ProgressPaymentNumber.HasValue && payment.PeriodDate.HasValue)
+        {
+            return OehsFileNameService.BuildProgressPdfFileName(
+                payment.TenderNumber ?? string.Empty,
+                payment.RouteNumber ?? string.Empty,
+                payment.ProgressPaymentNumber.Value,
+                payment.PeriodDate.Value);
+        }
+
+        return "OEHS_Hakediş.pdf";
+    }
+
+    private void SaveArchiveCorrectionSnapshot(ProgressPaymentArchive updatedArchive, string sectionName)
+    {
+        try
+        {
+            _archiveStore.Replace(_editingArchiveSourcePath!, updatedArchive);
+            _editingArchiveSnapshot = updatedArchive;
+            ArchiveStatusTextBlock.Text = $"ARŞİV v{updatedArchive.Revision:00} GÜNCELLENDİ";
+            CalculationStatusTextBlock.Text =
+                $"{sectionName} düzeltmesi mevcut arşiv v{updatedArchive.Revision:00} üzerinde kaydedildi.";
+
+            UpdateArchiveView();
+
+            MessageBox.Show(
+                $"{sectionName} başarıyla güncellendi.\n\nMevcut arşiv v{updatedArchive.Revision:00} doğrudan güncellendi.\nYeni arşiv/revision oluşturulmadı.",
+                "OEHS — Arşiv Güncellendi",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ProgressPaymentArchiveException)
+        {
+            ArchiveStatusTextBlock.Text = "ARŞİV HATASI";
+            CalculationStatusTextBlock.Text = ex.Message;
+            MessageBox.Show(
+                $"Arşiv güncellenemedi.\n\n{ex.Message}",
+                "OEHS — Arşiv Hatası",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+    }
+
+    private void SaveArchivedContractorCorrection()
+    {
+        var archive = _editingArchiveSnapshot!;
+        var name = ContractorNameTextBox.Text.Trim();
+        var tax = OehsIdentityService.NormalizeIdentity(ContractorTaxTextBox.Text);
+
+        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(tax))
+        {
+            ContractorStatusTextBlock.Text = "Firma adı ve TC / Vergi No zorunludur.";
+            return;
+        }
+
+        var updatedContractor = new Contractor(
+            name,
+            tax,
+            ContractorAddressTextBox.Text.Trim(),
+            ContractorPhoneTextBox.Text.Trim(),
+            ContractorEmailTextBox.Text.Trim(),
+            ContractorBankTextBox.Text.Trim(),
+            ContractorContactTextBox.Text.Trim());
+
+        var updatedContract = archive.Contract with
+        {
+            ContractorName = name,
+            ContractorTaxOrIdentityNumber = tax,
+            BankAccountNumber = updatedContractor.BankAccountNumber
+        };
+
+        var payment = archive.ProgressPayment with
+        {
+            ContractorName = name,
+            ContractorTaxOrIdentityNumber = tax,
+            BankAccountNumber = updatedContractor.BankAccountNumber
+        };
+
+        var route = archive.Route with { ContractorTaxOrIdentityNumber = tax };
+
+        SaveArchiveCorrectionSnapshot(
+            archive with
+            {
+                Contract = updatedContract,
+                Contractor = updatedContractor,
+                Route = route,
+                ProgressPayment = payment,
+                PdfFileName = BuildArchivePdfFileName(payment)
+            },
+            "Yüklenici firma");
+    }
+
+    private void SaveArchivedContractCorrection()
+    {
+        var archive = _editingArchiveSnapshot!;
+        ClearContractValidationVisuals();
+
+        var errors = new List<Control>();
+        if (string.IsNullOrWhiteSpace(TenderNumberTextBox.Text)) errors.Add(TenderNumberTextBox);
+        if (string.IsNullOrWhiteSpace(ContractNumberTextBox.Text)) errors.Add(ContractNumberTextBox);
+        if (string.IsNullOrWhiteSpace(WorkNameTextBox.Text)) errors.Add(WorkNameTextBox);
+        if (!TryParseDecimal(ContractAmountTextBox.Text, out var contractAmount) || contractAmount < 0) errors.Add(ContractAmountTextBox);
+        if (!int.TryParse(ContractWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var contractWorkDays) || contractWorkDays < 0) errors.Add(ContractWorkDaysTextBox);
+        if (!TryParseDecimal(ContractTransportDailyPriceTextBox.Text, out var transportDailyPrice) || transportDailyPrice < 0) errors.Add(ContractTransportDailyPriceTextBox);
+
+        if (errors.Count > 0)
+        {
+            foreach (var control in errors) MarkInvalid(control);
+            ContractStatusTextBlock.Text = "Arşiv düzeltmesi kaydedilmedi. Kırmızı alanları kontrol edin.";
+            return;
+        }
+
+        var updatedContract = archive.Contract with
+        {
+            TenderNumber = TenderNumberTextBox.Text.Trim(),
+            ContractNumber = ContractNumberTextBox.Text.Trim(),
+            WorkName = WorkNameTextBox.Text.Trim(),
+            ContractAmount = contractAmount,
+            StartDate = DateOnly.FromDateTime(StartDatePicker.SelectedDate ?? archive.Contract.StartDate.ToDateTime(TimeOnly.MinValue)),
+            EndDate = DateOnly.FromDateTime(EndDatePicker.SelectedDate ?? archive.Contract.EndDate.ToDateTime(TimeOnly.MinValue)),
+            VatExempt = VatExemptCheckBox.IsChecked == true,
+            TenderDate = TenderDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(TenderDatePicker.SelectedDate.Value) : archive.Contract.TenderDate,
+            ContractDate = ContractDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(ContractDatePicker.SelectedDate.Value) : archive.Contract.ContractDate,
+            ContractWorkDays = contractWorkDays,
+            TransportDailyPrice = transportDailyPrice
+        };
+
+        var input = archive.ProgressPayment.Input with
+        {
+            ContractAmount = updatedContract.ContractAmount,
+            IsVatExempt = updatedContract.VatExempt
+        };
+
+        var payment = archive.ProgressPayment with
+        {
+            Input = input,
+            Calculation = ProgressPaymentCalculator.Calculate(input),
+            WorkName = updatedContract.WorkName,
+            TenderNumber = updatedContract.TenderNumber,
+            ContractNumber = updatedContract.ContractNumber,
+            TenderDate = updatedContract.TenderDate,
+            ContractDate = updatedContract.ContractDate,
+            ContractStartDate = updatedContract.StartDate,
+            ContractEndDate = updatedContract.EndDate
+        };
+
+        var route = archive.Route with
+        {
+            TenderNumber = updatedContract.TenderNumber,
+            DailyPrice = updatedContract.TransportDailyPrice
+        };
+
+        SaveArchiveCorrectionSnapshot(
+            archive with
+            {
+                Contract = updatedContract,
+                Route = route,
+                ProgressPayment = payment,
+                PdfFileName = BuildArchivePdfFileName(payment)
+            },
+            "İhale bilgileri");
+    }
+
+    private void SaveArchivedRouteCorrection()
+    {
+        var archive = _editingArchiveSnapshot!;
+        ClearRouteValidationVisuals();
+
+        var routeNumber = RouteNumberTextBox.Text.Trim();
+        var routeName = RouteNameTextBox.Text.Trim();
+
+        var errors = new List<Control>();
+        if (string.IsNullOrWhiteSpace(routeNumber)) errors.Add(RouteNumberTextBox);
+        if (string.IsNullOrWhiteSpace(routeName)) errors.Add(RouteNameTextBox);
+        if (!int.TryParse(RouteTransportWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var transportWorkDays) || transportWorkDays < 0) errors.Add(RouteTransportWorkDaysTextBox);
+        if (!int.TryParse(RouteGuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var guideWorkDays) || guideWorkDays < 0) errors.Add(RouteGuideWorkDaysTextBox);
+        if (!TryParseDecimal(RouteGuideDailyPriceTextBox.Text, out var guideDailyPrice) || guideDailyPrice < 0) errors.Add(RouteGuideDailyPriceTextBox);
+
+        if (errors.Count > 0)
+        {
+            foreach (var control in errors) MarkInvalid(control);
+            RouteStatusTextBlock.Text = "Arşiv düzeltmesi kaydedilmedi. Kırmızı alanları kontrol edin.";
+            return;
+        }
+
+        var updatedRoute = archive.Route with
+        {
+            RouteNumber = routeNumber,
+            Name = routeName,
+            DailyPrice = archive.Contract.TransportDailyPrice,
+            TransportWorkDays = transportWorkDays,
+            GuideWorkDays = guideWorkDays,
+            GuideDailyPrice = guideDailyPrice
+        };
+
+        var input = archive.ProgressPayment.Input with
+        {
+            WorkDays = transportWorkDays,
+            DailyPrice = archive.Contract.TransportDailyPrice,
+            GuideWorkDays = guideWorkDays,
+            GuideDailyPrice = guideDailyPrice
+        };
+
+        var payment = archive.ProgressPayment with
+        {
+            Input = input,
+            Calculation = ProgressPaymentCalculator.Calculate(input),
+            RouteNumber = routeNumber,
+            RouteName = routeName
+        };
+
+        SaveArchiveCorrectionSnapshot(
+            archive with
+            {
+                Route = updatedRoute,
+                ProgressPayment = payment,
+                PdfFileName = BuildArchivePdfFileName(payment)
+            },
+            "Hat bilgileri");
+    }
+
     private void SaveContractorButton_Click(object sender, RoutedEventArgs e)
     {
+        if (IsArchiveCorrection)
+        {
+            SaveArchivedContractorCorrection();
+            return;
+        }
+
         var name = ContractorNameTextBox.Text.Trim();
         var tax = OehsIdentityService.NormalizeIdentity(ContractorTaxTextBox.Text);
         if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(tax))
@@ -881,6 +1123,12 @@ public partial class MainWindow : Window
 
     private void AddRouteButton_Click(object sender, RoutedEventArgs e)
     {
+        if (IsArchiveCorrection)
+        {
+            SaveArchivedRouteCorrection();
+            return;
+        }
+
         ClearRouteValidationVisuals();
 
         var contract = RouteTenderListBox.SelectedItem as ContractDraftData;
@@ -1198,6 +1446,12 @@ public partial class MainWindow : Window
 
     private void SaveContractButton_Click(object sender, RoutedEventArgs e)
     {
+        if (IsArchiveCorrection)
+        {
+            SaveArchivedContractCorrection();
+            return;
+        }
+
         ClearContractValidationVisuals();
 
         var errors = new List<string>();
@@ -1561,7 +1815,7 @@ public partial class MainWindow : Window
         return documentFolder;
     }
 
-    private void ShowPdfSaveInfoDialog(string targetFolder, string fileName)
+    private void ShowPdfSaveInfoDialog(string targetFolder, string fileName, string targetPath)
     {
         var dialog = new Window
         {
@@ -1584,7 +1838,7 @@ public partial class MainWindow : Window
         });
         panel.Children.Add(new TextBlock
         {
-            Text = "Bu işlemde yazıcı açılmaz. OEHS için güvenli kayıt klasörü ve önerilen dosya adı hazırlandı.",
+            Text = "PDF başarıyla oluşturuldu. Bu işlemde yazıcı kullanılmadı; dosya doğrudan OEHS kayıt klasörüne kaydedildi.",
             FontSize = 13.5,
             Foreground = System.Windows.Media.Brushes.DimGray,
             TextWrapping = TextWrapping.Wrap,
@@ -1620,6 +1874,15 @@ public partial class MainWindow : Window
             Foreground = System.Windows.Media.Brushes.DarkSlateGray,
             TextWrapping = TextWrapping.Wrap,
             Margin = new Thickness(0, 4, 0, 18)
+        });
+
+        panel.Children.Add(new TextBlock
+        {
+            Text = $"Oluşturulan dosya: {targetPath}",
+            FontSize = 11.5,
+            Foreground = System.Windows.Media.Brushes.DimGray,
+            TextWrapping = TextWrapping.Wrap,
+            Margin = new Thickness(0, 0, 0, 18)
         });
 
         var buttons = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
@@ -1837,7 +2100,9 @@ public partial class MainWindow : Window
             return;
         }
 
-        var selectedContract = ProgressTenderListBox.SelectedItem as ContractDraftData;
+        var selectedContract = IsArchiveCorrection
+            ? _editingArchiveSnapshot!.Contract
+            : ProgressTenderListBox.SelectedItem as ContractDraftData;
         if (selectedContract is null)
         {
             ShowAlreadyRegistered("Önce İhale / Dosya No seçin.");
@@ -1846,8 +2111,27 @@ public partial class MainWindow : Window
 
         try
         {
-            RequireSelectedRoute();
-            var selectedRoute = ProgressRouteComboBox.SelectedItem as RouteDraft;
+            RouteDraft? selectedRoute;
+            if (IsArchiveCorrection)
+            {
+                var archivedRoute = _editingArchiveSnapshot!.Route;
+                selectedRoute = new RouteDraft(
+                    archivedRoute.RouteNumber,
+                    archivedRoute.Name,
+                    archivedRoute.DailyPrice,
+                    archivedRoute.GuideWorkDays,
+                    archivedRoute.GuideDailyPrice,
+                    archivedRoute.TransportWorkDays,
+                    archivedRoute.TenderNumber,
+                    archivedRoute.ContractorTaxOrIdentityNumber,
+                    _editingArchiveSnapshot.Contractor.Name);
+            }
+            else
+            {
+                RequireSelectedRoute();
+                selectedRoute = ProgressRouteComboBox.SelectedItem as RouteDraft;
+            }
+
             if (selectedRoute is null)
             {
                 ShowAlreadyRegistered($"'{selectedContract.TenderNumber}' ihalesine bağlı bir hat seçin.");
@@ -1888,7 +2172,9 @@ public partial class MainWindow : Window
             var normalizedContractorIdentity = OehsIdentityService.NormalizeIdentity(
                 selectedRoute.ContractorTaxOrIdentityNumber);
 
-            var routeContractor = FindContractor(normalizedContractorIdentity);
+            var routeContractor = IsArchiveCorrection
+                ? _editingArchiveSnapshot!.Contractor
+                : FindContractor(normalizedContractorIdentity);
             var contractorName = routeContractor?.Name ?? selectedRoute.ContractorName;
             var contractorBankAccount = routeContractor?.BankAccountNumber ?? string.Empty;
 
@@ -1939,20 +2225,22 @@ public partial class MainWindow : Window
                 _progressHistory.ToArray(),
                 _contracts.ToArray());
 
-            var validationErrors = ProgressPaymentValidationService.ValidateCreation(
-                dataForValidation,
-                selectedContract,
-                new RouteData(
-                    selectedRoute.RouteNumber,
-                    selectedRoute.Name,
-                    selectedRoute.DailyPrice,
-                    selectedRoute.GuideWorkDays,
-                    selectedRoute.GuideDailyPrice,
-                    selectedRoute.TransportWorkDays,
-                    selectedRoute.TenderNumber,
-                    normalizedContractorIdentity),
-                historyItem,
-                _editingHistoryId.HasValue);
+            var validationErrors = IsArchiveCorrection
+                ? Array.Empty<string>()
+                : ProgressPaymentValidationService.ValidateCreation(
+                    dataForValidation,
+                    selectedContract,
+                    new RouteData(
+                        selectedRoute.RouteNumber,
+                        selectedRoute.Name,
+                        selectedRoute.DailyPrice,
+                        selectedRoute.GuideWorkDays,
+                        selectedRoute.GuideDailyPrice,
+                        selectedRoute.TransportWorkDays,
+                        selectedRoute.TenderNumber,
+                        normalizedContractorIdentity),
+                    historyItem,
+                    _editingHistoryId.HasValue);
 
             if (validationErrors.Count > 0)
             {
@@ -2002,6 +2290,33 @@ public partial class MainWindow : Window
             ProgressWorkDaysSummaryTextBlock.Text = workDays.ToString(CultureInfo.CurrentCulture);
             ProgressNetSummaryTextBlock.Text = FormatMoney(result.NetPayable);
             ProgressCalculationSummaryTextBlock.Text = "TAMAM";
+
+            if (IsArchiveCorrection)
+            {
+                var archive = _editingArchiveSnapshot!;
+                var updatedPayment = archive.ProgressPayment with
+                {
+                    Input = historyItem.Input,
+                    Calculation = historyItem.Calculation,
+                    ProgressPaymentNumber = historyItem.ProgressPaymentNumber,
+                    PeriodDate = historyItem.PeriodDate,
+                    RouteNumber = historyItem.RouteNumber,
+                    RouteName = historyItem.RouteName
+                };
+
+                SaveArchiveCorrectionSnapshot(
+                    archive with
+                    {
+                        ProgressPayment = updatedPayment,
+                        PdfFileName = BuildArchivePdfFileName(updatedPayment)
+                    },
+                    "Hakediş girdileri");
+
+                ProgressCalculationSummaryTextBlock.Text = "ARŞİV GÜNCELLENDİ";
+                ArchiveCurrentProgressButton.Visibility = Visibility.Collapsed;
+                CorrectCurrentProgressButton.Visibility = Visibility.Collapsed;
+                return;
+            }
 
             if (_editingHistoryId.HasValue)
             {
@@ -2178,7 +2493,7 @@ public partial class MainWindow : Window
         var target = AskHistoryEditTarget(item);
         if (!target.HasValue)
         {
-            _editingArchiveSourcePath = null;
+            ClearArchiveCorrectionState();
             return;
         }
 
@@ -2198,7 +2513,7 @@ public partial class MainWindow : Window
                 BeginProgressHistoryEdit(item);
                 break;
             case ProgressCorrectionTarget.Cancel:
-                _editingArchiveSourcePath = null;
+                ClearArchiveCorrectionState();
                 break;
         }
     }
@@ -2233,7 +2548,7 @@ public partial class MainWindow : Window
         if (sender is Button loadButton &&
             string.Equals(loadButton.Content?.ToString(), "ÇAĞIR", StringComparison.OrdinalIgnoreCase))
         {
-            _editingArchiveSourcePath = null;
+            ClearArchiveCorrectionState();
         }
 
         ProgressPaymentArchive archive;
@@ -2396,16 +2711,8 @@ public partial class MainWindow : Window
 
     private void EditArchiveButton_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is Button { Tag: ArchiveRow archiveRow })
-            _editingArchiveSourcePath = archiveRow.FullPath;
-
-        LoadArchiveButton_Click(sender, e);
         if (sender is Button { Tag: ArchiveRow row })
-        {
-            var item = _archiveRows.FirstOrDefault(x => string.Equals(x.FullPath, row.FullPath, StringComparison.OrdinalIgnoreCase));
-            if (item is not null)
-                BeginCorrectionFromArchive(item);
-        }
+            BeginCorrectionFromArchive(row);
     }
 
     private void BeginCorrectionFromArchive(ArchiveRow row)
@@ -2413,10 +2720,16 @@ public partial class MainWindow : Window
         try
         {
             var archive = ProgressPaymentArchiveStore.Load(row.FullPath);
+            _editingArchiveSourcePath = row.FullPath;
+            _editingArchiveSnapshot = archive;
+            _editingArchiveRouteCorrection = false;
+            _archiveRouteCorrectionSourceKey = null;
+
             EditProgressWithTarget(archive.ProgressPayment);
         }
         catch (ProgressPaymentArchiveException ex)
         {
+            ClearArchiveCorrectionState();
             MessageBox.Show(ex.Message, "OEHS", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
@@ -2582,6 +2895,17 @@ public partial class MainWindow : Window
 
     private void BeginContractHistoryEdit(ProgressPaymentHistoryData item)
     {
+        if (IsArchiveCorrection)
+        {
+            var contract = _editingArchiveSnapshot!.Contract;
+            _editingContractTender = null;
+            ApplyContractToForm(contract);
+            NavigationButton_Click(NavContract, new RoutedEventArgs(Button.ClickEvent, NavContract));
+            ContractStatusTextBlock.Text =
+                "ARŞİV DÜZELTME MODU: İhale bilgilerini güncelleyin. KAYDET mevcut arşiv revision'ının üzerine yazacaktır.";
+            return;
+        }
+
         var contract = _contracts.FirstOrDefault(x =>
             string.Equals(x.TenderNumber, item.TenderNumber, StringComparison.OrdinalIgnoreCase));
         if (contract is null)
@@ -2598,6 +2922,23 @@ public partial class MainWindow : Window
 
     private void BeginContractorHistoryEdit(ProgressPaymentHistoryData item)
     {
+        if (IsArchiveCorrection)
+        {
+            var contractor = _editingArchiveSnapshot!.Contractor;
+            _editingContractorKey = null;
+            ContractorNameTextBox.Text = contractor.Name;
+            ContractorTaxTextBox.Text = contractor.TaxOrIdentityNumber;
+            ContractorAddressTextBox.Text = contractor.Address;
+            ContractorPhoneTextBox.Text = contractor.Phone;
+            ContractorEmailTextBox.Text = contractor.Email;
+            ContractorBankTextBox.Text = contractor.BankAccountNumber;
+            ContractorContactTextBox.Text = contractor.ContactPerson;
+            NavigationButton_Click(NavContractors, new RoutedEventArgs(Button.ClickEvent, NavContractors));
+            ContractorStatusTextBlock.Text =
+                "ARŞİV DÜZELTME MODU: firma bilgilerini güncelleyin. KAYDET mevcut arşiv revision'ının üzerine yazacaktır.";
+            return;
+        }
+
         var contractor = FindContractor(item.ContractorTaxOrIdentityNumber ?? string.Empty);
 
         if (contractor is null)
@@ -2620,6 +2961,33 @@ public partial class MainWindow : Window
 
     private void BeginRouteHistoryEdit(ProgressPaymentHistoryData item)
     {
+        if (IsArchiveCorrection)
+        {
+            var archive = _editingArchiveSnapshot!;
+            RouteTenderListBox.SelectedItem = null;
+            RouteContractorListBox.ItemsSource = Array.Empty<ContractorDraft>();
+            RouteContractorListBox.SelectedItem = null;
+
+            RouteNumberTextBox.Text = archive.Route.RouteNumber;
+            RouteNumberTextBox.IsReadOnly = false;
+            RouteNameTextBox.Text = archive.Route.Name;
+            RouteTransportWorkDaysTextBox.Text = archive.Route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
+            RouteGuideWorkDaysTextBox.Text = archive.Route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
+            RouteGuideDailyPriceTextBox.Text = archive.Route.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+
+            _editingRoute = null;
+            _editingArchiveRouteCorrection = true;
+            _archiveRouteCorrectionSourceKey = OehsIdentityService.BuildRouteKey(
+                archive.Route.TenderNumber,
+                archive.Route.RouteNumber,
+                archive.Route.ContractorTaxOrIdentityNumber);
+
+            NavigationButton_Click(NavLines, new RoutedEventArgs(Button.ClickEvent, NavLines));
+            RouteStatusTextBlock.Text =
+                "ARŞİV DÜZELTME MODU: Hat No dahil ilgili alanları değiştirebilirsiniz. KAYDET mevcut arşiv revision'ının üzerine yazacaktır.";
+            return;
+        }
+
         var historyRouteKey = OehsIdentityService.BuildRouteKey(
             item.TenderNumber ?? string.Empty,
             item.RouteNumber ?? string.Empty,
@@ -2641,8 +3009,6 @@ public partial class MainWindow : Window
         }
 
         _editingRoute = route;
-        _editingArchiveRouteCorrection = !string.IsNullOrWhiteSpace(_editingArchiveSourcePath);
-        _archiveRouteCorrectionSourceKey = historyRouteKey;
 
         var contract = _contracts.FirstOrDefault(x =>
             string.Equals(x.TenderNumber, route.TenderNumber, StringComparison.OrdinalIgnoreCase));
@@ -2663,19 +3029,42 @@ public partial class MainWindow : Window
         }
 
         RouteNumberTextBox.Text = route.RouteNumber;
-        RouteNumberTextBox.IsReadOnly = _editingArchiveRouteCorrection;
+        RouteNumberTextBox.IsReadOnly = false;
         RouteNameTextBox.Text = route.Name;
         RouteTransportWorkDaysTextBox.Text = route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
         RouteGuideWorkDaysTextBox.Text = route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
         RouteGuideDailyPriceTextBox.Text = route.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
         NavigationButton_Click(NavLines, new RoutedEventArgs(Button.ClickEvent, NavLines));
-        RouteStatusTextBlock.Text = _editingArchiveRouteCorrection
-            ? "ARŞİV DÜZELTME MODU: aynı İhale/Dosya + Hat + Yüklenici ilişkisi korunur. Hat No değiştirilemez; değişiklik yeni hat oluşturmaz, yeni arşiv revision'ına uygulanır."
-            : "Hakedişten gelen düzenleme: hat bilgilerini düzeltin ve KAYDET'e basın.";
+        RouteStatusTextBlock.Text = "Hakedişten gelen düzenleme: hat bilgilerini düzeltin ve KAYDET'e basın.";
     }
 
     private void BeginProgressHistoryEdit(ProgressPaymentHistoryData item)
     {
+        if (IsArchiveCorrection)
+        {
+            var payment = _editingArchiveSnapshot!.ProgressPayment;
+            _editingHistoryId = null;
+            WorkDaysTextBox.Text = payment.Input.WorkDays.ToString(CultureInfo.CurrentCulture);
+            DailyPriceTextBox.Text = payment.Input.DailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+            GuideWorkDaysTextBox.Text = payment.Input.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
+            GuideDailyPriceTextBox.Text = payment.Input.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+            DiscountTextBox.Text = payment.Input.DiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
+            GuideDiscountTextBox.Text = payment.Input.GuideDiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
+            PriceDifferenceTextBox.Text = payment.Input.PriceDifference.ToString("N2", CultureInfo.CurrentCulture);
+            GuidePriceDifferenceTextBox.Text = payment.Input.GuidePriceDifference.ToString("N2", CultureInfo.CurrentCulture);
+            TaxDebtTextBox.Text = payment.Input.TaxDebt.ToString("N2", CultureInfo.CurrentCulture);
+            SocialSecurityDebtTextBox.Text = payment.Input.SocialSecurityDebt.ToString("N2", CultureInfo.CurrentCulture);
+            MinimumWageSupportTextBox.Text = payment.Input.MinimumWageSupport.ToString("N2", CultureInfo.CurrentCulture);
+            InspectionPenaltyTextBox.Text = payment.Input.InspectionPenalty.ToString("N2", CultureInfo.CurrentCulture);
+            ProgressNumberTextBox.Text = payment.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
+            ProgressPeriodDatePicker.SelectedDate = payment.PeriodDate?.ToDateTime(TimeOnly.MinValue);
+
+            NavigationButton_Click(NavProgress, new RoutedEventArgs(Button.ClickEvent, NavProgress));
+            CalculationStatusTextBlock.Text =
+                "ARŞİV DÜZELTME MODU: Hakediş girdilerini güncelleyin. HAKEDİŞİ HESAPLA mevcut arşiv revision'ının üzerine yazacaktır.";
+            return;
+        }
+
         var contract = _contracts.FirstOrDefault(x =>
             string.Equals(x.TenderNumber, item.TenderNumber, StringComparison.OrdinalIgnoreCase));
         if (contract is not null)
@@ -3541,67 +3930,149 @@ public partial class MainWindow : Window
             (BuildHakedişIcmali(route, latest), "Hakediş İcmali")
         };
 
+        var combined = BuildCombinedRouteDocuments(documents);
+        var pages = OehsPdfExportService.RenderDocumentPages(combined);
+
         var previewWindow = new Window
         {
             Title = "OEHS — Belge Önizleme",
             Owner = this,
             Width = 1180,
-            Height = 820,
-            MinWidth = 900,
-            MinHeight = 650,
+            Height = 900,
+            MinWidth = 960,
+            MinHeight = 700,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
             Background = System.Windows.Media.Brushes.White
         };
 
-        var root = new Grid { Margin = new Thickness(10) };
+        var root = new Grid { Margin = new Thickness(8) };
         root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
         root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
         var titleBlock = new TextBlock
         {
-            Text = "BELGE ÖNİZLEME",
+            Text = "BELGE ÖNİZLEME — A4",
             FontSize = 18,
             FontWeight = FontWeights.Bold,
             Foreground = System.Windows.Media.Brushes.DarkSlateGray,
-            Margin = new Thickness(4, 4, 4, 8)
+            Margin = new Thickness(4, 4, 4, 6)
         };
         Grid.SetRow(titleBlock, 0);
         root.Children.Add(titleBlock);
 
-        var combined = BuildCombinedRouteDocuments(documents);
-        var viewer = new System.Windows.Controls.FlowDocumentReader
+        var image = new Image
         {
-            Document = combined,
-            ViewingMode = FlowDocumentReaderViewingMode.Page,
-            IsPageViewEnabled = true,
-            IsTwoPageViewEnabled = false,
-            IsScrollViewEnabled = false,
-            MinZoom = 50,
-            MaxZoom = 150,
-            Zoom = 75,
-            ZoomIncrement = 5,
+            Source = pages[0],
+            Stretch = Stretch.None,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Top,
+            SnapsToDevicePixels = true,
+            UseLayoutRounding = true
+        };
+
+        var zoom = 1.0;
+        var pageIndex = 0;
+
+        var scroll = new ScrollViewer
+        {
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
             HorizontalContentAlignment = HorizontalAlignment.Center,
             VerticalContentAlignment = VerticalAlignment.Top,
-            Margin = new Thickness(4),
-            IsFindEnabled = false
+            Background = System.Windows.Media.Brushes.White,
+            Content = image
         };
-        Grid.SetRow(viewer, 1);
-        root.Children.Add(viewer);
 
-        var closeButton = new System.Windows.Controls.Button
+        Button MakeButton(string text, double width)
         {
-            Content = "KAPAT",
-            Width = 110,
-            Height = 38,
-            HorizontalAlignment = HorizontalAlignment.Right,
+            return new Button
+            {
+                Content = text,
+                Width = width,
+                Height = 38,
+                Margin = new Thickness(3, 0),
+                Style = (Style)FindResource("SecondaryButton")
+            };
+        }
+
+        var previous = MakeButton("◀", 48);
+        var zoomOut = MakeButton("−", 48);
+        var reset = MakeButton("100%", 72);
+        var zoomIn = MakeButton("+", 48);
+        var next = MakeButton("▶", 48);
+        var close = MakeButton("KAPAT", 105);
+        var pageInfo = new TextBlock
+        {
+            Text = $"1 / {pages.Count} • %100",
+            FontSize = 14,
+            FontWeight = FontWeights.SemiBold,
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(12, 0)
+        };
+
+        void RefreshPreview()
+        {
+            image.Source = pages[pageIndex];
+            image.LayoutTransform = new ScaleTransform(zoom, zoom);
+            pageInfo.Text = $"{pageIndex + 1} / {pages.Count} • %{Math.Round(zoom * 100):0}";
+            scroll.ScrollToHome();
+        }
+
+        previous.Click += (_, _) =>
+        {
+            if (pageIndex > 0)
+            {
+                pageIndex--;
+                RefreshPreview();
+            }
+        };
+        next.Click += (_, _) =>
+        {
+            if (pageIndex < pages.Count - 1)
+            {
+                pageIndex++;
+                RefreshPreview();
+            }
+        };
+        zoomOut.Click += (_, _) =>
+        {
+            zoom = Math.Max(0.8, zoom - 0.1);
+            RefreshPreview();
+        };
+        reset.Click += (_, _) =>
+        {
+            zoom = 1.0;
+            RefreshPreview();
+        };
+        zoomIn.Click += (_, _) =>
+        {
+            zoom = Math.Min(1.6, zoom + 0.1);
+            RefreshPreview();
+        };
+        close.Click += (_, _) => previewWindow.Close();
+
+        var controls = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Center,
             Margin = new Thickness(4, 8, 4, 2)
         };
-        closeButton.Click += (_, _) => previewWindow.Close();
-        Grid.SetRow(closeButton, 2);
-        root.Children.Add(closeButton);
+        controls.Children.Add(previous);
+        controls.Children.Add(zoomOut);
+        controls.Children.Add(reset);
+        controls.Children.Add(zoomIn);
+        controls.Children.Add(pageInfo);
+        controls.Children.Add(next);
+        controls.Children.Add(close);
+
+        Grid.SetRow(scroll, 1);
+        Grid.SetRow(controls, 2);
+        root.Children.Add(scroll);
+        root.Children.Add(controls);
 
         previewWindow.Content = root;
+        RefreshPreview();
         previewWindow.ShowDialog();
     }
 
@@ -3990,29 +4461,31 @@ public partial class MainWindow : Window
 
         try
         {
-            var pdfTitle = BuildPdfPrintTitle(route, latest);
             var targetFolder = OehsOutputPathService.BuildPdfDirectory(
                 latest.TenderNumber ?? string.Empty,
                 latest.RouteNumber ?? string.Empty);
+
             var targetPath = latest.ProgressPaymentNumber.HasValue && latest.PeriodDate.HasValue
                 ? OehsOutputPathService.BuildPdfFilePath(
                     latest.TenderNumber ?? string.Empty,
                     latest.RouteNumber ?? string.Empty,
                     latest.ProgressPaymentNumber.Value,
                     latest.PeriodDate.Value)
-                : Path.Combine(targetFolder, pdfTitle);
+                : Path.Combine(targetFolder, "OEHS_Hakediş.pdf");
 
             Directory.CreateDirectory(targetFolder);
-            var savedFolder = SaveRouteDocumentsArchiveMetadata(latest);
-            CalculationStatusTextBlock.Text =
-                $"PDF kayıt hedefi hazırlandı: {savedFolder}";
+            OehsPdfExportService.ExportFlowDocumentPages(combined, targetPath);
+            SaveRouteDocumentsArchiveMetadata(latest);
 
-            ShowPdfSaveInfoDialog(targetFolder, Path.GetFileName(targetPath));
+            CalculationStatusTextBlock.Text =
+                $"PDF başarıyla kaydedildi: {Path.GetFileName(targetPath)}";
+
+            ShowPdfSaveInfoDialog(targetFolder, Path.GetFileName(targetPath), targetPath);
         }
         catch (Exception ex)
         {
             MessageBox.Show(
-                $"PDF kayıt bilgisi hazırlanırken hata oluştu.\n\n{ex.Message}",
+                $"PDF oluşturulurken hata oluştu.\n\n{ex.Message}",
                 "OEHS PDF Çıktı Hatası",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
