@@ -205,6 +205,20 @@ public sealed class ProgressPaymentArchiveStoreTests
     }
 
     [Fact]
+    public void Replace_ShouldNotCreateNewArchiveWhenTargetFileIsMissing()
+    {
+        using var temp = new TempDirectory();
+        var store = new ProgressPaymentArchiveStore(temp.Path);
+        var missingPath = Path.Combine(temp.Path, "OEHS_IHALE_Hat-01_Hakedis-01_2026-10-31_v01.json");
+
+        Assert.Throws<ProgressPaymentArchiveException>(() =>
+            store.Replace(missingPath, CreateArchive(1)));
+
+        Assert.Empty(store.List());
+        Assert.False(File.Exists(missingPath));
+    }
+
+    [Fact]
     public void ThirdSave_ShouldCreateV03WithoutOverwritingEarlierRevisions()
     {
         using var temp = new TempDirectory();
