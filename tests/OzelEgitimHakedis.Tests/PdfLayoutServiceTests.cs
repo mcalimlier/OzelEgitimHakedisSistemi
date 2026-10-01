@@ -18,7 +18,7 @@ public sealed class PdfLayoutServiceTests
         var fitted = PdfLayoutService.FitColumns(new[] { 500d, 218.11d });
 
         Assert.Equal(PdfLayoutService.SafeContentWidth, fitted.Sum(), precision: 6);
-        Assert.InRange(fitted[0] / fitted[1], 2.285, 2.287);
+        Assert.Equal(500d / 218.11d, fitted[0] / fitted[1], precision: 10);
     }
 
     [Fact]
