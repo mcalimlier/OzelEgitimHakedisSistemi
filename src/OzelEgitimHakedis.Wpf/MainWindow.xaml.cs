@@ -801,13 +801,12 @@ public partial class MainWindow : Window
         }
 
         var archivePaymentPeriods = archive.PreviousPayments
-            .Select(x => x.PeriodDate)
-            .Where(x => x.HasValue)
-            .Select(x => x!.Value)
-            .Append(archive.ProgressPayment.PeriodDate)
-            .Where(x => x.HasValue)
-            .Select(x => x!.Value)
-            .ToArray();
+            .Where(x => x.PeriodDate.HasValue)
+            .Select(x => x.PeriodDate!.Value)
+            .ToList();
+
+        if (archive.ProgressPayment.PeriodDate is DateOnly currentPaymentPeriod)
+            archivePaymentPeriods.Add(currentPaymentPeriod);
 
         if (archivePaymentPeriods.Any(paymentPeriod =>
                 paymentPeriod < startDate || paymentPeriod > endDate))
