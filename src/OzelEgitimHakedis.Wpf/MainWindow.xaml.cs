@@ -3009,15 +3009,10 @@ public partial class MainWindow : Window
             UpdateAcceptanceView();
             NavigationButton_Click(NavProgress, new RoutedEventArgs(Button.ClickEvent, NavProgress));
 
-            var isCorrectionLoad = !string.IsNullOrWhiteSpace(_editingArchiveSourcePath);
             CalculationStatusTextBlock.Text =
                 restored.AddedAnything
-                    ? isCorrectionLoad
-                        ? $"Arşiv revision düzeltme için çağrıldı ve aktif veriyle birleştirildi. {restored.Message} Değişiklikler yeni revision olarak kaydedilecektir."
-                        : $"Arşiv çağrıldı ve aktif veriyle birleştirildi. {restored.Message} Kaydetmeden önce ön kontrol yapılacaktır."
-                    : isCorrectionLoad
-                        ? $"Arşiv revision düzeltme için çağrıldı. {restored.Message} Değişiklikler yeni revision olarak kaydedilecektir."
-                        : $"Arşiv çağrıldı. {restored.Message} Kaydetmeden önce ön kontrol yapılacaktır.";
+                    ? $"Arşiv çağrıldı ve aktif veriyle birleştirildi. {restored.Message} Kaydetmeden önce ön kontrol yapılacaktır."
+                    : $"Arşiv çağrıldı. {restored.Message} Kaydetmeden önce ön kontrol yapılacaktır.";
         }
         catch (Exception ex) when (ex is ProgressPaymentArchiveException or IOException or UnauthorizedAccessException)
         {
@@ -3152,7 +3147,7 @@ public partial class MainWindow : Window
         ProgressCorrectionTarget? selected = null;
         var dialog = new Window
         {
-            Title = "Hakediş Düzelt",
+            Title = !string.IsNullOrWhiteSpace(_editingArchiveSourcePath) ? "Arşiv Kaydı Düzelt" : "Hakediş Düzelt",
             Owner = this,
             Width = 500,
             Height = 430,
@@ -3164,7 +3159,9 @@ public partial class MainWindow : Window
         var panel = new StackPanel { Margin = new Thickness(24) };
         panel.Children.Add(new TextBlock
         {
-            Text = "Hangi bölümde düzeltme yapmak istiyorsunuz?",
+            Text = !string.IsNullOrWhiteSpace(_editingArchiveSourcePath)
+                ? "Arşiv kaydında hangi bölümü düzeltmek istiyorsunuz?"
+                : "Hangi bölümde düzeltme yapmak istiyorsunuz?",
             FontSize = 19,
             FontWeight = FontWeights.Bold,
             Foreground = System.Windows.Media.Brushes.DarkSlateGray,
