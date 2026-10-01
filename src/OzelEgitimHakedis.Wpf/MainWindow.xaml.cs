@@ -2119,7 +2119,7 @@ public partial class MainWindow : Window
     {
         try
         {
-            var archive = _archiveStore.Load(row.FullPath);
+            var archive = ProgressPaymentArchiveStore.Load(row.FullPath);
             EditProgressWithTarget(archive.ProgressPayment);
         }
         catch (ProgressPaymentArchiveException ex)
