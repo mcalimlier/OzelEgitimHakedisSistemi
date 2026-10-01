@@ -233,6 +233,8 @@ public partial class MainWindow : Window
         CalculateProgressButton.Content = editing ? "DÜZENLE" : "HAKEDİŞİ HESAPLA";
         CancelProgressEditButton.Visibility = editing ? Visibility.Visible : Visibility.Collapsed;
         EditCurrentProgressButton.IsEnabled = !editing;
+        ArchiveCurrentProgressButton.Visibility = editing ? Visibility.Collapsed : ArchiveCurrentProgressButton.Visibility;
+        CorrectCurrentProgressButton.Visibility = editing ? Visibility.Collapsed : CorrectCurrentProgressButton.Visibility;
         ProgressEditorTitleTextBlock.Text = editing
             ? (archiveCorrection ? "ARŞİV HAKEDİŞ DÜZENLE" : "HAKEDİŞ DÜZENLE")
             : "DÖNEM HESAP BİLGİLERİ";
