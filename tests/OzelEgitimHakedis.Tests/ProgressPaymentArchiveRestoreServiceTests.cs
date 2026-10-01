@@ -70,8 +70,8 @@ public sealed class ProgressPaymentArchiveRestoreServiceTests
             archive);
 
         Assert.True(result.AddedAnything);
-        Assert.Contains("Hat", result.Message);
-        Assert.Contains("Hakediş", result.Message);
+        Assert.Contains("Hat", result.Message, StringComparison.Ordinal);
+        Assert.Contains("Hakediş", result.Message, StringComparison.Ordinal);
     }
 
     private static ProgressPaymentArchive Archive()
