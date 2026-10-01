@@ -639,6 +639,26 @@ public partial class MainWindow : Window
         if (!int.TryParse(ContractWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var contractWorkDays) || contractWorkDays < 0) errors.Add(ContractWorkDaysTextBox);
         if (!TryParseDecimal(ContractTransportDailyPriceTextBox.Text, out var transportDailyPrice) || transportDailyPrice < 0) errors.Add(ContractTransportDailyPriceTextBox);
 
+        var startDate = StartDatePicker.SelectedDate.HasValue
+            ? DateOnly.FromDateTime(StartDatePicker.SelectedDate.Value)
+            : archive.Contract.StartDate;
+        var endDate = EndDatePicker.SelectedDate.HasValue
+            ? DateOnly.FromDateTime(EndDatePicker.SelectedDate.Value)
+            : archive.Contract.EndDate;
+
+        if (endDate < startDate)
+        {
+            errors.Add(StartDatePicker);
+            errors.Add(EndDatePicker);
+        }
+
+        if (archive.ProgressPayment.PeriodDate is DateOnly paymentPeriod &&
+            (paymentPeriod < startDate || paymentPeriod > endDate))
+        {
+            errors.Add(StartDatePicker);
+            errors.Add(EndDatePicker);
+        }
+
         if (errors.Count > 0)
         {
             foreach (var control in errors) MarkInvalid(control);
@@ -652,8 +672,8 @@ public partial class MainWindow : Window
             ContractNumber = ContractNumberTextBox.Text.Trim(),
             WorkName = WorkNameTextBox.Text.Trim(),
             ContractAmount = contractAmount,
-            StartDate = DateOnly.FromDateTime(StartDatePicker.SelectedDate ?? archive.Contract.StartDate.ToDateTime(TimeOnly.MinValue)),
-            EndDate = DateOnly.FromDateTime(EndDatePicker.SelectedDate ?? archive.Contract.EndDate.ToDateTime(TimeOnly.MinValue)),
+            StartDate = startDate,
+            EndDate = endDate,
             VatExempt = VatExemptCheckBox.IsChecked == true,
             TenderDate = TenderDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(TenderDatePicker.SelectedDate.Value) : archive.Contract.TenderDate,
             ContractDate = ContractDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(ContractDatePicker.SelectedDate.Value) : archive.Contract.ContractDate,
@@ -887,6 +907,15 @@ public partial class MainWindow : Window
             ShowAlreadyRegistered($"'{contractor.Name}' kayıtlı hat/hakediş kayıtlarında kullanılıyor. Önce ilişkili kayıtları düzeltin; firma silinmedi.");
             return;
         }
+
+        var result = MessageBox.Show(
+            $"'{contractor.Name}' firması silinsin mi? Bu işlem geri alınamaz.",
+            "Yüklenici Firmayı Sil",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+
+        if (result != MessageBoxResult.Yes)
+            return;
 
         _contractors.Remove(contractor);
         SavePersistedData();
@@ -1361,6 +1390,15 @@ public partial class MainWindow : Window
             ShowAlreadyRegistered($"Bu hat için {historyCount} hakediş kaydı bulunduğu için hat silinmedi.");
             return;
         }
+
+        var result = MessageBox.Show(
+            $"'{route.RouteNumber} — {route.Name}' hattı silinsin mi? Bu işlem geri alınamaz.",
+            "Hat Kaydını Sil",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+
+        if (result != MessageBoxResult.Yes)
+            return;
 
         _routes.Remove(route);
         SavePersistedData();
