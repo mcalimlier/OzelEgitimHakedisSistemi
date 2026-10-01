@@ -8,9 +8,9 @@ Bu kontrol kaydı, OEHS WPF uygulamasının Excel uyumlu hesaplama, iki kaynakl�
 
 GitHub Actions Windows Build üzerinde son doğrulanan kod commit'i:
 
-- `ed3da68a6bf4a7e595da61ff08b692ebd7467c36`
-- Push workflow #992: başarılı
-- Pull Request workflow #993: başarılı
+- `d8c470c33a3443f10fedc04e3c8fa4fb273832bf`
+- Push workflow #1033: başarılı
+- Windows WPF restore/build/test/publish: başarılı
 - WPF restore: başarılı
 - Test restore: başarılı
 - WPF build: başarılı
@@ -118,6 +118,17 @@ Gerçek PDF görselinin kurum referansına birebir eşleştirilmesi ve iki-hatl�
 - Yerel veri: .bak yedeği + bozuk birincil dosyadan geri yükleme + iki dosya bozuksa kontrollü hata.
 - Çıkış dosyası: Windows geçersiz/reserved isimleri, slash/backslash ve aşırı uzun path parçaları korunuyor.
 - Silme işlemleri: ihale/hat/firma ilişkileri korunuyor; geri döndürülemez silme öncesi onay var.
+
+### Son arayüz / akış regresyon kontrolü — 01.10.2026
+
+- ARŞİVLER → DÜZENLE → HAT BİLGİLERİ akışında panel açıldıktan sonra **DÜZENLE** modu tekrar uygulanıyor.
+- **DÜZENLEME İPTAL** düzenleme sırasında görünür; **TEMİZLE** düzenleme sırasında gizlenir.
+- Arşiv düzeltmesi aktifken kayıt düğmesi hiçbir koşulda canlı **HAT EKLE** akışına düşemez.
+- Arşiv düzeltmesi sırasında yan menüden başka panele geçiş yapmak açık düzenlemeyi sessizce atmaz; kullanıcıdan açıkça **DÜZENLEME İPTAL** veya kaydetme işlemi beklenir.
+- Hat listesi işlem sütunu 170 px, arşiv işlem sütunu 350 px olacak şekilde buton taşması için güvenli genişlik bırakıldı.
+- Hakediş düzenleme sırasında ARŞİVLE / DÜZELT işlemleri pasif tutulur.
+- Statik XAML denetimi: 199 named element, duplicate name 0; eksik event handler 0; eksik StaticResource 0.
+- Son otomatik Windows workflow'u restore, build, test ve win-x64 publish aşamalarının tamamında başarılıdır.
 
 ## Otomasyon Sınırı
 
