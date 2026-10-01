@@ -53,7 +53,7 @@ public sealed class ArchiveDisplayServiceTests
         var expected = Archive();
         var path = store.Save(expected);
 
-        var loaded = store.Load(path);
+        var loaded = ProgressPaymentArchiveStore.Load(path);
 
         Assert.Equal(expected.ProgressPayment.Input, loaded.ProgressPayment.Input);
     }
