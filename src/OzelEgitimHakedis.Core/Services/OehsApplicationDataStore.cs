@@ -33,7 +33,12 @@ public sealed class OehsApplicationDataStore
     public OehsApplicationData Load()
     {
         if (!File.Exists(_filePath))
-            return OehsApplicationData.Empty;
+        {
+            if (!File.Exists(BackupFilePath))
+                return OehsApplicationData.Empty;
+
+            return RestoreAndReadBackup();
+        }
 
         try
         {
@@ -43,23 +48,35 @@ public sealed class OehsApplicationDataStore
             primaryException is IOException or UnauthorizedAccessException or JsonException)
         {
             if (File.Exists(BackupFilePath))
-            {
-                try
-                {
-                    return ReadFile(BackupFilePath);
-                }
-                catch (Exception backupException) when (
-                    backupException is IOException or UnauthorizedAccessException or JsonException)
-                {
-                    throw new OehsApplicationDataStoreException(
-                        "OEHS veri dosyası okunamadı ve güvenli yedek de kullanılamıyor. Veri kaybını önlemek için kaydetme durduruldu.",
-                        new AggregateException(primaryException, backupException));
-                }
-            }
+                return RestoreAndReadBackup(primaryException);
 
             throw new OehsApplicationDataStoreException(
                 "OEHS veri dosyası okunamadı. Veri kaybını önlemek için kaydetme durduruldu.",
                 primaryException);
+        }
+    }
+
+    private OehsApplicationData RestoreAndReadBackup(Exception? primaryException = null)
+    {
+        try
+        {
+            var backupData = ReadFile(BackupFilePath);
+
+            // Yedek doğrulandıktan sonra ana dosyayı da geri getiriyoruz.
+            // Böylece sonraki kayıt işlemi bozuk ana dosyayı tekrar .bak üzerine yazamaz.
+            File.Copy(BackupFilePath, _filePath, overwrite: true);
+            return backupData;
+        }
+        catch (Exception backupException) when (
+            backupException is IOException or UnauthorizedAccessException or JsonException)
+        {
+            var inner = primaryException is null
+                ? backupException
+                : new AggregateException(primaryException, backupException);
+
+            throw new OehsApplicationDataStoreException(
+                "OEHS veri dosyası okunamadı ve güvenli yedek de kullanılamıyor. Veri kaybını önlemek için kaydetme durduruldu.",
+                inner);
         }
     }
 
