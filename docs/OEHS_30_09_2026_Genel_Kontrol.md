@@ -6,18 +6,12 @@ Bu kontrol kaydı, OEHS WPF uygulamasının Excel uyumlu hesaplama, iki kaynakl�
 
 ## Otomatik Kontrol
 
-GitHub Actions Windows Build üzerinde son doğrulanan kod commit'i:
+GitHub Actions Windows Build üzerinde son doğrulanan kod branch'i:
 
-- `d8c470c33a3443f10fedc04e3c8fa4fb273832bf`
-- Push workflow #1033: başarılı
-- Windows WPF restore/build/test/publish: başarılı
-- WPF restore: başarılı
-- Test restore: başarılı
-- WPF build: başarılı
-- Test build: başarılı
-- Test Solution: başarılı
-- Windows EXE publish: başarılı
-- EXE artifact upload: başarılı
+- `feature/wpf-contract-entry-v0.5`
+- Arşiv düzeltme/state akışı: güncel
+- WPF restore/build/test: CI ile doğrulanıyor
+- Windows EXE publish/upload: CI ile doğrulanıyor
 
 Son turda önceki sanitizer derleme hatası da kapatılmıştır. Aynı commit için hem push hem PR Windows workflow'u başarılıdır.
 
@@ -98,37 +92,21 @@ Gerçek Windows makinesinde son kabul için:
 - Manuel gerçek PDF ve iki-hatlı senaryo: kullanıcı kabulü bekliyor
 - Release/kurulum paketi: manuel kabulden sonra son aşama
 
+## Son düzeltmeler — 01.10.2026
+
+- Arşivden DÜZENLE başlatıldığında düzeltme bölümü artık seçim yapılmadan önce normal canlı düzenleme akışına düşmüyor.
+- Hat No düzeltmesi mevcut archive revision üzerinde kalıyor; hedef dosya çakışması korumalı.
+- İhale düzeltmesinde güncellenen taşıma günlük fiyatı hakediş girdisine de aktarılıyor ve hesaplama yeniden yapılıyor.
+- Hatlar ekranındaki KAYITLI HAT sayacı seçili İhale/Dosya No kapsamındadır.
+- Arşivde SON REVİZYON göstergesi listedeki en yüksek revision numarasını kullanıyor.
+- Ana WPF shell sabit Viewbox ölçeklemesi yerine gerçek pencere çalışma alanına yayılan responsive Border kullanıyor; minimum pencere 1280×720.
+- İlk çalıştırmada eski OEHS veri dosyası, .bak/.tmp dosyaları ve programın Desktop\OzelEgitimHakedisSistemi altındaki eski arşiv/çıktılar bir kez temizleniyor. Temiz başlangıç marker'ı sonraki çalıştırmalarda yeni kullanıcı verilerinin silinmesini engelliyor.
+- Fresh-start davranışı için otomatik testler eklendi.
+- Statik UI taraması: 199 named element, duplicate name 0, eksik event handler 0, eksik StaticResource 0, yazıcı bağımlılığı 0.
+
 ## Not
 
 Gerçek PDF görselinin kurum referansına birebir eşleştirilmesi ve iki-hatlı manuel senaryo, uygulamanın son kabul kanıtıdır. Otomatik CI bu fiziksel/görsel Windows çıktısını tek başına doğrulayamaz.
-
-
-## Kod/Arayüz Statik Denetimi — 01.10.2026
-
-- MainWindow.xaml: 180 named element, duplicate name: 0.
-- XAML event handler mapping: missing handler 0.
-- StaticResource mapping: missing resource 0.
-- MainWindow.cs printer dependency scan: 0 sonuç; System.Printing / PrintDialog / Microsoft Print to PDF bağımlılığı yok.
-- Ana Viewbox: Uniform + DownOnly; gereksiz büyütme engelleniyor.
-- Belge önizlemesi: A4 raster, %110 başlangıç zoomu, sayfa geçişi ve zoom kontrolleri.
-- DÜZENLE aksiyonları: 96 px minimum sabit genişlik uygulandı.
-- Uzun FieldLabel/CardTitle metinleri Wrap=True.
-- PDF tablo geometri testleri: 3/4/5 kolonlu düzenlerin SafeContentWidth sınırı korunuyor.
-- Arşiv düzeltmesi: Replace hedef dosyası yoksa yeni dosya oluşturmayı reddediyor.
-- Yerel veri: .bak yedeği + bozuk birincil dosyadan geri yükleme + iki dosya bozuksa kontrollü hata.
-- Çıkış dosyası: Windows geçersiz/reserved isimleri, slash/backslash ve aşırı uzun path parçaları korunuyor.
-- Silme işlemleri: ihale/hat/firma ilişkileri korunuyor; geri döndürülemez silme öncesi onay var.
-
-### Son arayüz / akış regresyon kontrolü — 01.10.2026
-
-- ARŞİVLER → DÜZENLE → HAT BİLGİLERİ akışında panel açıldıktan sonra **DÜZENLE** modu tekrar uygulanıyor.
-- **DÜZENLEME İPTAL** düzenleme sırasında görünür; **TEMİZLE** düzenleme sırasında gizlenir.
-- Arşiv düzeltmesi aktifken kayıt düğmesi hiçbir koşulda canlı **HAT EKLE** akışına düşemez.
-- Arşiv düzeltmesi sırasında yan menüden başka panele geçiş yapmak açık düzenlemeyi sessizce atmaz; kullanıcıdan açıkça **DÜZENLEME İPTAL** veya kaydetme işlemi beklenir.
-- Hat listesi işlem sütunu 170 px, arşiv işlem sütunu 350 px olacak şekilde buton taşması için güvenli genişlik bırakıldı.
-- Hakediş düzenleme sırasında ARŞİVLE / DÜZELT işlemleri pasif tutulur.
-- Statik XAML denetimi: 199 named element, duplicate name 0; eksik event handler 0; eksik StaticResource 0.
-- Son otomatik Windows workflow'u restore, build, test ve win-x64 publish aşamalarının tamamında başarılıdır.
 
 ## Otomasyon Sınırı
 
