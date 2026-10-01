@@ -6,7 +6,7 @@
 
 **Architecture:** Hesaplama, kimlik/ilişki doğrulama, dönem kontrolü ve arşiv/revision işlemleri Core katmanında küçük, test edilebilir servisler olarak tutulacak. WPF `MainWindow` mevcut ekranları koruyacak; yalnızca yeni `ARŞİVLE`, `DÜZELT` ve `ARŞİVLER` akışını bu servisleri çağıracak şekilde bağlanacak. Mevcut `OehsApplicationDataStore` canlı veri deposu olarak kalacak; Desktop OEHS klasörü arşiv/PDF için kullanılacak.
 
-**Tech Stack:** .NET 8, C# records, WPF, xUnit 2.9.0, System.Text.Json, mevcut Microsoft Print to PDF/PrintDialog akışı. Yeni üçüncü taraf bağımlılık eklenmeyecek.
+**Tech Stack:** .NET 8, C# records, WPF, xUnit 2.9.0, System.Text.Json, PDFsharp-WPF ile doğrudan A4 PDF üretimi. PDF çıktısı Windows yazıcı kuyruğuna bağımlı olmayacak.
 
 **Spec:** `docs/superpowers/specs/2026-09-30-hakedis-arsiv-ve-duzeltme-design.md`
 
@@ -17,7 +17,7 @@
 - Yüklenici anahtarı normalize edilmiş VKN/TCKN'dir.
 - Hakediş benzersizliği `İhale/Dosya No + Hat No + Yüklenici VKN/TCKN + Hakediş No + Dönem Tarihi` kombinasyonudur.
 - Kaynak XLSM formüllerinde gösterilmeyen ara `ROUND(...,2)` işlemleri eklenmeyecektir.
-- Arşiv revisions `v01`, `v02` ... olarak korunacak; eski sürümler silinmeyecek veya üzerine yazılmayacaktır.
+- Normal bağımsız arşiv kayıtları `v01`, `v02` ... olarak korunur. `ARŞİVLER > DÜZELT` ile seçilen bitmiş iş aynı archive JSON dosyasında ve aynı revision numarasıyla güncellenir; bu düzeltme akışı yeni revision üretmez.
 - Desktop arşiv kökü `%USERPROFILE%\\Desktop\\OzelEgitimHakedisSistemi\\Arsiv\\Hakedisler` olacaktır.
 - PDF dört belgeyi tek A4 PDF akışında koruyacaktır: Hakediş Raporu, Hizmet İşleri Hakediş Raporu, Hizmet İşleri Kabul Tutanağı, Hakediş İcmali.
 - Word çıktısı bu akışa eklenmeyecektir.
@@ -356,7 +356,7 @@
   - Expected: FAIL until `OehsFileNameService` exists.
 
 - [ ] **Step 3: Implement report/PDF corrections.**
-  - Keep existing 4-document A4 PrintDialog flow.
+  - Keep the four-document A4 content layout while saving through the OEHS direct PDF exporter.
   - Replace old GUID-heavy filename use with `BuildProgressPdfFileName`.
   - Ensure every document receives the same tender, route, contractor, contract and hakedis identity source.
   - Ensure cumulative report calculations consume period-sorted history and do not accidentally use row order or edit timestamp.
@@ -445,3 +445,15 @@ The user explicitly requires that a completed archived job be corrected in place
 - DÜZELT -> İHALE BİLGİLERİ and YÜKLENİCİ FİRMA update the selected archive snapshot in place.
 - The correction flow must never create a new active route as a side effect.
 - The correction flow must never auto-create v02/v03 merely because a selected archive was corrected.
+
+
+## FINAL USER DECISION — 01.10.2026
+
+The archive correction workflow is intentionally destructive to the selected snapshot content but not to the revision number. This is the required business behavior:
+
+- ARŞİVLER > DÜZELT edits the selected completed job itself.
+- HAT BİLGİLERİ includes editable Hat No.
+- HAKEDİŞ GİRDİLERİ recalculates and writes back to the same archive file.
+- İHALE BİLGİLERİ and YÜKLENİCİ FİRMA update the same archive snapshot.
+- No active RouteDraft is created as a side effect.
+- No v02/v03 is created merely because the selected archive was corrected.
