@@ -36,7 +36,7 @@ public static class OehsFileNameService
         var invalid = Path.GetInvalidFileNameChars();
         var chars = value
             .Trim()
-            .Select(ch => invalid.Contains(ch) || ch == '/' || ch == '\' ? '_' : ch)
+            .Select(ch => invalid.Contains(ch) || ch == '/' || ch == '\\' ? '_' : ch)
             .ToArray();
 
         var sanitized = new string(chars).Trim().TrimEnd('.', ' ');
