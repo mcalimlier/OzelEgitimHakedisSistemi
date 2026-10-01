@@ -41,6 +41,25 @@ public sealed class OehsApplicationDataStoreTests
     }
 
     [Fact]
+    public void Load_ShouldRestoreMissingPrimaryFromBackup()
+    {
+        using var temp = new TempDirectory();
+        var file = Path.Combine(temp.Path, "oehs-data.json");
+        var store = new OehsApplicationDataStore(file);
+
+        store.Save(CreateData("FIRST"));
+        store.Save(CreateData("SECOND"));
+
+        File.Delete(file);
+
+        var loaded = store.Load();
+
+        Assert.Equal("FIRST", loaded.Contracts?[0].TenderNumber);
+        Assert.True(File.Exists(file));
+        Assert.Contains("FIRST", File.ReadAllText(file), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Load_ShouldThrowControlledExceptionWhenPrimaryAndBackupAreCorrupt()
     {
         using var temp = new TempDirectory();
