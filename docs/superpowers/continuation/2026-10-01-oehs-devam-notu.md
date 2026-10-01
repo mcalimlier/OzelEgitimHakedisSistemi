@@ -655,3 +655,27 @@ Windows tarafında açık manuel kabul kontrolleri:
 
 Not:
 - Gerçek Windows PDF driver davranışı ve fiziksel sayfa çıktısı burada CI ile tam doğrulanamaz; son kabul yine bu bilgisayarda gerçek PDF üretimiyle yapılacaktır.
+
+# 23. 1 EKİM 2026 — ARŞİV DÜZELTME SEMANTİĞİ VE PRINTERLESS PDF SON HALİ
+
+Kullanıcının son kabul kararı:
+- Bitmiş bir iş arşivden DÜZELT ile açıldığında düzenlenen şey aktif kayıt kopyası değil, seçilen archive snapshot'ın kendisidir.
+- HAT BİLGİLERİ seçildiğinde Hat No değiştirilebilir.
+- Kaydetme mevcut archive JSON dosyasını aynı revision numarasıyla günceller; v02/v03 oluşturmaz.
+- HAKEDİŞ GİRDİLERİ değişikliği hesaplanıp aynı arşiv dosyasına yazılır.
+- İHALE BİLGİLERİ ve YÜKLENİCİ FİRMA değişiklikleri de aynı snapshot üzerinde saklanır.
+- ÇAĞIR ile DÜZELT semantiği birbirinden ayrıdır.
+- PDF OLARAK KAYDET artık yazıcı aramaz; OEHS PDF Export ile doğrudan PDF üretir ve sonunda kayıt yolu + KLASÖRÜ AÇ/TAMAM popup'ı gösterir.
+- A4 önizleme, PDF üretimindeki aynı sayfa rasterına dayanır; 100% başlangıç zoomu ve sayfa/zoom kontrolleri vardır.
+
+Sonraki manuel kabul:
+1. Fetch origin -> Pull origin
+2. Visual Studio Rebuild -> F5
+3. ÇIKTILAR -> BELGE ÖNİZLEME; metnin okunabilirliği ve sağ kenar taşması kontrolü
+4. PDF OLARAK KAYDET; gerçek PDF dosyasını açıp dört sayfayı kontrol et
+5. ARŞİVLER -> DÜZELT -> HAT BİLGİLERİ -> Hat No değiştir -> KAYDET
+6. Aynı vXX JSON dosyasının güncellendiğini ve yeni vXX+1 oluşmadığını kontrol et
+7. ARŞİVLER listesinde tek snapshot kalmasını doğrula
+8. Ardından iki-hatlı gerçek senaryo, propagation/duplicate ve final regression kontrolleri
+
+Bu noktadan sonra release öncesi kalan iş, gerçek Windows PDF + iki-hatlı manuel senaryo + final regression/release doğrulamasıdır.
