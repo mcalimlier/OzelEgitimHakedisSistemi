@@ -3888,7 +3888,7 @@ public partial class MainWindow : Window
             UseLayoutRounding = true
         };
 
-        var zoom = 1.0;
+        var zoom = 1.1;
         var pageIndex = 0;
 
         var scroll = new ScrollViewer
@@ -3921,7 +3921,7 @@ public partial class MainWindow : Window
         var close = MakeButton("KAPAT", 105);
         var pageInfo = new TextBlock
         {
-            Text = $"1 / {pages.Count} • %100",
+            Text = $"1 / {pages.Count} • %110",
             FontSize = 14,
             FontWeight = FontWeights.SemiBold,
             VerticalAlignment = VerticalAlignment.Center,
