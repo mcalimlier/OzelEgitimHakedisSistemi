@@ -49,6 +49,28 @@ public sealed class ProgressPaymentPropagationTests
     }
 
     [Fact]
+    public void ContractorChange_ShouldUpdateContractReferenceFields()
+    {
+        var oldContractor = Contractor();
+        var newContractor = oldContractor with
+        {
+            Name = "Yeni Firma",
+            TaxOrIdentityNumber = "98765432109",
+            BankAccountNumber = "TR-NEW"
+        };
+
+        var history = History(new ProgressPaymentInput(
+            10, 1000m, 0m, 0m, 100000m, false, 0m, 0m, 0m));
+
+        var updated = ProgressPaymentPropagationService.RecalculateForContractorChange(
+            new[] { history }, oldContractor, newContractor);
+
+        Assert.Equal("Yeni Firma", updated[0].ContractorName);
+        Assert.Equal("98765432109", updated[0].ContractorTaxOrIdentityNumber);
+        Assert.Equal("TR-NEW", updated[0].BankAccountNumber);
+    }
+
+    [Fact]
     public void VatExemptionChange_ShouldRecalculateVatAndWithholding()
     {
         var oldContract = Contract(vatExempt: false);
