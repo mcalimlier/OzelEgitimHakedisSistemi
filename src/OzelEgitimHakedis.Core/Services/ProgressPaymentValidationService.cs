@@ -37,6 +37,39 @@ public static class ProgressPaymentValidationService
         if (!routeMatches)
             errors.Add("Seçilen hat, ihale ve yüklenici ilişkisiyle eşleşmiyor.");
 
+        var contractExists = (data.Contracts ?? Array.Empty<ContractDraftData>())
+            .Append(data.Contract)
+            .Where(x => x is not null)
+            .Cast<ContractDraftData>()
+            .Any(x => string.Equals(x.TenderNumber.Trim(), tenderNumber, StringComparison.OrdinalIgnoreCase));
+
+        if (!contractExists)
+            errors.Add("Seçilen ihale / dosya kaydı bulunamadı.");
+
+        var routeExists = (data.Routes ?? Array.Empty<RouteData>())
+            .Any(x => string.Equals(
+                OehsIdentityService.BuildRouteKey(
+                    x.TenderNumber,
+                    x.RouteNumber,
+                    x.ContractorTaxOrIdentityNumber),
+                OehsIdentityService.BuildRouteKey(
+                    route.TenderNumber,
+                    route.RouteNumber,
+                    route.ContractorTaxOrIdentityNumber),
+                StringComparison.Ordinal));
+
+        if (!routeExists)
+            errors.Add("Seçilen hat kaydı bulunamadı.");
+
+        var contractorExists = (data.Contractors ?? Array.Empty<Contractor>())
+            .Any(x => string.Equals(
+                OehsIdentityService.NormalizeIdentity(x.TaxOrIdentityNumber),
+                identity,
+                StringComparison.Ordinal));
+
+        if (!contractorExists)
+            errors.Add("Seçilen yüklenici firma kaydı bulunamadı.");
+
         if (candidate.ProgressPaymentNumber is null || candidate.ProgressPaymentNumber <= 0)
             errors.Add("Hakediş No 1 veya daha büyük olmalıdır.");
 
