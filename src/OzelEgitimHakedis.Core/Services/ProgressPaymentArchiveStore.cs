@@ -90,6 +90,9 @@ public sealed class ProgressPaymentArchiveStore
             throw new ArgumentOutOfRangeException(nameof(archive), "Revision 1 veya daha büyük olmalıdır.");
 
         var fullPath = Path.GetFullPath(filePath);
+        if (!File.Exists(fullPath))
+            throw new ProgressPaymentArchiveException("Mevcut arşiv dosyası bulunamadı; yeni arşiv oluşturulmadı.");
+
         var folder = Path.GetDirectoryName(fullPath);
         if (string.IsNullOrWhiteSpace(folder))
             throw new ProgressPaymentArchiveException("Arşiv dosya klasörü çözümlenemedi.");
