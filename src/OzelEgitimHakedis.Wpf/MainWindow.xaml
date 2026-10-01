@@ -412,8 +412,8 @@
 
                                         <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0">
                                             <StackPanel>
-                                                <TextBlock Text="Sözleşme Bilgileri" Style="{StaticResource CardTitle}"/>
-                                                <TextBlock Text="Temel ihale ve sözleşme alanları" Style="{StaticResource CardSubtitle}" Margin="0,0,0,18"/><Border x:Name="ContractValidationBanner" Visibility="Collapsed" Background="#FFF1F1" BorderBrush="#E53935" BorderThickness="1.5" CornerRadius="9" Padding="14,11" Margin="8,14,8,0"><StackPanel><TextBlock Text="EKSİK / HATALI İHALE BİLGİSİ" Foreground="#C62828" FontSize="13" FontWeight="Bold"/><TextBlock x:Name="ContractValidationMessageTextBlock" Foreground="#8E1B1B" FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,3,0,0"/></StackPanel></Border>
+                                                <TextBlock x:Name="ContractEditorTitleTextBlock" Text="Sözleşme Bilgileri" Style="{StaticResource CardTitle}"/>
+                                                <TextBlock x:Name="ContractEditorSubtitleTextBlock" Text="Temel ihale ve sözleşme alanları" Style="{StaticResource CardSubtitle}" Margin="0,0,0,18"/><Border x:Name="ContractValidationBanner" Visibility="Collapsed" Background="#FFF1F1" BorderBrush="#E53935" BorderThickness="1.5" CornerRadius="9" Padding="14,11" Margin="8,14,8,0"><StackPanel><TextBlock Text="EKSİK / HATALI İHALE BİLGİSİ" Foreground="#C62828" FontSize="13" FontWeight="Bold"/><TextBlock x:Name="ContractValidationMessageTextBlock" Foreground="#8E1B1B" FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,3,0,0"/></StackPanel></Border>
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="170"/><ColumnDefinition Width="*"/>
@@ -458,7 +458,8 @@
                                                     </Grid>
                                                 </Border>
                                                 <StackPanel Orientation="Horizontal" Margin="8,20,8,0">
-                                                    <Button Content="KAYDET" Click="SaveContractButton_Click" Style="{StaticResource ModernButton}" Width="140"/>
+                                                    <Button x:Name="SaveContractButton" Content="KAYDET" Click="SaveContractButton_Click" Style="{StaticResource ModernButton}" Width="140"/>
+                                                    <Button x:Name="CancelContractEditButton" Content="DÜZENLEME İPTAL" Click="CancelContractEditButton_Click" Style="{StaticResource SecondaryButton}" Width="160" Margin="10,0,0,0" Visibility="Collapsed"/>
                                                     <Button Content="TEMİZLE" Click="ClearContractButton_Click" Style="{StaticResource SecondaryButton}" Width="120" Margin="10,0,0,0"/>
                                                 </StackPanel>
                                                 <TextBlock x:Name="ContractStatusTextBlock" Margin="8,10,8,0" Foreground="{StaticResource Blue600Brush}" FontWeight="SemiBold" TextWrapping="Wrap"/>
@@ -588,7 +589,7 @@
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="1.45*"/><ColumnDefinition Width="1*"/></Grid.ColumnDefinitions>
                                         <Border Grid.Column="0" VerticalAlignment="Top" Style="{StaticResource PremiumPanel}" Padding="16" Margin="0,0,10,0">
                                             <StackPanel>
-                                                <TextBlock Text="DÖNEM HESAP BİLGİLERİ" Foreground="{StaticResource Gold500Brush}" FontSize="13" FontWeight="Bold"/>
+                                                <TextBlock x:Name="ProgressEditorTitleTextBlock" Text="DÖNEM HESAP BİLGİLERİ" Foreground="{StaticResource Gold500Brush}" FontSize="13" FontWeight="Bold"/>
                                                 <TextBlock Text="Hakediş hesaplama girdileri" Foreground="White" FontSize="21" FontWeight="SemiBold" Margin="0,5,0,4"/><TextBlock Text="Sözleşme bedeli ve KDV durumu İhale Bilgileri ekranından otomatik alınır." Foreground="#B9CBDA" FontSize="11.5" TextWrapping="Wrap" Margin="0,0,0,8"/>
                                                 <Grid>
                                                     <Grid.ColumnDefinitions><ColumnDefinition Width="120"/><ColumnDefinition Width="1.2*"/><ColumnDefinition Width="145"/><ColumnDefinition Width="1.2*"/></Grid.ColumnDefinitions>
@@ -624,7 +625,8 @@
                                                     <TextBox x:Name="InspectionPenaltyTextBox" Grid.Row="7" Grid.Column="3" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
                                                 </Grid>
                                                 <Border x:Name="ProgressValidationBanner" Visibility="Collapsed" Background="#FFF1F1" BorderBrush="#E53935" BorderThickness="1.5" CornerRadius="9" Padding="12,9" Margin="6,10,0,0"><StackPanel><TextBlock Text="HESAPLAMA GİRDİLERİNİ KONTROL EDİN" Foreground="#C62828" FontSize="12.5" FontWeight="Bold"/><TextBlock x:Name="ProgressValidationMessageTextBlock" Foreground="#8E1B1B" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,3,0,0"/></StackPanel></Border><StackPanel Orientation="Horizontal" Margin="6,12,0,0">
-                                                    <Button Content="HAKEDİŞİ HESAPLA" Click="CalculateProgressButton_Click" Style="{StaticResource ModernButton}" MinWidth="245"/>
+                                                    <Button x:Name="CalculateProgressButton" Content="HAKEDİŞİ HESAPLA" Click="CalculateProgressButton_Click" Style="{StaticResource ModernButton}" MinWidth="245"/>
+                                                    <Button x:Name="CancelProgressEditButton" Content="DÜZENLEME İPTAL" Click="CancelProgressEditButton_Click" Style="{StaticResource SecondaryButton}" MinWidth="170" Margin="10,0,0,0" Visibility="Collapsed"/>
                                                     <Button Content="KAYITLI HAKEDİŞİ DÜZENLE" Click="EditCurrentProgressButton_Click" Style="{StaticResource SecondaryButton}" MinWidth="255" Margin="10,0,0,0"/>
                                                 </StackPanel>
                                                 <TextBlock x:Name="CalculationStatusTextBlock" Style="{StaticResource ValidationText}"/>
@@ -728,7 +730,7 @@
                                         </Border>
                                     </UniformGrid>
 
-                                    <Border Panel.ZIndex="1000" Style="{StaticResource Card}" Padding="14" Margin="0,0,0,14">
+                                    <Border x:Name="RouteSelectionCard" Panel.ZIndex="1000" Style="{StaticResource Card}" Padding="14" Margin="0,0,0,14">
                                         <Grid>
                                             <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
                                             <StackPanel Grid.Column="0" Margin="0,0,8,0">
@@ -772,8 +774,8 @@
 
                                         <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0">
                                             <StackPanel>
-                                                <TextBlock Text="YENİ HAT" Style="{StaticResource CardTitle}"/>
-                                                <TextBlock Text="Hat bilgilerini girin" Style="{StaticResource CardSubtitle}" Margin="0,0,0,8"/>
+                                                <TextBlock x:Name="RouteEditorTitleTextBlock" Text="YENİ HAT" Style="{StaticResource CardTitle}"/>
+                                                <TextBlock x:Name="RouteEditorSubtitleTextBlock" Text="Hat bilgilerini girin" Style="{StaticResource CardSubtitle}" Margin="0,0,0,8"/>
                                                 <TextBlock x:Name="RouteSelectedTenderTextBlock" Text="İhale: seçilmedi" Style="{StaticResource FieldLabel}" FontSize="13.5" FontWeight="SemiBold" Margin="0,0,0,5"/>
                                                 <TextBlock x:Name="RouteSelectedContractorTextBlock" Text="Yüklenici: seçilmedi" Style="{StaticResource FieldLabel}" FontSize="13.5" Margin="0,0,0,12"/><Border x:Name="RouteValidationBanner" Visibility="Collapsed" Background="#FFF1F1" BorderBrush="#E53935" BorderThickness="1.5" CornerRadius="9" Padding="12,9" Margin="0,0,0,14"><StackPanel><TextBlock Text="EKSİK / HATALI HAT BİLGİSİ" Foreground="#C62828" FontSize="12.5" FontWeight="Bold"/><TextBlock x:Name="RouteValidationMessageTextBlock" Foreground="#8E1B1B" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,3,0,0"/></StackPanel></Border>
 
@@ -795,7 +797,8 @@
                                                 <TextBox x:Name="RouteGuideDailyPriceTextBox" Style="{StaticResource FieldTextBox}" Margin="0,7,0,18"/>
 
                                                 <StackPanel Orientation="Horizontal">
-                                                    <Button Content="HAT EKLE" Click="AddRouteButton_Click" Style="{StaticResource ModernButton}" Width="140"/>
+                                                    <Button x:Name="AddRouteButton" Content="HAT EKLE" Click="AddRouteButton_Click" Style="{StaticResource ModernButton}" Width="140"/>
+                                                    <Button x:Name="CancelRouteEditButton" Content="DÜZENLEME İPTAL" Click="CancelRouteEditButton_Click" Style="{StaticResource SecondaryButton}" Width="160" Margin="10,0,0,0" Visibility="Collapsed"/>
                                                     <Button Content="TEMİZLE" Click="ClearRouteButton_Click" Style="{StaticResource SecondaryButton}" Width="120" Margin="10,0,0,0"/>
                                                 </StackPanel>
                                                 <TextBlock x:Name="RouteStatusTextBlock" Margin="0,14,0,0" Foreground="{StaticResource Blue600Brush}" TextWrapping="Wrap"/>
@@ -860,7 +863,7 @@
                 <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
                 <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,8,0" Padding="18">
                     <StackPanel>
-                        <TextBlock Text="FİRMA BİLGİLERİ" Style="{StaticResource CardTitle}"/>
+                        <TextBlock x:Name="ContractorEditorTitleTextBlock" Text="FİRMA BİLGİLERİ" Style="{StaticResource CardTitle}"/>
                         <Grid Margin="0,6,0,0">
                             <Grid.ColumnDefinitions><ColumnDefinition Width="170"/><ColumnDefinition/></Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
@@ -883,7 +886,8 @@
                             <TextBox x:Name="ContractorContactTextBox" Grid.Row="6" Grid.Column="1" Margin="6" Style="{StaticResource FieldTextBox}"/>
                         </Grid>
                         <StackPanel Orientation="Horizontal" Margin="6,10,0,0">
-                            <Button Content="KAYDET" Click="SaveContractorButton_Click" Style="{StaticResource ModernButton}" Width="130"/>
+                            <Button x:Name="SaveContractorButton" Content="KAYDET" Click="SaveContractorButton_Click" Style="{StaticResource ModernButton}" Width="130"/>
+                            <Button x:Name="CancelContractorEditButton" Content="DÜZENLEME İPTAL" Click="CancelContractorEditButton_Click" Style="{StaticResource SecondaryButton}" Width="160" Margin="10,0,0,0" Visibility="Collapsed"/>
                             <Button Content="TEMİZLE" Click="ClearContractorButton_Click" Style="{StaticResource SecondaryButton}" Width="120" Margin="10,0,0,0"/>
                         </StackPanel>
                         <TextBlock x:Name="ContractorStatusTextBlock" Margin="6,10,0,0" Foreground="{StaticResource Blue600Brush}" FontWeight="SemiBold" TextWrapping="Wrap"/>
