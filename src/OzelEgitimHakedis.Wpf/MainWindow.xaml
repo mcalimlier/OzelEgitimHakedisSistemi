@@ -1189,7 +1189,7 @@
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                 <StackPanel>
                     <TextBlock Text="4 BELGE ÇIKTISI" Style="{StaticResource CardTitle}" FontSize="17"/>
-                    <TextBlock Text="Seçilen hat için dört kurum belgesi A4 düzeninde hazırlanır ve tek PDF yazdırma akışıyla kaydedilir." Style="{StaticResource CardSubtitle}" FontSize="13.5" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                    <TextBlock Text="Seçilen hat için dört kurum belgesi A4 düzeninde hazırlanır ve tek PDF dosyası olarak kaydedilir." Style="{StaticResource CardSubtitle}" FontSize="13.5" TextWrapping="Wrap" Margin="0,0,0,12"/>
                     <TextBlock Text="İHALE / DOSYA NO" Style="{StaticResource FieldLabel}" FontSize="12.5"/>
                     <ComboBox x:Name="OutputTenderListBox"
                               Height="44"
