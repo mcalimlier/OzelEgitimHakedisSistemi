@@ -164,17 +164,20 @@ public partial class MainWindow : Window
         SaveContractButton.Content = "KAYDET";
         CancelContractEditButton.Visibility = Visibility.Collapsed;
         ClearContractButton.IsEnabled = true;
+        ClearContractButton.Visibility = Visibility.Visible;
         ContractEditorTitleTextBlock.Text = "Sözleşme Bilgileri";
         ContractEditorSubtitleTextBlock.Text = "Temel ihale ve sözleşme alanları";
 
         SaveContractorButton.Content = "KAYDET";
         CancelContractorEditButton.Visibility = Visibility.Collapsed;
         ClearContractorButton.IsEnabled = true;
+        ClearContractorButton.Visibility = Visibility.Visible;
         ContractorEditorTitleTextBlock.Text = "FİRMA BİLGİLERİ";
 
         AddRouteButton.Content = "HAT EKLE";
         CancelRouteEditButton.Visibility = Visibility.Collapsed;
         ClearRouteButton.IsEnabled = true;
+        ClearRouteButton.Visibility = Visibility.Visible;
         RouteEditorTitleTextBlock.Text = "YENİ HAT";
         RouteEditorSubtitleTextBlock.Text = "Hat bilgilerini girin";
         RouteSelectionCard.Visibility = Visibility.Visible;
