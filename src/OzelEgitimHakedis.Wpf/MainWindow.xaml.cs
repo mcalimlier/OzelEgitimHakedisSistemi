@@ -2695,6 +2695,18 @@ public partial class MainWindow : Window
         ReportGrossTextBlock.Text = FormatMoney(routePayments.Sum(x => x.Calculation.GrossAmount));
         ReportNetTextBlock.Text = FormatMoney(routePayments.Sum(x => x.Calculation.NetPayable));
 
+        if (selectedRoute is null)
+        {
+            ReportPdfTargetTextBlock.Text = "PDF hedefi: önce bir hat seçin.";
+        }
+        else
+        {
+            var targetFolder = OehsOutputPathService.BuildPdfDirectory(
+                selectedRoute.TenderNumber,
+                selectedRoute.RouteNumber);
+            ReportPdfTargetTextBlock.Text = $"PDF hedefi: {targetFolder}";
+        }
+
         var latest = routePayments
             .OrderByDescending(x => x.PeriodDate ?? DateOnly.MinValue)
             .ThenByDescending(x => x.CreatedAt)
