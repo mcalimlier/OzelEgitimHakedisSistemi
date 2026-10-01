@@ -43,7 +43,7 @@ public sealed class ProgressPaymentArchiveStore
             .ToArray();
     }
 
-    public ProgressPaymentArchive Load(string filePath)
+    public static ProgressPaymentArchive Load(string filePath)
     {
         try
         {
