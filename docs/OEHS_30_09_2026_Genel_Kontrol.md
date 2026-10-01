@@ -8,7 +8,9 @@ Bu kontrol kaydı, OEHS WPF uygulamasının Excel uyumlu hesaplama, iki kaynakl�
 
 GitHub Actions Windows Build üzerinde son doğrulanan kod commit'i:
 
-- `dd3e4be90197ce5cab21ed1c8f81e4f17dc3e86e`
+- `ed3da68a6bf4a7e595da61ff08b692ebd7467c36`
+- Push workflow #992: başarılı
+- Pull Request workflow #993: başarılı
 - WPF restore: başarılı
 - Test restore: başarılı
 - WPF build: başarılı
@@ -17,7 +19,7 @@ GitHub Actions Windows Build üzerinde son doğrulanan kod commit'i:
 - Windows EXE publish: başarılı
 - EXE artifact upload: başarılı
 
-Önceki UI/PDF denemelerinde oluşan derleme hataları düzeltilmiştir. Son başarılı workflow bu commit'in WPF ve test derlemelerini tamamlamıştır.
+Son turda önceki sanitizer derleme hatası da kapatılmıştır. Aynı commit için hem push hem PR Windows workflow'u başarılıdır.
 
 ## Hesaplama
 
@@ -99,3 +101,24 @@ Gerçek Windows makinesinde son kabul için:
 ## Not
 
 Gerçek PDF görselinin kurum referansına birebir eşleştirilmesi ve iki-hatlı manuel senaryo, uygulamanın son kabul kanıtıdır. Otomatik CI bu fiziksel/görsel Windows çıktısını tek başına doğrulayamaz.
+
+
+## Kod/Arayüz Statik Denetimi — 01.10.2026
+
+- MainWindow.xaml: 180 named element, duplicate name: 0.
+- XAML event handler mapping: missing handler 0.
+- StaticResource mapping: missing resource 0.
+- MainWindow.cs printer dependency scan: 0 sonuç; System.Printing / PrintDialog / Microsoft Print to PDF bağımlılığı yok.
+- Ana Viewbox: Uniform + DownOnly; gereksiz büyütme engelleniyor.
+- Belge önizlemesi: A4 raster, %110 başlangıç zoomu, sayfa geçişi ve zoom kontrolleri.
+- DÜZENLE aksiyonları: 96 px minimum sabit genişlik uygulandı.
+- Uzun FieldLabel/CardTitle metinleri Wrap=True.
+- PDF tablo geometri testleri: 3/4/5 kolonlu düzenlerin SafeContentWidth sınırı korunuyor.
+- Arşiv düzeltmesi: Replace hedef dosyası yoksa yeni dosya oluşturmayı reddediyor.
+- Yerel veri: .bak yedeği + bozuk birincil dosyadan geri yükleme + iki dosya bozuksa kontrollü hata.
+- Çıkış dosyası: Windows geçersiz/reserved isimleri, slash/backslash ve aşırı uzun path parçaları korunuyor.
+- Silme işlemleri: ihale/hat/firma ilişkileri korunuyor; geri döndürülemez silme öncesi onay var.
+
+## Otomasyon Sınırı
+
+Kod, static analysis, Windows CI, build, test ve self-contained EXE publish otomatik olarak doğrulandı. Gerçek masaüstü pencere çizimi, kullanıcının monitöründeki piksel ölçeği ve gerçek PDF'nin görsel/kurumsal referansla birebir karşılaştırılması bu ortamda otomatik olarak gözlenemez. Bu yüzden son manuel kabul yalnızca gerçek Windows F5 ve üretilen PDF görsel kontrolüdür.
