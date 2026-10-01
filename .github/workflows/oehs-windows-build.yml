@@ -23,11 +23,14 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Restore
-        run: dotnet restore ".\src\OzelEgitimHakedis.Wpf\OzelEgitimHakedis.Wpf.csproj"
+      - name: Restore Solution
+        run: dotnet restore ".\OzelEgitimHakedisSistemi.sln"
 
-      - name: Test Core
-        run: dotnet test ".\tests\OzelEgitimHakedis.Tests\OzelEgitimHakedis.Tests.csproj" --configuration Release
+      - name: Build Solution
+        run: dotnet build ".\OzelEgitimHakedisSistemi.sln" --configuration Release --no-restore
+
+      - name: Test Solution
+        run: dotnet test ".\OzelEgitimHakedisSistemi.sln" --configuration Release --no-build --no-restore
 
       - name: Publish Windows EXE
         run: >
