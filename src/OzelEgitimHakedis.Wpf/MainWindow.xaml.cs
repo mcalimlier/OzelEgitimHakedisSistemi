@@ -891,18 +891,24 @@ public partial class MainWindow : Window
         if (sender is not Button { Tag: ContractorDraft contractor })
             return;
 
+        var normalizedContractorIdentity = OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber);
+        var usedByContract = _contracts.Any(x =>
+            string.Equals(
+                OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
+                normalizedContractorIdentity,
+                StringComparison.Ordinal));
         var usedByRoute = _routes.Any(x =>
             string.Equals(
-                    OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
-                    OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber),
-                    StringComparison.Ordinal));
+                OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
+                normalizedContractorIdentity,
+                StringComparison.Ordinal));
         var usedByHistory = _progressHistory.Any(x =>
             string.Equals(
-                    OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
-                    OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber),
-                    StringComparison.Ordinal));
+                OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
+                normalizedContractorIdentity,
+                StringComparison.Ordinal));
 
-        if (usedByRoute || usedByHistory)
+        if (usedByContract || usedByRoute || usedByHistory)
         {
             ShowAlreadyRegistered($"'{contractor.Name}' kayıtlı hat/hakediş kayıtlarında kullanılıyor. Önce ilişkili kayıtları düzeltin; firma silinmedi.");
             return;
