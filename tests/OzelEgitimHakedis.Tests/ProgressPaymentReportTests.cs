@@ -30,7 +30,7 @@ public sealed class ProgressPaymentReportTests
         Assert.Equal(10m, totals.CurrentPriceDifference);
         Assert.Equal(260m, totals.CumulativeTotal);
         Assert.Equal(105m, totals.PreviousTotal);
-        Assert.Equal(155m, totals.CurrentTotal);
+        Assert.Equal(160m, totals.CurrentTotal);
     }
 
     [Fact]
@@ -112,7 +112,7 @@ public sealed class ProgressPaymentReportTests
 
 
     [Fact]
-    public void CurrentTotal_ShouldBeCumulativeTotalMinusPreviousTotal()
+    public void CurrentTotal_ShouldApplyExcelD7ToH2()
     {
         var previous = History(1, new DateOnly(2026, 10, 31), new DateTime(2026, 10, 31), 100m, 25m);
         var current = History(2, new DateOnly(2026, 11, 30), new DateTime(2026, 11, 1), 100m, 10m);
@@ -121,7 +121,18 @@ public sealed class ProgressPaymentReportTests
 
         Assert.Equal(210m, totals.CumulativeTotal);
         Assert.Equal(125m, totals.PreviousTotal);
-        Assert.Equal(85m, totals.CurrentTotal);
+        Assert.Equal(120m, totals.CurrentTotal);
+    }
+
+
+    [Fact]
+    public void NegativeCurrentPriceDifference_ShouldSubtractAbsoluteValueFromH2()
+    {
+        var current = History(2, new DateOnly(2026, 11, 30), new DateTime(2026, 11, 1), 100m, -10m);
+
+        var totals = ProgressPaymentReportService.Calculate(current, new[] { current });
+
+        Assert.Equal(80m, totals.CurrentTotal);
     }
 
 }
