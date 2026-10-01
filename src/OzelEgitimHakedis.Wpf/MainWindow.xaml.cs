@@ -3542,8 +3542,6 @@ public partial class MainWindow : Window
     {
         var payments = GetSelectedRoutePayments();
         var latestDate = latest.PeriodDate ?? DateOnly.FromDateTime(DateTime.Today);
-        var baseYear = latestDate.Month >= 9 ? latestDate.Year : latestDate.Year - 1;
-
         var rows = new List<(string, string, string, string, string)>();
         var totalA = 0m;
         var totalB = 0m;
