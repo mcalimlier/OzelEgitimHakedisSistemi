@@ -533,4 +533,92 @@ The branch is accepted only when:
 8. A controlled PDF output is verified as four A4 documents under the descriptive filename pattern.
 9. A written general-control record exists in `docs/OEHS_30_09_2026_Genel_Kontrol.md`.
 10. No earlier archive revision is overwritten or deleted.
+# 21. 1 EKİM 2026 SON CI VE DEVAM DURUMU
+
+## Son doğrulanan commit
+
+Branch head:
+bd77f205e3d408602241dc26447af9e044ae370b
+
+Bu commit ile GitHub Actions workflow, repo içinde gerçekten bulunan WPF/Test projelerine göre düzenlendi; kökte bulunmayan .sln dosyasına bağımlılık kaldırıldı.
+
+## GitHub Actions sonucu
+
+Push run:
+36839201752
+
+PR run:
+36839208445
+
+Her iki workflow da SUCCESS.
+
+Push workflow adımları:
+- Set up job ✅
+- Checkout ✅
+- Setup .NET 8 ✅
+- Restore WPF ✅
+- Restore Tests ✅
+- Build WPF ✅
+- Build Tests ✅
+- Test Solution ✅
+- Publish Windows EXE ✅
+- Upload OEHS EXE ✅
+- Complete job ✅
+
+Böylece son CI turunda:
+- WPF derleme başarılı
+- test projesi derleme başarılı
+- tüm test suite başarılı
+- Windows self-contained EXE publish başarılı
+- EXE artifact upload başarılı
+
+Önceki publish hatası:
+MainWindow.xaml.cs(2122) CS0176
+ProgressPaymentArchiveStore.Load(string) static metoda instance üzerinden erişim
+düzeltilmiştir.
+
+## PDF durumu
+
+PDF layout için güvenli A4 içerik genişliği 660 DIP olarak uygulanmıştır.
+A4:
+793.7008 x 1122.5197 DIP
+Yatay içerik:
+660 DIP
+Dikey margin:
+40 DIP
+
+Sabit genişlik kullanan tablolar PdfLayoutService.FitColumns üzerinden A4 içerisine sığdırılmaktadır.
+
+Gerçek Windows PDF çıktısı henüz son kullanıcı tarafından üretilip tekrar paylaşılmadı.
+
+Açık manuel kabul kriteri:
+- A4 sağ tarafta taşma olmayacak
+- sağ kenar kırpılmayacak
+- gereksiz yukarı sıkıştırma olmayacak
+- 4 belge 4 A4 sayfa olarak kalacak
+- değerler XLSM ile tutarlı olacak
+
+## Sonraki oturumun ilk adımları
+
+1. GitHub Desktop -> Fetch origin
+2. Pull origin
+3. Visual Studio -> Rebuild Solution
+4. F5
+5. kontrollü hakediş oluştur
+6. Raporlar -> 4 Belge Tek Yazdırma
+7. gerçek PDF üret
+8. PDF'yi buraya yükle
+9. 4 sayfayı tek tek görsel olarak kontrol et
+10. sağ taşma/dikey sıkıştırma varsa FlowDocument/table geometry üzerinde düzelt
+11. ARŞİVLE -> v01
+12. ARŞİVLER -> ÇAĞIR
+13. DÜZELT
+14. yeniden arşivle -> v02
+15. kaynak propagation ve duplicate senaryoları
+16. final genel kontrol raporu
+
+## Önemli
+
+Artık CI tarafı tam yeşildir.
+Kod tarafındaki bir sonraki gerçek kabul kanıtı kullanıcının Windows/Visual Studio F5 çalıştırması ve gerçek PDF çıktısıdır.
 
