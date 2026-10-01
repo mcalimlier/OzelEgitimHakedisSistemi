@@ -176,6 +176,35 @@ public sealed class ProgressPaymentArchiveStoreTests
     }
 
     [Fact]
+    public void Replace_ShouldUpdateSameRevisionAndKeepSameFile()
+    {
+        using var temp = new TempDirectory();
+        var store = new ProgressPaymentArchiveStore(temp.Path);
+
+        var path = store.Save(CreateArchive(1));
+        var updated = CreateArchive(1) with
+        {
+            Route = new RouteData(
+                "02",
+                "Düzeltilmiş Hat",
+                1000m,
+                TransportWorkDays: 21,
+                TenderNumber: "IHALE-01",
+                ContractorTaxOrIdentityNumber: "12345678901")
+        };
+
+        var replacedPath = store.Replace(path, updated);
+        var loaded = ProgressPaymentArchiveStore.Load(replacedPath);
+
+        Assert.Equal(path, replacedPath);
+        Assert.Equal(1, loaded.Revision);
+        Assert.Equal("02", loaded.Route.RouteNumber);
+        Assert.Equal("Düzeltilmiş Hat", loaded.Route.Name);
+        Assert.Single(store.List());
+        Assert.DoesNotContain("_v02.json", replacedPath, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void ThirdSave_ShouldCreateV03WithoutOverwritingEarlierRevisions()
     {
         using var temp = new TempDirectory();
