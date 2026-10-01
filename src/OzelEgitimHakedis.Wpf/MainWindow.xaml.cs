@@ -39,8 +39,7 @@ public partial class MainWindow : Window
     private Guid? _lastCalculatedHistoryId;
     private string? _editingArchiveSourcePath;
     private ProgressPaymentArchive? _editingArchiveSnapshot;
-    private bool _editingArchiveRouteCorrection;
-    private string? _archiveRouteCorrectionSourceKey;
+    private ArchiveCorrectionSection _archiveCorrectionSection;
     private bool _dataLoadFailed;
     private const double DocumentContentWidth = PdfLayoutService.SafeContentWidth;
     private static readonly double[] ThreeColumnWidths = { 58d, 438d, 194d };
@@ -60,6 +59,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        ResetEditorUiToCreateMode();
         ConfigureWindow();
         ConfigureZeroValueInputs();
         ConfigureContractValidationInputs();
@@ -137,17 +137,94 @@ public partial class MainWindow : Window
             NormalizeButtonWidths(System.Windows.Media.VisualTreeHelper.GetChild(root, i));
     }
 
+    private enum ArchiveCorrectionSection
+    {
+        None,
+        Contract,
+        Contractor,
+        Route,
+        ProgressPayment
+    }
+
     private bool IsArchiveCorrection =>
+        _archiveCorrectionSection != ArchiveCorrectionSection.None &&
         !string.IsNullOrWhiteSpace(_editingArchiveSourcePath) &&
         _editingArchiveSnapshot is not null;
+
+    private bool IsArchiveCorrectionFor(ArchiveCorrectionSection section) =>
+        IsArchiveCorrection && _archiveCorrectionSection == section;
+
+    private void ResetEditorUiToCreateMode()
+    {
+        SaveContractButton.Content = "KAYDET";
+        CancelContractEditButton.Visibility = Visibility.Collapsed;
+        ContractEditorTitleTextBlock.Text = "Sözleşme Bilgileri";
+        ContractEditorSubtitleTextBlock.Text = "Temel ihale ve sözleşme alanları";
+
+        SaveContractorButton.Content = "KAYDET";
+        CancelContractorEditButton.Visibility = Visibility.Collapsed;
+        ContractorEditorTitleTextBlock.Text = "FİRMA BİLGİLERİ";
+
+        AddRouteButton.Content = "HAT EKLE";
+        CancelRouteEditButton.Visibility = Visibility.Collapsed;
+        RouteEditorTitleTextBlock.Text = "YENİ HAT";
+        RouteEditorSubtitleTextBlock.Text = "Hat bilgilerini girin";
+        RouteSelectionCard.Visibility = Visibility.Visible;
+        RouteNumberTextBox.IsReadOnly = false;
+
+        CalculateProgressButton.Content = "HAKEDİŞİ HESAPLA";
+        CancelProgressEditButton.Visibility = Visibility.Collapsed;
+        ProgressEditorTitleTextBlock.Text = "DÖNEM HESAP BİLGİLERİ";
+    }
+
+    private void SetContractEditorMode(bool editing)
+    {
+        SaveContractButton.Content = editing ? "DÜZENLE" : "KAYDET";
+        CancelContractEditButton.Visibility = editing ? Visibility.Visible : Visibility.Collapsed;
+        ContractEditorTitleTextBlock.Text = editing ? "İHALE / SÖZLEŞME DÜZENLE" : "Sözleşme Bilgileri";
+        ContractEditorSubtitleTextBlock.Text = editing
+            ? "Mevcut kaydı düzenliyorsunuz. Vazgeçerseniz DÜZENLEME İPTAL düğmesini kullanın."
+            : "Temel ihale ve sözleşme alanları";
+    }
+
+    private void SetContractorEditorMode(bool editing)
+    {
+        SaveContractorButton.Content = editing ? "DÜZENLE" : "KAYDET";
+        CancelContractorEditButton.Visibility = editing ? Visibility.Visible : Visibility.Collapsed;
+        ContractorEditorTitleTextBlock.Text = editing ? "YÜKLENİCİ FİRMA DÜZENLE" : "FİRMA BİLGİLERİ";
+    }
+
+    private void SetRouteEditorMode(bool editing, bool archiveCorrection = false)
+    {
+        AddRouteButton.Content = editing ? "DÜZENLE" : "HAT EKLE";
+        CancelRouteEditButton.Visibility = editing ? Visibility.Visible : Visibility.Collapsed;
+        RouteEditorTitleTextBlock.Text = editing
+            ? (archiveCorrection ? "ARŞİVDEKİ HAT DÜZENLE" : "HAT DÜZENLE")
+            : "YENİ HAT";
+        RouteEditorSubtitleTextBlock.Text = editing
+            ? (archiveCorrection
+                ? "Bu alan yalnızca seçtiğiniz arşiv kaydını günceller; yeni hat oluşturulmaz."
+                : "Mevcut hattı düzenliyorsunuz. Vazgeçerseniz DÜZENLEME İPTAL düğmesini kullanın.")
+            : "Hat bilgilerini girin";
+        RouteSelectionCard.Visibility = archiveCorrection ? Visibility.Collapsed : Visibility.Visible;
+        RouteNumberTextBox.IsReadOnly = false;
+    }
+
+    private void SetProgressEditorMode(bool editing, bool archiveCorrection = false)
+    {
+        CalculateProgressButton.Content = editing ? "DÜZENLE" : "HAKEDİŞİ HESAPLA";
+        CancelProgressEditButton.Visibility = editing ? Visibility.Visible : Visibility.Collapsed;
+        ProgressEditorTitleTextBlock.Text = editing
+            ? (archiveCorrection ? "ARŞİV HAKEDİŞ DÜZENLE" : "HAKEDİŞ DÜZENLE")
+            : "DÖNEM HESAP BİLGİLERİ";
+    }
 
     private void ClearArchiveCorrectionState()
     {
         _editingArchiveSourcePath = null;
         _editingArchiveSnapshot = null;
-        _editingArchiveRouteCorrection = false;
-        _archiveRouteCorrectionSourceKey = null;
-        RouteNumberTextBox.IsReadOnly = false;
+        _archiveCorrectionSection = ArchiveCorrectionSection.None;
+        ResetEditorUiToCreateMode();
     }
 
     private void ConfigureWindow()
