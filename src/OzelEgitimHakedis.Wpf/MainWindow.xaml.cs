@@ -89,6 +89,7 @@ public partial class MainWindow : Window
         ProgressRouteComboBox.ItemsSource = _routes;
         ReportRouteComboBox.ItemsSource = _routes;
         OutputTenderListBox.ItemsSource = _contracts;
+        OehsFreshStartService.EnsureFreshStart();
         LoadPersistedData();
 
         UpdateContractSelectors();
@@ -808,7 +809,8 @@ public partial class MainWindow : Window
         var input = archive.ProgressPayment.Input with
         {
             ContractAmount = updatedContract.ContractAmount,
-            IsVatExempt = updatedContract.VatExempt
+            IsVatExempt = updatedContract.VatExempt,
+            DailyPrice = updatedContract.TransportDailyPrice
         };
 
         var payment = archive.ProgressPayment with
@@ -1306,6 +1308,8 @@ public partial class MainWindow : Window
         {
             _suppressSelectionEvents = false;
         }
+
+        UpdateRouteSummary();
     }
 
     private void RouteContractorListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -1657,7 +1661,15 @@ public partial class MainWindow : Window
 
     private void UpdateRouteSummary()
     {
-        RouteCountTextBlock.Text = _routes.Count.ToString(CultureInfo.CurrentCulture);
+        var contract = RouteTenderListBox.SelectedItem as ContractDraftData;
+        var count = contract is null
+            ? 0
+            : _routes.Count(x => string.Equals(
+                x.TenderNumber,
+                contract.TenderNumber,
+                StringComparison.OrdinalIgnoreCase));
+
+        RouteCountTextBlock.Text = count.ToString(CultureInfo.CurrentCulture);
     }
 
     private void EditContractButton_Click(object sender, RoutedEventArgs e)
@@ -2848,11 +2860,21 @@ public partial class MainWindow : Window
         }
 
         ArchiveCountTextBlock.Text = _archiveRows.Count.ToString(CultureInfo.CurrentCulture);
-        ArchiveLatestRevisionTextBlock.Text =
-            _archiveRows
-                .Select(row => row.RevisionText)
-                .Where(text => text.StartsWith("v", StringComparison.OrdinalIgnoreCase))
-                .LastOrDefault() ?? "-";
+
+        var latestRevision = _archiveRows
+            .Select(row => row.RevisionText)
+            .Select(text => int.TryParse(
+                text.TrimStart('v', 'V'),
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out var revision) ? revision : 0)
+            .DefaultIfEmpty(0)
+            .Max();
+
+        ArchiveLatestRevisionTextBlock.Text = latestRevision > 0
+            ? $"v{latestRevision:00}"
+            : "-";
+
         ArchiveStatusTextBlock.Text = _archiveRows.Count == 0 ? "HAZIR" : "GÜNCEL";
         ArchiveEmptyStateBorder.Visibility = _archiveRows.Count == 0
             ? Visibility.Visible
@@ -3212,7 +3234,7 @@ public partial class MainWindow : Window
 
     private void BeginContractHistoryEdit(ProgressPaymentHistoryData item)
     {
-        if (IsArchiveCorrection)
+        if (IsArchiveEditing)
         {
             _archiveCorrectionSection = ArchiveCorrectionSection.Contract;
             var archivedContract = _editingArchiveSnapshot!.Contract;
@@ -3243,7 +3265,7 @@ public partial class MainWindow : Window
 
     private void BeginContractorHistoryEdit(ProgressPaymentHistoryData item)
     {
-        if (IsArchiveCorrection)
+        if (IsArchiveEditing)
         {
             _archiveCorrectionSection = ArchiveCorrectionSection.Contractor;
             var archivedContractor = _editingArchiveSnapshot!.Contractor;
@@ -3286,7 +3308,7 @@ public partial class MainWindow : Window
 
     private void BeginRouteHistoryEdit(ProgressPaymentHistoryData item)
     {
-        if (IsArchiveCorrection)
+        if (IsArchiveEditing)
         {
             _archiveCorrectionSection = ArchiveCorrectionSection.Route;
             var archive = _editingArchiveSnapshot!;
@@ -3366,7 +3388,7 @@ public partial class MainWindow : Window
 
     private void BeginProgressHistoryEdit(ProgressPaymentHistoryData item)
     {
-        if (IsArchiveCorrection)
+        if (IsArchiveEditing)
         {
             _archiveCorrectionSection = ArchiveCorrectionSection.ProgressPayment;
             var payment = _editingArchiveSnapshot!.ProgressPayment;
