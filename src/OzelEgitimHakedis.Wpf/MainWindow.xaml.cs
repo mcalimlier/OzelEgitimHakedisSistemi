@@ -1912,7 +1912,8 @@ public partial class MainWindow : Window
                         var oldRoute = affectedRouteIndices[routeIndex].route;
                         _routes[affectedRouteIndices[routeIndex].routeIndex] = oldRoute with
                         {
-                            TenderNumber = updatedRoute.TenderNumber
+                            TenderNumber = updatedRoute.TenderNumber,
+                            DailyPrice = proposedContract.TransportDailyPrice
                         };
                     }
 
