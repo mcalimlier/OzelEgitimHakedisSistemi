@@ -6,6 +6,13 @@ namespace OzelEgitimHakedis.Tests;
 
 public sealed class ProgressPaymentReportTests
 {
+    private static readonly string[] DocumentNames =
+    {
+        "Hakediş Raporu",
+        "Hizmet İşleri Hakediş Raporu",
+        "Hizmet İşleri Kabul Tutanağı",
+        "Hakediş İcmali"
+    };
     [Fact]
     public void ReportHistory_ShouldOrderByPeriodDateNotCreatedAt()
     {
