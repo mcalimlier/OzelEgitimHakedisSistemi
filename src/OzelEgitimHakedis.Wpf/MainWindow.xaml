@@ -818,7 +818,7 @@
                                                                     <ColumnDefinition Width="62"/>
                                                                     <ColumnDefinition Width="*"/>
                                                                     <ColumnDefinition Width="250"/>
-                                                                    <ColumnDefinition Width="90"/>
+                                                                    <ColumnDefinition Width="170" MinWidth="170"/>
                                                                 </Grid.ColumnDefinitions>
                                                                 <TextBlock Grid.Column="0" Text="{Binding RouteNumber}" Foreground="{StaticResource Text900Brush}" FontSize="15.5" FontWeight="Bold" VerticalAlignment="Center"/>
                                                                 <StackPanel Grid.Column="1" Margin="8,0">
