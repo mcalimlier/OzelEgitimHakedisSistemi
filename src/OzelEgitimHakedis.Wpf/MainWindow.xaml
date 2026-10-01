@@ -16,10 +16,10 @@
         SnapsToDevicePixels="True"
         StateChanged="Window_StateChanged">
     <Viewbox x:Name="AppScaleViewbox"
-             Stretch="Fill"
-             StretchDirection="Both"
-             HorizontalAlignment="Stretch"
-             VerticalAlignment="Stretch">
+             Stretch="Uniform"
+             StretchDirection="DownOnly"
+             HorizontalAlignment="Center"
+             VerticalAlignment="Center">
         <Border Width="2234.1"
                 Height="1095.2"
                 CornerRadius="15"
