@@ -1939,22 +1939,6 @@ public partial class MainWindow : Window
             : 1;
     }
 
-    private static PrintQueue? FindPdfPrintQueue()
-    {
-        try
-        {
-            var server = new LocalPrintServer();
-            return server.GetPrintQueues()
-                .FirstOrDefault(q =>
-                    q.Name.Contains("Microsoft Print to PDF", StringComparison.OrdinalIgnoreCase) ||
-                    q.Name.Contains("Microsoft PDF", StringComparison.OrdinalIgnoreCase));
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
     private void RecalculateHistoryItem(int index, ProgressPaymentInput input, ProgressPaymentHistoryData metadataSource)
     {
         var result = ProgressPaymentCalculator.Calculate(input);
@@ -2312,6 +2296,12 @@ public partial class MainWindow : Window
 
     private void ArchiveCurrentProgressButton_Click(object sender, RoutedEventArgs e)
     {
+        if (IsArchiveCorrection && _editingArchiveSnapshot is not null && !string.IsNullOrWhiteSpace(_editingArchiveSourcePath))
+        {
+            SaveArchiveCorrectionSnapshot(_editingArchiveSnapshot, "Arşiv");
+            return;
+        }
+
         var item = GetLastCalculatedProgress();
         if (item is null)
         {
@@ -2932,7 +2922,7 @@ public partial class MainWindow : Window
 
             NavigationButton_Click(NavLines, new RoutedEventArgs(Button.ClickEvent, NavLines));
             RouteStatusTextBlock.Text =
-                "ARŞİV DÜZELTME MODU: Hat No dahil ilgili alanları değiştirebilirsiniz. KAYDET mevcut arşiv revision'ının üzerine yazacaktır.";
+                "ARŞİV DÜZELTME MODU: Hat No dahil ilgili alanları değiştirebilirsiniz. KAYDET seçili arşiv dosyasını aynı revision numarasıyla doğrudan günceller.";
             return;
         }
 
