@@ -752,6 +752,15 @@ public partial class MainWindow : Window
 
         var route = archive.Route with { ContractorTaxOrIdentityNumber = tax };
 
+        var updatedPreviousPayments = archive.PreviousPayments
+            .Select(previous => previous with
+            {
+                ContractorName = name,
+                ContractorTaxOrIdentityNumber = tax,
+                BankAccountNumber = updatedContractor.BankAccountNumber
+            })
+            .ToArray();
+
         SaveArchiveCorrectionSnapshot(
             archive with
             {
@@ -759,6 +768,7 @@ public partial class MainWindow : Window
                 Contractor = updatedContractor,
                 Route = route,
                 ProgressPayment = payment,
+                PreviousPayments = updatedPreviousPayments,
                 PdfFileName = BuildArchivePdfFileName(payment)
             },
             "Yüklenici firma");
@@ -790,8 +800,17 @@ public partial class MainWindow : Window
             errors.Add(EndDatePicker);
         }
 
-        if (archive.ProgressPayment.PeriodDate is DateOnly paymentPeriod &&
-            (paymentPeriod < startDate || paymentPeriod > endDate))
+        var archivePaymentPeriods = archive.PreviousPayments
+            .Select(x => x.PeriodDate)
+            .Where(x => x.HasValue)
+            .Select(x => x!.Value)
+            .Append(archive.ProgressPayment.PeriodDate)
+            .Where(x => x.HasValue)
+            .Select(x => x!.Value)
+            .ToArray();
+
+        if (archivePaymentPeriods.Any(paymentPeriod =>
+                paymentPeriod < startDate || paymentPeriod > endDate))
         {
             errors.Add(StartDatePicker);
             errors.Add(EndDatePicker);
@@ -845,12 +864,38 @@ public partial class MainWindow : Window
             DailyPrice = updatedContract.TransportDailyPrice
         };
 
+        var updatedPreviousPayments = archive.PreviousPayments
+            .Select(previous =>
+            {
+                var previousInput = previous.Input with
+                {
+                    ContractAmount = updatedContract.ContractAmount,
+                    IsVatExempt = updatedContract.VatExempt,
+                    DailyPrice = updatedContract.TransportDailyPrice
+                };
+
+                return previous with
+                {
+                    Input = previousInput,
+                    Calculation = ProgressPaymentCalculator.Calculate(previousInput),
+                    WorkName = updatedContract.WorkName,
+                    TenderNumber = updatedContract.TenderNumber,
+                    ContractNumber = updatedContract.ContractNumber,
+                    TenderDate = updatedContract.TenderDate,
+                    ContractDate = updatedContract.ContractDate,
+                    ContractStartDate = updatedContract.StartDate,
+                    ContractEndDate = updatedContract.EndDate
+                };
+            })
+            .ToArray();
+
         SaveArchiveCorrectionSnapshot(
             archive with
             {
                 Contract = updatedContract,
                 Route = route,
                 ProgressPayment = payment,
+                PreviousPayments = updatedPreviousPayments,
                 PdfFileName = BuildArchivePdfFileName(payment)
             },
             "İhale bilgileri");
@@ -904,11 +949,20 @@ public partial class MainWindow : Window
             RouteName = routeName
         };
 
+        var updatedPreviousPayments = archive.PreviousPayments
+            .Select(previous => previous with
+            {
+                RouteNumber = routeNumber,
+                RouteName = routeName
+            })
+            .ToArray();
+
         SaveArchiveCorrectionSnapshot(
             archive with
             {
                 Route = updatedRoute,
                 ProgressPayment = payment,
+                PreviousPayments = updatedPreviousPayments,
                 PdfFileName = BuildArchivePdfFileName(payment)
             },
             "Hat bilgileri");
@@ -1833,6 +1887,26 @@ public partial class MainWindow : Window
             existingContractForLegacy?.BankAccountNumber ?? string.Empty,
             contractWorkDays,
             transportDailyPrice);
+
+        var affectedExistingPaymentPeriods = _progressHistory
+            .Where(x => string.Equals(
+                x.TenderNumber,
+                sourceTenderForEdit,
+                StringComparison.OrdinalIgnoreCase))
+            .Where(x => x.PeriodDate.HasValue)
+            .Select(x => x.PeriodDate!.Value)
+            .ToArray();
+
+        if (affectedExistingPaymentPeriods.Any(period =>
+                period < proposedContract.StartDate || period > proposedContract.EndDate))
+        {
+            ShowContractValidation(
+                "Sözleşme tarih aralığı mevcut hakediş dönemlerini kapsamalıdır. " +
+                "Mevcut hakedişlerden en az birinin dönemi yeni başlangıç/bitiş tarihleri dışında kalıyor.");
+            MarkInvalid(StartDatePicker);
+            MarkInvalid(EndDatePicker);
+            return;
+        }
 
         var existingByTender = _contracts.FirstOrDefault(x =>
             string.Equals(x.TenderNumber, proposedContract.TenderNumber, StringComparison.OrdinalIgnoreCase));
