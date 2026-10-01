@@ -628,16 +628,25 @@ public partial class MainWindow : Window
     {
         try
         {
-            _archiveStore.Replace(_editingArchiveSourcePath!, updatedArchive);
-            _editingArchiveSnapshot = updatedArchive;
+            var finalPath = _archiveStore.Replace(_editingArchiveSourcePath!, updatedArchive);
             ArchiveStatusTextBlock.Text = $"ARŞİV v{updatedArchive.Revision:00} GÜNCELLENDİ";
             CalculationStatusTextBlock.Text =
                 $"{sectionName} düzeltmesi mevcut arşiv v{updatedArchive.Revision:00} üzerinde kaydedildi.";
 
+            ClearArchiveCorrectionState();
             UpdateArchiveView();
+            NavigationButton_Click(NavArchives, new RoutedEventArgs(Button.ClickEvent, NavArchives));
 
             MessageBox.Show(
-                $"{sectionName} başarıyla güncellendi.\n\nMevcut arşiv v{updatedArchive.Revision:00} doğrudan güncellendi.\nYeni arşiv/revision oluşturulmadı.",
+                $"{sectionName} başarıyla güncellendi.
+
+" +
+                $"Mevcut arşiv v{updatedArchive.Revision:00} aynı revision numarasıyla güncellendi.
+" +
+                "Yeni arşiv/revision oluşturulmadı.
+
+" +
+                $"Dosya: {Path.GetFileName(finalPath)}",
                 "OEHS — Arşiv Güncellendi",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
@@ -647,7 +656,9 @@ public partial class MainWindow : Window
             ArchiveStatusTextBlock.Text = "ARŞİV HATASI";
             CalculationStatusTextBlock.Text = ex.Message;
             MessageBox.Show(
-                $"Arşiv güncellenemedi.\n\n{ex.Message}",
+                $"Arşiv güncellenemedi.
+
+{ex.Message}",
                 "OEHS — Arşiv Hatası",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
@@ -854,7 +865,7 @@ public partial class MainWindow : Window
 
     private void SaveContractorButton_Click(object sender, RoutedEventArgs e)
     {
-        if (IsArchiveCorrection)
+        if (IsArchiveCorrectionFor(ArchiveCorrectionSection.Contractor))
         {
             SaveArchivedContractorCorrection();
             return;
@@ -953,6 +964,7 @@ public partial class MainWindow : Window
             return;
 
         _editingContractorKey = contractor.TaxOrIdentityNumber;
+        SetContractorEditorMode(true);
         ContractorNameTextBox.Text = contractor.Name;
         ContractorTaxTextBox.Text = contractor.TaxOrIdentityNumber;
         ContractorAddressTextBox.Text = contractor.Address;
@@ -960,7 +972,44 @@ public partial class MainWindow : Window
         ContractorEmailTextBox.Text = contractor.Email;
         ContractorBankTextBox.Text = contractor.BankAccountNumber;
         ContractorContactTextBox.Text = contractor.ContactPerson;
-        ContractorStatusTextBlock.Text = $"Düzenleme modu: {contractor.Name}.";
+        ContractorStatusTextBlock.Text = $"Düzenleme modu: {contractor.Name}. DÜZENLE ile kaydedin.";
+    }
+
+    private void CancelContractorEditButton_Click(object sender, RoutedEventArgs e)
+    {
+        var archiveCorrection = IsArchiveCorrectionFor(ArchiveCorrectionSection.Contractor);
+        var original = !archiveCorrection && !string.IsNullOrWhiteSpace(_editingContractorKey)
+            ? FindContractor(_editingContractorKey)
+            : null;
+
+        ClearArchiveCorrectionState();
+        _editingContractorKey = null;
+
+        if (archiveCorrection)
+        {
+            ContractorNameTextBox.Clear();
+            ContractorTaxTextBox.Clear();
+            ContractorAddressTextBox.Clear();
+            ContractorPhoneTextBox.Clear();
+            ContractorEmailTextBox.Clear();
+            ContractorBankTextBox.Clear();
+            ContractorContactTextBox.Clear();
+            NavigationButton_Click(NavArchives, new RoutedEventArgs(Button.ClickEvent, NavArchives));
+            return;
+        }
+
+        if (original is not null)
+        {
+            ContractorNameTextBox.Text = original.Name;
+            ContractorTaxTextBox.Text = original.TaxOrIdentityNumber;
+            ContractorAddressTextBox.Text = original.Address;
+            ContractorPhoneTextBox.Text = original.Phone;
+            ContractorEmailTextBox.Text = original.Email;
+            ContractorBankTextBox.Text = original.BankAccountNumber;
+            ContractorContactTextBox.Text = original.ContactPerson;
+        }
+
+        ContractorStatusTextBlock.Text = "Firma düzenlemesi iptal edildi; kayıt değiştirilmedi.";
     }
 
     private void DeleteContractorButton_Click(object sender, RoutedEventArgs e)
@@ -1254,7 +1303,7 @@ public partial class MainWindow : Window
 
     private void AddRouteButton_Click(object sender, RoutedEventArgs e)
     {
-        if (IsArchiveCorrection)
+        if (IsArchiveCorrectionFor(ArchiveCorrectionSection.Route))
         {
             SaveArchivedRouteCorrection();
             return;
@@ -1306,12 +1355,6 @@ public partial class MainWindow : Window
         {
             ShowRouteValidation("Lütfen kırmızı işaretli alanları tamamlayın: " + string.Join(", ", errors) + ".");
             return;
-        }
-
-        if (_editingArchiveRouteCorrection && _editingRoute is not null)
-        {
-            routeNumber = _editingRoute.RouteNumber;
-            RouteNumberTextBox.Text = routeNumber;
         }
 
         var proposed = new RouteDraft(
@@ -1498,6 +1541,7 @@ public partial class MainWindow : Window
             return;
 
         _editingRoute = route;
+        SetRouteEditorMode(true);
 
         var contract = _contracts.FirstOrDefault(x => string.Equals(x.TenderNumber, route.TenderNumber, StringComparison.OrdinalIgnoreCase));
         var contractor = FindContractor(route.ContractorTaxOrIdentityNumber);
@@ -1519,15 +1563,61 @@ public partial class MainWindow : Window
         RouteTransportWorkDaysTextBox.Text = route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
         RouteGuideWorkDaysTextBox.Text = route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
         RouteGuideDailyPriceTextBox.Text = route.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
-        RouteStatusTextBlock.Text = $"Düzenleme modu: {route.TenderNumber} / {route.RouteNumber}.";
+        RouteStatusTextBlock.Text = $"Düzenleme modu: {route.TenderNumber} / {route.RouteNumber}. DÜZENLE ile kaydedin.";
+    }
+
+    private void CancelRouteEditButton_Click(object sender, RoutedEventArgs e)
+    {
+        var archiveCorrection = IsArchiveCorrectionFor(ArchiveCorrectionSection.Route);
+        var original = !archiveCorrection ? _editingRoute : null;
+
+        ClearArchiveCorrectionState();
+
+        if (archiveCorrection)
+        {
+            _editingRoute = null;
+            RouteNumberTextBox.Clear();
+            RouteNameTextBox.Clear();
+            RouteTransportWorkDaysTextBox.Text = "0";
+            RouteGuideWorkDaysTextBox.Text = "0";
+            RouteGuideDailyPriceTextBox.Text = "0";
+            ClearRouteValidationVisuals();
+            NavigationButton_Click(NavArchives, new RoutedEventArgs(Button.ClickEvent, NavArchives));
+            return;
+        }
+
+        _editingRoute = null;
+        if (original is not null)
+        {
+            RouteTenderListBox.SelectedItem = _contracts.FirstOrDefault(x =>
+                string.Equals(x.TenderNumber, original.TenderNumber, StringComparison.OrdinalIgnoreCase));
+            var contractor = FindContractor(original.ContractorTaxOrIdentityNumber);
+            RouteContractorListBox.ItemsSource = contractor is null ? Array.Empty<ContractorDraft>() : new[] { contractor };
+            RouteContractorListBox.SelectedItem = contractor;
+            RouteNumberTextBox.Text = original.RouteNumber;
+            RouteNameTextBox.Text = original.Name;
+            RouteTransportWorkDaysTextBox.Text = original.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
+            RouteGuideWorkDaysTextBox.Text = original.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
+            RouteGuideDailyPriceTextBox.Text = original.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+        }
+        else
+        {
+            RouteNumberTextBox.Clear();
+            RouteNameTextBox.Clear();
+            RouteTransportWorkDaysTextBox.Text = "0";
+            RouteGuideWorkDaysTextBox.Text = "0";
+            RouteGuideDailyPriceTextBox.Text = "0";
+        }
+
+        SetRouteEditorMode(false);
+        ClearRouteValidationVisuals();
+        RouteStatusTextBlock.Text = "Hat düzenlemesi iptal edildi; kayıt değiştirilmedi.";
     }
 
     private void ClearRouteButton_Click(object sender, RoutedEventArgs e)
     {
         ClearArchiveCorrectionState();
         _editingRoute = null;
-        _editingArchiveRouteCorrection = false;
-        _archiveRouteCorrectionSourceKey = null;
         RouteNumberTextBox.IsReadOnly = false;
         RouteNumberTextBox.Clear();
         RouteNameTextBox.Clear();
@@ -1550,8 +1640,31 @@ public partial class MainWindow : Window
 
         _editingContractTender = contract.TenderNumber;
         ApplyContractToForm(contract);
+        SetContractEditorMode(true);
         NavigationButton_Click(NavContract, new RoutedEventArgs(Button.ClickEvent, NavContract));
-        ContractStatusTextBlock.Text = $"Düzenleme modu: {contract.TenderNumber}. Değiştirip KAYDET'e basın.";
+        ContractStatusTextBlock.Text = $"Düzenleme modu: {contract.TenderNumber}. Değiştirip DÜZENLE'e basın.";
+    }
+
+    private void CancelContractEditButton_Click(object sender, RoutedEventArgs e)
+    {
+        var archiveCorrection = IsArchiveCorrectionFor(ArchiveCorrectionSection.Contract);
+        var original = !archiveCorrection && !string.IsNullOrWhiteSpace(_editingContractTender)
+            ? _contracts.FirstOrDefault(x => string.Equals(x.TenderNumber, _editingContractTender, StringComparison.OrdinalIgnoreCase))
+            : null;
+
+        ClearArchiveCorrectionState();
+        _editingContractTender = null;
+
+        if (archiveCorrection)
+        {
+            ClearContractFormOnly();
+            NavigationButton_Click(NavArchives, new RoutedEventArgs(Button.ClickEvent, NavArchives));
+            return;
+        }
+
+        if (original is not null) ApplyContractToForm(original);
+        else ClearContractFormOnly();
+        ContractStatusTextBlock.Text = "Sözleşme düzenlemesi iptal edildi; kayıt değiştirilmedi.";
     }
 
     private void DeleteContractButton_Click(object sender, RoutedEventArgs e)
@@ -1589,7 +1702,7 @@ public partial class MainWindow : Window
 
     private void SaveContractButton_Click(object sender, RoutedEventArgs e)
     {
-        if (IsArchiveCorrection)
+        if (IsArchiveCorrectionFor(ArchiveCorrectionSection.Contract))
         {
             SaveArchivedContractCorrection();
             return;
@@ -2171,7 +2284,7 @@ public partial class MainWindow : Window
 
     private void CalculateProgressButton_Click(object sender, RoutedEventArgs e)
     {
-        var wasArchiveCorrection = !string.IsNullOrWhiteSpace(_editingArchiveSourcePath);
+        var wasArchiveCorrection = IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment)For(ArchiveCorrectionSection.ProgressPayment);
 
         ClearProgressValidationVisuals();
         ProgressValidationBanner.Visibility = Visibility.Collapsed;
@@ -2222,7 +2335,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        var selectedContract = IsArchiveCorrection
+        var selectedContract = IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment)
             ? _editingArchiveSnapshot!.Contract
             : ProgressTenderListBox.SelectedItem as ContractDraftData;
         if (selectedContract is null)
@@ -2234,7 +2347,7 @@ public partial class MainWindow : Window
         try
         {
             RouteDraft? selectedRoute;
-            if (IsArchiveCorrection)
+            if (IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment))
             {
                 var archivedRoute = _editingArchiveSnapshot!.Route;
                 selectedRoute = new RouteDraft(
@@ -2291,7 +2404,7 @@ public partial class MainWindow : Window
                 ? DateOnly.FromDateTime(selectedPeriodDate)
                 : (DateOnly?)null;
 
-            if (IsArchiveCorrection)
+            if (IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment))
             {
                 if (!progressNumber.HasValue || progressNumber <= 0)
                     invalidFields.Add((ProgressNumberTextBox, "Hakediş No"));
@@ -2332,7 +2445,7 @@ public partial class MainWindow : Window
             string contractorName;
             string contractorBankAccount;
 
-            if (IsArchiveCorrection)
+            if (IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment))
             {
                 var archivedContractor = _editingArchiveSnapshot!.Contractor;
                 contractorName = archivedContractor.Name;
@@ -2392,7 +2505,7 @@ public partial class MainWindow : Window
                 _progressHistory.ToArray(),
                 _contracts.ToArray());
 
-            var validationErrors = IsArchiveCorrection
+            var validationErrors = IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment)
                 ? Array.Empty<string>()
                 : ProgressPaymentValidationService.ValidateCreation(
                     dataForValidation,
@@ -2458,7 +2571,7 @@ public partial class MainWindow : Window
             ProgressNetSummaryTextBlock.Text = FormatMoney(result.NetPayable);
             ProgressCalculationSummaryTextBlock.Text = "TAMAM";
 
-            if (IsArchiveCorrection)
+            if (IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment))
             {
                 var archive = _editingArchiveSnapshot!;
                 var updatedPayment = archive.ProgressPayment with
@@ -2497,6 +2610,7 @@ public partial class MainWindow : Window
                 _progressHistory.Add(historyItem);
             }
 
+            SetProgressEditorMode(false);
             SavePersistedData();
             _lastCalculatedHistoryId = historyItem.Id;
             UpdateHistoryView();
@@ -2531,7 +2645,7 @@ public partial class MainWindow : Window
 
     private void ArchiveCurrentProgressButton_Click(object sender, RoutedEventArgs e)
     {
-        if (IsArchiveCorrection && _editingArchiveSnapshot is not null && !string.IsNullOrWhiteSpace(_editingArchiveSourcePath))
+        if (IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment) && _editingArchiveSnapshot is not null && !string.IsNullOrWhiteSpace(_editingArchiveSourcePath))
         {
             SaveArchiveCorrectionSnapshot(_editingArchiveSnapshot, "Arşiv");
             return;
@@ -2639,8 +2753,6 @@ public partial class MainWindow : Window
                 MessageBoxImage.Information);
 
             _editingArchiveSourcePath = null;
-            _editingArchiveRouteCorrection = false;
-            _archiveRouteCorrectionSourceKey = null;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ProgressPaymentArchiveException)
         {
@@ -2899,8 +3011,7 @@ public partial class MainWindow : Window
             var archive = ProgressPaymentArchiveStore.Load(row.FullPath);
             _editingArchiveSourcePath = row.FullPath;
             _editingArchiveSnapshot = archive;
-            _editingArchiveRouteCorrection = false;
-            _archiveRouteCorrectionSourceKey = null;
+            _archiveCorrectionSection = ArchiveCorrectionSection.None;
 
             EditProgressWithTarget(archive.ProgressPayment);
         }
@@ -3076,12 +3187,14 @@ public partial class MainWindow : Window
     {
         if (IsArchiveCorrection)
         {
+            _archiveCorrectionSection = ArchiveCorrectionSection.Contract;
             var archivedContract = _editingArchiveSnapshot!.Contract;
             _editingContractTender = null;
             ApplyContractToForm(archivedContract);
+            SetContractEditorMode(true);
             NavigationButton_Click(NavContract, new RoutedEventArgs(Button.ClickEvent, NavContract));
             ContractStatusTextBlock.Text =
-                "ARŞİV DÜZELTME MODU: İhale bilgilerini güncelleyin. KAYDET mevcut arşiv revision'ının üzerine yazacaktır.";
+                "ARŞİV DÜZELTME MODU: İhale bilgilerini güncelleyin. DÜZENLE mevcut arşiv revision'ını aynı kayıt üzerinde güncelleyecektir.";
             return;
         }
 
@@ -3095,14 +3208,16 @@ public partial class MainWindow : Window
 
         _editingContractTender = contract.TenderNumber;
         ApplyContractToForm(contract);
+        SetContractEditorMode(true);
         NavigationButton_Click(NavContract, new RoutedEventArgs(Button.ClickEvent, NavContract));
-        ContractStatusTextBlock.Text = "Hakedişten gelen düzenleme: yalnızca İhale Bilgileri alanlarını düzeltin ve KAYDET'e basın.";
+        ContractStatusTextBlock.Text = "Hakedişten gelen düzenleme: yalnızca İhale Bilgileri alanlarını düzeltin ve DÜZENLE'e basın.";
     }
 
     private void BeginContractorHistoryEdit(ProgressPaymentHistoryData item)
     {
         if (IsArchiveCorrection)
         {
+            _archiveCorrectionSection = ArchiveCorrectionSection.Contractor;
             var archivedContractor = _editingArchiveSnapshot!.Contractor;
             _editingContractorKey = null;
             ContractorNameTextBox.Text = archivedContractor.Name;
@@ -3112,9 +3227,10 @@ public partial class MainWindow : Window
             ContractorEmailTextBox.Text = archivedContractor.Email;
             ContractorBankTextBox.Text = archivedContractor.BankAccountNumber;
             ContractorContactTextBox.Text = archivedContractor.ContactPerson;
+            SetContractorEditorMode(true);
             NavigationButton_Click(NavContractors, new RoutedEventArgs(Button.ClickEvent, NavContractors));
             ContractorStatusTextBlock.Text =
-                "ARŞİV DÜZELTME MODU: firma bilgilerini güncelleyin. KAYDET mevcut arşiv revision'ının üzerine yazacaktır.";
+                "ARŞİV DÜZELTME MODU: firma bilgilerini güncelleyin. DÜZENLE mevcut arşiv revision'ını aynı kayıt üzerinde güncelleyecektir.";
             return;
         }
 
@@ -3127,6 +3243,7 @@ public partial class MainWindow : Window
         }
 
         _editingContractorKey = contractor.TaxOrIdentityNumber;
+        SetContractorEditorMode(true);
         ContractorNameTextBox.Text = contractor.Name;
         ContractorTaxTextBox.Text = contractor.TaxOrIdentityNumber;
         ContractorAddressTextBox.Text = contractor.Address;
@@ -3135,35 +3252,33 @@ public partial class MainWindow : Window
         ContractorBankTextBox.Text = contractor.BankAccountNumber;
         ContractorContactTextBox.Text = contractor.ContactPerson;
         NavigationButton_Click(NavContractors, new RoutedEventArgs(Button.ClickEvent, NavContractors));
-        ContractorStatusTextBlock.Text = "Hakedişten gelen düzenleme: firma bilgilerini düzeltin ve KAYDET'e basın.";
+        ContractorStatusTextBlock.Text = "Hakedişten gelen düzenleme: Firma bilgilerini değiştirin ve DÜZENLE'e basın.";
     }
 
     private void BeginRouteHistoryEdit(ProgressPaymentHistoryData item)
     {
         if (IsArchiveCorrection)
         {
+            _archiveCorrectionSection = ArchiveCorrectionSection.Route;
             var archive = _editingArchiveSnapshot!;
             RouteTenderListBox.SelectedItem = null;
             RouteContractorListBox.ItemsSource = Array.Empty<ContractorDraft>();
             RouteContractorListBox.SelectedItem = null;
 
             RouteNumberTextBox.Text = archive.Route.RouteNumber;
-            RouteNumberTextBox.IsReadOnly = false;
             RouteNameTextBox.Text = archive.Route.Name;
             RouteTransportWorkDaysTextBox.Text = archive.Route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
             RouteGuideWorkDaysTextBox.Text = archive.Route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
             RouteGuideDailyPriceTextBox.Text = archive.Route.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+            RouteNumberTextBox.IsReadOnly = false;
+            RouteSelectedTenderTextBlock.Text = $"Arşiv ihale: {archive.Route.TenderNumber}";
+            RouteSelectedContractorTextBlock.Text = $"Arşiv yüklenici: {archive.Contractor.Name}";
 
             _editingRoute = null;
-            _editingArchiveRouteCorrection = true;
-            _archiveRouteCorrectionSourceKey = OehsIdentityService.BuildRouteKey(
-                archive.Route.TenderNumber,
-                archive.Route.RouteNumber,
-                archive.Route.ContractorTaxOrIdentityNumber);
-
+            SetRouteEditorMode(true, archiveCorrection: true);
             NavigationButton_Click(NavLines, new RoutedEventArgs(Button.ClickEvent, NavLines));
             RouteStatusTextBlock.Text =
-                "ARŞİV DÜZELTME MODU: Hat No dahil ilgili alanları değiştirebilirsiniz. KAYDET seçili arşiv dosyasını aynı revision numarasıyla doğrudan günceller.";
+                "ARŞİV DÜZELTME MODU: Hat No dahil ilgili alanları değiştirebilirsiniz. DÜZENLE seçili arşiv dosyasını aynı revision numarasıyla günceller; yeni hat oluşturmaz.";
             return;
         }
 
@@ -3213,14 +3328,16 @@ public partial class MainWindow : Window
         RouteTransportWorkDaysTextBox.Text = route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
         RouteGuideWorkDaysTextBox.Text = route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
         RouteGuideDailyPriceTextBox.Text = route.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+        SetRouteEditorMode(true);
         NavigationButton_Click(NavLines, new RoutedEventArgs(Button.ClickEvent, NavLines));
-        RouteStatusTextBlock.Text = "Hakedişten gelen düzenleme: hat bilgilerini düzeltin ve KAYDET'e basın.";
+        RouteStatusTextBlock.Text = "Hakedişten gelen düzenleme: Hat bilgilerini değiştirin ve DÜZENLE'e basın.";
     }
 
     private void BeginProgressHistoryEdit(ProgressPaymentHistoryData item)
     {
         if (IsArchiveCorrection)
         {
+            _archiveCorrectionSection = ArchiveCorrectionSection.ProgressPayment;
             var payment = _editingArchiveSnapshot!.ProgressPayment;
             _editingHistoryId = null;
             WorkDaysTextBox.Text = payment.Input.WorkDays.ToString(CultureInfo.CurrentCulture);
@@ -3238,9 +3355,10 @@ public partial class MainWindow : Window
             ProgressNumberTextBox.Text = payment.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
             ProgressPeriodDatePicker.SelectedDate = payment.PeriodDate?.ToDateTime(TimeOnly.MinValue);
 
+            SetProgressEditorMode(true, archiveCorrection: true);
             NavigationButton_Click(NavProgress, new RoutedEventArgs(Button.ClickEvent, NavProgress));
             CalculationStatusTextBlock.Text =
-                "ARŞİV DÜZELTME MODU: Hakediş girdilerini güncelleyin. HAKEDİŞİ HESAPLA mevcut arşiv revision'ının üzerine yazacaktır.";
+                "ARŞİV DÜZELTME MODU: Hakediş girdilerini güncelleyin. DÜZENLE mevcut arşiv revision'ını aynı kayıt üzerinde güncelleyecektir.";
             return;
         }
 
@@ -3284,8 +3402,48 @@ public partial class MainWindow : Window
         ProgressNumberTextBox.Text = item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
         ProgressPeriodDatePicker.SelectedDate = item.PeriodDate?.ToDateTime(TimeOnly.MinValue);
 
+        SetProgressEditorMode(true);
         NavigationButton_Click(NavProgress, new RoutedEventArgs(Button.ClickEvent, NavProgress));
-        CalculationStatusTextBlock.Text = "Düzenleme modu: yalnızca hakediş girdilerini düzeltin ve HAKEDİŞİ HESAPLA'ya basın.";
+        CalculationStatusTextBlock.Text = "Düzenleme modu: hakediş girdilerini değiştirin ve DÜZENLE'e basın.";
+    }
+
+    private void CancelProgressEditButton_Click(object sender, RoutedEventArgs e)
+    {
+        var archiveCorrection = IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment);
+        var original = !archiveCorrection && _editingHistoryId is Guid id
+            ? _progressHistory.FirstOrDefault(x => x.Id == id)
+            : null;
+
+        ClearArchiveCorrectionState();
+        _editingHistoryId = null;
+
+        if (archiveCorrection)
+        {
+            ProgressValidationBanner.Visibility = Visibility.Collapsed;
+            NavigationButton_Click(NavArchives, new RoutedEventArgs(Button.ClickEvent, NavArchives));
+            return;
+        }
+
+        if (original is not null)
+        {
+            WorkDaysTextBox.Text = original.Input.WorkDays.ToString(CultureInfo.CurrentCulture);
+            DailyPriceTextBox.Text = original.Input.DailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+            GuideWorkDaysTextBox.Text = original.Input.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
+            GuideDailyPriceTextBox.Text = original.Input.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+            DiscountTextBox.Text = original.Input.DiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
+            GuideDiscountTextBox.Text = original.Input.GuideDiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
+            PriceDifferenceTextBox.Text = original.Input.PriceDifference.ToString("N2", CultureInfo.CurrentCulture);
+            GuidePriceDifferenceTextBox.Text = original.Input.GuidePriceDifference.ToString("N2", CultureInfo.CurrentCulture);
+            TaxDebtTextBox.Text = original.Input.TaxDebt.ToString("N2", CultureInfo.CurrentCulture);
+            SocialSecurityDebtTextBox.Text = original.Input.SocialSecurityDebt.ToString("N2", CultureInfo.CurrentCulture);
+            MinimumWageSupportTextBox.Text = original.Input.MinimumWageSupport.ToString("N2", CultureInfo.CurrentCulture);
+            InspectionPenaltyTextBox.Text = original.Input.InspectionPenalty.ToString("N2", CultureInfo.CurrentCulture);
+            ProgressNumberTextBox.Text = original.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
+            ProgressPeriodDatePicker.SelectedDate = original.PeriodDate?.ToDateTime(TimeOnly.MinValue);
+        }
+
+        SetProgressEditorMode(false);
+        CalculationStatusTextBlock.Text = "Hakediş düzenlemesi iptal edildi; kayıt değiştirilmedi.";
     }
 
     private void DeleteHistoryButton_Click(object sender, RoutedEventArgs e)
