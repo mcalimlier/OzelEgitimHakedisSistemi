@@ -38,7 +38,7 @@ public partial class MainWindow : Window
     private readonly ProgressPaymentArchiveStore _archiveStore = new();
     private readonly ObservableCollection<ArchiveRow> _archiveRows = new();
     private Guid? _lastCalculatedHistoryId;
-    private const double DocumentContentWidth = 690d;
+    private const double DocumentContentWidth = PdfLayoutService.SafeContentWidth;
     private static readonly double[] ThreeColumnWidths = { 58d, 438d, 194d };
     private static readonly double[] ThreeValueWidths = { 45d, 360d, 135d };
     private static readonly double[] FourColumnWidths = { 55d, 308d, 163d, 164d };
@@ -2737,8 +2737,7 @@ public partial class MainWindow : Window
     private static Table CreateDocumentTable(params (string Label, string Value)[] rows)
     {
         var table = new Table { CellSpacing = 0, BorderBrush = System.Windows.Media.Brushes.Black, BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 0, 10) };
-        table.Columns.Add(new TableColumn { Width = new GridLength(345) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(345) });
+        AddFittedColumns(table, 345d, 345d);
         var group = new TableRowGroup();
         foreach (var (label, value) in rows)
         {
@@ -2763,8 +2762,7 @@ public partial class MainWindow : Window
             BorderThickness = new Thickness(1),
             Margin = new Thickness(0, 0, 0, 10)
         };
-        foreach (var width in ThreeColumnWidths)
-            table.Columns.Add(new TableColumn { Width = new GridLength(width) });
+        AddFittedColumns(table, ThreeColumnWidths);
 
         var group = new TableRowGroup();
 
@@ -2798,10 +2796,7 @@ public partial class MainWindow : Window
             BorderThickness = new Thickness(1),
             Margin = new Thickness(0, 0, 0, 10)
         };
-        table.Columns.Add(new TableColumn { Width = new GridLength(56) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(36) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(426) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(172) });
+        AddFittedColumns(table, 56d, 36d, 426d, 172d);
 
         var group = new TableRowGroup();
         const int deductionItemCount = 12;
@@ -2877,8 +2872,7 @@ public partial class MainWindow : Window
             BorderThickness = new Thickness(1),
             Margin = new Thickness(0, 0, 0, 8)
         };
-        table.Columns.Add(new TableColumn { Width = new GridLength(480) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(210) });
+        AddFittedColumns(table, 480d, 210d);
 
         var group = new TableRowGroup();
         var left = CreateCell(route.Name, true);
@@ -2906,8 +2900,7 @@ public partial class MainWindow : Window
             BorderThickness = new Thickness(1),
             Margin = new Thickness(0, 0, 0, 8)
         };
-        table.Columns.Add(new TableColumn { Width = new GridLength(500) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(218.11) });
+        AddFittedColumns(table, 500d, 218.11d);
 
         var group = new TableRowGroup();
         var left = CreateCell(route.Name, true);
@@ -2940,8 +2933,7 @@ public partial class MainWindow : Window
             BorderThickness = new Thickness(1),
             Margin = new Thickness(0, 0, 0, 10)
         };
-        foreach (var width in FourColumnWidths)
-            table.Columns.Add(new TableColumn { Width = new GridLength(width) });
+        AddFittedColumns(table, FourColumnWidths);
 
         var group = new TableRowGroup();
         var title = CreateCell("Süre Uzatım Kararlarının", true, false, true, true);
@@ -2977,8 +2969,7 @@ public partial class MainWindow : Window
             Margin = new Thickness(0, 0, 0, 10)
         };
 
-        foreach (var width in ThreeValueWidths)
-            table.Columns.Add(new TableColumn { Width = new GridLength(width) });
+        AddFittedColumns(table, ThreeValueWidths);
 
         var group = new TableRowGroup();
         foreach (var item in rows)
@@ -3030,8 +3021,7 @@ public partial class MainWindow : Window
             Margin = new Thickness(0, 0, 0, 10)
         };
 
-        foreach (var width in FiveColumnWidths)
-            table.Columns.Add(new TableColumn { Width = new GridLength(width) });
+        AddFittedColumns(table, FiveColumnWidths);
 
         var group = new TableRowGroup();
         var header = new TableRow();
@@ -3065,8 +3055,7 @@ public partial class MainWindow : Window
             Margin = new Thickness(0, 18, 0, 8)
         };
 
-        table.Columns.Add(new TableColumn { Width = new GridLength(359.055) });
-        table.Columns.Add(new TableColumn { Width = new GridLength(359.055) });
+        AddFittedColumns(table, 359.055d, 359.055d);
 
         var group = new TableRowGroup();
         var row = new TableRow();
@@ -3122,17 +3111,19 @@ public partial class MainWindow : Window
 
     private static FlowDocument CreateBaseDocument(string title, string subtitle)
     {
-        const double a4Width = 793.7008;
-        const double a4Height = 1122.5197;
-        const double margin = 51.8504;
+        const double a4Width = PdfLayoutService.A4Width;
+        const double a4Height = PdfLayoutService.A4Height;
+        const double horizontalMargin = (a4Width - DocumentContentWidth) / 2d;
+        const double verticalMargin = 40d;
         const double contentWidth = DocumentContentWidth;
-        // A4 sabit: 210 x 297 mm. Yaklaşık 13,7 mm güvenli kenar boşluğu; tablo içeriği 690 pt.
+        // A4 sabit: 210 x 297 mm. Yazıcı sürücüsü için yatayda güvenli içerik alanı,
+        // dikeyde gereksiz sıkıştırmayı azaltan makul kenar boşlukları.
 
         var document = new FlowDocument
         {
             PageWidth = a4Width,
             PageHeight = a4Height,
-            PagePadding = new Thickness(margin, margin, margin, margin),
+            PagePadding = new Thickness(horizontalMargin, verticalMargin, horizontalMargin, verticalMargin),
             FontFamily = new System.Windows.Media.FontFamily("Arial"),
             FontSize = 9,
             ColumnWidth = contentWidth,
@@ -3164,6 +3155,13 @@ public partial class MainWindow : Window
             Margin = new Thickness(0, 5, 0, 4)
         };
     }
+
+    private static void AddFittedColumns(Table table, params double[] widths)
+    {
+        foreach (var width in PdfLayoutService.FitColumns(widths))
+            table.Columns.Add(new TableColumn { Width = new GridLength(width) });
+    }
+
 
     private static bool IsBeforePayment(ProgressPaymentHistoryData item, ProgressPaymentHistoryData current)
     {
