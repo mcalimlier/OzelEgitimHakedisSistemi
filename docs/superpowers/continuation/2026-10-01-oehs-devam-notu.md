@@ -622,3 +622,36 @@ Açık manuel kabul kriteri:
 Artık CI tarafı tam yeşildir.
 Kod tarafındaki bir sonraki gerçek kabul kanıtı kullanıcının Windows/Visual Studio F5 çalıştırması ve gerçek PDF çıktısıdır.
 
+
+# 22. 1 EKİM 2026 — KULLANICI GERİ BİLDİRİMİ SONRASI UX/PDF/ARŞİV DÜZENLEMELERİ
+
+Kullanıcı F5 ile uygulamayı açıp kontrollü hakediş ve v01 arşivleme akışını çalıştırdı.
+
+Uygulanan düzeltmeler:
+- Taşıma İskonto alanı başlangıçta 0 gelir; odaklanınca mevcut zero-input davranışı ile 0 temizlenir.
+- Hakediş ekranındaki üst özet dört ayrı büyük kart yerine tek sıkı özet paneline dönüştürüldü; standart ekran yüksekliğinde ScrollViewer ihtiyacını azaltmak için dikey boşluklar daraltıldı.
+- ARŞİVLER satırındaki ÇAĞIR / DÜZELT / KLASÖRÜ AÇ aksiyon alanı genişletildi.
+- Sabit genişlikli düğmeler için genel Loaded-time ölçüm ile içerik taşması ihtiyacı kadar otomatik genişletme eklendi.
+- Belge önizlemesi FlowDocumentReader Page moduna alındı; başlangıç zoom'u %75, iki sayfa/scroll modları kapalı. Amaç A4 sayfasını önizlemede sağdan kırpmadan göstermektir.
+- PDF çıktı hedefi standartlaştırıldı:
+  Desktop\OzelEgitimHakedisSistemi\Ciktilar\Hakedisler\<IhaleDosyaNo>\Hat-<HatNo>\
+  Dosya adı:
+  OEHS_<Ihale>_Hat-01_Hakediş-01_yyyy-MM-dd.pdf
+- OehsOutputPathService eklendi ve hedef yol için otomatik test eklendi.
+- Raporlar ekranına PDF hedef klasörü görünür bilgi olarak eklendi.
+- Microsoft Print to PDF bulunamadığında OEHS artık Windows'un yerleşik Printing-PrintToPDFServices-Features özelliğini yönetici onayıyla etkinleştirmeyi deniyor; başarısız olursa kontrollü yönlendirme gösteriyor.
+- Arşivden DÜZELT akışında canlı kayıt ile geçmiş revision ayrımı kullanıcıya açık hale getirildi:
+  - düzeltme hesaplandığında: eski revision korunur, ARŞİVLE ile yeni revision oluşturulur,
+  - yeni revision oluştuğunda: hakedişin hangi vXX olarak arşive eklendiğini popup ile bildirir,
+  - kaynak kayıt (ihale/yüklenici/hat) düzenlendiğinde: canlı ilişkinin güncellendiği, önceki archive snapshot'ın değiştirilmediği kullanıcıya popup ile bildirilir.
+- Doğrudan ÇAĞIR işlemi düzeltme modunu sıfırlar; böylece normal çağırma yanlışlıkla düzeltme olarak gösterilmez.
+
+Windows tarafında açık manuel kabul kontrolleri:
+1. Rebuild/F5 sonrası hakediş panelinin scrollbar gerektirmeden kullanılabildiğini kontrol et.
+2. BELGE ÖNİZLEME ekranında 1-4 sayfanın sağ kenardan kırpılmadığını kontrol et.
+3. PDF OLARAK KAYDET ile Microsoft Print to PDF özelliğinin bulunup bulunmadığını kontrol et; eksikse OEHS'nin UAC sonrası etkinleştirme akışını kullan.
+4. Kontrollü PDF'yi belirtilen Ciktilar\Hakedisler klasör yapısına kaydet ve gerçek PDF'yi incele.
+5. Arşivden DÜZELT -> HAKEDİŞ GİRDİLERİ -> HESAPLA -> ARŞİVLE akışında v01'in korunup v02'nin oluştuğunu popup ve ARŞİVLER listesi üzerinden doğrula.
+
+Not:
+- Gerçek Windows PDF driver davranışı ve fiziksel sayfa çıktısı burada CI ile tam doğrulanamaz; son kabul yine bu bilgisayarda gerçek PDF üretimiyle yapılacaktır.
