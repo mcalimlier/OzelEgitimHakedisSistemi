@@ -2104,11 +2104,21 @@ public partial class MainWindow : Window
             var normalizedContractorIdentity = OehsIdentityService.NormalizeIdentity(
                 selectedRoute.ContractorTaxOrIdentityNumber);
 
-            var routeContractor = IsArchiveCorrection
-                ? _editingArchiveSnapshot!.Contractor
-                : FindContractor(normalizedContractorIdentity);
-            var contractorName = routeContractor?.Name ?? selectedRoute.ContractorName;
-            var contractorBankAccount = routeContractor?.BankAccountNumber ?? string.Empty;
+            string contractorName;
+            string contractorBankAccount;
+
+            if (IsArchiveCorrection)
+            {
+                var archivedContractor = _editingArchiveSnapshot!.Contractor;
+                contractorName = archivedContractor.Name;
+                contractorBankAccount = archivedContractor.BankAccountNumber;
+            }
+            else
+            {
+                var liveContractor = FindContractor(normalizedContractorIdentity);
+                contractorName = liveContractor?.Name ?? selectedRoute.ContractorName;
+                contractorBankAccount = liveContractor?.BankAccountNumber ?? string.Empty;
+            }
 
             // Ön kontrol, hesaplama motorundan önce çalışır.
             var historyItem = new ProgressPaymentHistoryData(
@@ -2835,9 +2845,9 @@ public partial class MainWindow : Window
     {
         if (IsArchiveCorrection)
         {
-            var contract = _editingArchiveSnapshot!.Contract;
+            var archivedContract = _editingArchiveSnapshot!.Contract;
             _editingContractTender = null;
-            ApplyContractToForm(contract);
+            ApplyContractToForm(archivedContract);
             NavigationButton_Click(NavContract, new RoutedEventArgs(Button.ClickEvent, NavContract));
             ContractStatusTextBlock.Text =
                 "ARŞİV DÜZELTME MODU: İhale bilgilerini güncelleyin. KAYDET mevcut arşiv revision'ının üzerine yazacaktır.";
@@ -2862,15 +2872,15 @@ public partial class MainWindow : Window
     {
         if (IsArchiveCorrection)
         {
-            var contractor = _editingArchiveSnapshot!.Contractor;
+            var archivedContractor = _editingArchiveSnapshot!.Contractor;
             _editingContractorKey = null;
-            ContractorNameTextBox.Text = contractor.Name;
-            ContractorTaxTextBox.Text = contractor.TaxOrIdentityNumber;
-            ContractorAddressTextBox.Text = contractor.Address;
-            ContractorPhoneTextBox.Text = contractor.Phone;
-            ContractorEmailTextBox.Text = contractor.Email;
-            ContractorBankTextBox.Text = contractor.BankAccountNumber;
-            ContractorContactTextBox.Text = contractor.ContactPerson;
+            ContractorNameTextBox.Text = archivedContractor.Name;
+            ContractorTaxTextBox.Text = archivedContractor.TaxOrIdentityNumber;
+            ContractorAddressTextBox.Text = archivedContractor.Address;
+            ContractorPhoneTextBox.Text = archivedContractor.Phone;
+            ContractorEmailTextBox.Text = archivedContractor.Email;
+            ContractorBankTextBox.Text = archivedContractor.BankAccountNumber;
+            ContractorContactTextBox.Text = archivedContractor.ContactPerson;
             NavigationButton_Click(NavContractors, new RoutedEventArgs(Button.ClickEvent, NavContractors));
             ContractorStatusTextBlock.Text =
                 "ARŞİV DÜZELTME MODU: firma bilgilerini güncelleyin. KAYDET mevcut arşiv revision'ının üzerine yazacaktır.";
@@ -3871,7 +3881,7 @@ public partial class MainWindow : Window
         var image = new Image
         {
             Source = pages[0],
-            Stretch = Stretch.None,
+            Stretch = System.Windows.Media.Stretch.None,
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Top,
             SnapsToDevicePixels = true,
@@ -3898,7 +3908,7 @@ public partial class MainWindow : Window
                 Content = text,
                 Width = width,
                 Height = 38,
-                Margin = new Thickness(3, 0),
+                Margin = new Thickness(3, 0, 3, 0),
                 Style = (Style)FindResource("SecondaryButton")
             };
         }
@@ -3915,13 +3925,13 @@ public partial class MainWindow : Window
             FontSize = 14,
             FontWeight = FontWeights.SemiBold,
             VerticalAlignment = VerticalAlignment.Center,
-            Margin = new Thickness(12, 0)
+            Margin = new Thickness(12, 0, 12, 0)
         };
 
         void RefreshPreview()
         {
             image.Source = pages[pageIndex];
-            image.LayoutTransform = new ScaleTransform(zoom, zoom);
+            image.LayoutTransform = new System.Windows.Media.ScaleTransform(zoom, zoom);
             pageInfo.Text = $"{pageIndex + 1} / {pages.Count} • %{Math.Round(zoom * 100):0}";
             scroll.ScrollToHome();
         }
