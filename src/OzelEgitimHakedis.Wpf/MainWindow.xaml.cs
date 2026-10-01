@@ -969,20 +969,7 @@ public partial class MainWindow : Window
         UpdateContractSelectors();
         UpdateHomeSummaryView();
         ClearContractorButton_Click(sender, e);
-        var contractorArchiveCorrection = !string.IsNullOrWhiteSpace(_editingArchiveSourcePath);
-        ContractorStatusTextBlock.Text = contractorArchiveCorrection
-            ? $"Firma kaydedildi: {name}. Canlı hakediş ilişkileri güncellendi; önceki arşiv revision'ı korunuyor. İlgili hakedişi yeniden hesaplayıp ARŞİVLE ile yeni revision oluşturun."
-            : $"Firma kaydedildi: {name}.";
-
-        if (contractorArchiveCorrection)
-        {
-            MessageBox.Show(
-                $"'{name}' başarıyla güncellendi.\n\nÖnceki arşiv revision'ı değiştirilmedi ve korunuyor. İlgili hakedişi yeniden hesaplayıp ARŞİVLE ile yeni revision oluşturabilirsiniz.",
-                "OEHS — Arşiv Düzeltme Bilgisi",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
-        }
-    }
+        ContractorStatusTextBlock.Text = $"Firma kaydedildi: {name}.";
 
     private void EditContractorButton_Click(object sender, RoutedEventArgs e)
     {
@@ -1445,20 +1432,7 @@ public partial class MainWindow : Window
         UpdateContractSummaryView();
         UpdateHomeSummaryView();
         ClearRouteButton_Click(sender, e);
-        var routeArchiveCorrection = !string.IsNullOrWhiteSpace(_editingArchiveSourcePath);
-        RouteStatusTextBlock.Text = routeArchiveCorrection
-            ? $"Hat kaydedildi: {routeNumber} — {routeName}. İlişkili canlı hakedişler güncellendi; önceki arşiv revision'ı korunuyor. İlgili hakedişi yeniden hesaplayıp ARŞİVLE ile yeni revision oluşturun."
-            : $"Hat kaydedildi: {routeNumber} — {routeName}.";
-
-        if (routeArchiveCorrection)
-        {
-            MessageBox.Show(
-                $"Arşivdeki Hat {routeNumber} — {routeName} başarıyla güncellendi.\n\nYeni bir hat kaydı oluşturulmadı. Aynı hat ilişkisi korunuyor.\nÖnceki arşiv revision'ı değiştirilmedi; ilgili hakedişi yeniden hesaplayıp ARŞİVLE ile yeni revision oluşturabilirsiniz.",
-                "OEHS — Arşiv Hat Düzeltme",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
-        }
-    }
+        RouteStatusTextBlock.Text = $"Hat kaydedildi: {routeNumber} — {routeName}.";
 
     private IReadOnlyList<ProgressPaymentHistoryData> BuildRoutePropagation(RouteDraft oldRoute, RouteDraft updatedRoute)
     {
@@ -1896,6 +1870,7 @@ public partial class MainWindow : Window
         }
 
         _editingContractTender = null;
+        SetContractEditorMode(false);
         ApplyContractToForm(proposedContract);
         SavePersistedData();
         UpdateContractSelectors();
@@ -1906,20 +1881,7 @@ public partial class MainWindow : Window
         UpdateAcceptanceView();
 
         ContractStatusTextBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(36, 104, 216));
-        var contractArchiveCorrection = !string.IsNullOrWhiteSpace(_editingArchiveSourcePath);
-        ContractStatusTextBlock.Text = contractArchiveCorrection
-            ? $"İhale kaydedildi: {proposedContract.TenderNumber}. İlişkili canlı hakedişler güncellendi; önceki arşiv revision'ı korunuyor. İlgili hakedişi yeniden hesaplayıp ARŞİVLE ile yeni revision oluşturun."
-            : $"İhale kaydedildi: {proposedContract.TenderNumber}.";
-
-        if (contractArchiveCorrection)
-        {
-            MessageBox.Show(
-                $"İhale/Dosya {proposedContract.TenderNumber} başarıyla güncellendi.\n\nÖnceki arşiv revision'ı değiştirilmedi ve korunuyor. İlgili hakedişi yeniden hesaplayıp ARŞİVLE ile yeni revision oluşturabilirsiniz.",
-                "OEHS — Arşiv Düzeltme Bilgisi",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
-        }
-    }
+        ContractStatusTextBlock.Text = $"İhale kaydedildi: {proposedContract.TenderNumber}.";
 
     private void LoadPersistedData()
     {
