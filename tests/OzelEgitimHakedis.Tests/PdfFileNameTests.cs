@@ -20,8 +20,8 @@ public sealed class PdfFileNameTests
         var name = OehsFileNameService.BuildProgressPdfFileName(
             "123/45:67", "01/02", 3, new DateOnly(2026, 11, 30));
 
-        Assert.DoesNotContain("/", name);
-        Assert.DoesNotContain(":", name);
+        Assert.DoesNotContain("/", name, StringComparison.Ordinal);
+        Assert.DoesNotContain(":", name, StringComparison.Ordinal);
         Assert.EndsWith("_2026-11-30.pdf", name, StringComparison.Ordinal);
     }
 }
