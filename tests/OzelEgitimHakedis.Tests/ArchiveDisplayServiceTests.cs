@@ -113,6 +113,44 @@ public sealed class ArchiveDisplayServiceTests
     }
 
     [Fact]
+    public void LegacyArchiveWithoutPaymentNumber_ShouldDisplayDash()
+    {
+        using var temp = new TempDirectory();
+        var store = new ProgressPaymentArchiveStore(temp.Path);
+
+        var archive = Archive() with
+        {
+            ProgressPayment = Archive().ProgressPayment with
+            {
+                ProgressPaymentNumber = null
+            }
+        };
+        store.Save(archive);
+
+        var row = Assert.Single(ArchiveDisplayService.BuildRows(store));
+        Assert.Contains("Hakediş -", row.DisplayTitle, StringComparison.Ordinal);
+        Assert.DoesNotContain("2147483647", row.DisplayTitle, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void LatestRevisionCardSource_ShouldNotBeReplacedByInvalidEntries()
+    {
+        using var temp = new TempDirectory();
+        var store = new ProgressPaymentArchiveStore(temp.Path);
+        store.Save(Archive());
+        store.Save(Archive());
+        File.WriteAllText(Path.Combine(temp.Path, "OEHS_broken_v99.json"), "{broken");
+
+        var rows = ArchiveDisplayService.BuildRows(store);
+
+        Assert.Equal("v02", rows
+            .Select(x => x.RevisionText)
+            .Where(x => x.StartsWith("v", StringComparison.OrdinalIgnoreCase))
+            .Last());
+        Assert.Equal("GEÇERSİZ", rows[^1].RevisionText);
+    }
+
+    [Fact]
     public void ArchiveList_ShouldOrderByPaymentPeriodAndRevision()
     {
         using var temp = new TempDirectory();
