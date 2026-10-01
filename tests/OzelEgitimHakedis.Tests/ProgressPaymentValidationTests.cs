@@ -50,6 +50,60 @@ public sealed class ProgressPaymentValidationTests
     }
 
     [Fact]
+    public void MissingContractSource_ShouldBeRejected()
+    {
+        var data = new OehsApplicationData(
+            null,
+            new[] { Route() },
+            new[] { new Contractor("Firma", "12345678901") },
+            Array.Empty<ProgressPaymentHistoryData>(),
+            Array.Empty<ContractDraftData>());
+
+        var candidate = History(1, new DateOnly(2026, 10, 31));
+
+        var errors = ProgressPaymentValidationService.ValidateCreation(
+            data, Contract(), Route(), candidate, false);
+
+        Assert.Contains(errors, x => x.Contains("ihale / dosya", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void MissingRouteSource_ShouldBeRejected()
+    {
+        var data = new OehsApplicationData(
+            Contract(),
+            Array.Empty<RouteData>(),
+            new[] { new Contractor("Firma", "12345678901") },
+            Array.Empty<ProgressPaymentHistoryData>(),
+            new[] { Contract() });
+
+        var candidate = History(1, new DateOnly(2026, 10, 31));
+
+        var errors = ProgressPaymentValidationService.ValidateCreation(
+            data, Contract(), Route(), candidate, false);
+
+        Assert.Contains(errors, x => x.Contains("hat kaydı", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void MissingContractorSource_ShouldBeRejected()
+    {
+        var data = new OehsApplicationData(
+            Contract(),
+            new[] { Route() },
+            Array.Empty<Contractor>(),
+            Array.Empty<ProgressPaymentHistoryData>(),
+            new[] { Contract() });
+
+        var candidate = History(1, new DateOnly(2026, 10, 31));
+
+        var errors = ProgressPaymentValidationService.ValidateCreation(
+            data, Contract(), Route(), candidate, false);
+
+        Assert.Contains(errors, x => x.Contains("yüklenici firma kaydı", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public void SuggestNextProgressPaymentNumber_ShouldUseSameTenderRouteIdentity()
     {
         var history = new[]
