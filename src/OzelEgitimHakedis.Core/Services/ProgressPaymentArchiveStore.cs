@@ -99,14 +99,53 @@ public sealed class ProgressPaymentArchiveStore
 
         Directory.CreateDirectory(folder);
 
+        // Düzeltme aynı revision'a aittir. Kimlik alanları (özellikle Hat No)
+        // değiştiğinde dosya adı da aynı revision korunarak yeni kimliğe taşınır;
+        // v02/v03 gibi yeni revision oluşturulmaz.
+        var targetPath = Path.Combine(folder, BuildFileStem(archive) + ".json");
+        var samePath = string.Equals(fullPath, targetPath, StringComparison.OrdinalIgnoreCase);
+
+        if (!samePath && File.Exists(targetPath))
+        {
+            throw new ProgressPaymentArchiveException(
+                "Düzeltme sonucu oluşacak arşiv dosyası zaten mevcut. Mevcut arşiv değiştirilmedi ve yeni revision oluşturulmadı.");
+        }
+
         var json = JsonSerializer.Serialize(archive, JsonOptions);
-        var tempPath = Path.Combine(folder, Path.GetFileName(fullPath) + "." + Guid.NewGuid().ToString("N") + ".tmp");
+        var tempPath = Path.Combine(
+            folder,
+            Path.GetFileName(targetPath) + "." + Guid.NewGuid().ToString("N") + ".tmp");
 
         try
         {
             File.WriteAllText(tempPath, json);
-            File.Move(tempPath, fullPath, overwrite: true);
-            return fullPath;
+
+            if (samePath)
+            {
+                File.Move(tempPath, fullPath, overwrite: true);
+                return fullPath;
+            }
+
+            File.Move(tempPath, targetPath, overwrite: false);
+
+            try
+            {
+                File.Delete(fullPath);
+            }
+            catch
+            {
+                // Eski dosya silinemiyorsa yeni hedefi geri al; böylece düzeltme
+                // tamamlanmış görünmeden önce eski kayıt korunur.
+                if (File.Exists(targetPath))
+                    File.Delete(targetPath);
+                throw;
+            }
+
+            return targetPath;
+        }
+        catch (ProgressPaymentArchiveException)
+        {
+            throw;
         }
         catch (IOException ex)
         {
