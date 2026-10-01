@@ -1257,8 +1257,7 @@ public partial class MainWindow : Window
                     var affectedRoutes = affectedRouteIndices
                         .Select(x => x.route with
                         {
-                            TenderNumber = proposedContract.TenderNumber,
-                            DailyPrice = proposedContract.TransportDailyPrice
+                            TenderNumber = proposedContract.TenderNumber
                         })
                         .ToArray();
 
