@@ -228,13 +228,6 @@ public sealed class ProgressPaymentArchiveStore
             && Regex.IsMatch(name, @"_v\d+\.json$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
     }
 
-    private static string SafeFilePart(string? value, string fallback)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-            return fallback;
-
-        var invalid = Path.GetInvalidFileNameChars();
-        var chars = value.Trim().Select(ch => invalid.Contains(ch) ? '_' : ch).ToArray();
-        return new string(chars);
-    }
+    private static string SafeFilePart(string? value, string fallback) =>
+        OehsFileNameService.SanitizeFileName(value, fallback);
 }
