@@ -8,6 +8,13 @@ namespace OzelEgitimHakedis.Tests;
 
 public sealed class ArchiveDisplayServiceTests
 {
+    private static readonly string[] DocumentNames =
+    {
+        "Hakediş Raporu",
+        "Hizmet İşleri Hakediş Raporu",
+        "Hizmet İşleri Kabul Tutanağı",
+        "Hakediş İcmali"
+    };
     [Fact]
     public void ArchiveList_ShouldShowV01AndV02AsSeparateRows()
     {
@@ -89,7 +96,7 @@ public sealed class ArchiveDisplayServiceTests
                 ContractorTaxOrIdentityNumber: "12345678901"),
             Array.Empty<ProgressPaymentHistoryData>(),
             "OEHS_TENDER_Hat-01_Hakediş-01_2026-10-31.pdf",
-            new[] { "Hakediş Raporu", "Hizmet İşleri Hakediş Raporu", "Hizmet İşleri Kabul Tutanağı", "Hakediş İcmali" });
+            DocumentNames);
 
     private sealed class TempDirectory : IDisposable
     {
