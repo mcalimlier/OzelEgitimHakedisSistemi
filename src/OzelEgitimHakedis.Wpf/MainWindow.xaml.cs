@@ -2214,6 +2214,41 @@ public partial class MainWindow : Window
                 ? DateOnly.FromDateTime(selectedPeriodDate)
                 : (DateOnly?)null;
 
+            if (IsArchiveCorrection)
+            {
+                if (!progressNumber.HasValue || progressNumber <= 0)
+                    invalidFields.Add((ProgressNumberTextBox, "Hakediş No"));
+
+                if (!periodDate.HasValue)
+                {
+                    invalidFields.Add((ProgressPeriodDatePicker, "Dönem Tarihi"));
+                }
+                else if (periodDate.Value < _editingArchiveSnapshot!.Contract.StartDate ||
+                         periodDate.Value > _editingArchiveSnapshot.Contract.EndDate)
+                {
+                    invalidFields.Add((ProgressPeriodDatePicker, "Dönem Tarihi"));
+                }
+            }
+
+            if (invalidFields.Count > 0)
+            {
+                foreach (var (control, _) in invalidFields)
+                    MarkProgressInvalid(control);
+
+                var correctionValidationMessage =
+                    "Lütfen kırmızı işaretli alanları tamamlayın/düzeltin: " +
+                    string.Join(", ", invalidFields.Select(x => x.Name)) + ".";
+
+                ProgressValidationMessageTextBlock.Text = correctionValidationMessage;
+                ProgressValidationBanner.Visibility = Visibility.Visible;
+                ProgressCalculationSummaryTextBlock.Text = "KONTROL GEREKLİ";
+                CalculationStatusTextBlock.Foreground =
+                    new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(198, 40, 40));
+                CalculationStatusTextBlock.FontWeight = FontWeights.Bold;
+                CalculationStatusTextBlock.Text = correctionValidationMessage;
+                return;
+            }
+
             var normalizedContractorIdentity = OehsIdentityService.NormalizeIdentity(
                 selectedRoute.ContractorTaxOrIdentityNumber);
 
