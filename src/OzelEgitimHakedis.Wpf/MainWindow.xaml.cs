@@ -956,6 +956,23 @@ public partial class MainWindow : Window
         foreach (var item in routeUpdates)
             _routes[item.index] = item.route;
 
+        for (var index = 0; index < _contracts.Count; index++)
+        {
+            var contract = _contracts[index];
+            if (string.Equals(
+                    OehsIdentityService.NormalizeIdentity(contract.ContractorTaxOrIdentityNumber),
+                    normalizedOld,
+                    StringComparison.Ordinal))
+            {
+                _contracts[index] = contract with
+                {
+                    ContractorName = newCore.Name,
+                    ContractorTaxOrIdentityNumber = newCore.TaxOrIdentityNumber,
+                    BankAccountNumber = newCore.BankAccountNumber
+                };
+            }
+        }
+
         _progressHistory.Clear();
         foreach (var item in propagated)
             _progressHistory.Add(item);
@@ -2481,7 +2498,11 @@ public partial class MainWindow : Window
         }
 
         ArchiveCountTextBlock.Text = _archiveRows.Count.ToString(CultureInfo.CurrentCulture);
-        ArchiveLatestRevisionTextBlock.Text = _archiveRows.LastOrDefault()?.RevisionText ?? "-";
+        ArchiveLatestRevisionTextBlock.Text =
+            _archiveRows
+                .Select(row => row.RevisionText)
+                .Where(text => text.StartsWith("v", StringComparison.OrdinalIgnoreCase))
+                .LastOrDefault() ?? "-";
         ArchiveStatusTextBlock.Text = _archiveRows.Count == 0 ? "HAZIR" : "GÜNCEL";
         ArchiveEmptyStateBorder.Visibility = _archiveRows.Count == 0
             ? Visibility.Visible
@@ -3648,8 +3669,7 @@ public partial class MainWindow : Window
     private static Table CreateFourColumnTable(IEnumerable<(string A, string B, string C, string D)> rows, string[] headers)
     {
         var table = new Table { CellSpacing = 0, BorderBrush = System.Windows.Media.Brushes.Black, BorderThickness = new Thickness(1), Margin = new Thickness(0, 0, 0, 10) };
-        foreach (var width in FourColumnWidths)
-            table.Columns.Add(new TableColumn { Width = new GridLength(width) });
+        AddFittedColumns(table, FourColumnWidths);
 
         var group = new TableRowGroup();
         var header = new TableRow();
