@@ -10,7 +10,7 @@ namespace OzelEgitimHakedis.Wpf;
 
 internal static class OehsPdfExportService
 {
-    private const double Dpi = 160d;
+    private const double Dpi = 200d;
     private const double DipsPerInch = 96d;
     private const double PdfA4WidthPoints = 595.2755905511812d;
     private const double PdfA4HeightPoints = 841.8897637795276d;
