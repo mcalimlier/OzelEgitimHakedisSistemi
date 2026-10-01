@@ -4,7 +4,6 @@ using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using System.Runtime.InteropServices;
-using System.Printing;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
@@ -1806,7 +1805,7 @@ public partial class MainWindow : Window
             TransportDailyPrice = latest.Input.DailyPrice,
             PdfFileName = fileName,
             PdfTargetPath = pdfTargetPath,
-            PdfPrinter = "Microsoft Print to PDF",
+            PdfGenerator = "OEHS PDF Export",
             Documents = OfficialDocumentNames,
             SavedAt = DateTime.Now
         }, JsonWriteOptions);
@@ -1831,7 +1830,7 @@ public partial class MainWindow : Window
         var panel = new StackPanel { Margin = new Thickness(24) };
         panel.Children.Add(new TextBlock
         {
-            Text = "PDF KAYIT YERİ HAZIR",
+            Text = "PDF BAŞARIYLA KAYDEDİLDİ",
             FontSize = 20,
             FontWeight = FontWeights.Bold,
             Foreground = System.Windows.Media.Brushes.DarkSlateGray
@@ -1921,57 +1920,6 @@ public partial class MainWindow : Window
 
         dialog.Content = panel;
         dialog.ShowDialog();
-    }
-
-    private static bool TryEnsurePdfPrinter()
-    {
-        if (FindPdfPrintQueue() is not null)
-            return true;
-
-        var answer = MessageBox.Show(
-            "Bu bilgisayarda Microsoft Print to PDF yazıcısı bulunamadı.\n\nOEHS şimdi Windows'un yerleşik Microsoft Print to PDF özelliğini etkinleştirmeyi deneyebilir. Yönetici onayı (UAC) gerekebilir.\n\nDevam edilsin mi?",
-            "OEHS — PDF Yazıcısı",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Question);
-
-        if (answer != MessageBoxResult.Yes)
-            return false;
-
-        try
-        {
-            using var process = Process.Start(new ProcessStartInfo
-            {
-                FileName = "dism.exe",
-                Arguments = "/Online /Enable-Feature /FeatureName:Printing-PrintToPDFServices-Features /All /NoRestart",
-                UseShellExecute = true,
-                Verb = "runas"
-            });
-
-            if (process is null)
-                return false;
-
-            process.WaitForExit(120000);
-            System.Threading.Thread.Sleep(1500);
-
-            if (FindPdfPrintQueue() is not null)
-                return true;
-        }
-        catch (System.ComponentModel.Win32Exception)
-        {
-            // Kullanıcı UAC isteğini iptal etti.
-        }
-        catch
-        {
-            // Aşağıdaki kontrollü kullanıcı mesajı gösterilecektir.
-        }
-
-        MessageBox.Show(
-            "Microsoft Print to PDF hâlâ bulunamadı. Windows'ta Win+R → optionalfeatures.exe açıp 'Microsoft Print to PDF' özelliğini etkinleştirin; ardından OEHS'yi yeniden açın.",
-            "OEHS — PDF Yazıcısı",
-            MessageBoxButton.OK,
-            MessageBoxImage.Warning);
-
-        return false;
     }
 
     private static int ExtractArchiveRevision(string path)
@@ -3883,37 +3831,6 @@ public partial class MainWindow : Window
         return item.CreatedAt < current.CreatedAt;
     }
 
-    private static bool TryShowDocument(FlowDocument document, string title, bool requirePdfPrinter = false)
-    {
-        var dialog = new System.Windows.Controls.PrintDialog
-        {
-            PrintTicket = new PrintTicket
-            {
-                PageMediaSize = new PageMediaSize(PageMediaSizeName.ISOA4),
-                PageOrientation = PageOrientation.Portrait
-            }
-        };
-
-        if (requirePdfPrinter)
-        {
-            if (!TryEnsurePdfPrinter())
-                return false;
-
-            var pdfQueue = FindPdfPrintQueue();
-            if (pdfQueue is null)
-                return false;
-
-            dialog.PrintQueue = pdfQueue;
-        }
-
-        if (dialog.ShowDialog() != true)
-            return false;
-
-        // A4 yazdırma kalıbı sabittir: 210 x 297 mm ve 1 cm kenar boşluğu.
-        dialog.PrintDocument(((IDocumentPaginatorSource)document).DocumentPaginator, title);
-        return true;
-    }
-
     private void PreviewAllRouteDocumentsButton_Click(object sender, RoutedEventArgs e)
     {
         if (!EnsureRouteForOutput())
@@ -4418,27 +4335,6 @@ public partial class MainWindow : Window
         }
 
         return combined;
-    }
-
-    private void PrintAllRouteDocumentsButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (!EnsureRouteForOutput())
-            return;
-
-        var route = (RouteDraft)ReportRouteComboBox.SelectedItem;
-        var latest = GetSelectedRouteLatestPayment()!;
-
-        var documents = new (FlowDocument Document, string Title)[]
-        {
-            (BuildHakedişRaporu(route, latest), "Hakediş Raporu"),
-            (BuildHizmetIsleriHakedisRaporu(route, latest), "Hizmet İşleri Hakediş Raporu"),
-            (BuildKabulTutanağı(route, latest), "Hizmet İşleri Kabul Tutanağı"),
-            (BuildHakedişIcmali(route, latest), "Hakediş İcmali")
-        };
-
-        var combined = BuildCombinedRouteDocuments(documents);
-        var pdfTitle = BuildPdfPrintTitle(route, latest);
-        TryShowDocument(combined, pdfTitle, requirePdfPrinter: true);
     }
 
     private void CreateSaveAllRouteDocumentsButton_Click(object sender, RoutedEventArgs e)
