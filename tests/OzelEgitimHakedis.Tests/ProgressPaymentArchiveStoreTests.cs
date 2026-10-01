@@ -80,7 +80,15 @@ public sealed class ProgressPaymentArchiveStoreTests
         var path = store.Save(archive);
         var loaded = store.Load(path);
 
-        Assert.Equal(archive with { Revision = 1 }, loaded);
+        Assert.Equal(archive.SchemaVersion, loaded.SchemaVersion);
+        Assert.Equal(archive.Revision, loaded.Revision);
+        Assert.Equal(archive.Contract, loaded.Contract);
+        Assert.Equal(archive.Contractor, loaded.Contractor);
+        Assert.Equal(archive.Route, loaded.Route);
+        Assert.Equal(archive.ProgressPayment, loaded.ProgressPayment);
+        Assert.Equal(archive.PreviousPayments, loaded.PreviousPayments);
+        Assert.Equal(archive.PdfFileName, loaded.PdfFileName);
+        Assert.Equal(archive.Documents, loaded.Documents);
     }
 
     [Fact]
