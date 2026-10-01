@@ -28,7 +28,7 @@ public static class ArchiveDisplayService
         {
             try
             {
-                var archive = store.Load(file.FullName);
+                var archive = ProgressPaymentArchiveStore.Load(file.FullName);
                 var progress = archive.ProgressPayment.ProgressPaymentNumber ?? int.MaxValue;
                 var period = archive.ProgressPayment.PeriodDate ?? DateOnly.MaxValue;
 
