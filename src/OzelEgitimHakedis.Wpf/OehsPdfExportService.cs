@@ -39,7 +39,18 @@ internal static class OehsPdfExportService
                     new Rect(new Point(0, 0), documentPage.Size));
 
                 if (documentPage.Visual is Visual pageVisual)
-                    drawingContext.DrawVisual(pageVisual);
+                {
+                    var brush = new VisualBrush(pageVisual)
+                    {
+                        Stretch = Stretch.None,
+                        AlignmentX = AlignmentX.Left,
+                        AlignmentY = AlignmentY.Top
+                    };
+                    drawingContext.DrawRectangle(
+                        brush,
+                        null,
+                        new Rect(new Point(0, 0), documentPage.Size));
+                }
             }
 
             var pixelWidth = Math.Max(1, (int)Math.Ceiling(documentPage.Size.Width * Dpi / DipsPerInch));
