@@ -12,7 +12,7 @@ Başarı ölçütü:
 - İhale/dosya no, VKN/TCKN ve hat ilişkilerinin isimlerden bağımsız, kararlı biçimde tutulması.
 - Hakediş oluşturma sonrası arşivlenebilir ve tekrar çağrılabilir tekil kayıt.
 - Kaynak kayıt düzeltildiğinde ilişkili aktif kayıtların kontrollü biçimde yeniden hesaplanması.
-- Düzeltmelerde eski arşiv sürümlerinin korunması.
+- Normal yeni arşivlemelerde revision üretimi; ARŞİVLER > DÜZELT akışında ise seçilen mevcut snapshot'ın aynı revision dosyası üzerinde güncellenmesi.
 - 4 resmi çıktının tek A4 PDF çıktısında korunması ve dosya adının anlamlı olması.
 - Son aşamada derleme, test, veri akışı ve UI için genel kontrol raporu verilmesi.
 
@@ -189,7 +189,7 @@ Kaynak kayıtlardan biri değiştirildiğinde:
 - geçersiz hale gelen yinelenen hakediş kombinasyonları engellenir;
 - değişiklik kullanıcının görebileceği bir sonuç mesajında özetlenir.
 
-Geçmiş arşiv dosyaları otomatik olarak üzerine yazılmaz.
+Normal canlı kaynak değişiklikleri geçmiş arşiv snapshot'larını değiştirmez. Yalnızca kullanıcı `ARŞİVLER > DÜZELT` ile belirli bir snapshot'ı seçtiğinde o snapshot aynı revision dosyası üzerinde güncellenir.
 
 ## 8. Arşiv sistemi
 
@@ -232,7 +232,7 @@ Yeni düzenleme:
 
 Dosya sistemi açısından geçersiz karakterler güvenli biçimde normalize edilir.
 
-Eski sürümler silinmez ve üzerine yazılmaz.
+Normal yeni arşiv revision'ları silinmez veya üzerine yazılmaz. ARŞİVLER > DÜZELT ise açıkça seçilmiş mevcut snapshot'ı aynı revision dosyasında günceller; bu akışta yeni revision üretilmez.
 
 ### 8.4 Arşiv paneli
 
@@ -244,7 +244,7 @@ Yeni `ARŞİVLER` paneli:
 - `DÜZELT` ile düzeltme akışını açar,
 - `KLASÖRÜ AÇ` ile klasörü açar.
 
-Arşiv çağrıldıktan sonra kullanıcı kaydı yeniden hesaplayabilir ve yeni revision oluşturabilir.
+Arşiv çağrıldıktan sonra `ÇAĞIR` normal canlı veri yükleme akışıdır. `DÜZELT` seçildiğinde archive snapshot doğrudan düzenlenir ve kaydetme aynı dosya/same revision üzerinde yapılır.
 
 ## 9. Canlı veri ile arşiv arasındaki ayrım
 
@@ -268,7 +268,7 @@ Her hakediş için 4 resmi belge korunacaktır:
 3. Hizmet İşleri Kabul Tutanağı
 4. Hakediş İcmali
 
-Çıktı tek bir A4 PDF dosyasında, bu dört belgenin mevcut düzen mantığı bozulmadan üretilecektir.
+Çıktı tek bir A4 PDF dosyasında, bu dört belgenin mevcut düzen mantığı bozulmadan tutulur. PDF OLARAK KAYDET OEHS'nin doğrudan PDF üreticisini kullanır; Microsoft Print to PDF veya başka bir yazıcı kuyruğuna bağımlı değildir.dan üretilecektir.
 
 PDF dosya adı:
 
