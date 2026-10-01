@@ -1796,7 +1796,18 @@ public partial class MainWindow : Window
             _progressHistory.ToArray(),
             _contracts.ToArray());
 
-        _dataStore.Save(data);
+        try
+        {
+            _dataStore.Save(data);
+        }
+        catch (OehsApplicationDataStoreException ex)
+        {
+            MessageBox.Show(
+                $"{ex.Message}\n\nMevcut veri dosyası korunmuştur. OEHS değişikliklerinizi kaydetmedi.",
+                "OEHS — Veri Kaydetme Hatası",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
     }
 
     private void ClearContractButton_Click(object sender, RoutedEventArgs e)
