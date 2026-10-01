@@ -38,6 +38,7 @@ public partial class MainWindow : Window
     private readonly ProgressPaymentArchiveStore _archiveStore = new();
     private readonly ObservableCollection<ArchiveRow> _archiveRows = new();
     private Guid? _lastCalculatedHistoryId;
+    private string? _editingArchiveSourcePath;
     private const double DocumentContentWidth = PdfLayoutService.SafeContentWidth;
     private static readonly double[] ThreeColumnWidths = { 58d, 438d, 194d };
     private static readonly double[] ThreeValueWidths = { 45d, 360d, 135d };
@@ -59,6 +60,7 @@ public partial class MainWindow : Window
         ConfigureWindow();
         ConfigureZeroValueInputs();
         ConfigureContractValidationInputs();
+        Loaded += MainWindow_Loaded;
         SourceInitialized += MainWindow_SourceInitialized;
         StartDatePicker.SelectedDate = DateTime.Today;
         EndDatePicker.SelectedDate = DateTime.Today;
@@ -66,6 +68,7 @@ public partial class MainWindow : Window
         SocialSecurityDebtTextBox.Text = "0";
         MinimumWageSupportTextBox.Text = "0";
         InspectionPenaltyTextBox.Text = "0";
+        DiscountTextBox.Text = "0";
         GuideWorkDaysTextBox.Text = "0";
         GuideDailyPriceTextBox.Text = "0";
         GuideDiscountTextBox.Text = "0";
@@ -102,6 +105,33 @@ public partial class MainWindow : Window
         UpdateReportView();
         UpdateAcceptanceView();
         UpdateArchiveView();
+    }
+
+    private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+    {
+        Dispatcher.BeginInvoke(
+            System.Windows.Threading.DispatcherPriority.Loaded,
+            new Action(() => NormalizeButtonWidths(this)));
+    }
+
+    private static void NormalizeButtonWidths(DependencyObject root)
+    {
+        if (root is Button button &&
+            button.Visibility == Visibility.Visible &&
+            !double.IsNaN(button.Width) &&
+            button.Width > 0)
+        {
+            var originalWidth = button.Width;
+            button.Width = double.NaN;
+            button.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+            var desiredWidth = Math.Ceiling(button.DesiredSize.Width + 8);
+            button.Width = Math.Max(originalWidth, desiredWidth);
+        }
+
+        var childCount = System.Windows.Media.VisualTreeHelper.GetChildrenCount(root);
+        for (var i = 0; i < childCount; i++)
+            NormalizeButtonWidths(System.Windows.Media.VisualTreeHelper.GetChild(root, i));
     }
 
     private void ConfigureWindow()
@@ -560,7 +590,9 @@ public partial class MainWindow : Window
         UpdateContractSelectors();
         UpdateHomeSummaryView();
         ClearContractorButton_Click(sender, e);
-        ContractorStatusTextBlock.Text = $"Firma kaydedildi: {name}.";
+        ContractorStatusTextBlock.Text = !string.IsNullOrWhiteSpace(_editingArchiveSourcePath)
+            ? $"Firma kaydedildi: {name}. Canlı hakediş ilişkileri güncellendi; önceki arşiv revision'ı korunuyor. İlgili hakedişi yeniden hesaplayıp ARŞİVLE ile yeni revision oluşturun."
+            : $"Firma kaydedildi: {name}.";
     }
 
     private void EditContractorButton_Click(object sender, RoutedEventArgs e)
@@ -946,7 +978,9 @@ public partial class MainWindow : Window
         UpdateContractSummaryView();
         UpdateHomeSummaryView();
         ClearRouteButton_Click(sender, e);
-        RouteStatusTextBlock.Text = $"Hat kaydedildi: {routeNumber} — {routeName}.";
+        RouteStatusTextBlock.Text = !string.IsNullOrWhiteSpace(_editingArchiveSourcePath)
+            ? $"Hat kaydedildi: {routeNumber} — {routeName}. İlişkili canlı hakedişler güncellendi; önceki arşiv revision'ı korunuyor. İlgili hakedişi yeniden hesaplayıp ARŞİVLE ile yeni revision oluşturun."
+            : $"Hat kaydedildi: {routeNumber} — {routeName}.";
     }
 
     private IReadOnlyList<ProgressPaymentHistoryData> BuildRoutePropagation(RouteDraft oldRoute, RouteDraft updatedRoute)
@@ -1304,7 +1338,9 @@ public partial class MainWindow : Window
         UpdateAcceptanceView();
 
         ContractStatusTextBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(36, 104, 216));
-        ContractStatusTextBlock.Text = $"İhale kaydedildi: {proposedContract.TenderNumber}.";
+        ContractStatusTextBlock.Text = !string.IsNullOrWhiteSpace(_editingArchiveSourcePath)
+            ? $"İhale kaydedildi: {proposedContract.TenderNumber}. İlişkili canlı hakedişler güncellendi; önceki arşiv revision'ı korunuyor. İlgili hakedişi yeniden hesaplayıp ARŞİVLE ile yeni revision oluşturun."
+            : $"İhale kaydedildi: {proposedContract.TenderNumber}.";
     }
 
     private void LoadPersistedData()
@@ -1420,8 +1456,7 @@ public partial class MainWindow : Window
         ContractStatusTextBlock.Text = "Yeni ihale/dosya kaydı için alanlar temizlendi.";
     }
 
-    private static string OehsDesktopRoot =>
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "OzelEgitimHakedisSistemi");
+    private static string OehsDesktopRoot => OehsOutputPathService.DesktopRoot;
 
     private static string SafeFileName(string value)
     {
@@ -1444,11 +1479,25 @@ public partial class MainWindow : Window
 
     private static string SaveRouteDocumentsArchiveMetadata(ProgressPaymentHistoryData latest)
     {
-        var folderName = BuildArchiveKey(latest);
-        var documentFolder = Path.Combine(OehsDesktopRoot, "Belgeler", folderName);
+        var tender = latest.TenderNumber ?? string.Empty;
+        var route = latest.RouteNumber ?? string.Empty;
+        var documentFolder = OehsOutputPathService.BuildPdfDirectory(tender, route);
         Directory.CreateDirectory(documentFolder);
 
-        var metadataPath = Path.Combine(documentFolder, "OEHS_PDF_Bilgi.json");
+        var fileName = latest.ProgressPaymentNumber.HasValue && latest.PeriodDate.HasValue
+            ? OehsFileNameService.BuildProgressPdfFileName(
+                tender,
+                route,
+                latest.ProgressPaymentNumber.Value,
+                latest.PeriodDate.Value)
+            : "OEHS_Hakediş.pdf";
+
+        var metadataSuffix = latest.ProgressPaymentNumber.HasValue && latest.PeriodDate.HasValue
+            ? $"_{latest.ProgressPaymentNumber.Value:00}_{latest.PeriodDate.Value:yyyy-MM-dd}"
+            : "_Yeni";
+
+        var metadataPath = Path.Combine(documentFolder, $"OEHS_PDF_Bilgi{metadataSuffix}.json");
+        var pdfTargetPath = Path.Combine(documentFolder, fileName);
         var metadata = JsonSerializer.Serialize(new
         {
             latest.Id,
@@ -1460,20 +1509,83 @@ public partial class MainWindow : Window
             latest.ContractorName,
             latest.BankAccountNumber,
             TransportDailyPrice = latest.Input.DailyPrice,
-            PdfFileName = latest.ProgressPaymentNumber.HasValue && latest.PeriodDate.HasValue
-                ? OehsFileNameService.BuildProgressPdfFileName(
-                    latest.TenderNumber ?? string.Empty,
-                    latest.RouteNumber ?? string.Empty,
-                    latest.ProgressPaymentNumber.Value,
-                    latest.PeriodDate.Value)
-                : "OEHS_Hakediş.pdf",
+            PdfFileName = fileName,
+            PdfTargetPath = pdfTargetPath,
             PdfPrinter = "Microsoft Print to PDF",
             Documents = OfficialDocumentNames,
             SavedAt = DateTime.Now
         }, JsonWriteOptions);
-        File.WriteAllText(metadataPath, metadata);
 
+        File.WriteAllText(metadataPath, metadata);
         return documentFolder;
+    }
+
+    private static bool TryEnsurePdfPrinter()
+    {
+        if (FindPdfPrintQueue() is not null)
+            return true;
+
+        var answer = MessageBox.Show(
+            "Bu bilgisayarda Microsoft Print to PDF yazıcısı bulunamadı.\n\nOEHS şimdi Windows'un yerleşik Microsoft Print to PDF özelliğini etkinleştirmeyi deneyebilir. Yönetici onayı (UAC) gerekebilir.\n\nDevam edilsin mi?",
+            "OEHS — PDF Yazıcısı",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (answer != MessageBoxResult.Yes)
+            return false;
+
+        try
+        {
+            using var process = Process.Start(new ProcessStartInfo
+            {
+                FileName = "dism.exe",
+                Arguments = "/Online /Enable-Feature /FeatureName:Printing-PrintToPDFServices-Features /All /NoRestart",
+                UseShellExecute = true,
+                Verb = "runas"
+            });
+
+            if (process is null)
+                return false;
+
+            process.WaitForExit(120000);
+            System.Threading.Thread.Sleep(1500);
+
+            if (FindPdfPrintQueue() is not null)
+                return true;
+        }
+        catch (System.ComponentModel.Win32Exception)
+        {
+            // Kullanıcı UAC isteğini iptal etti.
+        }
+        catch
+        {
+            // Aşağıdaki kontrollü kullanıcı mesajı gösterilecektir.
+        }
+
+        MessageBox.Show(
+            "Microsoft Print to PDF hâlâ bulunamadı. Windows'ta Win+R → optionalfeatures.exe açıp 'Microsoft Print to PDF' özelliğini etkinleştirin; ardından OEHS'yi yeniden açın.",
+            "OEHS — PDF Yazıcısı",
+            MessageBoxButton.OK,
+            MessageBoxImage.Warning);
+
+        return false;
+    }
+
+    private static int ExtractArchiveRevision(string path)
+    {
+        var match = System.Text.RegularExpressions.Regex.Match(
+            Path.GetFileNameWithoutExtension(path),
+            @"_v(?<revision>\d+)$",
+            System.Text.RegularExpressions.RegexOptions.CultureInvariant | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+        return match.Success &&
+               int.TryParse(
+                   match.Groups["revision"].Value,
+                   System.Globalization.NumberStyles.None,
+                   System.Globalization.CultureInfo.InvariantCulture,
+                   out var revision)
+            ? revision
+            : 1;
     }
 
     private static PrintQueue? FindPdfPrintQueue()
@@ -1534,6 +1646,8 @@ public partial class MainWindow : Window
 
     private void CalculateProgressButton_Click(object sender, RoutedEventArgs e)
     {
+        var wasArchiveCorrection = !string.IsNullOrWhiteSpace(_editingArchiveSourcePath);
+
         ClearProgressValidationVisuals();
         ProgressValidationBanner.Visibility = Visibility.Collapsed;
         ProgressValidationMessageTextBlock.Text = string.Empty;
@@ -1771,7 +1885,9 @@ public partial class MainWindow : Window
 
             CalculationStatusTextBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(36, 104, 216));
             CalculationStatusTextBlock.FontWeight = FontWeights.SemiBold;
-            CalculationStatusTextBlock.Text = "Hesaplama tamamlandı. Arşivlemek veya düzeltmek için aşağıdaki işlemleri kullanın.";
+            CalculationStatusTextBlock.Text = wasArchiveCorrection
+                ? "Düzeltme hesaplandı. Önceki arşiv revision'ı korunuyor; yeni revision için ARŞİVLE düğmesine basın."
+                : "Hesaplama tamamlandı. Arşivlemek veya düzeltmek için aşağıdaki işlemleri kullanın.";
             ArchiveCurrentProgressButton.Visibility = Visibility.Visible;
             CorrectCurrentProgressButton.Visibility = Visibility.Visible;
             UpdateArchiveView();
@@ -1874,10 +1990,27 @@ public partial class MainWindow : Window
         try
         {
             var path = _archiveStore.Save(archive);
+            var revision = ExtractArchiveRevision(path);
+            var wasCorrection = !string.IsNullOrWhiteSpace(_editingArchiveSourcePath);
+
             ArchiveStatusTextBlock.Text = "ARŞİV OLUŞTURULDU";
-            CalculationStatusTextBlock.Text = $"Hakediş arşivlendi: {Path.GetFileName(path)}";
+            CalculationStatusTextBlock.Text =
+                wasCorrection
+                    ? $"Düzeltme başarıyla arşive eklendi: v{revision:00}."
+                    : $"Hakediş arşivlendi: v{revision:00}.";
+
             UpdateArchiveView();
             NavigationButton_Click(NavArchives, new RoutedEventArgs(Button.ClickEvent, NavArchives));
+
+            MessageBox.Show(
+                wasCorrection
+                    ? $"Hakediş No {item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"} başarıyla düzeltilerek arşive v{revision:00} olarak eklendi.\n\nÖnceki revision korunmuştur.\n{Path.GetFileName(path)}"
+                    : $"Hakediş No {item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"} arşive v{revision:00} olarak eklendi.\n\n{Path.GetFileName(path)}",
+                "OEHS — Arşiv Bilgisi",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+
+            _editingArchiveSourcePath = null;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ProgressPaymentArchiveException)
         {
@@ -1902,7 +2035,10 @@ public partial class MainWindow : Window
     {
         var target = AskHistoryEditTarget(item);
         if (!target.HasValue)
+        {
+            _editingArchiveSourcePath = null;
             return;
+        }
 
         var selection = ProgressCorrectionTargetService.Select(target.Value, item);
         switch (selection.Target)
@@ -1920,6 +2056,7 @@ public partial class MainWindow : Window
                 BeginProgressHistoryEdit(item);
                 break;
             case ProgressCorrectionTarget.Cancel:
+                _editingArchiveSourcePath = null;
                 break;
         }
     }
@@ -2093,10 +2230,15 @@ public partial class MainWindow : Window
             UpdateAcceptanceView();
             NavigationButton_Click(NavProgress, new RoutedEventArgs(Button.ClickEvent, NavProgress));
 
+            var isCorrectionLoad = !string.IsNullOrWhiteSpace(_editingArchiveSourcePath);
             CalculationStatusTextBlock.Text =
                 restored.AddedAnything
-                    ? $"Arşiv çağrıldı ve aktif veriyle birleştirildi. {restored.Message} Kaydetmeden önce ön kontrol yapılacaktır."
-                    : $"Arşiv çağrıldı. {restored.Message} Kaydetmeden önce ön kontrol yapılacaktır.";
+                    ? isCorrectionLoad
+                        ? $"Arşiv revision düzeltme için çağrıldı ve aktif veriyle birleştirildi. {restored.Message} Değişiklikler yeni revision olarak kaydedilecektir."
+                        : $"Arşiv çağrıldı ve aktif veriyle birleştirildi. {restored.Message} Kaydetmeden önce ön kontrol yapılacaktır."
+                    : isCorrectionLoad
+                        ? $"Arşiv revision düzeltme için çağrıldı. {restored.Message} Değişiklikler yeni revision olarak kaydedilecektir."
+                        : $"Arşiv çağrıldı. {restored.Message} Kaydetmeden önce ön kontrol yapılacaktır.";
         }
         catch (Exception ex) when (ex is ProgressPaymentArchiveException or IOException or UnauthorizedAccessException)
         {
@@ -2106,6 +2248,9 @@ public partial class MainWindow : Window
 
     private void EditArchiveButton_Click(object sender, RoutedEventArgs e)
     {
+        if (sender is Button { Tag: ArchiveRow archiveRow })
+            _editingArchiveSourcePath = archiveRow.FullPath;
+
         LoadArchiveButton_Click(sender, e);
         if (sender is Button { Tag: ArchiveRow row })
         {
@@ -2187,7 +2332,9 @@ public partial class MainWindow : Window
     }
 
     private static string GetHistoryArchiveFolder(ProgressPaymentHistoryData item) =>
-        Path.Combine(OehsDesktopRoot, "Belgeler", BuildArchiveKey(item));
+        OehsOutputPathService.BuildPdfDirectory(
+            item.TenderNumber ?? string.Empty,
+            item.RouteNumber ?? string.Empty);
 
     private void OpenHistoryFolderButton_Click(object sender, RoutedEventArgs e)
     {
@@ -3198,16 +3345,12 @@ public partial class MainWindow : Window
 
         if (requirePdfPrinter)
         {
+            if (!TryEnsurePdfPrinter())
+                return false;
+
             var pdfQueue = FindPdfPrintQueue();
             if (pdfQueue is null)
-            {
-                MessageBox.Show(
-                    "Microsoft Print to PDF yazıcısı bulunamadı. Windows'un bu yazıcıyı kurduğunu kontrol ettikten sonra tekrar deneyin.",
-                    "OEHS PDF",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
                 return false;
-            }
 
             dialog.PrintQueue = pdfQueue;
         }
@@ -3265,15 +3408,21 @@ public partial class MainWindow : Window
         root.Children.Add(titleBlock);
 
         var combined = BuildCombinedRouteDocuments(documents);
-        var viewer = new System.Windows.Controls.FlowDocumentScrollViewer
+        var viewer = new System.Windows.Controls.FlowDocumentReader
         {
             Document = combined,
-            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
-            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            ViewingMode = FlowDocumentReaderViewingMode.Page,
+            IsPageViewEnabled = true,
+            IsTwoPageViewEnabled = false,
+            IsScrollViewEnabled = false,
+            MinZoom = 50,
+            MaxZoom = 150,
+            Zoom = 75,
+            ZoomIncrement = 5,
             HorizontalContentAlignment = HorizontalAlignment.Center,
             VerticalContentAlignment = VerticalAlignment.Top,
             Margin = new Thickness(4),
-            IsToolBarVisible = true
+            IsFindEnabled = false
         };
         Grid.SetRow(viewer, 1);
         root.Children.Add(viewer);
@@ -3680,15 +3829,26 @@ public partial class MainWindow : Window
         try
         {
             var pdfTitle = BuildPdfPrintTitle(route, latest);
+            var targetFolder = OehsOutputPathService.BuildPdfDirectory(
+                latest.TenderNumber ?? string.Empty,
+                latest.RouteNumber ?? string.Empty);
+            var targetPath = latest.ProgressPaymentNumber.HasValue && latest.PeriodDate.HasValue
+                ? OehsOutputPathService.BuildPdfFilePath(
+                    latest.TenderNumber ?? string.Empty,
+                    latest.RouteNumber ?? string.Empty,
+                    latest.ProgressPaymentNumber.Value,
+                    latest.PeriodDate.Value)
+                : Path.Combine(targetFolder, pdfTitle);
+
             if (!TryShowDocument(combined, pdfTitle, requirePdfPrinter: true))
                 return;
 
             var savedFolder = SaveRouteDocumentsArchiveMetadata(latest);
             CalculationStatusTextBlock.Text =
-                $"4 belge PDF yazdırma akışı çalıştırıldı. Arşiv bilgisi: {savedFolder}";
+                $"4 belge PDF yazdırma akışı çalıştırıldı. Hedef klasör: {savedFolder}";
 
             MessageBox.Show(
-                "4 belge A4 düzeninde Microsoft Print to PDF üzerinden tek PDF çıktısı için gönderildi.\n\nWindows PDF penceresinde dosya adını ve kayıt yerini seçin.",
+                $"4 belge A4 düzeninde Microsoft Print to PDF'e gönderildi.\n\nÖnerilen kayıt klasörü:\n{targetFolder}\n\nÖnerilen dosya adı:\n{Path.GetFileName(targetPath)}\n\nNot: Microsoft Print to PDF kendi Windows kayıt penceresini açar; yukarıdaki klasör ve adı kullanın.",
                 "OEHS PDF Çıktılar",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
