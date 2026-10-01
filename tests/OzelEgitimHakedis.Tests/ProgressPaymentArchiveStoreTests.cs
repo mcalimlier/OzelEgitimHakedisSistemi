@@ -6,6 +6,13 @@ namespace OzelEgitimHakedis.Tests;
 
 public sealed class ProgressPaymentArchiveStoreTests
 {
+    private static readonly string[] DocumentNames =
+    {
+        "Hakediş Raporu",
+        "Hizmet İşleri Hakediş Raporu",
+        "Hizmet İşleri Kabul Tutanağı",
+        "Hakediş İcmali"
+    };
     [Fact]
     public void FirstSave_ShouldCreateV01WithoutOverwriting()
     {
@@ -136,13 +143,7 @@ public sealed class ProgressPaymentArchiveStoreTests
             CreateHistory(1),
             Array.Empty<ProgressPaymentHistoryData>(),
             "OEHS_IHALE-01_Hat-01_Hakedis-1_2026-10-31.pdf",
-            new[]
-            {
-                "Hakediş Raporu",
-                "Hizmet İşleri Hakediş Raporu",
-                "Hizmet İşleri Kabul Tutanağı",
-                "Hakediş İcmali"
-            });
+            DocumentNames);
 
     private static ProgressPaymentHistoryData CreateHistory(int number, string tender = "IHALE-01") =>
         new(
