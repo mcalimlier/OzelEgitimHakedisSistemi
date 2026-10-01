@@ -3991,27 +3991,6 @@ public partial class MainWindow : Window
         try
         {
             var pdfTitle = BuildPdfPrintTitle(route, latest);
-    private void CreateSaveAllRouteDocumentsButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (!EnsureRouteForOutput())
-            return;
-
-        var route = (RouteDraft)ReportRouteComboBox.SelectedItem;
-        var latest = GetSelectedRouteLatestPayment()!;
-
-        var documents = new (FlowDocument Document, string Title)[]
-        {
-            (BuildHakedişRaporu(route, latest), "Hakediş Raporu"),
-            (BuildHizmetIsleriHakedisRaporu(route, latest), "Hizmet İşleri Hakediş Raporu"),
-            (BuildKabulTutanağı(route, latest), "Hizmet İşleri Kabul Tutanağı"),
-            (BuildHakedişIcmali(route, latest), "Hakediş İcmali")
-        };
-
-        var combined = BuildCombinedRouteDocuments(documents);
-
-        try
-        {
-            var pdfTitle = BuildPdfPrintTitle(route, latest);
             var targetFolder = OehsOutputPathService.BuildPdfDirectory(
                 latest.TenderNumber ?? string.Empty,
                 latest.RouteNumber ?? string.Empty);
@@ -4033,7 +4012,7 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             MessageBox.Show(
-                $"PDF çıktısı hazırlanırken hata oluştu.\n\n{ex.Message}",
+                $"PDF kayıt bilgisi hazırlanırken hata oluştu.\n\n{ex.Message}",
                 "OEHS PDF Çıktı Hatası",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
