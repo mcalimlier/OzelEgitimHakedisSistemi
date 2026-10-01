@@ -396,11 +396,7 @@ public partial class MainWindow : Window
                 _ => string.Empty
             };
 
-            if (page == "Archives")
-            {
-                ClearArchiveCorrectionState();
-            }
-            else if (!string.Equals(page, correctionPage, StringComparison.Ordinal))
+            if (!string.Equals(page, correctionPage, StringComparison.Ordinal))
             {
                 MessageBox.Show(
                     "Arşiv düzeltmesi devam ediyor. Önce DÜZENLEME İPTAL veya düzenleme kaydetme işlemini tamamlayın.",
