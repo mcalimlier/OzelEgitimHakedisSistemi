@@ -65,8 +65,8 @@ public sealed class ProgressPaymentArchiveStoreTests
 
         var stem = ProgressPaymentArchiveStore.BuildFileStem(archive);
 
-        Assert.DoesNotContain(":", stem);
-        Assert.DoesNotContain("/", stem);
+        Assert.DoesNotContain(":", stem, StringComparison.Ordinal);
+        Assert.DoesNotContain("/", stem, StringComparison.Ordinal);
         Assert.EndsWith("_v01", stem, StringComparison.Ordinal);
     }
 
