@@ -313,8 +313,8 @@
   - Add a left-navigation `ARŞİVLER` item and panel.
   - Provide `ÇAĞIR`, `DÜZELT`, `KLASÖRÜ AÇ`.
   - Keep list order by payment period and revision, not file creation timestamp.
-  - Loading a revision must not silently overwrite the live record until the user saves/calculates it.
-  - Saving a revised archive creates the next revision.
+  - ÇAĞIR normal yüklemedir ve canlı veri akışında ayrı çalışır. DÜZELT ise seçilen archive snapshot'ı üzerinde özel düzenleme modudur.
+  - Normal ilk arşivleme v01 oluşturur. ARŞİVLER > DÜZELT ile seçilen bitmiş iş düzenlendiğinde aynı arşiv JSON dosyası ve aynı revision numarası doğrudan güncellenir; yeni revision oluşturulmaz.
 
 - [ ] **Step 4: Run tests and build.**
   - Run full solution build and tests.
@@ -434,4 +434,14 @@ The branch is accepted only when:
 7. Manual UI general-control checks pass.
 8. A controlled PDF output is verified as four A4 documents under the descriptive filename pattern.
 9. A written general-control record exists in `docs/OEHS_30_09_2026_Genel_Kontrol.md`.
-10. No earlier archive revision is overwritten or deleted.
+10. ARŞİVLER > DÜZELT seçilen archive snapshot'ı aynı dosya ve aynı revision numarasıyla günceller; normal v01/v02 gibi yeni revision üretimi yalnızca bağımsız tekrar arşivleme senaryosunda kullanılır.
+
+
+## USER-REDEFINED ACCEPTANCE RULE — ARCHIVE CORRECTION
+
+The user explicitly requires that a completed archived job be corrected in place. Therefore:
+- DÜZELT -> HAT BİLGİLERİ permits editing Hat No, Hat Adı, iş günleri and rehber günlük fiyat.
+- DÜZELT -> HAKEDİŞ GİRDİLERİ recalculates the archived calculation and writes back to the same selected archive file.
+- DÜZELT -> İHALE BİLGİLERİ and YÜKLENİCİ FİRMA update the selected archive snapshot in place.
+- The correction flow must never create a new active route as a side effect.
+- The correction flow must never auto-create v02/v03 merely because a selected archive was corrected.
