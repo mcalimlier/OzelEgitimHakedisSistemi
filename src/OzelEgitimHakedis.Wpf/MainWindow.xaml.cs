@@ -1671,7 +1671,7 @@ public partial class MainWindow : Window
         }
 
         _contractors.Clear();
-        foreach (var contractor in data.Contractors)
+        foreach (var contractor in data.Contractors ?? Array.Empty<Contractor>())
         {
             _contractors.Add(new ContractorDraft(
                 contractor.Name,
@@ -1684,7 +1684,7 @@ public partial class MainWindow : Window
         }
 
         _routes.Clear();
-        foreach (var route in data.Routes)
+        foreach (var route in data.Routes ?? Array.Empty<RouteData>())
         {
             var tender = route.TenderNumber;
             if (string.IsNullOrWhiteSpace(tender))
