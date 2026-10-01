@@ -85,7 +85,7 @@ public sealed class ProgressPaymentArchiveStoreTests
         var archive = CreateArchive(1);
 
         var path = store.Save(archive);
-        var loaded = store.Load(path);
+        var loaded = ProgressPaymentArchiveStore.Load(path);
 
         Assert.Equal(archive.SchemaVersion, loaded.SchemaVersion);
         Assert.Equal(archive.Revision, loaded.Revision);
@@ -106,7 +106,7 @@ public sealed class ProgressPaymentArchiveStoreTests
         var path = Path.Combine(temp.Path, "broken.json");
         File.WriteAllText(path, "{ broken");
 
-        Assert.Throws<ProgressPaymentArchiveException>(() => store.Load(path));
+        Assert.Throws<ProgressPaymentArchiveException>(() => ProgressPaymentArchiveStore.Load(path));
     }
 
     [Fact]
