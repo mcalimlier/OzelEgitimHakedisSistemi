@@ -3467,12 +3467,10 @@ public partial class MainWindow : Window
         var contractEnd = latest.ContractEndDate?.ToDateTime(TimeOnly.MinValue) ?? EndDatePicker.SelectedDate;
         var duration = Math.Max(0, (contractEnd - contractStart)?.Days ?? 0);
 
-        // Örnekteki kabul dönemi, seçilen hakediş tarihini takip eden takvim ayıdır.
-        // Böylece 29.09.2026 tarihli kayıt için metin 01.10.2026 / 31.10.2026 şeklinde oluşur.
         var periodAnchor = latest.PeriodDate ?? DateOnly.FromDateTime(DateTime.Today);
-        var serviceMonth = periodAnchor.AddMonths(1);
-        var serviceStart = new DateOnly(serviceMonth.Year, serviceMonth.Month, 1);
-        var serviceEnd = serviceStart.AddMonths(1).AddDays(-1);
+        var acceptancePeriod = ProgressPaymentAcceptancePeriodService.BuildServicePeriod(periodAnchor);
+        var serviceStart = acceptancePeriod.Start;
+        var serviceEnd = acceptancePeriod.End;
 
         var contractAmount = latest.Input.ContractAmount;
         var contractor = string.IsNullOrWhiteSpace(latest.ContractorName)
@@ -3550,9 +3548,9 @@ public partial class MainWindow : Window
         var totalA = 0m;
         var totalB = 0m;
 
-        for (var monthIndex = 0; monthIndex < 11; monthIndex++)
+        foreach (var month in ProgressPaymentIcmalService.BuildPeriods(latestDate))
         {
-            var month = new DateOnly(baseYear, 9, 1).AddMonths(monthIndex);
+            var monthIndex = rows.Count;
             var monthPayment = payments.LastOrDefault(x =>
                 x.PeriodDate.HasValue &&
                 x.PeriodDate.Value.Year == month.Year &&
@@ -3584,9 +3582,9 @@ public partial class MainWindow : Window
         doc.Blocks.Add(CreateThreeValueTable(
             ("A", "T O P L A M", FormatMoney(total))));
 
-        var previousDeduction = payments
-            .Where(x => x.Id != latest.Id && IsBeforePayment(x, latest))
-            .Sum(x => x.Calculation.TotalDeductions);
+        var previousDeduction = ProgressPaymentIcmalService.FindPreviousDeduction(
+            payments,
+            latest);
         var currentDeduction = latest.Calculation.TotalDeductions;
         var totalDeduction = previousDeduction + currentDeduction;
         var net = total - totalDeduction;
