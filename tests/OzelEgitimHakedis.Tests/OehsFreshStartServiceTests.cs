@@ -6,7 +6,7 @@ namespace OzelEgitimHakedis.Tests;
 public sealed class OehsFreshStartServiceTests
 {
     [Fact]
-    public void FirstRun_ShouldDeletePersistedDataAndProgramOutputs()
+    public void FirstRun_ShouldStartCleanButPreserveOldDataAndOutputsInBackup()
     {
         using var temp = new TempDirectory();
         var dataFile = Path.Combine(temp.DataRoot, "oehs-data.json");
@@ -29,6 +29,14 @@ public sealed class OehsFreshStartServiceTests
         Assert.False(File.Exists(tempFile));
         Assert.False(Directory.Exists(temp.DesktopRoot));
         Assert.True(File.Exists(Path.Combine(temp.DataRoot, ".fresh-start-version")));
+
+        var backupRoot = Assert.Single(Directory.GetDirectories(temp.DataRoot, "reset-backup-*"));
+        Assert.Equal("{\"old\":true}", File.ReadAllText(Path.Combine(backupRoot, "oehs-data.json")));
+        Assert.Equal("{\"oldBackup\":true}", File.ReadAllText(Path.Combine(backupRoot, "oehs-data.json.bak")));
+        Assert.Equal("temporary", File.ReadAllText(Path.Combine(backupRoot, "oehs-data.json.tmp")));
+
+        var desktopBackup = Assert.Single(Directory.GetDirectories(temp.Root, "OzelEgitimHakedisSistemi.pre-reset-*"));
+        Assert.Equal("old output", File.ReadAllText(Path.Combine(desktopBackup, "Ciktilar", "Hakedisler", "old.pdf")));
     }
 
     [Fact]
@@ -46,6 +54,20 @@ public sealed class OehsFreshStartServiceTests
         Assert.False(resetAgain);
         Assert.True(File.Exists(dataFile));
         Assert.Contains("new", File.ReadAllText(dataFile), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void MissingMarker_ShouldMoveExistingDataToRecoverableBackup()
+    {
+        using var temp = new TempDirectory();
+        var dataFile = Path.Combine(temp.DataRoot, "oehs-data.json");
+        File.WriteAllText(dataFile, "{\"keepMe\":true}");
+
+        Assert.True(OehsFreshStartService.EnsureFreshStart(temp.DataRoot, temp.DesktopRoot));
+
+        Assert.False(File.Exists(dataFile));
+        var backupRoot = Assert.Single(Directory.GetDirectories(temp.DataRoot, "reset-backup-*"));
+        Assert.Contains("keepMe", File.ReadAllText(Path.Combine(backupRoot, "oehs-data.json")), StringComparison.Ordinal);
     }
 
     private sealed class TempDirectory : IDisposable
