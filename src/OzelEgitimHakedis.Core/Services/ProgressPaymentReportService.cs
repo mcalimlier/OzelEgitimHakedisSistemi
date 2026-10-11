@@ -119,8 +119,10 @@ public static class ProgressPaymentReportService
     {
         // The source workbook's monthly lookup spans the current September-July
         // cycle. Records from a prior fiscal year must not leak into D6 or D10.
+        // Workbook monthly cells are keyed by the fiscal period. A legacy
+        // record without a period date cannot be matched to those cells safely.
         if (!candidate.PeriodDate.HasValue || !current.PeriodDate.HasValue)
-            return true;
+            return false;
 
         static int FiscalStartYear(DateOnly date) =>
             date.Month >= 9 ? date.Year : date.Year - 1;
