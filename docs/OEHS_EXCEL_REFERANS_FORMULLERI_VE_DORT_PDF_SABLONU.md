@@ -127,31 +127,31 @@ Bunlar istenen “Excel formülleriyle birebir uyum” için kaynak davranışı
 - “Hakediş İçeriğinden Yapılan Kesintiler” bölümü; önceki ve bu hakedişten kesinti, B toplam kesinti, C net toplam satırları gri dolgu ile.
 - Alt imza alanları ve M.Y.H.B.Y. örnek no.
 
-## 6. DoğruTemin ile belge altyapısı karşılaştırması
+## 6. DoğruTemin ile belge altyapısı karşılaştırması — güncel
 
-DoğruTemin WPF'de `DocumentPreviewWindow` `FixedDocument` kabul eder, WPF `DocumentViewer` kullanır ve `TextSharpnessService` uygular. Yazdırma `PrintDialog` + `DocumentPaginator` ile çalışır. `PdfVectorWriter` `FixedDocument` sayfalarındaki metin ve temel şekilleri PDFSharp-WPF üzerinden vektör olarak işler.
+DoğruTemin WPF'deki DocumentPreviewWindow/DocumentViewer, TextSharpnessService ve PrintDialog + DocumentPaginator yaklaşımı OEHS'ye taşındı. DoğruTemin'deki PdfVectorWriter, OEHS namespace'ine uyarlanarak FixedDocument/FixedPage içindeki metin, kenarlık ve temel şekilleri vektör olarak PDF'ye yazacak şekilde entegre edildi.
 
-OEHS'nin mevcut yaklaşımı ise raporları `FlowDocument` ile üretiyor ve `OehsPdfExportService` bunları 200 DPI bitmap sayfalara dönüştürerek PDF'ye gömüyor. Bu, DoğruTemin ile aynı altyapı değildir; metin seçilebilirliği ve çizgi/kenar netliği kaybolabilir. Sadece DoğruTemin sınıfını kopyalamak yeterli olmaz: dört resmi şablonun `FixedDocument`/`FixedPage` tabanında oluşturulması, önizleme/yazdırma/PDF'nin aynı belge nesnelerini paylaşması gerekir.
+Dört resmi form artık OehsOfficialDocumentFactory tarafından sabit A4 FixedPage şablonları olarak oluşturuluyor. Önizleme ve yazdırma aynı birleşik dört sayfalı FixedDocument'i, “PDF OLARAK KAYDET” ise aynı şablon üreticilerinden dört ayrı tek sayfalı belgeyi kullanıyor. Eski FlowDocument rapor üreticileri ve raster PDF dışa aktarma yolu kaldırıldı.
 
-Kullanıcı örnekleri dört ayrı, tek sayfalı PDF dosyasıdır. OEHS'nin mevcut “PDF OLARAK KAYDET” iş akışı birleşik FlowDocument/PDF oluşturuyor; hedef davranış dört şablonun her birini kendi tek sayfalı PDF dosyası olarak üretmek, önizleme ve toplu yazdırmada ise aynı dört sayfayı sırayla kullanmaktır.
+Mevcut CI smoke testi PDF'nin oluşmasını, A4 boyutunu ve yeniden açılabilirliğini kontrol ediyor. Bu henüz referans PDF'lerle piksel eşitliği kanıtlamıyor. Son smoke dosyaları GitHub Actions artifact alanına yazılmaya çalışıldı; GitHub artifact depolama kotası dolu olduğundan yükleme gerçekleşmedi. Kota temizlenince dört PDF indirilip kaynak örneklerle aynı DPI'da render ve görsel fark karşılaştırması yapılmalı.
 
-## 7. GitHub / GitHub Desktop durumu
+## 7. GitHub / GitHub Desktop durumu — 11.10.2026
 
-- PR #2 iş akışı `OEHS Windows Build` içinde WPF derlemesi, test derlemesi, 83 test ve Windows x64 `dotnet publish` başarılıydı.
-- İş akışının başarısız olan tek adımı `actions/upload-artifact@v4` idi: GitHub Actions artifact depolama kotası dolmuştu. Bu kaynak kod hatası değildir; indirilebilir CI artifact'i oluşmadığı anlamına gelir.
-- Workflow, PR doğrulamasını artifact yüklemesinden ayıracak şekilde güncellendi: PR'larda upload atlanır; push/manuel çalıştırmada upload başarısız olursa iş akışı test/derleme sonucunu kırmızıya çevirmek yerine açık uyarı üretir. Bu kota kullanımını temizlemez; gerçek binary artifact'in saklanıp saklanmadığı ayrıca izlenmelidir.
-- GitHub Desktop ekranında yerel `.sln` farkı yalnızca VisualStudioVersion satırının 17'den 18'e değişmesi gibi görünüyordu. Bu makineye özgü Visual Studio metadata değişikliğini kaynak çözüm dosyasına bilerek dahil etmeyin. Stash'te saklanan değişiklikler ayrıca incelenmeden düşürülmemeli/uygulanmamalıdır.
+- [OEHS Windows Build #1186](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/38158074721): üç proje derlemesi, 93 Core testi, 1 WPF PDF smoke testi ve Windows x64 dotnet publish başarılı; derleme hatası 0.
+- Smoke PDF artifact upload adımı dosya yüklemeye ulaştı ancak GitHub “Artifact storage quota has been hit” yanıtı verdi. Bu nedenle PDF'ler test koşucusunda üretildi ama indirilebilir artifact olarak saklanmadı.
+- Ana uygulama OEHS-Windows-x64 artifact'i PR tetiklemelerinde bilerek atlanıyor; başarılı publish tek başına indirilebilir EXE olduğu anlamına gelmez.
+- Branch, son karşılaştırmada main'den 1 commit geride ve çok sayıda commit ilerideydi. PR #2 açık; main'e merge etmeden önce fark ve geride kalan commit elle gözden geçirilmeli.
+- GitHub Desktop'taki .sln VisualStudioVersion 17/18 değişikliği gibi makineye özel metadata değişiklikleri iş gereği değilse kaynak değişikliği olarak eklenmemeli. Stash içeriği ayrıca incelenmeden düşürülmemeli.
 
 ## 8. Yol haritası ve kabul kriterleri
 
-1. **Kaynak davranışını sabitle:** Bu belgeyi kaynak sözleşmesi olarak kullan; workbook'taki hücre formülleri ile PDF görsel sözleşmesini ayrı doğrula.
-2. **Hesaplama eşitliği:** KDV muaf/muaf değil, taşıma ve rehber, iskonto, pozitif/negatif fiyat farkı, kesintiler, önceki ay ve kuruş yuvarlama senaryoları için Excel formülüne dayalı otomatik testler.
-3. **İcmal eşitliği:** 11 dönem Eylül–Temmuz, hizmet tutarının indirim/fiyat farkı ayrımı, ham I+R fiyat farkı, hemen önceki ay kesintisi ve eksik ay senaryoları.
-4. **FixedDocument mimarisi:** DoğruTemin'deki DocumentViewer/PrintDialog/PdfVectorWriter yaklaşımını OEHS'ye aktar; dört şablonu sabit A4 sayfalarında düzenle.
-5. **Şablon doğrulama:** Üretilen her PDF bir sayfa A4 dikey; metin/kenar/kolon/imza/footer/örnek no, Türkçe karakterler, uzun iş adı, uzun tutarlar ve boş/veri eksik durumları kontrol edilir.
-6. **Veri ve arşiv güvenliği:** temiz başlangıç veri silme davranışı, bozuk JSON/yedek kurtarma, arşiv çakışma/geri yükleme, birden fazla hakediş ve kayıt silme senaryoları.
-7. **Arayüz kalite kontrolü:** farklı çözünürlük ve DPI, ekran dışına taşma, statik “Hazır” durumu, tekrar eden kayıt durumu etiketi, imza alanlarının sabit kodlanması ve doğrulama mesajları.
-8. **Windows CI:** restore/build/test başarıları ile artifact depolama sonucu ayrı raporlanır; uyarılar ve analyzer bulguları hedefli olarak giderilir.
-9. **Kurulum paketi:** yalnız tüm otomatik ve görsel testler geçtikten sonra self-contained Windows x64 paket/kurulum, temiz makinede açılış, ilk kayıt, yeniden açılış, PDF, yazıcı ve kaldırma testi.
+1. **Kaynak davranışını sabitle:** Bu belgeyi hücre formülleri ve resmi PDF görsel sözleşmesi için kaynak kabul et; Excel kaynak anomalilerini sessizce “düzeltme”.
+2. **Hesaplama eşitliği:** KDV muaf/muaf değil, taşıma ve rehber, iskonto, pozitif/negatif fiyat farkı, kesintiler ve kuruş yuvarlama için Excel hücre referanslı golden-master testleri ekle.
+3. **İcmal eşitliği:** Eylül–Temmuz 11 çıktı satırı, Eylül–Haziran kaynak lookup aralığı, ham I+R fiyat farkı, hemen önceki ay kesintisi ve Kasım/Aralık başlık kusuru için testleri koru; kaynak workbook kararı yazılı alınsın.
+4. **PDF görsel doğrulama:** Artifact kotası temizlenince dört gerçek smoke PDF'yi indir; örneklerle aynı DPI'da karşılaştır. Başlıklar, satırlar, imza/footer ve döndürülmüş kesinti etiketi kontrol edilmeden “birebir” kabul etme.
+5. **Veri/arşiv güvenliği:** İlk açılış temizliği yedekli çalışmalı; farklı GUID'li aynı ticari anahtara sahip hakediş tekrar eklenmemeli; bozuk JSON/yedek, erişim reddi, kilitli temp ve disk dolu senaryoları test edilmeli.
+6. **Önizleme/yazdırma:** DocumentViewer, Microsoft Print to PDF ve en az bir gerçek yazıcıda A4 kenar boşlukları, sayfa sırası, taşma ve Türkçe karakter kontrolü.
+7. **Arayüz:** kayıt durumunu statik “Hazır” yerine gerçek kayıt durumuna bağla; kurum imza/unvan metinlerini onaylat; 1366×768/1920×1080 ve %100–%200 DPI test et.
+8. **Windows paketleme:** artifact kotası açıldıktan sonra indirilebilir self-contained win-x64 paketini doğrula; temiz kullanıcı profilinde ilk açılış, kayıt, yeniden başlatma, PDF/yazıcı ve kaldırma testi yap.
 
-**Yayın kapısı:** “83 test geçti” iyi bir başlangıçtır ancak dört örnekle görsel regresyon, Excel formül paritesi, Windows yazıcı ve PDF doğrulanmadan kurulum dosyası yayınlanmış sayılmaz.
+**Yayın kapısı:** 93 Core + 1 PDF smoke testi başarılı olması önemli; ancak görsel karşılaştırma, Excel iş sahibi onayı, gerçek yazıcı ve installer/update/uninstall kabul testleri bitmeden üretime hazır kararı verilmemeli.
