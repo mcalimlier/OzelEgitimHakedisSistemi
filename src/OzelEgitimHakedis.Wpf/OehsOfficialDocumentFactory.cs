@@ -28,7 +28,13 @@ internal sealed record OehsOfficialDocumentContext(
     ProgressPaymentReportTotals ReportTotals,
     decimal ReportNetPayable,
     decimal PreviousDeduction,
-    DateOnly GeneratedDate);
+    DateOnly GeneratedDate,
+    string PreparerName = "Aşkın KESKİNBALTA",
+    string PreparerRole = "Memur",
+    string ControllerName = "Halil ÖZENÇ",
+    string ControllerRole = "İlçe Milli Eğitim Şube Müdürü",
+    string ApproverName = "Özgür BAYSAL",
+    string ApproverRole = "İlçe Milli Eğitim Müdürü");
 
 internal enum OehsOfficialDocumentKind
 {
@@ -212,7 +218,7 @@ internal static class OehsOfficialDocumentFactory
         var footerY = Math.Max(y + 16, 820);
         AddText(page, "Yüklenici", x + 45, footerY, w - 90, 22, 10, true, TextAlignment.Left);
         AddText(page, c.ContractorName, x + 12, footerY + 23, w - 24, 36, 9.5, false, TextAlignment.Left);
-        AddSignatures(page, footerY + 85, c.GeneratedDate, "M.Y.H.B.Y. Örnek No :4/10",
+        AddSignatures(page, footerY + 85, c, "M.Y.H.B.Y. Örnek No :4/10",
             leftX: 115, leftWidth: 205, rightX: 435, rightWidth: 200,
             nameOffset: 34, roleOffset: 48, dateOffset: 80, directorOffset: 112, titleOffset: 128, footerY: 1060);
         return page;
@@ -319,7 +325,7 @@ internal static class OehsOfficialDocumentFactory
             y += 15;
         }
 
-        AddSignatures(page, 878, c.GeneratedDate, "M.Y.H.B.Y. Örnek No: 4",
+        AddSignatures(page, 878, c, "M.Y.H.B.Y. Örnek No: 4",
             leftX: 100, leftWidth: 220, rightX: 480, rightWidth: 220,
             nameOffset: 40, roleOffset: 61, dateOffset: 121, directorOffset: 163, titleOffset: 181, footerY: 1080);
         return page;
@@ -367,7 +373,7 @@ internal static class OehsOfficialDocumentFactory
 
         AddText(page, "Yüklenici", x + 28, 775, w - 56, 20, 10, true, TextAlignment.Center);
         AddText(page, c.ContractorName, x + 28, 796, w - 56, 30, 9.5, false, TextAlignment.Center);
-        AddSignatures(page, 894, c.GeneratedDate, "",
+        AddSignatures(page, 894, c, "",
             leftX: 100, leftWidth: 220, rightX: 480, rightWidth: 220,
             nameOffset: 35, roleOffset: 53, dateOffset: 88, directorOffset: 124, titleOffset: 142, footerY: 1087);
         return page;
@@ -484,7 +490,7 @@ internal static class OehsOfficialDocumentFactory
         AddCell(page, "Toplam Hakediş Tutarı : ( A - B )", labelX, y, labelWidth, 30, 10, true, TextAlignment.Right, TotalGray, new Thickness(3, 2, 8, 2));
         AddCell(page, FormatMoney(sumService + sumDifference - c.PreviousDeduction - c.Calculation.TotalDeductions, false), amountX, y, widths[4], 30, 10, true, TextAlignment.Right, TotalGray, new Thickness(3, 2, 8, 2));
 
-        AddSignatures(page, 858, c.GeneratedDate, "M.Y.H.B.Y. Örnek No :4/9",
+        AddSignatures(page, 858, c, "M.Y.H.B.Y. Örnek No :4/9",
             leftX: 80, leftWidth: 200, rightX: 540, rightWidth: 190,
             nameOffset: 37, roleOffset: 55, dateOffset: 92, directorOffset: 130, titleOffset: 148, footerY: 1063);
         return page;
@@ -493,7 +499,7 @@ internal static class OehsOfficialDocumentFactory
     private static void AddSignatures(
         FixedPage page,
         double y,
-        DateOnly generatedDate,
+        OehsOfficialDocumentContext context,
         string footer,
         double leftX = 100,
         double leftWidth = 220,
@@ -508,14 +514,14 @@ internal static class OehsOfficialDocumentFactory
     {
         AddText(page, "Düzenleyen", leftX, y, leftWidth, 24, 10, false, TextAlignment.Center);
         AddText(page, "Kontrol Eden", rightX, y, rightWidth, 24, 10, false, TextAlignment.Center);
-        AddText(page, "Aşkın KESKİNBALTA", leftX, y + nameOffset, leftWidth, 25, 10, true, TextAlignment.Center);
-        AddText(page, "Halil ÖZENÇ", rightX, y + nameOffset, rightWidth, 25, 10, true, TextAlignment.Center);
-        AddText(page, "Memur", leftX, y + roleOffset, leftWidth, 23, 9.5, false, TextAlignment.Center);
-        AddText(page, "İlçe Milli Eğitim Şube Müdürü", rightX - 20, y + roleOffset, rightWidth + 40, 23, 9.5, false, TextAlignment.Center);
+        AddText(page, context.PreparerName, leftX, y + nameOffset, leftWidth, 25, 10, true, TextAlignment.Center);
+        AddText(page, context.ControllerName, rightX, y + nameOffset, rightWidth, 25, 10, true, TextAlignment.Center);
+        AddText(page, context.PreparerRole, leftX, y + roleOffset, leftWidth, 23, 9.5, false, TextAlignment.Center);
+        AddText(page, context.ControllerRole, rightX - 20, y + roleOffset, rightWidth + 40, 23, 9.5, false, TextAlignment.Center);
 
-        AddText(page, generatedDate.ToString("dd.MM.yyyy", Turkish), 270, y + dateOffset, 250, 24, 10, true, TextAlignment.Center);
-        AddText(page, "Özgür BAYSAL", 270, y + directorOffset, 250, 23, 10, true, TextAlignment.Center);
-        AddText(page, "İlçe Milli Eğitim Müdürü", 270, y + titleOffset, 250, 22, 9.5, false, TextAlignment.Center);
+        AddText(page, context.GeneratedDate.ToString("dd.MM.yyyy", Turkish), 270, y + dateOffset, 250, 24, 10, true, TextAlignment.Center);
+        AddText(page, context.ApproverName, 270, y + directorOffset, 250, 23, 10, true, TextAlignment.Center);
+        AddText(page, context.ApproverRole, 270, y + titleOffset, 250, 22, 9.5, false, TextAlignment.Center);
         if (!string.IsNullOrWhiteSpace(footer))
             AddText(page, footer, 22, footerY, 330, 17, 8, false, TextAlignment.Left);
     }
