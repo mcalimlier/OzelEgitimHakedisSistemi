@@ -264,10 +264,10 @@ internal static class OehsOfficialDocumentFactory
             AddText(page, row.Label, x + 2, infoY, 320, 25, 9.3, true, TextAlignment.Left);
             AddText(page, ":", x + 324, infoY, 14, 25, 9.3, true, TextAlignment.Center);
             AddText(page, row.Value, x + 356, infoY, w - 360, 25, 9.3, false, TextAlignment.Left);
-            infoY += 25;
+            infoY += 27;
         }
 
-        var y = 554d;
+        var y = 578d;
         var colWidths = new[] { 160d, 190d, 170d, w - 160d - 190d - 170d };
         var headings = new[]
         {
