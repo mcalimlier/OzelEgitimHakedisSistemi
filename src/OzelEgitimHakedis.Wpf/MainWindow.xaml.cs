@@ -63,7 +63,6 @@ public partial class MainWindow : Window
         ConfigureWindow();
         ConfigureZeroValueInputs();
         ConfigureContractValidationInputs();
-        Loaded += MainWindow_Loaded;
         SourceInitialized += MainWindow_SourceInitialized;
         StartDatePicker.SelectedDate = DateTime.Today;
         EndDatePicker.SelectedDate = DateTime.Today;
@@ -109,33 +108,6 @@ public partial class MainWindow : Window
         UpdateReportView();
         UpdateAcceptanceView();
         UpdateArchiveView();
-    }
-
-    private void MainWindow_Loaded(object sender, RoutedEventArgs e)
-    {
-        Dispatcher.BeginInvoke(
-            System.Windows.Threading.DispatcherPriority.Loaded,
-            new Action(() => NormalizeButtonWidths(this)));
-    }
-
-    private static void NormalizeButtonWidths(DependencyObject root)
-    {
-        if (root is Button button &&
-            button.Visibility == Visibility.Visible &&
-            !double.IsNaN(button.Width) &&
-            button.Width > 0)
-        {
-            var originalWidth = button.Width;
-            button.Width = double.NaN;
-            button.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-
-            var desiredWidth = Math.Ceiling(button.DesiredSize.Width + 32);
-            button.Width = Math.Max(originalWidth, desiredWidth);
-        }
-
-        var childCount = System.Windows.Media.VisualTreeHelper.GetChildrenCount(root);
-        for (var i = 0; i < childCount; i++)
-            NormalizeButtonWidths(System.Windows.Media.VisualTreeHelper.GetChild(root, i));
     }
 
     private enum ArchiveCorrectionSection
