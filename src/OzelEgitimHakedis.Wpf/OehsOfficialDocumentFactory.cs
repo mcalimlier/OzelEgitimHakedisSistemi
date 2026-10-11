@@ -214,7 +214,7 @@ internal static class OehsOfficialDocumentFactory
         AddText(page, c.ContractorName, x + 12, footerY + 23, w - 24, 36, 9.5, false, TextAlignment.Left);
         AddSignatures(page, footerY + 85, c.GeneratedDate, "M.Y.H.B.Y. Örnek No :4/10",
             leftX: 115, leftWidth: 205, rightX: 435, rightWidth: 200,
-            nameOffset: 34, roleOffset: 54, dateOffset: 83, directorOffset: 119, titleOffset: 137, footerY: 1065);
+            nameOffset: 34, roleOffset: 48, dateOffset: 80, directorOffset: 112, titleOffset: 128, footerY: 1060);
         return page;
     }
 
@@ -321,7 +321,7 @@ internal static class OehsOfficialDocumentFactory
 
         AddSignatures(page, 878, c.GeneratedDate, "M.Y.H.B.Y. Örnek No: 4",
             leftX: 100, leftWidth: 220, rightX: 480, rightWidth: 220,
-            nameOffset: 34, roleOffset: 57, dateOffset: 124, directorOffset: 164, titleOffset: 186, footerY: 1087);
+            nameOffset: 40, roleOffset: 61, dateOffset: 121, directorOffset: 163, titleOffset: 181, footerY: 1080);
         return page;
     }
 
@@ -366,9 +366,9 @@ internal static class OehsOfficialDocumentFactory
 
         AddText(page, "Yüklenici", x + 28, 775, w - 56, 20, 10, true, TextAlignment.Center);
         AddText(page, c.ContractorName, x + 28, 796, w - 56, 30, 9.5, false, TextAlignment.Center);
-        AddSignatures(page, 902, c.GeneratedDate, "",
+        AddSignatures(page, 894, c.GeneratedDate, "",
             leftX: 100, leftWidth: 220, rightX: 480, rightWidth: 220,
-            nameOffset: 34, roleOffset: 57, dateOffset: 90, directorOffset: 130, titleOffset: 152, footerY: 1087);
+            nameOffset: 35, roleOffset: 53, dateOffset: 88, directorOffset: 124, titleOffset: 142, footerY: 1087);
         return page;
     }
 
@@ -485,7 +485,7 @@ internal static class OehsOfficialDocumentFactory
 
         AddSignatures(page, 858, c.GeneratedDate, "M.Y.H.B.Y. Örnek No :4/9",
             leftX: 80, leftWidth: 200, rightX: 540, rightWidth: 190,
-            nameOffset: 39, roleOffset: 61, dateOffset: 94, directorOffset: 134, titleOffset: 155, footerY: 1068);
+            nameOffset: 37, roleOffset: 55, dateOffset: 92, directorOffset: 130, titleOffset: 148, footerY: 1063);
         return page;
     }
 
