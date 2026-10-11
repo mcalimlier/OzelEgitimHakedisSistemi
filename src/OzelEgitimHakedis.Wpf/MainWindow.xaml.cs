@@ -4530,6 +4530,7 @@ public partial class MainWindow : Window
             return;
 
         string? stagingFolder = null;
+        var preserveStagingFolderForRecovery = false;
         try
         {
             var targetFolder = OehsOutputPathService.BuildPdfDirectory(
@@ -4613,6 +4614,7 @@ public partial class MainWindow : Window
             catch
             {
                 // Best-effort rollback if an individual target could not be replaced.
+                var rollbackFailed = false;
                 foreach (var targetPath in replacedPaths.AsEnumerable().Reverse())
                 {
                     try
@@ -4624,9 +4626,13 @@ public partial class MainWindow : Window
                     }
                     catch
                     {
-                        // Preserve the primary error; the staging originals are left for recovery.
+                        rollbackFailed = true;
                     }
                 }
+
+                if (rollbackFailed)
+                    preserveStagingFolderForRecovery = true;
+
                 throw;
             }
 
@@ -4660,15 +4666,20 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
+            var recoveryNote = preserveStagingFolderForRecovery && !string.IsNullOrWhiteSpace(stagingFolder)
+                ? $"\n\nGeri alma işlemi tam tamamlanamadı. Kurtarma kopyaları şu klasörde korundu:\n{stagingFolder}"
+                : string.Empty;
             MessageBox.Show(
-                $"Resmî PDF belgeleri oluşturulurken hata oluştu.\n\n{ex.Message}",
+                $"Resmî PDF belgeleri oluşturulurken hata oluştu.\n\n{ex.Message}{recoveryNote}",
                 "OEHS PDF Çıktı Hatası",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
         }
         finally
         {
-            if (!string.IsNullOrWhiteSpace(stagingFolder) && Directory.Exists(stagingFolder))
+            if (!preserveStagingFolderForRecovery &&
+                !string.IsNullOrWhiteSpace(stagingFolder) &&
+                Directory.Exists(stagingFolder))
             {
                 try
                 {
