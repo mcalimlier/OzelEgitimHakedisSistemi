@@ -4396,7 +4396,7 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             MessageBox.Show(
-                $"Belge önizlemesi açılamadı.\\n\\n{ex.Message}",
+                $"Belge önizlemesi açılamadı.\n\n{ex.Message}",
                 "OEHS — Belge Önizleme",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
@@ -4422,7 +4422,7 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             MessageBox.Show(
-                $"Yazdırma işlemi başlatılamadı.\\n\\n{ex.Message}",
+                $"Yazdırma işlemi başlatılamadı.\n\n{ex.Message}",
                 "OEHS — Yazdırma",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
