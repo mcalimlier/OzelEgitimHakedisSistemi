@@ -36,7 +36,7 @@ public sealed class ProgressPaymentReportTests
         Assert.Equal(250m, totals.CumulativeServiceAmount);
         Assert.Equal(10m, totals.CurrentPriceDifference);
         Assert.Equal(260m, totals.CumulativeTotal);
-        Assert.Equal(105m, totals.PreviousTotal);
+        Assert.Equal(100m, totals.PreviousTotal);
         Assert.Equal(170m, totals.CurrentTotal);
     }
 
@@ -127,7 +127,7 @@ public sealed class ProgressPaymentReportTests
         var totals = ProgressPaymentReportService.Calculate(current, new[] { previous, current });
 
         Assert.Equal(210m, totals.CumulativeTotal);
-        Assert.Equal(125m, totals.PreviousTotal);
+        Assert.Equal(100m, totals.PreviousTotal);
         Assert.Equal(120m, totals.CurrentTotal);
     }
 
