@@ -23,14 +23,14 @@
             BorderBrush="#35546F"
             BorderThickness="1"
             Background="{StaticResource Navy900Brush}"
-            Margin="8">
+            Margin="7">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="82"/>
+                    <RowDefinition Height="72"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="290"/>
+                    <ColumnDefinition Width="260"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
@@ -39,12 +39,12 @@
                       Background="{StaticResource Navy900Brush}"
                       MouseLeftButtonDown="Header_MouseLeftButtonDown">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="290"/>
-                        <ColumnDefinition Width="220"/>
+                        <ColumnDefinition Width="260"/>
+                        <ColumnDefinition Width="185"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="25,0,0,0">
-                        <TextBlock Text="OEHS" Foreground="White" FontSize="29" FontWeight="Bold"/>
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="21.5,0,0,0">
+                        <TextBlock Text="OEHS" Foreground="White" FontSize="25" FontWeight="Bold"/>
                         <TextBlock Text="ÖZEL EĞİTİM HAKEDİŞ" Foreground="#B9CBDA" FontSize="10.5" FontWeight="SemiBold" Margin="1,1,0,0"/>
                     </StackPanel>
                     <Border Grid.Column="1"
@@ -55,17 +55,17 @@
                             CornerRadius="9"
                             BorderBrush="#24496B"
                             BorderThickness="1"
-                            Padding="13,8"
-                            Margin="18,0,0,0">
+                            Padding="11,7"
+                            Margin="15.5,0,0,0">
                         <StackPanel>
                             <TextBlock Text="KAYIT DURUMU" Foreground="#8FA8C0" FontSize="10" FontWeight="SemiBold"/>
                             <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
-                                <Ellipse x:Name="HeaderSaveStatusDot" Width="9" Height="9" Fill="#FFB41F" VerticalAlignment="Center" Margin="0,0,7,0"/>
-                                <TextBlock x:Name="HeaderSaveStatusTextBlock" Text="Başlatılıyor" Foreground="#FFE2A1" FontSize="13" FontWeight="SemiBold"/>
+                                <Ellipse x:Name="HeaderSaveStatusDot" Width="9" Height="9" Fill="#FFB41F" VerticalAlignment="Center" Margin="0,0,6.5,0"/>
+                                <TextBlock x:Name="HeaderSaveStatusTextBlock" Text="Başlatılıyor" Foreground="#FFE2A1" FontSize="12" FontWeight="SemiBold"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>
-                    <Grid Grid.Column="2" VerticalAlignment="Center" Margin="8,0,14,0">
+                    <Grid Grid.Column="2" VerticalAlignment="Center" Margin="7,0,12,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="140"/>
@@ -75,18 +75,18 @@
                             <ColumnDefinition Width="44"/>
                             <ColumnDefinition Width="44"/>
                         </Grid.ColumnDefinitions>
-                        <Border Grid.Column="0" Background="#082744" BorderBrush="#24496B" BorderThickness="1" CornerRadius="9" Padding="12,7">
+                        <Border Grid.Column="0" Background="#082744" BorderBrush="#24496B" BorderThickness="1" CornerRadius="9" Padding="10.5,6.5">
                             <StackPanel>
                                 <TextBlock Text="AKTİF MODÜL" Foreground="#8FA8C0" FontSize="10" FontWeight="SemiBold"/>
-                                <TextBlock x:Name="HeaderModuleText" Text="Ana Ekran" Foreground="White" FontSize="13" FontWeight="SemiBold" Margin="0,2,0,0"/>
+                                <TextBlock x:Name="HeaderModuleText" Text="Ana Ekran" Foreground="White" FontSize="12" FontWeight="SemiBold" Margin="0,2,0,0"/>
                             </StackPanel>
                         </Border>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <StackPanel VerticalAlignment="Center" Margin="0,0,7,0">
+                            <StackPanel VerticalAlignment="Center" Margin="0,0,6.5,0">
                                 <TextBlock Text="HAZIRLIK" Foreground="#8FA8C0" FontSize="9.5" FontWeight="SemiBold" HorizontalAlignment="Right"/>
                                 <TextBlock Text="DURUMU" Foreground="#C3CFDC" FontSize="10.5" HorizontalAlignment="Right"/>
                             </StackPanel>
-                            <Grid Width="48" Height="48">
+                            <Grid Width="48" Height="42">
                                 <Ellipse Stroke="#29445F" StrokeThickness="5"/>
                                 <Path x:Name="HeaderReadinessArc"
                                       Stroke="#FFB41F"
@@ -104,17 +104,17 @@
                             </Grid>
                         </StackPanel>
 
-                        <Button Grid.Column="4" Content="—" ToolTip="Küçült" FontSize="21" FontWeight="SemiBold"
-                                Foreground="White" Background="Transparent" BorderThickness="0" Width="44" Height="48"
+                        <Button Grid.Column="4" Content="—" ToolTip="Küçült" FontSize="18" FontWeight="SemiBold"
+                                Foreground="White" Background="Transparent" BorderThickness="0" Width="44" Height="42"
                                 Cursor="Hand" Click="Minimize_Click"/>
                         <Button x:Name="MaximizeRestoreButton" Grid.Column="5" ToolTip="Tam ekran"
-                                Foreground="White" Background="Transparent" BorderThickness="0" Width="44" Height="48"
+                                Foreground="White" Background="Transparent" BorderThickness="0" Width="44" Height="42"
                                 Cursor="Hand" Click="MaximizeRestore_Click">
                             <TextBlock x:Name="MaximizeRestoreIcon" FontFamily="Segoe MDL2 Assets"
-                                       Text="&#xE922;" FontSize="15" FontWeight="SemiBold"/>
+                                       Text="&#xE922;" FontSize="13.5" FontWeight="SemiBold"/>
                         </Button>
-                        <Button Grid.Column="6" Content="×" ToolTip="Kapat" FontSize="25" Foreground="White"
-                                Background="Transparent" BorderThickness="0" Width="44" Height="48"
+                        <Button Grid.Column="6" Content="×" ToolTip="Kapat" FontSize="21.5" Foreground="White"
+                                Background="Transparent" BorderThickness="0" Width="44" Height="42"
                                 Cursor="Hand" Click="Close_Click"/>
                     </Grid>
                 </Grid>
@@ -123,138 +123,138 @@
                 <Grid Grid.Row="1" Grid.Column="0" Background="{StaticResource Navy900Brush}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
-                        <RowDefinition Height="92"/>
+                        <RowDefinition Height="82"/>
                     </Grid.RowDefinitions>
                     <StackPanel Margin="0,6,0,0">
                         <Button x:Name="NavHome" Tag="Home" Uid="Active" Style="{StaticResource NavButton}" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE80F;" FontSize="23" Width="42"/>
-                                <TextBlock Text="ANA EKRAN" FontSize="16.5" FontWeight="SemiBold"/>
+                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE80F;" FontSize="20" Width="42"/>
+                                <TextBlock Text="ANA EKRAN" FontSize="14.5" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
-                        <Border Height="3" Background="#557A9D" Margin="16,10" CornerRadius="1.5"/>
+                        <Border Height="3" Background="#557A9D" Margin="14,9" CornerRadius="1.5"/>
                         <Button x:Name="NavContract" Style="{StaticResource NavButton}" Tag="Contract" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8D2;" FontSize="23" Width="42"/>
-                                <TextBlock Text="İHALE BİLGİLERİ" FontSize="16.5" FontWeight="SemiBold"/>
+                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8D2;" FontSize="20" Width="42"/>
+                                <TextBlock Text="İHALE BİLGİLERİ" FontSize="14.5" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                         <Button x:Name="NavContractors" Style="{StaticResource NavButton}" Tag="Contractors" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE70B;" FontSize="23" Width="42"/>
-                                <TextBlock Text="YÜKLENİCİ FİRMALAR" FontSize="16.5" FontWeight="SemiBold"/>
+                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE70B;" FontSize="20" Width="42"/>
+                                <TextBlock Text="YÜKLENİCİ FİRMALAR" FontSize="14.5" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                         <Button x:Name="NavLines" Style="{StaticResource NavButton}" Tag="Lines" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8A5;" FontSize="23" Width="42"/>
-                                <TextBlock Text="HATLAR" FontSize="16.5" FontWeight="SemiBold"/>
+                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8A5;" FontSize="20" Width="42"/>
+                                <TextBlock Text="HATLAR" FontSize="14.5" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                         <Button x:Name="NavProgress" Style="{StaticResource NavButton}" Tag="Progress" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE9D2;" FontSize="23" Width="42"/>
-                                <TextBlock Text="HAKEDİŞ OLUŞTUR" FontSize="16.5" FontWeight="SemiBold"/>
+                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE9D2;" FontSize="20" Width="42"/>
+                                <TextBlock Text="HAKEDİŞ OLUŞTUR" FontSize="14.5" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
-                        <Border Height="3" Background="#557A9D" Margin="16,10" CornerRadius="1.5"/>
+                        <Border Height="3" Background="#557A9D" Margin="14,9" CornerRadius="1.5"/>
                         <Button x:Name="NavReports" Style="{StaticResource NavButton}" Tag="Reports" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE9D2;" FontSize="23" Width="42"/>
-                                <TextBlock Text="ÇIKTILAR" FontSize="16.5" FontWeight="SemiBold"/>
+                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE9D2;" FontSize="20" Width="42"/>
+                                <TextBlock Text="ÇIKTILAR" FontSize="14.5" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                         <Button x:Name="NavHistory" Style="{StaticResource NavButton}" Tag="History" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE81C;" FontSize="23" Width="42"/>
-                                <TextBlock Text="HAKEDİŞ GEÇMİŞİ" FontSize="16.5" FontWeight="SemiBold"/>
+                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE81C;" FontSize="20" Width="42"/>
+                                <TextBlock Text="HAKEDİŞ GEÇMİŞİ" FontSize="14.5" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                         <Button x:Name="NavAcceptance" Style="{StaticResource NavButton}" Tag="Acceptance" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8A1;" FontSize="23" Width="42"/>
-                                <TextBlock Text="KABUL TUTANAĞI" FontSize="16.5" FontWeight="SemiBold"/>
+                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8A1;" FontSize="20" Width="42"/>
+                                <TextBlock Text="KABUL TUTANAĞI" FontSize="14.5" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                         <Button x:Name="NavArchives" Style="{StaticResource NavButton}" Tag="Archives" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8F4;" FontSize="23" Width="42"/>
-                                <TextBlock Text="ARŞİVLER" FontSize="16.5" FontWeight="SemiBold"/>
+                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8F4;" FontSize="20" Width="42"/>
+                                <TextBlock Text="ARŞİVLER" FontSize="14.5" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                         <Button x:Name="NavSettings" Style="{StaticResource NavButton}" Tag="Settings" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE713;" FontSize="23" Width="42"/>
-                                <TextBlock Text="AYARLAR" FontSize="16.5" FontWeight="SemiBold"/>
+                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE713;" FontSize="20" Width="42"/>
+                                <TextBlock Text="AYARLAR" FontSize="14.5" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                     </StackPanel>
-                    <Border Grid.Row="1" Margin="18,7,18,10" Padding="14,9" CornerRadius="9" Background="#082845" BorderBrush="#73581E" BorderThickness="1">
+                    <Border Grid.Row="1" Margin="15.5,6.5,15.5,9" Padding="12,8" CornerRadius="9" Background="#082845" BorderBrush="#73581E" BorderThickness="1">
                         <StackPanel>
                             <TextBlock Text="Created by" Foreground="#A8BCD0" FontSize="11" FontWeight="SemiBold"/>
-                            <TextBlock Text="Aşkın KESKİNBALTA" Foreground="{StaticResource Gold500Brush}" FontSize="16" FontWeight="Bold" Margin="0,2,0,0"/>
+                            <TextBlock Text="Aşkın KESKİNBALTA" Foreground="{StaticResource Gold500Brush}" FontSize="14" FontWeight="Bold" Margin="0,2,0,0"/>
                             <Border Height="2" Width="74" Background="{StaticResource Gold500Brush}" HorizontalAlignment="Left" Margin="0,6,0,0" CornerRadius="1"/>
                         </StackPanel>
                     </Border>
                 </Grid>
 
                 <!-- İÇERİK -->
-                <Border Grid.Row="1" Grid.Column="1" Background="White" CornerRadius="13,0,13,0" Padding="18">
+                <Border Grid.Row="1" Grid.Column="1" Background="White" CornerRadius="13,0,13,0" Padding="15.5">
                     <Grid>
                         <Grid x:Name="HomePanel">
                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0">
                             <StackPanel>
                                 <TextBlock Text="ÖZEL EĞİTİM HAKEDİŞ SİSTEMİ" Style="{StaticResource PageTitle}"/>
                                 <TextBlock Text="Hakediş sürecini sözleşmeden hesaplamaya kadar tek akışta yönetin." Style="{StaticResource PageSubtitle}"/>
-                                <Border Style="{StaticResource PremiumPanel}" Padding="20" Margin="0,0,0,14">
+                                <Border Style="{StaticResource PremiumPanel}" Padding="17" Margin="0,0,0,12">
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="245"/></Grid.ColumnDefinitions>
                                         <StackPanel>
                                             <StackPanel Orientation="Horizontal">
-                                                <Border Background="#1D4B70" CornerRadius="11" Padding="9,4" Margin="0,0,10,0">
+                                                <Border Background="#1D4B70" CornerRadius="11" Padding="8,4" Margin="0,0,9,0">
                                                     <TextBlock Text="AKTİF İŞLEM" Foreground="#D9E9F6" FontSize="11" FontWeight="Bold"/>
                                                 </Border>
                                                 <TextBlock Text="HAZIR" Foreground="{StaticResource Gold500Brush}" FontSize="11.5" FontWeight="Bold"/>
                                             </StackPanel>
-                                            <TextBlock Text="Önce sözleşmeyi tanımlayın" Foreground="White" FontSize="23" FontWeight="SemiBold" Margin="0,5,0,0"/>
-                                            <TextBlock Text="İhale → Yüklenici → Hat → Hakediş → Çıktı akışı burada ilerleyecek." Foreground="#C5D7E7" FontSize="13" Margin="0,5,0,0"/>
+                                            <TextBlock Text="Önce sözleşmeyi tanımlayın" Foreground="White" FontSize="20" FontWeight="SemiBold" Margin="0,5,0,0"/>
+                                            <TextBlock Text="İhale → Yüklenici → Hat → Hakediş → Çıktı akışı burada ilerleyecek." Foreground="#C5D7E7" FontSize="12" Margin="0,5,0,0"/>
                                             <Button Content="İHALE BİLGİLERİ TANIMLA" Tag="Contract" Click="NavigationButton_Click"
-                                                    Style="{StaticResource ModernButton}" Width="275" Height="42"
-                                                    HorizontalAlignment="Left" Margin="0,18,0,0"/>
+                                                    Style="{StaticResource ModernButton}" Width="275" Height="36"
+                                                    HorizontalAlignment="Left" Margin="0,15.5,0,0"/>
                                         </StackPanel>
-                                        <Border Grid.Column="1" Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="11" Padding="15,12" VerticalAlignment="Center">
+                                        <Border Grid.Column="1" Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="11" Padding="13,10.5" VerticalAlignment="Center">
                                             <StackPanel>
                                                 <TextBlock Text="SİSTEM" Foreground="#91ABC0" FontSize="10.5" FontWeight="Bold" HorizontalAlignment="Right"/>
-                                                <TextBlock Text="OEHS v0.5" Foreground="White" FontSize="21" FontWeight="Bold" HorizontalAlignment="Right" Margin="0,4,0,0"/>
-                                                <Border Height="1" Background="#315371" Margin="0,11,0,9"/>
+                                                <TextBlock Text="OEHS v0.5" Foreground="White" FontSize="18" FontWeight="Bold" HorizontalAlignment="Right" Margin="0,4,0,0"/>
+                                                <Border Height="1" Background="#315371" Margin="0,9.5,0,8"/>
                                                 <TextBlock Text="HESAPLAMA MOTORU" Foreground="#91ABC0" FontSize="10.5" FontWeight="Bold" HorizontalAlignment="Right"/>
-                                                <TextBlock Text="HAZIR" Foreground="{StaticResource Gold500Brush}" FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Right" Margin="0,3,0,0"/>
+                                                <TextBlock Text="HAZIR" Foreground="{StaticResource Gold500Brush}" FontSize="11.5" FontWeight="SemiBold" HorizontalAlignment="Right" Margin="0,3,0,0"/>
                                             </StackPanel>
                                         </Border>
                                     </Grid>
                                 </Border>
-                                                                                                <Border Style="{StaticResource Card}" Padding="14" Margin="0,0,0,14">
+                                                                                                <Border Style="{StaticResource Card}" Padding="12" Margin="0,0,0,12">
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="1.1*"/><ColumnDefinition Width="1.8*"/></Grid.ColumnDefinitions>
                                         <StackPanel Grid.Column="0">
                                             <TextBlock Text="AKTİF İHALE / DOSYA NO" Style="{StaticResource CardTitle}"/>
                                             <ComboBox x:Name="HomeTenderListBox"
-                                                      Height="44"
-                                                      Margin="0,7,10,0"
+                                                      Height="38"
+                                                      Margin="0,6.5,9,0"
                                                       SelectionChanged="HomeTenderListBox_SelectionChanged"
                                                       Style="{StaticResource FieldComboBox}"
                                                       ToolTip="İhale / dosya numarasını seçin">
                                                 <ComboBox.ItemTemplate>
                                                     <DataTemplate>
-                                                        <TextBlock Text="{Binding TenderNumber}" FontSize="14" FontWeight="SemiBold"/>
+                                                        <TextBlock Text="{Binding TenderNumber}" FontSize="12.5" FontWeight="SemiBold"/>
                                                     </DataTemplate>
                                                 </ComboBox.ItemTemplate>
                                             </ComboBox>
                                         </StackPanel>
-                                        <Border Grid.Column="1" Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="9" Padding="14">
+                                        <Border Grid.Column="1" Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="9" Padding="12">
                                             <StackPanel>
                                                 <TextBlock Text="SEÇİLEN İHALE ÖZETİ" Foreground="{StaticResource Gold500Brush}" FontSize="11" FontWeight="Bold"/>
-                                                <TextBlock x:Name="HomeSelectedTenderSummaryTextBlock" Text="İhale seçiniz." Foreground="White" FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,5,0,0"/>
+                                                <TextBlock x:Name="HomeSelectedTenderSummaryTextBlock" Text="İhale seçiniz." Foreground="White" FontSize="13.5" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,5,0,0"/>
                                             </StackPanel>
                                         </Border>
                                     </Grid>
@@ -267,95 +267,95 @@
                                         <ColumnDefinition/><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/>
                                     </Grid.ColumnDefinitions>
 
-                                    <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource Card}" Padding="15" Margin="0,0,5,5">
+                                    <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource Card}" Padding="13" Margin="0,0,5,5">
                                         <StackPanel>
                                             <TextBlock Text="TAŞIMA HİZMETİ" Style="{StaticResource CardTitle}"/>
-                                            <TextBlock Text="Taşıma Hizmet" Style="{StaticResource FieldLabel}" Margin="0,7,0,0"/>
-                                            <TextBlock x:Name="HomeTransportServiceTextBlock" Text="0,00 ₺" Foreground="White" FontSize="24" FontWeight="Bold"/>
+                                            <TextBlock Text="Taşıma Hizmet" Style="{StaticResource FieldLabel}" Margin="0,6.5,0,0"/>
+                                            <TextBlock x:Name="HomeTransportServiceTextBlock" Text="0,00 ₺" Foreground="White" FontSize="20.5" FontWeight="Bold"/>
                                             <TextBlock Text="Taşıma Fiyat Farkı" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeTransportPriceDifferenceTextBlock" Text="0,00 ₺" Foreground="White" FontSize="19" FontWeight="SemiBold"/>
+                                            <TextBlock x:Name="HomeTransportPriceDifferenceTextBlock" Text="0,00 ₺" Foreground="White" FontSize="16.5" FontWeight="SemiBold"/>
                                             <TextBlock Text="Taşıma Hakediş" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeTransportNetTextBlock" Text="0,00 ₺" Foreground="White" FontSize="23" FontWeight="Bold"/>
+                                            <TextBlock x:Name="HomeTransportNetTextBlock" Text="0,00 ₺" Foreground="White" FontSize="20" FontWeight="Bold"/>
                                         </StackPanel>
                                     </Border>
 
-                                    <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource Card}" Padding="15" Margin="2,0,3,5">
+                                    <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource Card}" Padding="13" Margin="2,0,3,5">
                                         <StackPanel>
                                             <TextBlock Text="REHBER HİZMETİ" Style="{StaticResource CardTitle}"/>
-                                            <TextBlock Text="Rehber Hizmet" Style="{StaticResource FieldLabel}" Margin="0,7,0,0"/>
-                                            <TextBlock x:Name="HomeGuideServiceTextBlock" Text="0,00 ₺" Foreground="White" FontSize="24" FontWeight="Bold"/>
+                                            <TextBlock Text="Rehber Hizmet" Style="{StaticResource FieldLabel}" Margin="0,6.5,0,0"/>
+                                            <TextBlock x:Name="HomeGuideServiceTextBlock" Text="0,00 ₺" Foreground="White" FontSize="20.5" FontWeight="Bold"/>
                                             <TextBlock Text="Rehber Hakediş" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeGuideNetTextBlock" Text="0,00 ₺" Foreground="White" FontSize="23" FontWeight="Bold"/>
+                                            <TextBlock x:Name="HomeGuideNetTextBlock" Text="0,00 ₺" Foreground="White" FontSize="20" FontWeight="Bold"/>
                                         </StackPanel>
                                     </Border>
 
-                                    <Border Grid.Row="0" Grid.Column="2" Style="{StaticResource Card}" Padding="15" Margin="3,0,2,5">
+                                    <Border Grid.Row="0" Grid.Column="2" Style="{StaticResource Card}" Padding="13" Margin="3,0,2,5">
                                         <StackPanel>
                                             <TextBlock Text="VERGİ &amp; TEVKİFAT" Style="{StaticResource CardTitle}"/>
-                                            <TextBlock Text="KDV" Style="{StaticResource FieldLabel}" Margin="0,7,0,0"/>
-                                            <TextBlock x:Name="HomeVatTextBlock" Text="0,00 ₺" Foreground="White" FontSize="24" FontWeight="Bold"/>
+                                            <TextBlock Text="KDV" Style="{StaticResource FieldLabel}" Margin="0,6.5,0,0"/>
+                                            <TextBlock x:Name="HomeVatTextBlock" Text="0,00 ₺" Foreground="White" FontSize="20.5" FontWeight="Bold"/>
                                             <TextBlock Text="KDV / Tevkifat" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeVatWithholdingTextBlock" Text="0,00 / 0,00 ₺" Foreground="White" FontSize="19" FontWeight="SemiBold"/>
+                                            <TextBlock x:Name="HomeVatWithholdingTextBlock" Text="0,00 / 0,00 ₺" Foreground="White" FontSize="16.5" FontWeight="SemiBold"/>
                                             <TextBlock Text="Tevkifat" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeWithholdingTextBlock" Text="0,00 ₺" Foreground="White" FontSize="23" FontWeight="Bold"/>
+                                            <TextBlock x:Name="HomeWithholdingTextBlock" Text="0,00 ₺" Foreground="White" FontSize="20" FontWeight="Bold"/>
                                         </StackPanel>
                                     </Border>
 
-                                    <Border Grid.Row="0" Grid.Column="3" Style="{StaticResource Card}" Padding="15" Margin="5,0,0,5">
+                                    <Border Grid.Row="0" Grid.Column="3" Style="{StaticResource Card}" Padding="13" Margin="5,0,0,5">
                                         <StackPanel>
                                             <TextBlock Text="DİĞER KESİNTİLER" Style="{StaticResource CardTitle}"/>
-                                            <TextBlock Text="Damga Vergisi" Style="{StaticResource FieldLabel}" Margin="0,7,0,0"/>
-                                            <TextBlock x:Name="HomeStampTaxTextBlock" Text="0,00 ₺" Foreground="White" FontSize="21" FontWeight="Bold"/>
+                                            <TextBlock Text="Damga Vergisi" Style="{StaticResource FieldLabel}" Margin="0,6.5,0,0"/>
+                                            <TextBlock x:Name="HomeStampTaxTextBlock" Text="0,00 ₺" Foreground="White" FontSize="18" FontWeight="Bold"/>
                                             <TextBlock Text="Fiyat Farkı Teminatı" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeGuaranteeTextBlock" Text="0,00 ₺" Foreground="White" FontSize="21" FontWeight="Bold"/>
+                                            <TextBlock x:Name="HomeGuaranteeTextBlock" Text="0,00 ₺" Foreground="White" FontSize="18" FontWeight="Bold"/>
                                             <TextBlock Text="Toplam Kesinti" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeDeductionsTextBlock" Text="0,00 ₺" Foreground="White" FontSize="24" FontWeight="Bold"/>
+                                            <TextBlock x:Name="HomeDeductionsTextBlock" Text="0,00 ₺" Foreground="White" FontSize="20.5" FontWeight="Bold"/>
                                         </StackPanel>
                                     </Border>
 
-                                    <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource Card}" Padding="15" Margin="0,5,5,0">
+                                    <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource Card}" Padding="13" Margin="0,5,5,0">
                                         <StackPanel>
                                             <TextBlock Text="TAHAKKUK" Style="{StaticResource CardTitle}"/>
-                                            <TextBlock Text="Toplam Tutar" Style="{StaticResource FieldLabel}" Margin="0,7,0,0"/>
-                                            <TextBlock x:Name="HomeTotalAmountTextBlock" Text="0,00 ₺" Foreground="White" FontSize="25" FontWeight="Bold"/>
+                                            <TextBlock Text="Toplam Tutar" Style="{StaticResource FieldLabel}" Margin="0,6.5,0,0"/>
+                                            <TextBlock x:Name="HomeTotalAmountTextBlock" Text="0,00 ₺" Foreground="White" FontSize="21.5" FontWeight="Bold"/>
                                             <TextBlock Text="Fatura Tutarı" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeInvoiceTextBlock" Text="0,00 ₺" Foreground="White" FontSize="22" FontWeight="Bold"/>
+                                            <TextBlock x:Name="HomeInvoiceTextBlock" Text="0,00 ₺" Foreground="White" FontSize="19" FontWeight="Bold"/>
                                             <TextBlock Text="Brüt Tutar" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeGrossTextBlock" Text="0,00 ₺" Foreground="White" FontSize="22" FontWeight="Bold"/>
+                                            <TextBlock x:Name="HomeGrossTextBlock" Text="0,00 ₺" Foreground="White" FontSize="19" FontWeight="Bold"/>
                                         </StackPanel>
                                     </Border>
 
-                                    <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource Card}" Padding="15" Margin="2,5,3,0">
+                                    <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource Card}" Padding="13" Margin="2,5,3,0">
                                         <StackPanel>
                                             <TextBlock Text="AKTİF İHALE" Style="{StaticResource CardTitle}"/>
-                                            <TextBlock Text="İş" Style="{StaticResource FieldLabel}" Margin="0,7,0,0"/>
-                                            <TextBlock x:Name="HomeWorkNameTextBlock" Text="—" Foreground="White" FontSize="17" FontWeight="Bold" TextWrapping="Wrap"/>
+                                            <TextBlock Text="İş" Style="{StaticResource FieldLabel}" Margin="0,6.5,0,0"/>
+                                            <TextBlock x:Name="HomeWorkNameTextBlock" Text="—" Foreground="White" FontSize="15" FontWeight="Bold" TextWrapping="Wrap"/>
                                             <TextBlock Text="Yüklenici" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeContractorTextBlock" Text="—" Foreground="White" FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                            <TextBlock x:Name="HomeContractorTextBlock" Text="—" Foreground="White" FontSize="13.5" FontWeight="SemiBold" TextWrapping="Wrap"/>
                                         </StackPanel>
                                     </Border>
 
-                                    <Border Grid.Row="1" Grid.Column="2" Style="{StaticResource Card}" Padding="15" Margin="3,5,2,0">
+                                    <Border Grid.Row="1" Grid.Column="2" Style="{StaticResource Card}" Padding="13" Margin="3,5,2,0">
                                         <StackPanel>
                                             <TextBlock Text="HAKEDİŞ DURUMU" Style="{StaticResource CardTitle}"/>
-                                            <TextBlock Text="Son Hakediş" Style="{StaticResource FieldLabel}" Margin="0,7,0,0"/>
-                                            <TextBlock x:Name="HomeProgressTextBlock" Text="—" Foreground="White" FontSize="24" FontWeight="Bold"/>
+                                            <TextBlock Text="Son Hakediş" Style="{StaticResource FieldLabel}" Margin="0,6.5,0,0"/>
+                                            <TextBlock x:Name="HomeProgressTextBlock" Text="—" Foreground="White" FontSize="20.5" FontWeight="Bold"/>
                                             <TextBlock Text="Dönem" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomePeriodTextBlock" Text="—" Foreground="White" FontSize="16" FontWeight="SemiBold"/>
+                                            <TextBlock x:Name="HomePeriodTextBlock" Text="—" Foreground="White" FontSize="14" FontWeight="SemiBold"/>
                                             <TextBlock Text="Son Net Ödeme" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeLatestNetTextBlock" Text="0,00 ₺" Foreground="White" FontSize="24" FontWeight="Bold"/>
+                                            <TextBlock x:Name="HomeLatestNetTextBlock" Text="0,00 ₺" Foreground="White" FontSize="20.5" FontWeight="Bold"/>
                                         </StackPanel>
                                     </Border>
 
-                                    <Border Grid.Row="1" Grid.Column="3" Style="{StaticResource Card}" Padding="15" Margin="5,5,0,0">
+                                    <Border Grid.Row="1" Grid.Column="3" Style="{StaticResource Card}" Padding="13" Margin="5,5,0,0">
                                         <StackPanel>
                                             <TextBlock Text="KAYIT / HAT DURUMU" Style="{StaticResource CardTitle}"/>
-                                            <TextBlock Text="Kayıtlı Net Toplam" Style="{StaticResource FieldLabel}" Margin="0,7,0,0"/>
-                                            <TextBlock x:Name="HomeNetPayableTextBlock" Text="0,00 ₺" Foreground="White" FontSize="24" FontWeight="Bold"/>
+                                            <TextBlock Text="Kayıtlı Net Toplam" Style="{StaticResource FieldLabel}" Margin="0,6.5,0,0"/>
+                                            <TextBlock x:Name="HomeNetPayableTextBlock" Text="0,00 ₺" Foreground="White" FontSize="20.5" FontWeight="Bold"/>
                                             <TextBlock Text="Sözleşme / Hat Durumu" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeContractStatusTextBlock" Text="Bekleniyor" Foreground="White" FontSize="16" FontWeight="Bold" TextWrapping="Wrap"/>
+                                            <TextBlock x:Name="HomeContractStatusTextBlock" Text="Bekleniyor" Foreground="White" FontSize="14" FontWeight="Bold" TextWrapping="Wrap"/>
                                             <TextBlock Text="Tanımlı Hat" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeRouteCountTextBlock" Text="0" Foreground="White" FontSize="23" FontWeight="Bold"/>
+                                            <TextBlock x:Name="HomeRouteCountTextBlock" Text="0" Foreground="White" FontSize="20" FontWeight="Bold"/>
                                         </StackPanel>
                                     </Border>
                                 </Grid>
@@ -371,25 +371,25 @@
                                     <TextBlock Text="İHALE BİLGİLERİ" Style="{StaticResource PageTitle}"/>
                                     <TextBlock Text="Sözleşme, yüklenici ve dönem bilgilerini tek ekrandan yönetin." Style="{StaticResource PageSubtitle}"/>
 
-                                    <UniformGrid Columns="4" Margin="0,0,0,12">
-                                        <Border Style="{StaticResource MetricCard}" Margin="0,0,8,0">
+                                    <UniformGrid Columns="4" Margin="0,0,0,10.5">
+                                        <Border Style="{StaticResource MetricCard}" Margin="0,0,7,0">
                                             <StackPanel><TextBlock Text="SÖZLEŞME DURUMU" Style="{StaticResource FieldLabel}"/>
-                                                <TextBlock x:Name="ContractStatusSummaryTextBlock" Text="TASLAK" FontSize="24" FontWeight="Bold" Foreground="{StaticResource Gold600Brush}"/>
+                                                <TextBlock x:Name="ContractStatusSummaryTextBlock" Text="TASLAK" FontSize="20.5" FontWeight="Bold" Foreground="{StaticResource Gold600Brush}"/>
                                                 <TextBlock Text="Kayıt hazırlanmaya hazır" Style="{StaticResource CardSubtitle}"/></StackPanel>
                                         </Border>
                                         <Border Style="{StaticResource MetricCard}" Margin="4,0,4,0">
                                             <StackPanel><TextBlock Text="SÖZLEŞME BEDELİ" Style="{StaticResource FieldLabel}"/>
-                                                <TextBlock x:Name="ContractAmountSummaryTextBlock" Text="0,00 ₺" FontSize="21" FontWeight="Bold" Foreground="White"/>
+                                                <TextBlock x:Name="ContractAmountSummaryTextBlock" Text="0,00 ₺" FontSize="18" FontWeight="Bold" Foreground="White"/>
                                                 <TextBlock Text="Girilen ana tutar" Style="{StaticResource CardSubtitle}"/></StackPanel>
                                         </Border>
                                         <Border Style="{StaticResource MetricCard}" Margin="4,0,4,0">
                                             <StackPanel><TextBlock Text="BAŞLANGIÇ" Style="{StaticResource FieldLabel}"/>
-                                                <TextBlock x:Name="ContractStartSummaryTextBlock" Text="—" FontSize="24" FontWeight="Bold" Foreground="White"/>
+                                                <TextBlock x:Name="ContractStartSummaryTextBlock" Text="—" FontSize="20.5" FontWeight="Bold" Foreground="White"/>
                                                 <TextBlock Text="İş başlangıç tarihi" Style="{StaticResource CardSubtitle}"/></StackPanel>
                                         </Border>
-                                        <Border Style="{StaticResource MetricCard}" Margin="8,0,0,0">
+                                        <Border Style="{StaticResource MetricCard}" Margin="7,0,0,0">
                                             <StackPanel><TextBlock Text="BİTİŞ" Style="{StaticResource FieldLabel}"/>
-                                                <TextBlock x:Name="ContractEndSummaryTextBlock" Text="—" FontSize="24" FontWeight="Bold" Foreground="White"/>
+                                                <TextBlock x:Name="ContractEndSummaryTextBlock" Text="—" FontSize="20.5" FontWeight="Bold" Foreground="White"/>
                                                 <TextBlock Text="İş bitiş tarihi" Style="{StaticResource CardSubtitle}"/></StackPanel>
                                         </Border>
                                     </UniformGrid>
@@ -397,10 +397,10 @@
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="2.2*"/><ColumnDefinition Width="1*"/></Grid.ColumnDefinitions>
 
-                                        <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0">
+                                        <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,9,0">
                                             <StackPanel>
                                                 <TextBlock x:Name="ContractEditorTitleTextBlock" Text="Sözleşme Bilgileri" Style="{StaticResource CardTitle}"/>
-                                                <TextBlock x:Name="ContractEditorSubtitleTextBlock" Text="Temel ihale ve sözleşme alanları" Style="{StaticResource CardSubtitle}" Margin="0,0,0,18"/><Border x:Name="ContractValidationBanner" Visibility="Collapsed" Background="#FFF1F1" BorderBrush="#E53935" BorderThickness="1.5" CornerRadius="9" Padding="14,11" Margin="8,14,8,0"><StackPanel><TextBlock Text="EKSİK / HATALI İHALE BİLGİSİ" Foreground="#C62828" FontSize="13" FontWeight="Bold"/><TextBlock x:Name="ContractValidationMessageTextBlock" Foreground="#8E1B1B" FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,3,0,0"/></StackPanel></Border>
+                                                <TextBlock x:Name="ContractEditorSubtitleTextBlock" Text="Temel ihale ve sözleşme alanları" Style="{StaticResource CardSubtitle}" Margin="0,0,0,15.5"/><Border x:Name="ContractValidationBanner" Visibility="Collapsed" Background="#FFF1F1" BorderBrush="#E53935" BorderThickness="1.5" CornerRadius="9" Padding="12,9.5" Margin="7,12,7,0"><StackPanel><TextBlock Text="EKSİK / HATALI İHALE BİLGİSİ" Foreground="#C62828" FontSize="12" FontWeight="Bold"/><TextBlock x:Name="ContractValidationMessageTextBlock" Foreground="#8E1B1B" FontSize="13.5" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,3,0,0"/></StackPanel></Border>
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="170"/><ColumnDefinition Width="*"/>
@@ -409,91 +409,91 @@
                                                     <Grid.RowDefinitions>
                                                         <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
                                                     </Grid.RowDefinitions>
-                                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="İhale / Dosya No" Style="{StaticResource FieldLabel}" Margin="0,8"/>
-                                                    <TextBox x:Name="TenderNumberTextBox" Grid.Row="0" Grid.Column="1" Margin="8" Style="{StaticResource FieldTextBox}"/>
-                                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="Sözleşme No" Style="{StaticResource FieldLabel}" Margin="18,8,0,8"/>
-                                                    <TextBox x:Name="ContractNumberTextBox" Grid.Row="0" Grid.Column="3" Margin="8" Style="{StaticResource FieldTextBox}"/>
+                                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="İhale / Dosya No" Style="{StaticResource FieldLabel}" Margin="0,7"/>
+                                                    <TextBox x:Name="TenderNumberTextBox" Grid.Row="0" Grid.Column="1" Margin="7" Style="{StaticResource FieldTextBox}"/>
+                                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="Sözleşme No" Style="{StaticResource FieldLabel}" Margin="15.5,7,0,7"/>
+                                                    <TextBox x:Name="ContractNumberTextBox" Grid.Row="0" Grid.Column="3" Margin="7" Style="{StaticResource FieldTextBox}"/>
 
-                                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="İşin Adı" Style="{StaticResource FieldLabel}" Margin="0,8"/>
-                                                    <TextBox x:Name="WorkNameTextBox" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="8" Style="{StaticResource FieldTextBox}"/>
+                                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="İşin Adı" Style="{StaticResource FieldLabel}" Margin="0,7"/>
+                                                    <TextBox x:Name="WorkNameTextBox" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="7" Style="{StaticResource FieldTextBox}"/>
 
-                                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Sözleşme Bedeli" Style="{StaticResource FieldLabel}" Margin="0,8"/>
-                                                    <TextBox x:Name="ContractAmountTextBox" Grid.Row="2" Grid.Column="1" Margin="8" Style="{StaticResource FieldTextBox}"/>
-                                                    <TextBlock Grid.Row="2" Grid.Column="2" Text="Sözleşme İş Günü" Style="{StaticResource FieldLabel}" Margin="18,8,0,8"/>
-                                                    <TextBox x:Name="ContractWorkDaysTextBox" Grid.Row="2" Grid.Column="3" Margin="8" Style="{StaticResource FieldTextBox}"/>
+                                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Sözleşme Bedeli" Style="{StaticResource FieldLabel}" Margin="0,7"/>
+                                                    <TextBox x:Name="ContractAmountTextBox" Grid.Row="2" Grid.Column="1" Margin="7" Style="{StaticResource FieldTextBox}"/>
+                                                    <TextBlock Grid.Row="2" Grid.Column="2" Text="Sözleşme İş Günü" Style="{StaticResource FieldLabel}" Margin="15.5,7,0,7"/>
+                                                    <TextBox x:Name="ContractWorkDaysTextBox" Grid.Row="2" Grid.Column="3" Margin="7" Style="{StaticResource FieldTextBox}"/>
 
-                                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Başlangıç Tarihi" Style="{StaticResource FieldLabel}" Margin="0,8"/>
-                                                    <DatePicker x:Name="StartDatePicker" Grid.Row="3" Grid.Column="1" Margin="8" Style="{StaticResource FieldDatePicker}"/>
-                                                    <TextBlock Grid.Row="3" Grid.Column="2" Text="Bitiş Tarihi" Style="{StaticResource FieldLabel}" Margin="18,8,0,8"/>
-                                                    <DatePicker x:Name="EndDatePicker" Grid.Row="3" Grid.Column="3" Margin="8" Style="{StaticResource FieldDatePicker}"/>
-                                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="İhale Tarihi" Style="{StaticResource FieldLabel}" Margin="0,8"/>
-                                                    <DatePicker x:Name="TenderDatePicker" Grid.Row="4" Grid.Column="1" Margin="8" Style="{StaticResource FieldDatePicker}"/>
-                                                    <TextBlock Grid.Row="4" Grid.Column="2" Text="Sözleşme Tarihi" Style="{StaticResource FieldLabel}" Margin="18,8,0,8"/>
-                                                    <DatePicker x:Name="ContractDatePicker" Grid.Row="4" Grid.Column="3" Margin="8" Style="{StaticResource FieldDatePicker}"/>
+                                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Başlangıç Tarihi" Style="{StaticResource FieldLabel}" Margin="0,7"/>
+                                                    <DatePicker x:Name="StartDatePicker" Grid.Row="3" Grid.Column="1" Margin="7" Style="{StaticResource FieldDatePicker}"/>
+                                                    <TextBlock Grid.Row="3" Grid.Column="2" Text="Bitiş Tarihi" Style="{StaticResource FieldLabel}" Margin="15.5,7,0,7"/>
+                                                    <DatePicker x:Name="EndDatePicker" Grid.Row="3" Grid.Column="3" Margin="7" Style="{StaticResource FieldDatePicker}"/>
+                                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="İhale Tarihi" Style="{StaticResource FieldLabel}" Margin="0,7"/>
+                                                    <DatePicker x:Name="TenderDatePicker" Grid.Row="4" Grid.Column="1" Margin="7" Style="{StaticResource FieldDatePicker}"/>
+                                                    <TextBlock Grid.Row="4" Grid.Column="2" Text="Sözleşme Tarihi" Style="{StaticResource FieldLabel}" Margin="15.5,7,0,7"/>
+                                                    <DatePicker x:Name="ContractDatePicker" Grid.Row="4" Grid.Column="3" Margin="7" Style="{StaticResource FieldDatePicker}"/>
 
-                                                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Taşıma Günlük Fiyatı" Style="{StaticResource FieldLabel}" Margin="0,8"/>
-                                                    <TextBox x:Name="ContractTransportDailyPriceTextBox" Grid.Row="5" Grid.Column="1" Margin="8" Style="{StaticResource FieldTextBox}" ToolTip="Excel İhale Verileri içindeki Günlük Fiyat. Hat ve hakediş ekranlarında tekrar girilmez."/>
+                                                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Taşıma Günlük Fiyatı" Style="{StaticResource FieldLabel}" Margin="0,7"/>
+                                                    <TextBox x:Name="ContractTransportDailyPriceTextBox" Grid.Row="5" Grid.Column="1" Margin="7" Style="{StaticResource FieldTextBox}" ToolTip="Excel İhale Verileri içindeki Günlük Fiyat. Hat ve hakediş ekranlarında tekrar girilmez."/>
                                                 </Grid>
-                                                <Border Style="{StaticResource StatusBanner}" Margin="8,14,8,0" Padding="14,11">
+                                                <Border Style="{StaticResource StatusBanner}" Margin="7,12,7,0" Padding="12,9.5">
                                                     <Grid>
                                                         <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                                         <StackPanel VerticalAlignment="Center">
-                                                            <TextBlock Text="VERGİ DURUMU" Foreground="{StaticResource Blue700Brush}" FontSize="12.5" FontWeight="Bold"/>
-                                                            <TextBlock Text="Vergi istisnası uygulanacaksa işaretleyin." Foreground="{StaticResource Text900Brush}" FontSize="15.5" FontWeight="Bold" Margin="0,3,0,0"/>
+                                                            <TextBlock Text="VERGİ DURUMU" Foreground="{StaticResource Blue700Brush}" FontSize="11.5" FontWeight="Bold"/>
+                                                            <TextBlock Text="Vergi istisnası uygulanacaksa işaretleyin." Foreground="{StaticResource Text900Brush}" FontSize="13.5" FontWeight="Bold" Margin="0,3,0,0"/>
                                                         </StackPanel>
-                                                        <CheckBox x:Name="VatExemptCheckBox" Grid.Column="1" Content="KDV İSTİSNASI" Style="{StaticResource LightCheckBox}" VerticalAlignment="Center" Margin="18,0,2,0"/>
+                                                        <CheckBox x:Name="VatExemptCheckBox" Grid.Column="1" Content="KDV İSTİSNASI" Style="{StaticResource LightCheckBox}" VerticalAlignment="Center" Margin="15.5,0,2,0"/>
                                                     </Grid>
                                                 </Border>
-                                                <StackPanel Orientation="Horizontal" Margin="8,20,8,0">
+                                                <StackPanel Orientation="Horizontal" Margin="7,17,7,0">
                                                     <Button x:Name="SaveContractButton" Content="KAYDET" Click="SaveContractButton_Click" Style="{StaticResource ModernButton}" Width="140"/>
-                                                    <Button x:Name="CancelContractEditButton" Content="DÜZENLEME İPTAL" Click="CancelContractEditButton_Click" Style="{StaticResource SecondaryButton}" Width="160" Margin="10,0,0,0" Visibility="Collapsed"/>
-                                                    <Button x:Name="ClearContractButton" Content="TEMİZLE" Click="ClearContractButton_Click" Style="{StaticResource SecondaryButton}" Width="120" Margin="10,0,0,0"/>
+                                                    <Button x:Name="CancelContractEditButton" Content="DÜZENLEME İPTAL" Click="CancelContractEditButton_Click" Style="{StaticResource SecondaryButton}" Width="160" Margin="9,0,0,0" Visibility="Collapsed"/>
+                                                    <Button x:Name="ClearContractButton" Content="TEMİZLE" Click="ClearContractButton_Click" Style="{StaticResource SecondaryButton}" Width="120" Margin="9,0,0,0"/>
                                                 </StackPanel>
-                                                <TextBlock x:Name="ContractStatusTextBlock" Margin="8,10,8,0" Foreground="{StaticResource Blue600Brush}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                                <TextBlock x:Name="ContractStatusTextBlock" Margin="7,9,7,0" Foreground="{StaticResource Blue600Brush}" FontWeight="SemiBold" TextWrapping="Wrap"/>
                                             </StackPanel>
                                         </Border>
 
-                                        <StackPanel Grid.Column="1" Margin="10,0,0,0">
-                                            <Border Style="{StaticResource PremiumPanel}" Padding="22">
+                                        <StackPanel Grid.Column="1" Margin="9,0,0,0">
+                                            <Border Style="{StaticResource PremiumPanel}" Padding="19">
                                                 <StackPanel>
-                                                    <TextBlock Text="SÖZLEŞME ÖZETİ" Foreground="{StaticResource Gold500Brush}" FontSize="13" FontWeight="Bold"/>
-                                                    <TextBlock Text="Hakediş akışının başlangıç noktası" Foreground="White" FontSize="22" FontWeight="SemiBold" Margin="0,8,0,4"/>
-                                                    <TextBlock Text="Bu kayıt tamamlandığında hatlar ve dönemsel hakediş işlemleri bu sözleşme üzerinden ilerleyecek." Foreground="#C5D7E7" TextWrapping="Wrap" FontSize="14"/>
-                                                    <Border Height="1" Background="#315371" Margin="0,18,0,14"/>
+                                                    <TextBlock Text="SÖZLEŞME ÖZETİ" Foreground="{StaticResource Gold500Brush}" FontSize="12" FontWeight="Bold"/>
+                                                    <TextBlock Text="Hakediş akışının başlangıç noktası" Foreground="White" FontSize="19" FontWeight="SemiBold" Margin="0,7,0,4"/>
+                                                    <TextBlock Text="Bu kayıt tamamlandığında hatlar ve dönemsel hakediş işlemleri bu sözleşme üzerinden ilerleyecek." Foreground="#C5D7E7" TextWrapping="Wrap" FontSize="12.5"/>
+                                                    <Border Height="1" Background="#315371" Margin="0,15.5,0,12"/>
                                                     <Grid>
                                                         <Grid.RowDefinitions>
                                                             <RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/>
                                                         </Grid.RowDefinitions>
                                                         <TextBlock Grid.Row="0" Text="İhale / Dosya No" Foreground="#91ABC0"/>
                                                         <TextBlock x:Name="ContractSummaryTenderTextBlock" Grid.Row="0" Text="Bekleniyor" Foreground="White" HorizontalAlignment="Right" TextWrapping="Wrap"/>
-                                                        <TextBlock Grid.Row="1" Text="Sözleşme No" Foreground="#91ABC0" Margin="0,10,0,0"/>
-                                                        <TextBlock x:Name="ContractSummaryContractTextBlock" Grid.Row="1" Text="Bekleniyor" Foreground="White" HorizontalAlignment="Right" TextWrapping="Wrap" Margin="0,10,0,0"/>
-                                                        <TextBlock Grid.Row="2" Text="Sözleşme Bedeli" Foreground="#91ABC0" Margin="0,10,0,0"/>
-                                                        <TextBlock x:Name="ContractSummaryAmountTextBlock" Grid.Row="2" Text="0,00 ₺" Foreground="White" HorizontalAlignment="Right" Margin="0,10,0,0"/>
-                                                        <TextBlock Grid.Row="3" Text="İş Günü / Taşıma Günlük Fiyat" Foreground="#91ABC0" Margin="0,10,0,0"/>
-                                                        <TextBlock x:Name="ContractSummaryWorkDaysTextBlock" Grid.Row="3" Text="0 gün • 0,00 ₺" Foreground="White" HorizontalAlignment="Right" TextWrapping="Wrap" Margin="0,10,0,0"/>
-                                                        <TextBlock Grid.Row="4" Text="KDV / Hat Durumu" Foreground="#91ABC0" Margin="0,10,0,0"/>
-                                                        <TextBlock x:Name="ContractSummaryVatTextBlock" Grid.Row="4" Text="Standart" Foreground="{StaticResource Gold500Brush}" HorizontalAlignment="Right" TextWrapping="Wrap" Margin="0,10,0,0"/>
+                                                        <TextBlock Grid.Row="1" Text="Sözleşme No" Foreground="#91ABC0" Margin="0,9,0,0"/>
+                                                        <TextBlock x:Name="ContractSummaryContractTextBlock" Grid.Row="1" Text="Bekleniyor" Foreground="White" HorizontalAlignment="Right" TextWrapping="Wrap" Margin="0,9,0,0"/>
+                                                        <TextBlock Grid.Row="2" Text="Sözleşme Bedeli" Foreground="#91ABC0" Margin="0,9,0,0"/>
+                                                        <TextBlock x:Name="ContractSummaryAmountTextBlock" Grid.Row="2" Text="0,00 ₺" Foreground="White" HorizontalAlignment="Right" Margin="0,9,0,0"/>
+                                                        <TextBlock Grid.Row="3" Text="İş Günü / Taşıma Günlük Fiyat" Foreground="#91ABC0" Margin="0,9,0,0"/>
+                                                        <TextBlock x:Name="ContractSummaryWorkDaysTextBlock" Grid.Row="3" Text="0 gün • 0,00 ₺" Foreground="White" HorizontalAlignment="Right" TextWrapping="Wrap" Margin="0,9,0,0"/>
+                                                        <TextBlock Grid.Row="4" Text="KDV / Hat Durumu" Foreground="#91ABC0" Margin="0,9,0,0"/>
+                                                        <TextBlock x:Name="ContractSummaryVatTextBlock" Grid.Row="4" Text="Standart" Foreground="{StaticResource Gold500Brush}" HorizontalAlignment="Right" TextWrapping="Wrap" Margin="0,9,0,0"/>
                                                     </Grid>
                                                 </StackPanel>
                                             </Border>
-                                            <Border Style="{StaticResource Card}" Margin="0,14,0,0">
+                                            <Border Style="{StaticResource Card}" Margin="0,12,0,0">
                                                 <StackPanel>
                                                     <TextBlock Text="KAYITLI İHALELER / DOSYALAR" Style="{StaticResource CardTitle}"/>
-                                                    <TextBlock Text="İhale / dosya no ana ayırt edicidir; hatlar seçilen ihale ve yüklenici ilişkisi üzerinden tanımlanır." Style="{StaticResource CardSubtitle}" Margin="0,2,0,10" TextWrapping="Wrap"/>
+                                                    <TextBlock Text="İhale / dosya no ana ayırt edicidir; hatlar seçilen ihale ve yüklenici ilişkisi üzerinden tanımlanır." Style="{StaticResource CardSubtitle}" Margin="0,2,0,9" TextWrapping="Wrap"/>
                                                     <ItemsControl x:Name="ContractsListBox">
                                                         <ItemsControl.ItemTemplate>
                                                             <DataTemplate>
-                                                                <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,3">
+                                                                <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="9" Margin="0,3">
                                                                     <Grid>
                                                                         <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="108"/><ColumnDefinition Width="70"/></Grid.ColumnDefinitions>
                                                                         <StackPanel>
-                                                                            <TextBlock Text="{Binding TenderNumber}" Foreground="White" FontSize="14" FontWeight="Bold"/>
+                                                                            <TextBlock Text="{Binding TenderNumber}" Foreground="White" FontSize="12.5" FontWeight="Bold"/>
 
                                                                             <TextBlock Text="{Binding WorkName}" Foreground="#C5D7E7" FontSize="11.5" TextWrapping="Wrap"/>
                                                                         </StackPanel>
-                                                                        <Button Grid.Column="1" Content="DÜZENLE" Tag="{Binding}" Click="EditContractButton_Click" Style="{StaticResource SecondaryButton}" Height="34" FontSize="10.5" Width="96" Margin="3,0"/>
-                                                                        <Button Grid.Column="2" Content="SİL" Tag="{Binding}" Click="DeleteContractButton_Click" Style="{StaticResource SecondaryButton}" Height="34" FontSize="10.5" Width="56" Margin="3,0"/>
+                                                                        <Button Grid.Column="1" Content="DÜZENLE" Tag="{Binding}" Click="EditContractButton_Click" Style="{StaticResource SecondaryButton}" Height="30" FontSize="10.5" Width="96" Margin="3,0"/>
+                                                                        <Button Grid.Column="2" Content="SİL" Tag="{Binding}" Click="DeleteContractButton_Click" Style="{StaticResource SecondaryButton}" Height="30" FontSize="10.5" Width="56" Margin="3,0"/>
                                                                     </Grid>
                                                                 </Border>
                                                             </DataTemplate>
@@ -515,7 +515,7 @@
                                     <TextBlock Text="HAKEDİŞ OLUŞTUR" Style="{StaticResource PageTitle}"/>
                                     <TextBlock Text="Dönem hesabını girin, sonucu kontrol edin ve ödeme tutarını oluşturun." Style="{StaticResource PageSubtitle}"/>
 
-                                    <Border Style="{StaticResource CardCompact}" Padding="10" Margin="0,0,0,10">
+                                    <Border Style="{StaticResource CardCompact}" Padding="9" Margin="0,0,0,9">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="1.35*"/>
@@ -525,140 +525,140 @@
                                             </Grid.ColumnDefinitions>
                                             <StackPanel Grid.Column="0">
                                                 <TextBlock Text="DÖNEM" Style="{StaticResource FieldLabel}" FontSize="11.5"/>
-                                                <TextBlock Text="HAKEDİŞ GİRİŞİ" FontSize="17" FontWeight="Bold" Foreground="{StaticResource Blue600Brush}"/>
+                                                <TextBlock Text="HAKEDİŞ GİRİŞİ" FontSize="15" FontWeight="Bold" Foreground="{StaticResource Blue600Brush}"/>
                                             </StackPanel>
-                                            <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                                            <StackPanel Grid.Column="1" Margin="10.5,0,0,0">
                                                 <TextBlock Text="İŞ GÜNÜ" Style="{StaticResource FieldLabel}" FontSize="11.5"/>
-                                                <TextBlock x:Name="ProgressWorkDaysSummaryTextBlock" Text="0" FontSize="17" FontWeight="Bold" Foreground="White"/>
+                                                <TextBlock x:Name="ProgressWorkDaysSummaryTextBlock" Text="0" FontSize="15" FontWeight="Bold" Foreground="White"/>
                                             </StackPanel>
-                                            <StackPanel Grid.Column="2" Margin="12,0,0,0">
+                                            <StackPanel Grid.Column="2" Margin="10.5,0,0,0">
                                                 <TextBlock Text="HESAP DURUMU" Style="{StaticResource FieldLabel}" FontSize="11.5"/>
-                                                <TextBlock x:Name="ProgressCalculationSummaryTextBlock" Text="HAZIR" FontSize="17" FontWeight="Bold" Foreground="{StaticResource Gold600Brush}"/>
+                                                <TextBlock x:Name="ProgressCalculationSummaryTextBlock" Text="HAZIR" FontSize="15" FontWeight="Bold" Foreground="{StaticResource Gold600Brush}"/>
                                             </StackPanel>
-                                            <StackPanel Grid.Column="3" Margin="12,0,0,0">
+                                            <StackPanel Grid.Column="3" Margin="10.5,0,0,0">
                                                 <TextBlock Text="NET ÖDEME" Style="{StaticResource FieldLabel}" FontSize="11.5"/>
-                                                <TextBlock x:Name="ProgressNetSummaryTextBlock" Text="0,00 ₺" FontSize="17" FontWeight="Bold" Foreground="{StaticResource Blue600Brush}"/>
+                                                <TextBlock x:Name="ProgressNetSummaryTextBlock" Text="0,00 ₺" FontSize="15" FontWeight="Bold" Foreground="{StaticResource Blue600Brush}"/>
                                             </StackPanel>
                                         </Grid>
                                     </Border>
 
-                                    <Border Style="{StaticResource Card}" Padding="14" Margin="0,0,0,14">
+                                    <Border Style="{StaticResource Card}" Padding="12" Margin="0,0,0,12">
                                         <Grid>
                                             <Grid.ColumnDefinitions><ColumnDefinition Width="1.05*"/><ColumnDefinition Width="0.9*"/><ColumnDefinition Width="1.25*"/></Grid.ColumnDefinitions>
-                                            <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                            <StackPanel Grid.Column="0" Margin="0,0,7,0">
                                                 <TextBlock Text="İHALE / DOSYA NO" Style="{StaticResource CardTitle}"/>
                                                 <ComboBox x:Name="ProgressTenderListBox"
-                                                          Height="44"
-                                                          Margin="0,7,0,0"
+                                                          Height="38"
+                                                          Margin="0,6.5,0,0"
                                                           SelectionChanged="ProgressTenderListBox_SelectionChanged"
                                                           Style="{StaticResource FieldComboBox}"
                                                           ToolTip="İhale / dosya numarasını seçin">
                                                     <ComboBox.ItemTemplate>
                                                         <DataTemplate>
-                                                            <TextBlock Text="{Binding TenderNumber}" FontSize="14" FontWeight="SemiBold"/>
+                                                            <TextBlock Text="{Binding TenderNumber}" FontSize="12.5" FontWeight="SemiBold"/>
                                                         </DataTemplate>
                                                     </ComboBox.ItemTemplate>
                                                 </ComboBox>
                                             </StackPanel>
-                                            <StackPanel Grid.Column="1" Margin="8,0">
+                                            <StackPanel Grid.Column="1" Margin="7,0">
                                                 <TextBlock Text="YÜKLENİCİ FİRMA" Style="{StaticResource CardTitle}"/>
-                                                <TextBlock x:Name="ProgressContractorTextBlock" Text="Seçilmedi" Foreground="White" FontSize="15" FontWeight="Bold" TextWrapping="Wrap" Margin="0,8,0,0"/>
+                                                <TextBlock x:Name="ProgressContractorTextBlock" Text="Seçilmedi" Foreground="White" FontSize="13.5" FontWeight="Bold" TextWrapping="Wrap" Margin="0,7,0,0"/>
                                             </StackPanel>
-                                            <StackPanel Grid.Column="2" Margin="8,0,0,0">
+                                            <StackPanel Grid.Column="2" Margin="7,0,0,0">
                                                 <TextBlock Text="TANIMLI HATLAR" Style="{StaticResource CardTitle}"/>
-                                                <ComboBox x:Name="ProgressRouteComboBox" DisplayMemberPath="DisplayText" Height="44" Margin="0,7,0,0" SelectionChanged="ProgressRouteComboBox_SelectionChanged" Style="{StaticResource FieldComboBox}"/>
-                                                <TextBlock x:Name="ProgressRouteRelationTextBlock" Text="Hat seçiniz." Foreground="#C5D7E7" FontSize="12.5" TextWrapping="Wrap" Margin="0,5,0,0"/>
+                                                <ComboBox x:Name="ProgressRouteComboBox" DisplayMemberPath="DisplayText" Height="38" Margin="0,6.5,0,0" SelectionChanged="ProgressRouteComboBox_SelectionChanged" Style="{StaticResource FieldComboBox}"/>
+                                                <TextBlock x:Name="ProgressRouteRelationTextBlock" Text="Hat seçiniz." Foreground="#C5D7E7" FontSize="11.5" TextWrapping="Wrap" Margin="0,5,0,0"/>
                                             </StackPanel>
                                         </Grid>
                                     </Border>
 
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="1.45*"/><ColumnDefinition Width="1*"/></Grid.ColumnDefinitions>
-                                        <Border Grid.Column="0" VerticalAlignment="Top" Style="{StaticResource PremiumPanel}" Padding="16" Margin="0,0,10,0">
+                                        <Border Grid.Column="0" VerticalAlignment="Top" Style="{StaticResource PremiumPanel}" Padding="14" Margin="0,0,9,0">
                                             <StackPanel>
-                                                <TextBlock x:Name="ProgressEditorTitleTextBlock" Text="DÖNEM HESAP BİLGİLERİ" Foreground="{StaticResource Gold500Brush}" FontSize="13" FontWeight="Bold"/>
-                                                <TextBlock Text="Hakediş hesaplama girdileri" Foreground="White" FontSize="21" FontWeight="SemiBold" Margin="0,5,0,4"/><TextBlock Text="Sözleşme bedeli ve KDV durumu İhale Bilgileri ekranından otomatik alınır." Foreground="#B9CBDA" FontSize="11.5" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                                <TextBlock x:Name="ProgressEditorTitleTextBlock" Text="DÖNEM HESAP BİLGİLERİ" Foreground="{StaticResource Gold500Brush}" FontSize="12" FontWeight="Bold"/>
+                                                <TextBlock Text="Hakediş hesaplama girdileri" Foreground="White" FontSize="18" FontWeight="SemiBold" Margin="0,5,0,4"/><TextBlock Text="Sözleşme bedeli ve KDV durumu İhale Bilgileri ekranından otomatik alınır." Foreground="#B9CBDA" FontSize="11.5" TextWrapping="Wrap" Margin="0,0,0,7"/>
                                                 <Grid>
                                                     <Grid.ColumnDefinitions><ColumnDefinition Width="120"/><ColumnDefinition Width="1.2*"/><ColumnDefinition Width="145"/><ColumnDefinition Width="1.2*"/></Grid.ColumnDefinitions>
                                                     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                                                    <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" Text="Dönemsel hakediş girdileri" Foreground="#B9CBDA" FontSize="12" Margin="0,6"/>
+                                                    <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" Text="Dönemsel hakediş girdileri" Foreground="#B9CBDA" FontSize="11.5" Margin="0,6"/>
                                                     <TextBlock Grid.Row="1" Grid.Column="0" Text="Taşıma İş Günü (otomatik)" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,5" Visibility="Collapsed"/>
                                                     <TextBox x:Name="WorkDaysTextBox" Grid.Row="1" Grid.Column="1" Margin="6" Style="{StaticResource PremiumFieldTextBox}" IsReadOnly="True" ToolTip="Hatlar ekranındaki Taşıma İş Günü değerinden otomatik alınır." Visibility="Collapsed"/>
-                                                    <TextBlock Grid.Row="1" Grid.Column="2" Text="Taşıma Günlük Fiyat" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,5,0,5" Visibility="Collapsed"/>
+                                                    <TextBlock Grid.Row="1" Grid.Column="2" Text="Taşıma Günlük Fiyat" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="10.5,5,0,5" Visibility="Collapsed"/>
                                                     <TextBox x:Name="DailyPriceTextBox" Grid.Row="1" Grid.Column="3" Margin="6" Visibility="Collapsed" Style="{StaticResource PremiumFieldTextBox}" IsReadOnly="True" ToolTip="İhale Bilgileri'ndeki Taşıma Günlük Fiyatından otomatik alınır."/>
                                                     <TextBlock Grid.Row="2" Grid.Column="0" Text="Rehber İş Günü (otomatik)" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,5" Visibility="Collapsed"/>
                                                     <TextBox x:Name="GuideWorkDaysTextBox" Grid.Row="2" Grid.Column="1" Margin="6" Style="{StaticResource PremiumFieldTextBox}" IsReadOnly="True" ToolTip="Tanımlı hattan otomatik alınır." Visibility="Collapsed"/>
-                                                    <TextBlock Grid.Row="2" Grid.Column="2" Text="Rehber Günlük Fiyat (otomatik)" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,5,0,5" Visibility="Collapsed"/>
+                                                    <TextBlock Grid.Row="2" Grid.Column="2" Text="Rehber Günlük Fiyat (otomatik)" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="10.5,5,0,5" Visibility="Collapsed"/>
                                                     <TextBox x:Name="GuideDailyPriceTextBox" Grid.Row="2" Grid.Column="3" Margin="6" Style="{StaticResource PremiumFieldTextBox}" IsReadOnly="True" ToolTip="Tanımlı hattan otomatik alınır." Visibility="Collapsed"/>
-                                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Hakediş No" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,8"/>
-                                                    <TextBox x:Name="ProgressNumberTextBox" Grid.Row="3" Grid.Column="1" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
-                                                    <TextBlock Grid.Row="3" Grid.Column="2" Text="Dönem Tarihi" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,8,0,8"/>
-                                                    <DatePicker x:Name="ProgressPeriodDatePicker" Grid.Row="3" Grid.Column="3" Margin="8" Style="{StaticResource FieldDatePicker}"/>
-                                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Taşıma İskonto" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,8"/>
-                                                    <TextBox x:Name="DiscountTextBox" Grid.Row="4" Grid.Column="1" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
-                                                    <TextBlock Grid.Row="4" Grid.Column="2" Text="Taşıma Fiyat Farkı" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,5,0,5"/>
-                                                    <TextBox x:Name="PriceDifferenceTextBox" Grid.Row="4" Grid.Column="3" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
-                                                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Rehber İskonto" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,8"/>
-                                                    <TextBox x:Name="GuideDiscountTextBox" Grid.Row="5" Grid.Column="1" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
-                                                    <TextBlock Grid.Row="5" Grid.Column="2" Text="Rehber Fiyat Farkı" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,5,0,5"/>
-                                                    <TextBox x:Name="GuidePriceDifferenceTextBox" Grid.Row="5" Grid.Column="3" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
-                                                    <TextBlock Grid.Row="6" Grid.Column="0" Text="Vergi Borcu" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,8"/>
-                                                    <TextBox x:Name="TaxDebtTextBox" Grid.Row="6" Grid.Column="1" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
-                                                    <TextBlock Grid.Row="6" Grid.Column="2" Text="SGK Borcu" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,8,0,8"/>
-                                                    <TextBox x:Name="SocialSecurityDebtTextBox" Grid.Row="6" Grid.Column="3" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
-                                                    <TextBlock Grid.Row="7" Grid.Column="0" Text="Asgari Ücret Desteği" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,8"/>
-                                                    <TextBox x:Name="MinimumWageSupportTextBox" Grid.Row="7" Grid.Column="1" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
-                                                    <TextBlock Grid.Row="7" Grid.Column="2" Text="Denetim Cezası" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="12,8,0,8"/>
-                                                    <TextBox x:Name="InspectionPenaltyTextBox" Grid.Row="7" Grid.Column="3" Margin="8" Style="{StaticResource PremiumFieldTextBox}"/>
+                                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Hakediş No" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,7"/>
+                                                    <TextBox x:Name="ProgressNumberTextBox" Grid.Row="3" Grid.Column="1" Margin="7" Style="{StaticResource PremiumFieldTextBox}"/>
+                                                    <TextBlock Grid.Row="3" Grid.Column="2" Text="Dönem Tarihi" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="10.5,7,0,7"/>
+                                                    <DatePicker x:Name="ProgressPeriodDatePicker" Grid.Row="3" Grid.Column="3" Margin="7" Style="{StaticResource FieldDatePicker}"/>
+                                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Taşıma İskonto" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,7"/>
+                                                    <TextBox x:Name="DiscountTextBox" Grid.Row="4" Grid.Column="1" Margin="7" Style="{StaticResource PremiumFieldTextBox}"/>
+                                                    <TextBlock Grid.Row="4" Grid.Column="2" Text="Taşıma Fiyat Farkı" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="10.5,5,0,5"/>
+                                                    <TextBox x:Name="PriceDifferenceTextBox" Grid.Row="4" Grid.Column="3" Margin="7" Style="{StaticResource PremiumFieldTextBox}"/>
+                                                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Rehber İskonto" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,7"/>
+                                                    <TextBox x:Name="GuideDiscountTextBox" Grid.Row="5" Grid.Column="1" Margin="7" Style="{StaticResource PremiumFieldTextBox}"/>
+                                                    <TextBlock Grid.Row="5" Grid.Column="2" Text="Rehber Fiyat Farkı" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="10.5,5,0,5"/>
+                                                    <TextBox x:Name="GuidePriceDifferenceTextBox" Grid.Row="5" Grid.Column="3" Margin="7" Style="{StaticResource PremiumFieldTextBox}"/>
+                                                    <TextBlock Grid.Row="6" Grid.Column="0" Text="Vergi Borcu" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,7"/>
+                                                    <TextBox x:Name="TaxDebtTextBox" Grid.Row="6" Grid.Column="1" Margin="7" Style="{StaticResource PremiumFieldTextBox}"/>
+                                                    <TextBlock Grid.Row="6" Grid.Column="2" Text="SGK Borcu" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="10.5,7,0,7"/>
+                                                    <TextBox x:Name="SocialSecurityDebtTextBox" Grid.Row="6" Grid.Column="3" Margin="7" Style="{StaticResource PremiumFieldTextBox}"/>
+                                                    <TextBlock Grid.Row="7" Grid.Column="0" Text="Asgari Ücret Desteği" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,7"/>
+                                                    <TextBox x:Name="MinimumWageSupportTextBox" Grid.Row="7" Grid.Column="1" Margin="7" Style="{StaticResource PremiumFieldTextBox}"/>
+                                                    <TextBlock Grid.Row="7" Grid.Column="2" Text="Denetim Cezası" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="10.5,7,0,7"/>
+                                                    <TextBox x:Name="InspectionPenaltyTextBox" Grid.Row="7" Grid.Column="3" Margin="7" Style="{StaticResource PremiumFieldTextBox}"/>
                                                 </Grid>
-                                                <Border x:Name="ProgressValidationBanner" Visibility="Collapsed" Background="#FFF1F1" BorderBrush="#E53935" BorderThickness="1.5" CornerRadius="9" Padding="12,9" Margin="6,10,0,0"><StackPanel><TextBlock Text="HESAPLAMA GİRDİLERİNİ KONTROL EDİN" Foreground="#C62828" FontSize="12.5" FontWeight="Bold"/><TextBlock x:Name="ProgressValidationMessageTextBlock" Foreground="#8E1B1B" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,3,0,0"/></StackPanel></Border><StackPanel Orientation="Horizontal" Margin="6,12,0,0">
+                                                <Border x:Name="ProgressValidationBanner" Visibility="Collapsed" Background="#FFF1F1" BorderBrush="#E53935" BorderThickness="1.5" CornerRadius="9" Padding="10.5,8" Margin="6,9,0,0"><StackPanel><TextBlock Text="HESAPLAMA GİRDİLERİNİ KONTROL EDİN" Foreground="#C62828" FontSize="11.5" FontWeight="Bold"/><TextBlock x:Name="ProgressValidationMessageTextBlock" Foreground="#8E1B1B" FontSize="12.5" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,3,0,0"/></StackPanel></Border><StackPanel Orientation="Horizontal" Margin="6,10.5,0,0">
                                                     <Button x:Name="CalculateProgressButton" Content="HAKEDİŞİ HESAPLA" Click="CalculateProgressButton_Click" Style="{StaticResource ModernButton}" MinWidth="245"/>
-                                                    <Button x:Name="CancelProgressEditButton" Content="DÜZENLEME İPTAL" Click="CancelProgressEditButton_Click" Style="{StaticResource SecondaryButton}" MinWidth="170" Margin="10,0,0,0" Visibility="Collapsed"/>
-                                                    <Button x:Name="EditCurrentProgressButton" Content="KAYITLI HAKEDİŞİ DÜZENLE" Click="EditCurrentProgressButton_Click" Style="{StaticResource SecondaryButton}" MinWidth="255" Margin="10,0,0,0"/>
+                                                    <Button x:Name="CancelProgressEditButton" Content="DÜZENLEME İPTAL" Click="CancelProgressEditButton_Click" Style="{StaticResource SecondaryButton}" MinWidth="170" Margin="9,0,0,0" Visibility="Collapsed"/>
+                                                    <Button x:Name="EditCurrentProgressButton" Content="KAYITLI HAKEDİŞİ DÜZENLE" Click="EditCurrentProgressButton_Click" Style="{StaticResource SecondaryButton}" MinWidth="255" Margin="9,0,0,0"/>
                                                 </StackPanel>
                                                 <TextBlock x:Name="CalculationStatusTextBlock" Style="{StaticResource ValidationText}"/>
                                             </StackPanel>
                                         </Border>
 
-                                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
-                                            <Border Style="{StaticResource PremiumPanel}" Padding="16">
+                                        <StackPanel Grid.Column="1" Margin="7,0,0,0">
+                                            <Border Style="{StaticResource PremiumPanel}" Padding="14">
                                                 <StackPanel>
-                                                    <TextBlock Text="SONUÇ ÖZETİ" Foreground="{StaticResource Gold500Brush}" FontSize="13" FontWeight="Bold"/>
-                                                    <TextBlock Text="Net ödenecek tutar" Foreground="#C5D7E7" FontSize="14" Margin="0,7,0,0"/>
-                                                    <TextBlock x:Name="NetResultTextBlock" Text="0,00 ₺" Foreground="White" FontSize="30" FontWeight="Bold" Margin="0,1,0,0"/>
-                                                    <Border Height="1" Background="#315371" Margin="0,10,0,8"/>
+                                                    <TextBlock Text="SONUÇ ÖZETİ" Foreground="{StaticResource Gold500Brush}" FontSize="12" FontWeight="Bold"/>
+                                                    <TextBlock Text="Net ödenecek tutar" Foreground="#C5D7E7" FontSize="12.5" Margin="0,6.5,0,0"/>
+                                                    <TextBlock x:Name="NetResultTextBlock" Text="0,00 ₺" Foreground="White" FontSize="26" FontWeight="Bold" Margin="0,1,0,0"/>
+                                                    <Border Height="1" Background="#315371" Margin="0,9,0,7"/>
                                                     <Grid>
                                                         <Grid.RowDefinitions><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
                                                         <TextBlock Grid.Row="0" Text="Taşıma Hizmet Tutarı" Foreground="#91ABC0"/>
                                                         <TextBlock x:Name="ServiceAmountResultTextBlock" Grid.Row="0" Text="0,00 ₺" Foreground="White" HorizontalAlignment="Right"/>
-                                                        <TextBlock Grid.Row="1" Text="Rehber Hizmet Tutarı" Foreground="#91ABC0" Margin="0,8,0,0"/>
-                                                        <TextBlock x:Name="GuideServiceAmountResultTextBlock" Grid.Row="1" Text="0,00 ₺" Foreground="White" HorizontalAlignment="Right" Margin="0,8,0,0"/>
-                                                        <TextBlock Grid.Row="2" Text="Taşıma Fiyat Farkı KDV Hariç" Foreground="#91ABC0" Margin="0,8,0,0"/>
-                                                        <TextBlock x:Name="TransportPriceDifferenceResultTextBlock" Grid.Row="2" Text="0,00 ₺" Foreground="White" HorizontalAlignment="Right" Margin="0,8,0,0"/>
-                                                        <TextBlock Grid.Row="3" Text="Rehber Personel Fiyat Farkı KDV Hariç" Foreground="#91ABC0" Margin="0,8,0,0"/>
-                                                        <TextBlock x:Name="GuidePriceDifferenceResultTextBlock" Grid.Row="3" Text="0,00 ₺" Foreground="White" HorizontalAlignment="Right" Margin="0,8,0,0"/>
-                                                        <TextBlock Grid.Row="4" Text="Fiyat Farkı KDV Hariç Toplam" Foreground="#91ABC0" Margin="0,8,0,0"/>
-                                                        <TextBlock x:Name="CombinedPriceDifferenceResultTextBlock" Grid.Row="4" Text="0,00 ₺" Foreground="White" HorizontalAlignment="Right" Margin="0,8,0,0"/>
-                                                        <TextBlock Grid.Row="5" Text="Toplam Tutar" Foreground="#91ABC0" Margin="0,8,0,0"/>
-                                                        <TextBlock x:Name="TotalAmountResultTextBlock" Grid.Row="5" Text="0,00 ₺" Foreground="White" HorizontalAlignment="Right" Margin="0,8,0,0"/>
-                                                        <TextBlock Grid.Row="6" Text="KDV (Taşıma + Rehber)" Foreground="#91ABC0" Margin="0,8,0,0"/>
-                                                        <TextBlock x:Name="VatResultTextBlock" Grid.Row="6" Text="0,00 ₺" Foreground="White" HorizontalAlignment="Right" Margin="0,8,0,0"/>
-                                                        <TextBlock Grid.Row="7" Text="Toplam Kesinti" Foreground="#91ABC0" Margin="0,8,0,0"/>
-                                                        <TextBlock x:Name="DeductionsResultTextBlock" Grid.Row="7" Text="0,00 ₺" Foreground="{StaticResource Gold500Brush}" HorizontalAlignment="Right" Margin="0,8,0,0"/>
+                                                        <TextBlock Grid.Row="1" Text="Rehber Hizmet Tutarı" Foreground="#91ABC0" Margin="0,7,0,0"/>
+                                                        <TextBlock x:Name="GuideServiceAmountResultTextBlock" Grid.Row="1" Text="0,00 ₺" Foreground="White" HorizontalAlignment="Right" Margin="0,7,0,0"/>
+                                                        <TextBlock Grid.Row="2" Text="Taşıma Fiyat Farkı KDV Hariç" Foreground="#91ABC0" Margin="0,7,0,0"/>
+                                                        <TextBlock x:Name="TransportPriceDifferenceResultTextBlock" Grid.Row="2" Text="0,00 ₺" Foreground="White" HorizontalAlignment="Right" Margin="0,7,0,0"/>
+                                                        <TextBlock Grid.Row="3" Text="Rehber Personel Fiyat Farkı KDV Hariç" Foreground="#91ABC0" Margin="0,7,0,0"/>
+                                                        <TextBlock x:Name="GuidePriceDifferenceResultTextBlock" Grid.Row="3" Text="0,00 ₺" Foreground="White" HorizontalAlignment="Right" Margin="0,7,0,0"/>
+                                                        <TextBlock Grid.Row="4" Text="Fiyat Farkı KDV Hariç Toplam" Foreground="#91ABC0" Margin="0,7,0,0"/>
+                                                        <TextBlock x:Name="CombinedPriceDifferenceResultTextBlock" Grid.Row="4" Text="0,00 ₺" Foreground="White" HorizontalAlignment="Right" Margin="0,7,0,0"/>
+                                                        <TextBlock Grid.Row="5" Text="Toplam Tutar" Foreground="#91ABC0" Margin="0,7,0,0"/>
+                                                        <TextBlock x:Name="TotalAmountResultTextBlock" Grid.Row="5" Text="0,00 ₺" Foreground="White" HorizontalAlignment="Right" Margin="0,7,0,0"/>
+                                                        <TextBlock Grid.Row="6" Text="KDV (Taşıma + Rehber)" Foreground="#91ABC0" Margin="0,7,0,0"/>
+                                                        <TextBlock x:Name="VatResultTextBlock" Grid.Row="6" Text="0,00 ₺" Foreground="White" HorizontalAlignment="Right" Margin="0,7,0,0"/>
+                                                        <TextBlock Grid.Row="7" Text="Toplam Kesinti" Foreground="#91ABC0" Margin="0,7,0,0"/>
+                                                        <TextBlock x:Name="DeductionsResultTextBlock" Grid.Row="7" Text="0,00 ₺" Foreground="{StaticResource Gold500Brush}" HorizontalAlignment="Right" Margin="0,7,0,0"/>
                                                     </Grid>
                                                 </StackPanel>
                                             </Border>
-                                            <Border Style="{StaticResource Card}" Margin="0,10,0,0" Padding="14">
+                                            <Border Style="{StaticResource Card}" Margin="0,9,0,0" Padding="12">
                                                 <StackPanel>
                                                     <TextBlock Text="BRÜT / NET KONTROLÜ" Style="{StaticResource CardTitle}"/>
                                                     <TextBlock Text="Brüt Tutar" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                                    <TextBlock x:Name="GrossResultTextBlock" Text="0,00 ₺" FontSize="21" FontWeight="Bold" Foreground="White"/>
-                                                    <Border Height="1" Background="{StaticResource Line200Brush}" Margin="0,8,0,8"/>
+                                                    <TextBlock x:Name="GrossResultTextBlock" Text="0,00 ₺" FontSize="18" FontWeight="Bold" Foreground="White"/>
+                                                    <Border Height="1" Background="{StaticResource Line200Brush}" Margin="0,7,0,7"/>
                                                     <TextBlock Text="Net Ödenecek" Style="{StaticResource FieldLabel}"/>
-                                                    <TextBlock x:Name="NetControlResultTextBlock" Text="0,00 ₺" FontSize="21" FontWeight="Bold" Foreground="{StaticResource Blue600Brush}"/>
+                                                    <TextBlock x:Name="NetControlResultTextBlock" Text="0,00 ₺" FontSize="18" FontWeight="Bold" Foreground="{StaticResource Blue600Brush}"/>
                                                 </StackPanel>
                                             </Border>
-                                            <Border Style="{StaticResource Card}" Margin="0,10,0,0" Padding="14">
+                                            <Border Style="{StaticResource Card}" Margin="0,9,0,0" Padding="12">
                                                 <StackPanel>
                                                     <TextBlock Text="KESİNTİ DETAYI" Style="{StaticResource CardTitle}"/>
                                                     <TextBlock Text="Hesaplanan kesintilerin dağılımı" Style="{StaticResource CardSubtitle}" Margin="0,2,0,6"/>
@@ -683,9 +683,9 @@
                                                     </Grid>
                                                 </StackPanel>
                                             </Border>
-                                            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                                                <Button x:Name="ArchiveCurrentProgressButton" Content="ARŞİVLE" Click="ArchiveCurrentProgressButton_Click" Style="{StaticResource ModernButton}" Width="135" Height="42" Visibility="Collapsed"/>
-                                                <Button x:Name="CorrectCurrentProgressButton" Content="DÜZELT" Click="CorrectCurrentProgressButton_Click" Style="{StaticResource SecondaryButton}" Width="135" Height="42" Visibility="Collapsed" Margin="10,0,0,0"/>
+                                            <StackPanel Orientation="Horizontal" Margin="0,10.5,0,0">
+                                                <Button x:Name="ArchiveCurrentProgressButton" Content="ARŞİVLE" Click="ArchiveCurrentProgressButton_Click" Style="{StaticResource ModernButton}" Width="135" Height="36" Visibility="Collapsed"/>
+                                                <Button x:Name="CorrectCurrentProgressButton" Content="DÜZELT" Click="CorrectCurrentProgressButton_Click" Style="{StaticResource SecondaryButton}" Width="135" Height="36" Visibility="Collapsed" Margin="9,0,0,0"/>
                                             </StackPanel>
                                         </StackPanel>
                                     </Grid>
@@ -700,52 +700,52 @@
                                     <TextBlock Text="HATLAR" Style="{StaticResource PageTitle}"/>
                                     <TextBlock Text="İhale ve yüklenici seçimini yapın; ardından bu ilişkiye bağlı hizmet hatlarını tanımlayın." Style="{StaticResource PageSubtitle}"/>
 
-                                    <UniformGrid Columns="3" Margin="0,0,0,16">
-                                        <Border Style="{StaticResource MetricCard}" Margin="0,0,8,0">
+                                    <UniformGrid Columns="3" Margin="0,0,0,14">
+                                        <Border Style="{StaticResource MetricCard}" Margin="0,0,7,0">
                                             <StackPanel>
-                                                <TextBlock Text="KAYITLI HAT" Foreground="White" FontWeight="Bold" FontSize="14"/>
-                                                <TextBlock x:Name="RouteCountTextBlock" Text="0" FontSize="25" FontWeight="Bold" Foreground="{StaticResource Blue600Brush}"/>
+                                                <TextBlock Text="KAYITLI HAT" Foreground="White" FontWeight="Bold" FontSize="12.5"/>
+                                                <TextBlock x:Name="RouteCountTextBlock" Text="0" FontSize="21.5" FontWeight="Bold" Foreground="{StaticResource Blue600Brush}"/>
                                                 <TextBlock Text="Bu sözleşme için" Style="{StaticResource CardSubtitle}"/>
                                             </StackPanel>
                                         </Border>
-                                        <Border Style="{StaticResource PremiumPanel}" Margin="8,0,0,0" Padding="16">
+                                        <Border Style="{StaticResource PremiumPanel}" Margin="7,0,0,0" Padding="14">
                                             <StackPanel>
                                                 <TextBlock Text="AKIŞ" Foreground="{StaticResource Gold500Brush}" FontSize="11" FontWeight="Bold"/>
-                                                <TextBlock Text="İhale → Yüklenici → Hat → Hakediş" Foreground="White" FontSize="16" FontWeight="SemiBold" Margin="0,6,0,0"/>
-                                                <TextBlock Text="Hatlar sonraki hakediş hesabında kullanılacak." Foreground="#C5D7E7" FontSize="12.5" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                                                <TextBlock Text="İhale → Yüklenici → Hat → Hakediş" Foreground="White" FontSize="14" FontWeight="SemiBold" Margin="0,6,0,0"/>
+                                                <TextBlock Text="Hatlar sonraki hakediş hesabında kullanılacak." Foreground="#C5D7E7" FontSize="11.5" Margin="0,4,0,0" TextWrapping="Wrap"/>
                                             </StackPanel>
                                         </Border>
                                     </UniformGrid>
 
-                                    <Border x:Name="RouteSelectionCard" Panel.ZIndex="1000" Style="{StaticResource Card}" Padding="14" Margin="0,0,0,14">
+                                    <Border x:Name="RouteSelectionCard" Panel.ZIndex="1000" Style="{StaticResource Card}" Padding="12" Margin="0,0,0,12">
                                         <Grid>
                                             <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-                                            <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                            <StackPanel Grid.Column="0" Margin="0,0,7,0">
                                                 <TextBlock Text="1. İHALE / DOSYA NO SEÇ" Style="{StaticResource CardTitle}"/>
                                                 <ComboBox x:Name="RouteTenderListBox"
-                                                          Height="44"
-                                                          Margin="0,7,0,0"
+                                                          Height="38"
+                                                          Margin="0,6.5,0,0"
                                                           SelectionChanged="RouteTenderListBox_SelectionChanged"
                                                           Style="{StaticResource FieldComboBox}"
                                                           ToolTip="İhale / dosya numarasını seçin">
                                                     <ComboBox.ItemTemplate>
                                                         <DataTemplate>
-                                                            <TextBlock Text="{Binding TenderNumber}" FontSize="14" FontWeight="SemiBold" TextWrapping="NoWrap"/>
+                                                            <TextBlock Text="{Binding TenderNumber}" FontSize="12.5" FontWeight="SemiBold" TextWrapping="NoWrap"/>
                                                         </DataTemplate>
                                                     </ComboBox.ItemTemplate>
                                                 </ComboBox>
                                             </StackPanel>
-                                            <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                                            <StackPanel Grid.Column="1" Margin="7,0,0,0">
                                                 <TextBlock Text="2. YÜKLENİCİ FİRMA SEÇ" Style="{StaticResource CardTitle}"/>
                                                 <ComboBox x:Name="RouteContractorListBox"
-                                                          Height="44"
-                                                          Margin="0,7,0,0"
+                                                          Height="38"
+                                                          Margin="0,6.5,0,0"
                                                           SelectionChanged="RouteContractorListBox_SelectionChanged"
                                                           Style="{StaticResource FieldComboBox}"
                                                           ToolTip="Yüklenici firmayı seçin">
                                                     <ComboBox.ItemTemplate>
                                                         <DataTemplate>
-                                                            <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold" TextWrapping="NoWrap"/>
+                                                            <TextBlock Text="{Binding Name}" FontSize="12.5" FontWeight="SemiBold" TextWrapping="NoWrap"/>
                                                         </DataTemplate>
                                                     </ComboBox.ItemTemplate>
                                                 </ComboBox>
@@ -759,47 +759,47 @@
                                             <ColumnDefinition Width="1.65*"/>
                                         </Grid.ColumnDefinitions>
 
-                                        <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0">
+                                        <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,9,0">
                                             <StackPanel>
                                                 <TextBlock x:Name="RouteEditorTitleTextBlock" Text="YENİ HAT" Style="{StaticResource CardTitle}"/>
-                                                <TextBlock x:Name="RouteEditorSubtitleTextBlock" Text="Hat bilgilerini girin" Style="{StaticResource CardSubtitle}" Margin="0,0,0,8"/>
-                                                <TextBlock x:Name="RouteSelectedTenderTextBlock" Text="İhale: seçilmedi" Style="{StaticResource FieldLabel}" FontSize="13.5" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                                                <TextBlock x:Name="RouteSelectedContractorTextBlock" Text="Yüklenici: seçilmedi" Style="{StaticResource FieldLabel}" FontSize="13.5" Margin="0,0,0,12"/><Border x:Name="RouteValidationBanner" Visibility="Collapsed" Background="#FFF1F1" BorderBrush="#E53935" BorderThickness="1.5" CornerRadius="9" Padding="12,9" Margin="0,0,0,14"><StackPanel><TextBlock Text="EKSİK / HATALI HAT BİLGİSİ" Foreground="#C62828" FontSize="12.5" FontWeight="Bold"/><TextBlock x:Name="RouteValidationMessageTextBlock" Foreground="#8E1B1B" FontSize="14" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,3,0,0"/></StackPanel></Border>
+                                                <TextBlock x:Name="RouteEditorSubtitleTextBlock" Text="Hat bilgilerini girin" Style="{StaticResource CardSubtitle}" Margin="0,0,0,7"/>
+                                                <TextBlock x:Name="RouteSelectedTenderTextBlock" Text="İhale: seçilmedi" Style="{StaticResource FieldLabel}" FontSize="12.5" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                                                <TextBlock x:Name="RouteSelectedContractorTextBlock" Text="Yüklenici: seçilmedi" Style="{StaticResource FieldLabel}" FontSize="12.5" Margin="0,0,0,10.5"/><Border x:Name="RouteValidationBanner" Visibility="Collapsed" Background="#FFF1F1" BorderBrush="#E53935" BorderThickness="1.5" CornerRadius="9" Padding="10.5,8" Margin="0,0,0,12"><StackPanel><TextBlock Text="EKSİK / HATALI HAT BİLGİSİ" Foreground="#C62828" FontSize="11.5" FontWeight="Bold"/><TextBlock x:Name="RouteValidationMessageTextBlock" Foreground="#8E1B1B" FontSize="12.5" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,3,0,0"/></StackPanel></Border>
 
                                                 <TextBlock Text="Hat No" Style="{StaticResource FieldLabel}"/>
-                                                <TextBox x:Name="RouteNumberTextBox" Style="{StaticResource FieldTextBox}" Margin="0,7,0,14"/>
+                                                <TextBox x:Name="RouteNumberTextBox" Style="{StaticResource FieldTextBox}" Margin="0,6.5,0,12"/>
 
                                                 <TextBlock Text="Hat Adı" Style="{StaticResource FieldLabel}"/>
-                                                <TextBox x:Name="RouteNameTextBox" Style="{StaticResource FieldTextBox}" Margin="0,7,0,14"/>
+                                                <TextBox x:Name="RouteNameTextBox" Style="{StaticResource FieldTextBox}" Margin="0,6.5,0,12"/>
 
                                                 <TextBlock Text="Taşıma İş Günü" Style="{StaticResource FieldLabel}"/>
                                                 <TextBox x:Name="RouteTransportWorkDaysTextBox"
                                                          Style="{StaticResource FieldTextBox}"
-                                                         Margin="0,7,0,14"/>
+                                                         Margin="0,6.5,0,12"/>
 
                                                 <TextBlock Text="Rehber Yıllık İş Günü" Style="{StaticResource FieldLabel}"/>
-                                                <TextBox x:Name="RouteGuideWorkDaysTextBox" Style="{StaticResource FieldTextBox}" Margin="0,7,0,12"/>
+                                                <TextBox x:Name="RouteGuideWorkDaysTextBox" Style="{StaticResource FieldTextBox}" Margin="0,6.5,0,10.5"/>
 
                                                 <TextBlock Text="Rehber Personel Günlük Fiyat" Style="{StaticResource FieldLabel}"/>
-                                                <TextBox x:Name="RouteGuideDailyPriceTextBox" Style="{StaticResource FieldTextBox}" Margin="0,7,0,18"/>
+                                                <TextBox x:Name="RouteGuideDailyPriceTextBox" Style="{StaticResource FieldTextBox}" Margin="0,6.5,0,15.5"/>
 
                                                 <StackPanel Orientation="Horizontal">
                                                     <Button x:Name="AddRouteButton" Content="HAT EKLE" Click="AddRouteButton_Click" Style="{StaticResource ModernButton}" Width="140"/>
-                                                    <Button x:Name="CancelRouteEditButton" Content="DÜZENLEME İPTAL" Click="CancelRouteEditButton_Click" Style="{StaticResource SecondaryButton}" Width="160" Margin="10,0,0,0" Visibility="Collapsed"/>
-                                                    <Button x:Name="ClearRouteButton" Content="TEMİZLE" Click="ClearRouteButton_Click" Style="{StaticResource SecondaryButton}" Width="120" Margin="10,0,0,0"/>
+                                                    <Button x:Name="CancelRouteEditButton" Content="DÜZENLEME İPTAL" Click="CancelRouteEditButton_Click" Style="{StaticResource SecondaryButton}" Width="160" Margin="9,0,0,0" Visibility="Collapsed"/>
+                                                    <Button x:Name="ClearRouteButton" Content="TEMİZLE" Click="ClearRouteButton_Click" Style="{StaticResource SecondaryButton}" Width="120" Margin="9,0,0,0"/>
                                                 </StackPanel>
-                                                <TextBlock x:Name="RouteStatusTextBlock" Margin="0,14,0,0" Foreground="{StaticResource Blue600Brush}" TextWrapping="Wrap"/>
+                                                <TextBlock x:Name="RouteStatusTextBlock" Margin="0,12,0,0" Foreground="{StaticResource Blue600Brush}" TextWrapping="Wrap"/>
                                             </StackPanel>
                                         </Border>
 
-                                        <Border Grid.Column="1" Style="{StaticResource Card}" Margin="10,0,0,0">
+                                        <Border Grid.Column="1" Style="{StaticResource Card}" Margin="9,0,0,0">
                                             <StackPanel>
                                                 <TextBlock Text="TANIMLI HATLAR" Style="{StaticResource CardTitle}"/>
-                                                <TextBlock Text="Kaydedilmiş ve bu oturumda oluşturulan hizmet hatları" Style="{StaticResource CardSubtitle}" Margin="0,0,0,12"/>
+                                                <TextBlock Text="Kaydedilmiş ve bu oturumda oluşturulan hizmet hatları" Style="{StaticResource CardSubtitle}" Margin="0,0,0,10.5"/>
                                                 <ItemsControl x:Name="RoutesListBox">
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <Border Background="#F7FAFC" BorderBrush="#D7E2EC" BorderThickness="1" CornerRadius="8" Padding="8" Margin="0,3">
+                                                            <Border Background="#F7FAFC" BorderBrush="#D7E2EC" BorderThickness="1" CornerRadius="8" Padding="7" Margin="0,3">
                                                             <Grid Margin="0">
                                                                 <Grid.ColumnDefinitions>
                                                                     <ColumnDefinition Width="62"/>
@@ -807,30 +807,30 @@
                                                                     <ColumnDefinition Width="250"/>
                                                                     <ColumnDefinition Width="170" MinWidth="170"/>
                                                                 </Grid.ColumnDefinitions>
-                                                                <TextBlock Grid.Column="0" Text="{Binding RouteNumber}" Foreground="{StaticResource Text900Brush}" FontSize="15.5" FontWeight="Bold" VerticalAlignment="Center"/>
-                                                                <StackPanel Grid.Column="1" Margin="8,0">
-                                                                    <TextBlock Text="{Binding Name}" Foreground="{StaticResource Text900Brush}" FontSize="15.5" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                                                                    <TextBlock Text="{Binding RelationshipText}" Foreground="{StaticResource Gold500Brush}" FontSize="12.5" TextWrapping="Wrap"/>
-                                                                    <TextBlock Text="{Binding TransportSummaryText}" Foreground="{StaticResource Text700Brush}" FontSize="12.5" TextWrapping="Wrap"/>
-                                                                    <TextBlock Text="{Binding GuideSummaryText}" Foreground="{StaticResource Text700Brush}" FontSize="12.5" TextWrapping="Wrap"/>
+                                                                <TextBlock Grid.Column="0" Text="{Binding RouteNumber}" Foreground="{StaticResource Text900Brush}" FontSize="13.5" FontWeight="Bold" VerticalAlignment="Center"/>
+                                                                <StackPanel Grid.Column="1" Margin="7,0">
+                                                                    <TextBlock Text="{Binding Name}" Foreground="{StaticResource Text900Brush}" FontSize="13.5" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                                                    <TextBlock Text="{Binding RelationshipText}" Foreground="{StaticResource Gold500Brush}" FontSize="11.5" TextWrapping="Wrap"/>
+                                                                    <TextBlock Text="{Binding TransportSummaryText}" Foreground="{StaticResource Text700Brush}" FontSize="11.5" TextWrapping="Wrap"/>
+                                                                    <TextBlock Text="{Binding GuideSummaryText}" Foreground="{StaticResource Text700Brush}" FontSize="11.5" TextWrapping="Wrap"/>
                                                                 </StackPanel>
                                                                 <StackPanel Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                                                    <TextBlock Text="{Binding TransportAnnualPriceText}" Foreground="{StaticResource Text700Brush}" FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Right"/>
+                                                                    <TextBlock Text="{Binding TransportAnnualPriceText}" Foreground="{StaticResource Text700Brush}" FontSize="11.5" FontWeight="SemiBold" HorizontalAlignment="Right"/>
                                                                 </StackPanel>
                                                                 <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                                                    <Button Content="DÜZENLE" Tag="{Binding}" Click="EditRouteButton_Click" Style="{StaticResource SecondaryButton}" Height="38" FontSize="11.5" Width="96" Margin="0,0,6,0"/>
-                                                                    <Button Content="SİL" Tag="{Binding}" Click="RemoveRouteButton_Click" Style="{StaticResource SecondaryButton}" Height="38" FontSize="11.5" Width="56"/>
+                                                                    <Button Content="DÜZENLE" Tag="{Binding}" Click="EditRouteButton_Click" Style="{StaticResource SecondaryButton}" Height="34" FontSize="11.5" Width="96" Margin="0,0,6,0"/>
+                                                                    <Button Content="SİL" Tag="{Binding}" Click="RemoveRouteButton_Click" Style="{StaticResource SecondaryButton}" Height="34" FontSize="11.5" Width="56"/>
                                                                 </StackPanel>
                                                             </Grid>
                                                             </Border>
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
-                                                <Border Style="{StaticResource StatusBanner}" Margin="0,12,0,0">
+                                                <Border Style="{StaticResource StatusBanner}" Margin="0,10.5,0,0">
                                                     <StackPanel>
-                                                        <TextBlock Text="BİLGİ" Foreground="{StaticResource Blue700Brush}" FontSize="13.5" FontWeight="Bold"/>
+                                                        <TextBlock Text="BİLGİ" Foreground="{StaticResource Blue700Brush}" FontSize="12.5" FontWeight="Bold"/>
                                                         <TextBlock Text="Hat kayıtları bu bilgisayarda yerel olarak saklanır ve uygulama yeniden açıldığında yüklenir."
-                                                                   Foreground="{StaticResource Text900Brush}" FontSize="15.5" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                                                                   Foreground="{StaticResource Text900Brush}" FontSize="13.5" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,3,0,0"/>
                                                     </StackPanel>
                                                 </Border>
                                             </StackPanel>
@@ -846,9 +846,9 @@
         <StackPanel>
             <TextBlock Text="YÜKLENİCİ FİRMALAR" Style="{StaticResource PageTitle}"/>
             <TextBlock Text="Firma bilgilerini bir kez tanımlayın. Aynı firma birden fazla ihale/dosya numarasıyla ilişkilendirilebilir." Style="{StaticResource PageSubtitle}"/>
-            <Grid Margin="0,0,0,14">
+            <Grid Margin="0,0,0,12">
                 <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-                <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,8,0" Padding="18">
+                <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,7,0" Padding="15.5">
                     <StackPanel>
                         <TextBlock x:Name="ContractorEditorTitleTextBlock" Text="FİRMA BİLGİLERİ" Style="{StaticResource CardTitle}"/>
                         <Grid Margin="0,6,0,0">
@@ -857,47 +857,47 @@
                                 <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Firma Adı / Ticari Unvan" Style="{StaticResource FieldLabel}" Margin="0,7"/>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Firma Adı / Ticari Unvan" Style="{StaticResource FieldLabel}" Margin="0,6.5"/>
                             <TextBox x:Name="ContractorNameTextBox" Grid.Row="0" Grid.Column="1" Margin="6" Style="{StaticResource FieldTextBox}"/>
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="TC / Vergi No" Style="{StaticResource FieldLabel}" Margin="0,7"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="TC / Vergi No" Style="{StaticResource FieldLabel}" Margin="0,6.5"/>
                             <TextBox x:Name="ContractorTaxTextBox" Grid.Row="1" Grid.Column="1" Margin="6" Style="{StaticResource FieldTextBox}"/>
-                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Adres" Style="{StaticResource FieldLabel}" Margin="0,7"/>
-                            <TextBox x:Name="ContractorAddressTextBox" Grid.Row="2" Grid.Column="1" Margin="6" Height="54" TextWrapping="Wrap" AcceptsReturn="True" Style="{StaticResource FieldTextBox}"/>
-                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Telefon" Style="{StaticResource FieldLabel}" Margin="0,7"/>
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Adres" Style="{StaticResource FieldLabel}" Margin="0,6.5"/>
+                            <TextBox x:Name="ContractorAddressTextBox" Grid.Row="2" Grid.Column="1" Margin="6" Height="46" TextWrapping="Wrap" AcceptsReturn="True" Style="{StaticResource FieldTextBox}"/>
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Telefon" Style="{StaticResource FieldLabel}" Margin="0,6.5"/>
                             <TextBox x:Name="ContractorPhoneTextBox" Grid.Row="3" Grid.Column="1" Margin="6" Style="{StaticResource FieldTextBox}"/>
-                            <TextBlock Grid.Row="4" Grid.Column="0" Text="E-posta" Style="{StaticResource FieldLabel}" Margin="0,7"/>
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="E-posta" Style="{StaticResource FieldLabel}" Margin="0,6.5"/>
                             <TextBox x:Name="ContractorEmailTextBox" Grid.Row="4" Grid.Column="1" Margin="6" Style="{StaticResource FieldTextBox}"/>
-                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Banka Hesap No / IBAN" Style="{StaticResource FieldLabel}" Margin="0,7"/>
+                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Banka Hesap No / IBAN" Style="{StaticResource FieldLabel}" Margin="0,6.5"/>
                             <TextBox x:Name="ContractorBankTextBox" Grid.Row="5" Grid.Column="1" Margin="6" Style="{StaticResource FieldTextBox}"/>
-                            <TextBlock Grid.Row="6" Grid.Column="0" Text="Yetkili Kişi" Style="{StaticResource FieldLabel}" Margin="0,7"/>
+                            <TextBlock Grid.Row="6" Grid.Column="0" Text="Yetkili Kişi" Style="{StaticResource FieldLabel}" Margin="0,6.5"/>
                             <TextBox x:Name="ContractorContactTextBox" Grid.Row="6" Grid.Column="1" Margin="6" Style="{StaticResource FieldTextBox}"/>
                         </Grid>
-                        <StackPanel Orientation="Horizontal" Margin="6,10,0,0">
+                        <StackPanel Orientation="Horizontal" Margin="6,9,0,0">
                             <Button x:Name="SaveContractorButton" Content="KAYDET" Click="SaveContractorButton_Click" Style="{StaticResource ModernButton}" Width="130"/>
-                            <Button x:Name="CancelContractorEditButton" Content="DÜZENLEME İPTAL" Click="CancelContractorEditButton_Click" Style="{StaticResource SecondaryButton}" Width="160" Margin="10,0,0,0" Visibility="Collapsed"/>
-                            <Button x:Name="ClearContractorButton" Content="TEMİZLE" Click="ClearContractorButton_Click" Style="{StaticResource SecondaryButton}" Width="120" Margin="10,0,0,0"/>
+                            <Button x:Name="CancelContractorEditButton" Content="DÜZENLEME İPTAL" Click="CancelContractorEditButton_Click" Style="{StaticResource SecondaryButton}" Width="160" Margin="9,0,0,0" Visibility="Collapsed"/>
+                            <Button x:Name="ClearContractorButton" Content="TEMİZLE" Click="ClearContractorButton_Click" Style="{StaticResource SecondaryButton}" Width="120" Margin="9,0,0,0"/>
                         </StackPanel>
-                        <TextBlock x:Name="ContractorStatusTextBlock" Margin="6,10,0,0" Foreground="{StaticResource Blue600Brush}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                        <TextBlock x:Name="ContractorStatusTextBlock" Margin="6,9,0,0" Foreground="{StaticResource Blue600Brush}" FontWeight="SemiBold" TextWrapping="Wrap"/>
                     </StackPanel>
                 </Border>
-                <Border Grid.Column="1" Style="{StaticResource Card}" Margin="8,0,0,0" Padding="18">
+                <Border Grid.Column="1" Style="{StaticResource Card}" Margin="7,0,0,0" Padding="15.5">
                     <StackPanel>
                         <TextBlock Text="KAYITLI FİRMALAR" Style="{StaticResource CardTitle}"/>
-                        <TextBlock x:Name="ContractorCountTextBlock" Text="0" Foreground="{StaticResource Blue600Brush}" FontSize="28" FontWeight="Bold" Margin="0,6,0,0"/>
-                        <ItemsControl x:Name="ContractorsListBox" Margin="0,8,0,0">
+                        <TextBlock x:Name="ContractorCountTextBlock" Text="0" Foreground="{StaticResource Blue600Brush}" FontSize="24" FontWeight="Bold" Margin="0,6,0,0"/>
+                        <ItemsControl x:Name="ContractorsListBox" Margin="0,7,0,0">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,3">
+                                    <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="10.5" Margin="0,3">
                                         <Grid>
                                             <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="125"/><ColumnDefinition Width="110"/><ColumnDefinition Width="70"/></Grid.ColumnDefinitions>
                                             <StackPanel>
-                                                <TextBlock Text="{Binding Name}" Foreground="White" FontSize="14.5" FontWeight="Bold"/>
-                                                <TextBlock Text="{Binding TaxOrIdentityNumber}" Foreground="#C5D7E7" FontSize="12.5"/>
+                                                <TextBlock Text="{Binding Name}" Foreground="White" FontSize="12.5" FontWeight="Bold"/>
+                                                <TextBlock Text="{Binding TaxOrIdentityNumber}" Foreground="#C5D7E7" FontSize="11.5"/>
                                                 <TextBlock Text="{Binding BankAccountNumber}" Foreground="#C5D7E7" FontSize="11.5"/>
                                             </StackPanel>
-                                            <TextBlock Grid.Column="1" Text="{Binding Phone}" Foreground="#C5D7E7" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                            <Button Grid.Column="2" Content="DÜZENLE" Tag="{Binding}" Click="EditContractorButton_Click" Style="{StaticResource SecondaryButton}" Height="36" FontSize="11" Width="96" Margin="4,0"/>
-                                            <Button Grid.Column="3" Content="SİL" Tag="{Binding}" Click="DeleteContractorButton_Click" Style="{StaticResource SecondaryButton}" Height="36" FontSize="11" Width="56" Margin="4,0"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding Phone}" Foreground="#C5D7E7" FontSize="11.5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                            <Button Grid.Column="2" Content="DÜZENLE" Tag="{Binding}" Click="EditContractorButton_Click" Style="{StaticResource SecondaryButton}" Height="32" FontSize="11" Width="96" Margin="4,0"/>
+                                            <Button Grid.Column="3" Content="SİL" Tag="{Binding}" Click="DeleteContractorButton_Click" Style="{StaticResource SecondaryButton}" Height="32" FontSize="11" Width="56" Margin="4,0"/>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
@@ -915,26 +915,26 @@
     <StackPanel>
         <TextBlock Text="HAKEDİŞ GEÇMİŞİ" Style="{StaticResource PageTitle}"/>
         <TextBlock Text="Hesaplanan hakedişleri kayıt zamanı, tutar ve durum bilgileriyle izleyin." Style="{StaticResource PageSubtitle}"/>
-        <Grid Margin="0,0,0,14">
+        <Grid Margin="0,0,0,12">
             <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-            <Border Grid.Column="0" Style="{StaticResource CardCompact}" Margin="0,0,8,0">
+            <Border Grid.Column="0" Style="{StaticResource CardCompact}" Margin="0,0,7,0">
                 <StackPanel>
                     <TextBlock Text="TOPLAM HAKEDİŞ" Style="{StaticResource CardTitle}"/>
-                    <TextBlock x:Name="HistoryCountTextBlock" Text="0" Foreground="White" FontSize="28" FontWeight="Bold" Margin="0,7,0,0"/>
+                    <TextBlock x:Name="HistoryCountTextBlock" Text="0" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,6.5,0,0"/>
                     <TextBlock Text="Kayıtlı hesaplama" Style="{StaticResource CardSubtitle}"/>
                 </StackPanel>
             </Border>
             <Border Grid.Column="1" Style="{StaticResource CardCompact}" Margin="4,0">
                 <StackPanel>
                     <TextBlock Text="TOPLAM NET" Style="{StaticResource CardTitle}"/>
-                    <TextBlock x:Name="HistoryNetTotalTextBlock" Text="0,00 ₺" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,7,0,0"/>
+                    <TextBlock x:Name="HistoryNetTotalTextBlock" Text="0,00 ₺" Foreground="White" FontSize="20.5" FontWeight="Bold" Margin="0,6.5,0,0"/>
                     <TextBlock Text="Ödenecek toplam" Style="{StaticResource CardSubtitle}"/>
                 </StackPanel>
             </Border>
-            <Border Grid.Column="2" Style="{StaticResource CardCompact}" Margin="8,0,0,0">
+            <Border Grid.Column="2" Style="{StaticResource CardCompact}" Margin="7,0,0,0">
                 <StackPanel>
                     <TextBlock Text="DURUM" Style="{StaticResource CardTitle}"/>
-                    <TextBlock x:Name="HistoryStatusTextBlock" Text="HAZIR" Foreground="{StaticResource Gold500Brush}" FontSize="20" FontWeight="Bold" Margin="0,8,0,0"/>
+                    <TextBlock x:Name="HistoryStatusTextBlock" Text="HAZIR" Foreground="{StaticResource Gold500Brush}" FontSize="17" FontWeight="Bold" Margin="0,7,0,0"/>
                     <TextBlock Text="Yeni hesaplamalar otomatik kaydedilir." Style="{StaticResource CardSubtitle}" TextWrapping="Wrap"/>
                 </StackPanel>
             </Border>
@@ -942,8 +942,8 @@
         <Border Style="{StaticResource Card}">
             <StackPanel>
                 <TextBlock Text="HAKEDİŞ KAYITLARI" Style="{StaticResource CardTitle}"/>
-                <TextBlock Text="Kaydedilmiş dönemsel hesaplamalar; hat, hakediş no ve tutar bilgileriyle izlenir." Style="{StaticResource CardSubtitle}" Margin="0,0,0,14" TextWrapping="Wrap"/>
-                <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="9" Padding="14,11">
+                <TextBlock Text="Kaydedilmiş dönemsel hesaplamalar; hat, hakediş no ve tutar bilgileriyle izlenir." Style="{StaticResource CardSubtitle}" Margin="0,0,0,12" TextWrapping="Wrap"/>
+                <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="9" Padding="12,9.5">
                     <Grid>
                         <Grid.ColumnDefinitions><ColumnDefinition Width="170"/><ColumnDefinition Width="*"/><ColumnDefinition Width="120"/><ColumnDefinition Width="120"/><ColumnDefinition Width="90"/><ColumnDefinition Width="300"/></Grid.ColumnDefinitions>
                         <TextBlock Text="HAKEDİŞ / DÖNEM" Foreground="#C5D7E7" FontWeight="Bold"/>
@@ -952,29 +952,29 @@
                         <TextBlock Grid.Column="4" Text="DURUM" Foreground="#C5D7E7" FontWeight="Bold"/><TextBlock Grid.Column="5" Text="İŞLEM" Foreground="#C5D7E7" FontWeight="Bold"/>
                     </Grid>
                 </Border>
-                <ItemsControl x:Name="HistoryItemsControl" Margin="0,8,0,0">
+                <ItemsControl x:Name="HistoryItemsControl" Margin="0,7,0,0">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Background="#F7F9FC" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="8" Padding="12,9" Margin="0,3">
+                            <Border Background="#F7F9FC" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="8" Padding="10.5,8" Margin="0,3">
                                 <Grid>
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="170"/><ColumnDefinition Width="*"/><ColumnDefinition Width="120"/><ColumnDefinition Width="120"/><ColumnDefinition Width="90"/><ColumnDefinition Width="300"/></Grid.ColumnDefinitions>
                                     <StackPanel>
-                                        <TextBlock Text="{Binding DisplayTitle}" Foreground="{StaticResource Text900Brush}" FontSize="14" FontWeight="SemiBold"/>
-                                        <TextBlock Text="{Binding CreatedAtText}" Foreground="{StaticResource Text600Brush}" FontSize="13.5" Margin="0,2,0,0"/>
+                                        <TextBlock Text="{Binding DisplayTitle}" Foreground="{StaticResource Text900Brush}" FontSize="12.5" FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding CreatedAtText}" Foreground="{StaticResource Text600Brush}" FontSize="12.5" Margin="0,2,0,0"/>
                                     </StackPanel>
-                                    <TextBlock Grid.Column="2" Text="{Binding TotalAmountText}" Foreground="{StaticResource Text900Brush}" FontSize="14" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                    <TextBlock Grid.Column="3" Text="{Binding NetPayableText}" Foreground="{StaticResource Blue700Brush}" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                    <TextBlock Grid.Column="4" Text="HESAPLANDI" Foreground="{StaticResource Gold600Brush}" FontSize="12.5" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center"/><StackPanel Grid.Column="5" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center"><Button Content="KLASÖR" Tag="{Binding}" Click="OpenHistoryFolderButton_Click" Style="{StaticResource SecondaryButton}" Height="38" FontSize="12" Width="96" Margin="3,0,3,0"/><Button Content="DÜZENLE" Tag="{Binding}" Click="EditHistoryButton_Click" Style="{StaticResource SecondaryButton}" Height="38" FontSize="12" Width="96" Margin="3,0,3,0"/><Button Content="SİL" Tag="{Binding}" Click="DeleteHistoryButton_Click" Style="{StaticResource SecondaryButton}" Height="38" FontSize="12" Width="60" Margin="3,0,0,0"/></StackPanel>
+                                    <TextBlock Grid.Column="2" Text="{Binding TotalAmountText}" Foreground="{StaticResource Text900Brush}" FontSize="12.5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="3" Text="{Binding NetPayableText}" Foreground="{StaticResource Blue700Brush}" FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="4" Text="HESAPLANDI" Foreground="{StaticResource Gold600Brush}" FontSize="11.5" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center"/><StackPanel Grid.Column="5" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center"><Button Content="KLASÖR" Tag="{Binding}" Click="OpenHistoryFolderButton_Click" Style="{StaticResource SecondaryButton}" Height="34" FontSize="11.5" Width="96" Margin="3,0,3,0"/><Button Content="DÜZENLE" Tag="{Binding}" Click="EditHistoryButton_Click" Style="{StaticResource SecondaryButton}" Height="34" FontSize="11.5" Width="96" Margin="3,0,3,0"/><Button Content="SİL" Tag="{Binding}" Click="DeleteHistoryButton_Click" Style="{StaticResource SecondaryButton}" Height="34" FontSize="11.5" Width="60" Margin="3,0,0,0"/></StackPanel>
                                 </Grid>
                             </Border>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <Border x:Name="HistoryEmptyStateBorder" Style="{StaticResource InfoNote}" Margin="0,10,0,0" Padding="18,14">
+                <Border x:Name="HistoryEmptyStateBorder" Style="{StaticResource InfoNote}" Margin="0,9,0,0" Padding="15.5,12">
                     <StackPanel HorizontalAlignment="Center">
-                        <TextBlock Text="HENÜZ HAKEDİŞ KAYDI YOK" Foreground="{StaticResource Blue700Brush}" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock Text="HENÜZ HAKEDİŞ KAYDI YOK" Foreground="{StaticResource Blue700Brush}" FontSize="13.5" FontWeight="Bold" HorizontalAlignment="Center"/>
                         <TextBlock Text="İlk hesaplamayı yaptığınızda kayıt burada görünecek." Foreground="{StaticResource Text600Brush}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,5,0,0"/>
-                        <Button Content="HAKEDİŞ OLUŞTUR" Tag="Progress" Click="NavigationButton_Click" Style="{StaticResource ModernButton}" Width="190" Height="38" Margin="0,10,0,0"/>
+                        <Button Content="HAKEDİŞ OLUŞTUR" Tag="Progress" Click="NavigationButton_Click" Style="{StaticResource ModernButton}" Width="190" Height="34" Margin="0,9,0,0"/>
                     </StackPanel>
                 </Border>
             </StackPanel>
@@ -989,26 +989,26 @@
                                 <StackPanel>
                                     <TextBlock Text="ARŞİVLER" Style="{StaticResource PageTitle}"/>
                                     <TextBlock Text="Arşivlenen hakediş snapshotlarını revision bilgileriyle çağırın, düzeltin ve klasörlerini açın." Style="{StaticResource PageSubtitle}"/>
-                                    <Grid Margin="0,0,0,14">
+                                    <Grid Margin="0,0,0,12">
                                         <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-                                        <Border Grid.Column="0" Style="{StaticResource CardCompact}" Margin="0,0,8,0">
+                                        <Border Grid.Column="0" Style="{StaticResource CardCompact}" Margin="0,0,7,0">
                                             <StackPanel>
                                                 <TextBlock Text="ARŞİV KAYDI" Style="{StaticResource CardTitle}"/>
-                                                <TextBlock x:Name="ArchiveCountTextBlock" Text="0" Foreground="White" FontSize="28" FontWeight="Bold" Margin="0,7,0,0"/>
+                                                <TextBlock x:Name="ArchiveCountTextBlock" Text="0" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,6.5,0,0"/>
                                                 <TextBlock Text="Dosya" Style="{StaticResource CardSubtitle}"/>
                                             </StackPanel>
                                         </Border>
                                         <Border Grid.Column="1" Style="{StaticResource CardCompact}" Margin="4,0">
                                             <StackPanel>
                                                 <TextBlock Text="SON REVİZYON" Style="{StaticResource CardTitle}"/>
-                                                <TextBlock x:Name="ArchiveLatestRevisionTextBlock" Text="-" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,7,0,0"/>
+                                                <TextBlock x:Name="ArchiveLatestRevisionTextBlock" Text="-" Foreground="White" FontSize="20.5" FontWeight="Bold" Margin="0,6.5,0,0"/>
                                                 <TextBlock Text="Arşivler arasındaki en yüksek revision" Style="{StaticResource CardSubtitle}"/>
                                             </StackPanel>
                                         </Border>
-                                        <Border Grid.Column="2" Style="{StaticResource CardCompact}" Margin="8,0,0,0">
+                                        <Border Grid.Column="2" Style="{StaticResource CardCompact}" Margin="7,0,0,0">
                                             <StackPanel>
                                                 <TextBlock Text="DURUM" Style="{StaticResource CardTitle}"/>
-                                                <TextBlock x:Name="ArchiveStatusTextBlock" Text="HAZIR" Foreground="{StaticResource Gold500Brush}" FontSize="20" FontWeight="Bold" Margin="0,8,0,0"/>
+                                                <TextBlock x:Name="ArchiveStatusTextBlock" Text="HAZIR" Foreground="{StaticResource Gold500Brush}" FontSize="17" FontWeight="Bold" Margin="0,7,0,0"/>
                                                 <TextBlock Text="Arşiv dosyaları korunur." Style="{StaticResource CardSubtitle}" TextWrapping="Wrap"/>
                                             </StackPanel>
                                         </Border>
@@ -1016,32 +1016,32 @@
                                     <Border Style="{StaticResource Card}">
                                         <StackPanel>
                                             <TextBlock Text="HAKEDİŞ ARŞİV DOSYALARI" Style="{StaticResource CardTitle}"/>
-                                            <TextBlock Text="Her revision bağımsız snapshot olarak saklanır; eski sürümler silinmez." Style="{StaticResource CardSubtitle}" Margin="0,0,0,14" TextWrapping="Wrap"/>
+                                            <TextBlock Text="Her revision bağımsız snapshot olarak saklanır; eski sürümler silinmez." Style="{StaticResource CardSubtitle}" Margin="0,0,0,12" TextWrapping="Wrap"/>
                                             <ItemsControl x:Name="ArchiveItemsControl">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Border Background="#F7F9FC" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="0,3">
+                                                        <Border Background="#F7F9FC" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="8" Padding="10.5,9" Margin="0,3">
                                                             <Grid>
                                                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="110"/><ColumnDefinition Width="75"/><ColumnDefinition Width="350" MinWidth="350"/></Grid.ColumnDefinitions>
                                                                 <StackPanel>
-                                                                    <TextBlock Text="{Binding DisplayTitle}" Foreground="{StaticResource Text900Brush}" FontSize="14" FontWeight="SemiBold"/>
-                                                                    <TextBlock Text="{Binding DetailText}" Foreground="{StaticResource Text600Brush}" FontSize="12.5" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                                                    <TextBlock Text="{Binding DisplayTitle}" Foreground="{StaticResource Text900Brush}" FontSize="12.5" FontWeight="SemiBold"/>
+                                                                    <TextBlock Text="{Binding DetailText}" Foreground="{StaticResource Text600Brush}" FontSize="11.5" Margin="0,2,0,0" TextWrapping="Wrap"/>
                                                                 </StackPanel>
-                                                                <TextBlock Grid.Column="1" Text="{Binding NetPayableText}" Foreground="{StaticResource Blue700Brush}" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                                                <TextBlock Grid.Column="2" Text="{Binding RevisionText}" Foreground="{StaticResource Gold600Brush}" FontSize="12.5" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                <TextBlock Grid.Column="1" Text="{Binding NetPayableText}" Foreground="{StaticResource Blue700Brush}" FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                                                <TextBlock Grid.Column="2" Text="{Binding RevisionText}" Foreground="{StaticResource Gold600Brush}" FontSize="11.5" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                                 <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                                                    <Button Content="ÇAĞIR" Tag="{Binding}" Click="LoadArchiveButton_Click" Style="{StaticResource SecondaryButton}" Height="36" Width="96" Margin="3,0"/>
-                                                                    <Button Content="DÜZENLE" Tag="{Binding}" Click="EditArchiveButton_Click" Style="{StaticResource SecondaryButton}" Height="36" Width="96" Margin="3,0"/>
-                                                                    <Button Content="KLASÖRÜ AÇ" Tag="{Binding}" Click="OpenArchiveFolderButton_Click" Style="{StaticResource SecondaryButton}" Height="36" Width="125" Margin="3,0,0,0"/>
+                                                                    <Button Content="ÇAĞIR" Tag="{Binding}" Click="LoadArchiveButton_Click" Style="{StaticResource SecondaryButton}" Height="32" Width="96" Margin="3,0"/>
+                                                                    <Button Content="DÜZENLE" Tag="{Binding}" Click="EditArchiveButton_Click" Style="{StaticResource SecondaryButton}" Height="32" Width="96" Margin="3,0"/>
+                                                                    <Button Content="KLASÖRÜ AÇ" Tag="{Binding}" Click="OpenArchiveFolderButton_Click" Style="{StaticResource SecondaryButton}" Height="32" Width="125" Margin="3,0,0,0"/>
                                                                 </StackPanel>
                                                             </Grid>
                                                         </Border>
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
                                             </ItemsControl>
-                                            <Border x:Name="ArchiveEmptyStateBorder" Style="{StaticResource InfoNote}" Margin="0,10,0,0" Padding="18,14">
+                                            <Border x:Name="ArchiveEmptyStateBorder" Style="{StaticResource InfoNote}" Margin="0,9,0,0" Padding="15.5,12">
                                                 <StackPanel HorizontalAlignment="Center">
-                                                    <TextBlock Text="HENÜZ ARŞİV KAYDI YOK" Foreground="{StaticResource Blue700Brush}" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                                    <TextBlock Text="HENÜZ ARŞİV KAYDI YOK" Foreground="{StaticResource Blue700Brush}" FontSize="13.5" FontWeight="Bold" HorizontalAlignment="Center"/>
                                                     <TextBlock Text="Hakediş sonucundan ARŞİVLE düğmesine bastığınızda snapshot burada oluşur." Foreground="{StaticResource Text600Brush}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,5,0,0"/>
                                                 </StackPanel>
                                             </Border>
@@ -1055,28 +1055,28 @@
                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0"><StackPanel>
 <TextBlock Text="İCMAL" Style="{StaticResource PageTitle}"/>
 <TextBlock Text="Kaydedilmiş hakedişlerin toplu ödeme ve kesinti görünümünü izleyin." Style="{StaticResource PageSubtitle}"/>
-<Grid Margin="0,0,0,14"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-<Border Grid.Column="0" Style="{StaticResource CardCompact}" Margin="0,0,8,0"><StackPanel><TextBlock Text="SON DÖNEM" Style="{StaticResource CardTitle}"/><TextBlock x:Name="SummaryLatestPeriodTextBlock" Text="—" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,7,0,0"/><TextBlock x:Name="SummaryCountTextBlock" Text="0 hakediş" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
-<Border Grid.Column="1" Style="{StaticResource CardCompact}" Margin="4,0"><StackPanel><TextBlock Text="BRÜT TOPLAM" Style="{StaticResource CardTitle}"/><TextBlock x:Name="SummaryGrossTotalTextBlock" Text="0,00 ₺" Foreground="White" FontSize="24" FontWeight="Bold" Margin="0,7,0,0"/><TextBlock Text="Kayıtlı hesaplamalar" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
-<Border Grid.Column="2" Style="{StaticResource CardCompact}" Margin="8,0,0,0"><StackPanel><TextBlock Text="NET TOPLAM" Style="{StaticResource CardTitle}"/><TextBlock x:Name="SummaryNetTotalTextBlock" Text="0,00 ₺" Foreground="{StaticResource Gold500Brush}" FontSize="24" FontWeight="Bold" Margin="0,7,0,0"/><TextBlock Text="Kesintiler sonrası" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
+<Grid Margin="0,0,0,12"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+<Border Grid.Column="0" Style="{StaticResource CardCompact}" Margin="0,0,7,0"><StackPanel><TextBlock Text="SON DÖNEM" Style="{StaticResource CardTitle}"/><TextBlock x:Name="SummaryLatestPeriodTextBlock" Text="—" Foreground="White" FontSize="20.5" FontWeight="Bold" Margin="0,6.5,0,0"/><TextBlock x:Name="SummaryCountTextBlock" Text="0 hakediş" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
+<Border Grid.Column="1" Style="{StaticResource CardCompact}" Margin="4,0"><StackPanel><TextBlock Text="BRÜT TOPLAM" Style="{StaticResource CardTitle}"/><TextBlock x:Name="SummaryGrossTotalTextBlock" Text="0,00 ₺" Foreground="White" FontSize="20.5" FontWeight="Bold" Margin="0,6.5,0,0"/><TextBlock Text="Kayıtlı hesaplamalar" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
+<Border Grid.Column="2" Style="{StaticResource CardCompact}" Margin="7,0,0,0"><StackPanel><TextBlock Text="NET TOPLAM" Style="{StaticResource CardTitle}"/><TextBlock x:Name="SummaryNetTotalTextBlock" Text="0,00 ₺" Foreground="{StaticResource Gold500Brush}" FontSize="20.5" FontWeight="Bold" Margin="0,6.5,0,0"/><TextBlock Text="Kesintiler sonrası" Style="{StaticResource CardSubtitle}"/></StackPanel></Border>
 </Grid>
 <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-<Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0"><StackPanel><TextBlock Text="HAKEDİŞ DAĞILIMI" Style="{StaticResource CardTitle}"/><TextBlock Text="Kaydedilmiş hakedişlerin dönem ve tutar özeti" Style="{StaticResource CardSubtitle}" Margin="0,0,0,12"/>
+<Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,9,0"><StackPanel><TextBlock Text="HAKEDİŞ DAĞILIMI" Style="{StaticResource CardTitle}"/><TextBlock Text="Kaydedilmiş hakedişlerin dönem ve tutar özeti" Style="{StaticResource CardSubtitle}" Margin="0,0,0,10.5"/>
 <ItemsControl x:Name="SummaryItemsControl">
 <ItemsControl.ItemTemplate><DataTemplate>
-<Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="12,9" Margin="0,0,0,7">
+<Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="10.5,8" Margin="0,0,0,6.5">
 <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="145"/><ColumnDefinition Width="145"/></Grid.ColumnDefinitions>
-<StackPanel><TextBlock Text="{Binding Title}" Foreground="White" FontSize="14.5" FontWeight="SemiBold"/><TextBlock Text="{Binding PeriodText}" Foreground="#B9CBDA" FontSize="12.5" Margin="0,2,0,0"/></StackPanel>
-<TextBlock Grid.Column="1" Text="{Binding GrossText}" Foreground="White" FontSize="14" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-<TextBlock Grid.Column="2" Text="{Binding NetText}" Foreground="{StaticResource Gold500Brush}" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+<StackPanel><TextBlock Text="{Binding Title}" Foreground="White" FontSize="12.5" FontWeight="SemiBold"/><TextBlock Text="{Binding PeriodText}" Foreground="#B9CBDA" FontSize="11.5" Margin="0,2,0,0"/></StackPanel>
+<TextBlock Grid.Column="1" Text="{Binding GrossText}" Foreground="White" FontSize="12.5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+<TextBlock Grid.Column="2" Text="{Binding NetText}" Foreground="{StaticResource Gold500Brush}" FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
 </Grid></Border></DataTemplate></ItemsControl.ItemTemplate>
 </ItemsControl>
-<Border x:Name="SummaryEmptyStateBorder" Style="{StaticResource InfoNote}" Margin="0,4,0,0" Padding="14,12"><TextBlock Text="Henüz kaydedilmiş hakediş yok. Hakediş ekranından ilk hesaplamayı oluşturduğunuzda bu alan otomatik dolacak." Foreground="{StaticResource Text900Brush}" FontSize="14.5" FontWeight="SemiBold" TextWrapping="Wrap"/></Border>
+<Border x:Name="SummaryEmptyStateBorder" Style="{StaticResource InfoNote}" Margin="0,4,0,0" Padding="12,10.5"><TextBlock Text="Henüz kaydedilmiş hakediş yok. Hakediş ekranından ilk hesaplamayı oluşturduğunuzda bu alan otomatik dolacak." Foreground="{StaticResource Text900Brush}" FontSize="12.5" FontWeight="SemiBold" TextWrapping="Wrap"/></Border>
 </StackPanel></Border>
-<Border Grid.Column="1" Style="{StaticResource Card}" Margin="10,0,0,0"><StackPanel><TextBlock Text="KESİNTİ ÖZETİ" Style="{StaticResource CardTitle}"/><TextBlock Text="Kaydedilmiş hakedişlerdeki toplam kesintiler" Style="{StaticResource CardSubtitle}" Margin="0,0,0,12"/>
-<Border Background="#0A2A49" CornerRadius="8" Padding="12" Margin="0,0,0,8"><Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="Tevkifat" Foreground="White"/><TextBlock x:Name="SummaryWithholdingTextBlock" Grid.Column="1" Text="0,00 ₺" Foreground="White"/></Grid></Border>
-<Border Background="#0A2A49" CornerRadius="8" Padding="12" Margin="0,0,0,8"><Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="Damga Vergisi" Foreground="White"/><TextBlock x:Name="SummaryStampTextBlock" Grid.Column="1" Text="0,00 ₺" Foreground="White"/></Grid></Border>
-<Border Background="#0A2A49" CornerRadius="8" Padding="12"><Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="Diğer Kesintiler" Foreground="White"/><TextBlock x:Name="SummaryOtherDeductionsTextBlock" Grid.Column="1" Text="0,00 ₺" Foreground="White"/></Grid></Border>
+<Border Grid.Column="1" Style="{StaticResource Card}" Margin="9,0,0,0"><StackPanel><TextBlock Text="KESİNTİ ÖZETİ" Style="{StaticResource CardTitle}"/><TextBlock Text="Kaydedilmiş hakedişlerdeki toplam kesintiler" Style="{StaticResource CardSubtitle}" Margin="0,0,0,10.5"/>
+<Border Background="#0A2A49" CornerRadius="8" Padding="10.5" Margin="0,0,0,7"><Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="Tevkifat" Foreground="White"/><TextBlock x:Name="SummaryWithholdingTextBlock" Grid.Column="1" Text="0,00 ₺" Foreground="White"/></Grid></Border>
+<Border Background="#0A2A49" CornerRadius="8" Padding="10.5" Margin="0,0,0,7"><Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="Damga Vergisi" Foreground="White"/><TextBlock x:Name="SummaryStampTextBlock" Grid.Column="1" Text="0,00 ₺" Foreground="White"/></Grid></Border>
+<Border Background="#0A2A49" CornerRadius="8" Padding="10.5"><Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="Diğer Kesintiler" Foreground="White"/><TextBlock x:Name="SummaryOtherDeductionsTextBlock" Grid.Column="1" Text="0,00 ₺" Foreground="White"/></Grid></Border>
 </StackPanel></Border>
 </Grid></StackPanel>
                             </ScrollViewer>
@@ -1086,18 +1086,18 @@
                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0"><StackPanel>
 <TextBlock Text="KABUL TUTANAĞI" Style="{StaticResource PageTitle}"/>
 <TextBlock Text="Seçilen son hakediş verilerinden kurum formatına uygun kabul tutanağı hazırlayın." Style="{StaticResource PageSubtitle}"/>
-<Grid Margin="0,0,0,14"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-<Border Grid.Column="0" Style="{StaticResource CardCompact}" Margin="0,0,8,0"><StackPanel><TextBlock Text="SÖZLEŞME" Style="{StaticResource CardTitle}"/><TextBlock x:Name="AcceptanceContractTextBlock" Text="Kayıt yok" Foreground="White" FontSize="17" FontWeight="Bold" Margin="0,7,0,0"/></StackPanel></Border>
-<Border Grid.Column="1" Style="{StaticResource CardCompact}" Margin="4,0"><StackPanel><TextBlock Text="SON HAKEDİŞ" Style="{StaticResource CardTitle}"/><TextBlock x:Name="AcceptanceProgressTextBlock" Text="Kayıt yok" Foreground="White" FontSize="17" FontWeight="Bold" Margin="0,7,0,0"/></StackPanel></Border>
-<Border Grid.Column="2" Style="{StaticResource CardCompact}" Margin="8,0,0,0"><StackPanel><TextBlock Text="NET ÖDEME" Style="{StaticResource CardTitle}"/><TextBlock x:Name="AcceptanceNetTextBlock" Text="0,00 ₺" Foreground="{StaticResource Gold500Brush}" FontSize="21" FontWeight="Bold" Margin="0,7,0,0"/></StackPanel></Border>
+<Grid Margin="0,0,0,12"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+<Border Grid.Column="0" Style="{StaticResource CardCompact}" Margin="0,0,7,0"><StackPanel><TextBlock Text="SÖZLEŞME" Style="{StaticResource CardTitle}"/><TextBlock x:Name="AcceptanceContractTextBlock" Text="Kayıt yok" Foreground="White" FontSize="15" FontWeight="Bold" Margin="0,6.5,0,0"/></StackPanel></Border>
+<Border Grid.Column="1" Style="{StaticResource CardCompact}" Margin="4,0"><StackPanel><TextBlock Text="SON HAKEDİŞ" Style="{StaticResource CardTitle}"/><TextBlock x:Name="AcceptanceProgressTextBlock" Text="Kayıt yok" Foreground="White" FontSize="15" FontWeight="Bold" Margin="0,6.5,0,0"/></StackPanel></Border>
+<Border Grid.Column="2" Style="{StaticResource CardCompact}" Margin="7,0,0,0"><StackPanel><TextBlock Text="NET ÖDEME" Style="{StaticResource CardTitle}"/><TextBlock x:Name="AcceptanceNetTextBlock" Text="0,00 ₺" Foreground="{StaticResource Gold500Brush}" FontSize="18" FontWeight="Bold" Margin="0,6.5,0,0"/></StackPanel></Border>
 </Grid>
 <Border Style="{StaticResource Card}"><StackPanel>
 <TextBlock Text="TUTANAK ÖNİZLEMESİ" Style="{StaticResource CardTitle}"/>
-<TextBlock Text="Kurum formatındaki metin, dönem bilgileri ve imza alanları çıktı sırasında otomatik doldurulur." Style="{StaticResource CardSubtitle}" TextWrapping="Wrap" Margin="0,0,0,14"/>
-<Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="8" Padding="14">
+<TextBlock Text="Kurum formatındaki metin, dönem bilgileri ve imza alanları çıktı sırasında otomatik doldurulur." Style="{StaticResource CardSubtitle}" TextWrapping="Wrap" Margin="0,0,0,12"/>
+<Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="8" Padding="12">
 <StackPanel>
-<TextBlock x:Name="AcceptanceDetailTextBlock" Text="Sözleşme ve hakediş kaydı oluşturulduğunda bilgiler burada görünür." Foreground="{StaticResource Text900Brush}" FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap"/>
-<Button Content="RAPORLARA GİT" Style="{StaticResource ModernButton}" Height="42" Margin="0,14,0,0" Click="NavigationButton_Click" Tag="Reports"/>
+<TextBlock x:Name="AcceptanceDetailTextBlock" Text="Sözleşme ve hakediş kaydı oluşturulduğunda bilgiler burada görünür." Foreground="{StaticResource Text900Brush}" FontSize="13.5" FontWeight="SemiBold" TextWrapping="Wrap"/>
+<Button Content="RAPORLARA GİT" Style="{StaticResource ModernButton}" Height="36" Margin="0,12,0,0" Click="NavigationButton_Click" Tag="Reports"/>
 </StackPanel></Border>
 </StackPanel></Border>
 </StackPanel>
@@ -1116,21 +1116,21 @@
         <TextBlock Text="Seçilen ihale, yüklenici ve hat için dört belgeyi A4 düzeninde önizleyin ve PDF olarak kaydedin." Style="{StaticResource PageSubtitle}"/>
     </StackPanel>
 
-    <Grid Grid.Row="1" Margin="0,0,0,12">
+    <Grid Grid.Row="1" Margin="0,0,0,10.5">
         <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-        <Border Grid.Column="0" Style="{StaticResource CardCompact}" Margin="0,0,8,0">
+        <Border Grid.Column="0" Style="{StaticResource CardCompact}" Margin="0,0,7,0">
             <StackPanel><TextBlock Text="HAKEDİŞ KAYDI" Style="{StaticResource CardTitle}"/>
-                <TextBlock x:Name="ReportCountTextBlock" Text="0" Foreground="White" FontSize="25" FontWeight="Bold" Margin="0,5,0,0"/>
+                <TextBlock x:Name="ReportCountTextBlock" Text="0" Foreground="White" FontSize="21.5" FontWeight="Bold" Margin="0,5,0,0"/>
                 <TextBlock Text="Raporlanabilir kayıt" Style="{StaticResource CardSubtitle}"/></StackPanel>
         </Border>
         <Border Grid.Column="1" Style="{StaticResource CardCompact}" Margin="4,0">
             <StackPanel><TextBlock Text="BRÜT TOPLAM" Style="{StaticResource CardTitle}"/>
-                <TextBlock x:Name="ReportGrossTextBlock" Text="0,00 ₺" Foreground="White" FontSize="22" FontWeight="Bold" Margin="0,5,0,0"/>
+                <TextBlock x:Name="ReportGrossTextBlock" Text="0,00 ₺" Foreground="White" FontSize="19" FontWeight="Bold" Margin="0,5,0,0"/>
                 <TextBlock Text="Kayıtlı hakedişler" Style="{StaticResource CardSubtitle}"/></StackPanel>
         </Border>
-        <Border Grid.Column="2" Style="{StaticResource CardCompact}" Margin="8,0,0,0">
+        <Border Grid.Column="2" Style="{StaticResource CardCompact}" Margin="7,0,0,0">
             <StackPanel><TextBlock Text="NET TOPLAM" Style="{StaticResource CardTitle}"/>
-                <TextBlock x:Name="ReportNetTextBlock" Text="0,00 ₺" Foreground="{StaticResource Gold500Brush}" FontSize="22" FontWeight="Bold" Margin="0,5,0,0"/>
+                <TextBlock x:Name="ReportNetTextBlock" Text="0,00 ₺" Foreground="{StaticResource Gold500Brush}" FontSize="19" FontWeight="Bold" Margin="0,5,0,0"/>
                 <TextBlock Text="Ödeme özeti" Style="{StaticResource CardSubtitle}"/></StackPanel>
         </Border>
     </Grid>
@@ -1138,17 +1138,17 @@
     <Grid Grid.Row="2">
         <Grid.ColumnDefinitions><ColumnDefinition Width="1.38*"/><ColumnDefinition Width="1.07*"/></Grid.ColumnDefinitions>
 
-        <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,8,0" Padding="18">
+        <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,7,0" Padding="15.5">
             <Grid>
                 <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                 <StackPanel Grid.Row="0">
-                    <TextBlock Text="KAYITLI HAKEDİŞLER" Style="{StaticResource CardTitle}" FontSize="17"/>
-                    <TextBlock Text="Seçilen ihale ve hatta ait kayıtlar" Style="{StaticResource CardSubtitle}" FontSize="13.5" Margin="0,0,0,10"/>
+                    <TextBlock Text="KAYITLI HAKEDİŞLER" Style="{StaticResource CardTitle}" FontSize="15"/>
+                    <TextBlock Text="Seçilen ihale ve hatta ait kayıtlar" Style="{StaticResource CardSubtitle}" FontSize="12.5" Margin="0,0,0,9"/>
                     <Grid>
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="125"/><ColumnDefinition Width="135"/></Grid.ColumnDefinitions>
-                        <TextBlock Text="HAKEDİŞ / DÖNEM" Foreground="{StaticResource Text600Brush}" FontSize="12.5" FontWeight="Bold"/>
-                        <TextBlock Grid.Column="1" Text="BRÜT" Foreground="{StaticResource Text600Brush}" FontSize="12.5" FontWeight="Bold" HorizontalAlignment="Right"/>
-                        <TextBlock Grid.Column="2" Text="NET" Foreground="{StaticResource Text600Brush}" FontSize="12.5" FontWeight="Bold" HorizontalAlignment="Right"/>
+                        <TextBlock Text="HAKEDİŞ / DÖNEM" Foreground="{StaticResource Text600Brush}" FontSize="11.5" FontWeight="Bold"/>
+                        <TextBlock Grid.Column="1" Text="BRÜT" Foreground="{StaticResource Text600Brush}" FontSize="11.5" FontWeight="Bold" HorizontalAlignment="Right"/>
+                        <TextBlock Grid.Column="2" Text="NET" Foreground="{StaticResource Text600Brush}" FontSize="11.5" FontWeight="Bold" HorizontalAlignment="Right"/>
                     </Grid>
                 </StackPanel>
 
@@ -1156,13 +1156,13 @@
                     <ItemsControl x:Name="ReportItemsControl">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="7" Padding="10,8" Margin="0,3">
+                                <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="7" Padding="9,7" Margin="0,3">
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="125"/><ColumnDefinition Width="135"/></Grid.ColumnDefinitions>
-                                        <StackPanel><TextBlock Text="{Binding Title}" Foreground="{StaticResource Text900Brush}" FontSize="14" FontWeight="SemiBold"/>
-                                            <TextBlock Text="{Binding PeriodText}" Foreground="{StaticResource Text600Brush}" FontSize="12"/></StackPanel>
-                                        <TextBlock Grid.Column="1" Text="{Binding GrossText}" Foreground="{StaticResource Text900Brush}" FontSize="13.5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                        <TextBlock Grid.Column="2" Text="{Binding NetText}" Foreground="{StaticResource Blue700Brush}" FontSize="13.5" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                        <StackPanel><TextBlock Text="{Binding Title}" Foreground="{StaticResource Text900Brush}" FontSize="12.5" FontWeight="SemiBold"/>
+                                            <TextBlock Text="{Binding PeriodText}" Foreground="{StaticResource Text600Brush}" FontSize="11.5"/></StackPanel>
+                                        <TextBlock Grid.Column="1" Text="{Binding GrossText}" Foreground="{StaticResource Text900Brush}" FontSize="12.5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding NetText}" Foreground="{StaticResource Blue700Brush}" FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                     </Grid>
                                 </Border>
                             </DataTemplate>
@@ -1170,33 +1170,33 @@
                     </ItemsControl>
                 </ScrollViewer>
 
-                <Border x:Name="ReportEmptyStateBorder" Grid.Row="2" Style="{StaticResource InfoNote}" Margin="0,8,0,0" Padding="12,10">
-                    <TextBlock Text="Belge oluşturmak için önce bir hakediş kaydedin." Foreground="{StaticResource Text900Brush}" FontSize="13.5" FontWeight="SemiBold"/>
+                <Border x:Name="ReportEmptyStateBorder" Grid.Row="2" Style="{StaticResource InfoNote}" Margin="0,7,0,0" Padding="10.5,9">
+                    <TextBlock Text="Belge oluşturmak için önce bir hakediş kaydedin." Foreground="{StaticResource Text900Brush}" FontSize="12.5" FontWeight="SemiBold"/>
                 </Border>
             </Grid>
         </Border>
 
-        <Border Grid.Column="1" Style="{StaticResource Card}" Margin="8,0,0,0" Padding="18">
+        <Border Grid.Column="1" Style="{StaticResource Card}" Margin="7,0,0,0" Padding="15.5">
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                 <StackPanel>
-                    <TextBlock Text="4 BELGE ÇIKTISI" Style="{StaticResource CardTitle}" FontSize="17"/>
-                    <TextBlock Text="Seçilen hat için dört kurum belgesi A4 düzeninde hazırlanır ve dört ayrı, tek sayfalı PDF dosyası olarak kaydedilir." Style="{StaticResource CardSubtitle}" FontSize="13.5" TextWrapping="Wrap" Margin="0,0,0,12"/>
-                    <TextBlock Text="İHALE / DOSYA NO" Style="{StaticResource FieldLabel}" FontSize="12.5"/>
+                    <TextBlock Text="4 BELGE ÇIKTISI" Style="{StaticResource CardTitle}" FontSize="15"/>
+                    <TextBlock Text="Seçilen hat için dört kurum belgesi A4 düzeninde hazırlanır ve dört ayrı, tek sayfalı PDF dosyası olarak kaydedilir." Style="{StaticResource CardSubtitle}" FontSize="12.5" TextWrapping="Wrap" Margin="0,0,0,10.5"/>
+                    <TextBlock Text="İHALE / DOSYA NO" Style="{StaticResource FieldLabel}" FontSize="11.5"/>
                     <ComboBox x:Name="OutputTenderListBox"
-                              Height="44"
-                              Margin="0,7,0,10"
+                              Height="38"
+                              Margin="0,6.5,0,9"
                               SelectionChanged="OutputTenderListBox_SelectionChanged"
                               Style="{StaticResource FieldComboBox}"
                               ToolTip="İhale / dosya numarasını seçin">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding TenderNumber}" FontSize="14" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding TenderNumber}" FontSize="12.5" FontWeight="SemiBold"/>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
-                    <TextBlock Text="HAT SEÇİMİ" Style="{StaticResource FieldLabel}" FontSize="12.5"/>
-                    <ComboBox x:Name="ReportRouteComboBox" DisplayMemberPath="DisplayText" Height="44" Margin="0,7,0,8" Style="{StaticResource FieldComboBox}" SelectionChanged="ReportRouteComboBox_SelectionChanged"/>
-                    <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,0,10">
+                    <TextBlock Text="HAT SEÇİMİ" Style="{StaticResource FieldLabel}" FontSize="11.5"/>
+                    <ComboBox x:Name="ReportRouteComboBox" DisplayMemberPath="DisplayText" Height="38" Margin="0,6.5,0,7" Style="{StaticResource FieldComboBox}" SelectionChanged="ReportRouteComboBox_SelectionChanged"/>
+                    <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="8" Padding="9" Margin="0,0,0,9">
                         <TextBlock x:Name="ReportPdfTargetTextBlock"
                                    Text="PDF hedefi: kayıt seçildiğinde burada gösterilir."
                                    Foreground="{StaticResource Text600Brush}"
@@ -1214,8 +1214,8 @@
                         </Grid.ColumnDefinitions>
                         <Button Grid.Row="0" Grid.Column="0"
                                 Style="{StaticResource ModernButton}"
-                                Height="54"
-                                FontSize="13"
+                                Height="46"
+                                FontSize="12"
                                 FontWeight="SemiBold"
                                 Margin="0,0,6,0"
                                 Click="PreviewAllRouteDocumentsButton_Click">
@@ -1226,8 +1226,8 @@
                         <Button Grid.Row="0" Grid.Column="1"
                                 Style="{StaticResource ModernButton}"
                                 MinWidth="112"
-                                Height="54"
-                                FontSize="13"
+                                Height="46"
+                                FontSize="12"
                                 FontWeight="Bold"
                                 Margin="6,0,0,0"
                                 Click="PrintAllRouteDocumentsButton_Click">
@@ -1237,36 +1237,36 @@
                         </Button>
                         <Button Grid.Row="1" Grid.ColumnSpan="2"
                                 Style="{StaticResource ModernButton}"
-                                Height="54"
-                                FontSize="13"
+                                Height="46"
+                                FontSize="12"
                                 FontWeight="Bold"
-                                Margin="0,8,0,0"
+                                Margin="0,7,0,0"
                                 Click="CreateSaveAllRouteDocumentsButton_Click">
                             <TextBlock Text="PDF OLARAK KAYDET"
                                        TextWrapping="Wrap"
                                        TextAlignment="Center"/>
                         </Button>
                     </Grid>
-                    <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,12,0,0">
+                    <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="8" Padding="10.5" Margin="0,10.5,0,0">
                         <StackPanel>
-                            <TextBlock Text="KAYDEDİLECEK BELGELER" Foreground="{StaticResource Blue700Brush}" FontSize="12" FontWeight="Bold"/>
-                            <TextBlock Text="1. Hakediş Raporu" Foreground="{StaticResource Text900Brush}" FontSize="13.5" FontWeight="SemiBold" Margin="0,5,0,0"/>
-                            <TextBlock Text="2. Hizmet İşleri Hakediş Raporu" Foreground="{StaticResource Text900Brush}" FontSize="13.5" FontWeight="SemiBold"/>
-                            <TextBlock Text="3. Hizmet İşleri Kabul Tutanağı" Foreground="{StaticResource Text900Brush}" FontSize="13.5" FontWeight="SemiBold"/>
-                            <TextBlock Text="4. Hakediş İcmali" Foreground="{StaticResource Text900Brush}" FontSize="13.5" FontWeight="SemiBold"/>
+                            <TextBlock Text="KAYDEDİLECEK BELGELER" Foreground="{StaticResource Blue700Brush}" FontSize="11.5" FontWeight="Bold"/>
+                            <TextBlock Text="1. Hakediş Raporu" Foreground="{StaticResource Text900Brush}" FontSize="12.5" FontWeight="SemiBold" Margin="0,5,0,0"/>
+                            <TextBlock Text="2. Hizmet İşleri Hakediş Raporu" Foreground="{StaticResource Text900Brush}" FontSize="12.5" FontWeight="SemiBold"/>
+                            <TextBlock Text="3. Hizmet İşleri Kabul Tutanağı" Foreground="{StaticResource Text900Brush}" FontSize="12.5" FontWeight="SemiBold"/>
+                            <TextBlock Text="4. Hakediş İcmali" Foreground="{StaticResource Text900Brush}" FontSize="12.5" FontWeight="SemiBold"/>
                         </StackPanel>
                     </Border>
-                    <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,12,0,0">
+                    <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="8" Padding="10.5" Margin="0,10.5,0,0">
                         <StackPanel>
-                            <TextBlock Text="SON HAKEDİŞ" Foreground="{StaticResource Blue700Brush}" FontSize="12" FontWeight="Bold"/>
-                            <TextBlock x:Name="ReportDetailTitleTextBlock" Text="Henüz kayıt yok" Foreground="{StaticResource Text900Brush}" FontSize="16" FontWeight="Bold" Margin="0,4,0,6"/>
+                            <TextBlock Text="SON HAKEDİŞ" Foreground="{StaticResource Blue700Brush}" FontSize="11.5" FontWeight="Bold"/>
+                            <TextBlock x:Name="ReportDetailTitleTextBlock" Text="Henüz kayıt yok" Foreground="{StaticResource Text900Brush}" FontSize="14" FontWeight="Bold" Margin="0,4,0,6"/>
                             <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="115"/></Grid.ColumnDefinitions>
                                 <StackPanel><TextBlock Text="TOPLAM + KDV" Foreground="{StaticResource Text600Brush}" FontSize="11.5"/>
-                                    <TextBlock x:Name="ReportDetailGrossTextBlock" Text="0,00 ₺" Foreground="{StaticResource Text900Brush}" FontSize="15" FontWeight="Bold"/></StackPanel>
+                                    <TextBlock x:Name="ReportDetailGrossTextBlock" Text="0,00 ₺" Foreground="{StaticResource Text900Brush}" FontSize="13.5" FontWeight="Bold"/></StackPanel>
                                 <StackPanel Grid.Column="1"><TextBlock Text="NET ÖDEME" Foreground="{StaticResource Text600Brush}" FontSize="11.5"/>
-                                    <TextBlock x:Name="ReportDetailNetTextBlock" Text="0,00 ₺" Foreground="{StaticResource Blue700Brush}" FontSize="15" FontWeight="Bold"/></StackPanel>
+                                    <TextBlock x:Name="ReportDetailNetTextBlock" Text="0,00 ₺" Foreground="{StaticResource Blue700Brush}" FontSize="13.5" FontWeight="Bold"/></StackPanel>
                             </Grid>
-                            <TextBlock x:Name="ReportDetailMetaTextBlock" Text="Kayıt ayrıntıları burada gösterilir." Foreground="{StaticResource Text600Brush}" FontSize="12" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                            <TextBlock x:Name="ReportDetailMetaTextBlock" Text="Kayıt ayrıntıları burada gösterilir." Foreground="{StaticResource Text600Brush}" FontSize="11.5" TextWrapping="Wrap" Margin="0,6,0,0"/>
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -1280,8 +1280,8 @@
                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0"><StackPanel>
 <TextBlock Text="AYARLAR" Style="{StaticResource PageTitle}"/><TextBlock Text="OEHS uygulamasının temel çalışma tercihlerini yönetin." Style="{StaticResource PageSubtitle}"/>
 <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-<Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,10,0"><StackPanel><TextBlock Text="UYGULAMA" Style="{StaticResource CardTitle}"/><TextBlock Text="Arayüz ve çalışma tercihleri" Style="{StaticResource CardSubtitle}" Margin="0,0,0,16"/><TextBlock Text="TEMA" Style="{StaticResource FieldLabel}"/><Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,7,0,14"><TextBlock Text="OEHS Lacivert / Altın" Foreground="White" FontWeight="SemiBold"/></Border><TextBlock Text="PARA BİRİMİ" Style="{StaticResource FieldLabel}"/><Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,7,0,0"><TextBlock Text="Türk Lirası (₺)" Foreground="White" FontWeight="SemiBold"/></Border></StackPanel></Border>
-<Border Grid.Column="1" Style="{StaticResource Card}" Margin="10,0,0,0"><StackPanel><TextBlock Text="SİSTEM DURUMU" Style="{StaticResource CardTitle}"/><TextBlock Text="Uygulama altyapısı" Style="{StaticResource CardSubtitle}" Margin="0,0,0,16"/><Border Background="#0A2A49" CornerRadius="8" Padding="14" Margin="0,0,0,8"><StackPanel><TextBlock Text="HESAPLAMA MOTORU" Foreground="#91ABC0" FontSize="10" FontWeight="Bold"/><TextBlock Text="HAZIR" Foreground="{StaticResource Gold500Brush}" FontSize="17" FontWeight="Bold" Margin="0,3,0,0"/></StackPanel></Border><Border Background="#0A2A49" CornerRadius="8" Padding="14"><StackPanel><TextBlock Text="VERİ KATMANI" Foreground="#91ABC0" FontSize="10" FontWeight="Bold"/><TextBlock Text="HAZIR • YEDEKLİ" Foreground="{StaticResource Gold500Brush}" FontSize="17" FontWeight="Bold" Margin="0,3,0,0"/></StackPanel></Border></StackPanel></Border>
+<Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,9,0"><StackPanel><TextBlock Text="UYGULAMA" Style="{StaticResource CardTitle}"/><TextBlock Text="Arayüz ve çalışma tercihleri" Style="{StaticResource CardSubtitle}" Margin="0,0,0,14"/><TextBlock Text="TEMA" Style="{StaticResource FieldLabel}"/><Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="10.5" Margin="0,6.5,0,12"><TextBlock Text="OEHS Lacivert / Altın" Foreground="White" FontWeight="SemiBold"/></Border><TextBlock Text="PARA BİRİMİ" Style="{StaticResource FieldLabel}"/><Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="10.5" Margin="0,6.5,0,0"><TextBlock Text="Türk Lirası (₺)" Foreground="White" FontWeight="SemiBold"/></Border></StackPanel></Border>
+<Border Grid.Column="1" Style="{StaticResource Card}" Margin="9,0,0,0"><StackPanel><TextBlock Text="SİSTEM DURUMU" Style="{StaticResource CardTitle}"/><TextBlock Text="Uygulama altyapısı" Style="{StaticResource CardSubtitle}" Margin="0,0,0,14"/><Border Background="#0A2A49" CornerRadius="8" Padding="12" Margin="0,0,0,7"><StackPanel><TextBlock Text="HESAPLAMA MOTORU" Foreground="#91ABC0" FontSize="10" FontWeight="Bold"/><TextBlock Text="HAZIR" Foreground="{StaticResource Gold500Brush}" FontSize="15" FontWeight="Bold" Margin="0,3,0,0"/></StackPanel></Border><Border Background="#0A2A49" CornerRadius="8" Padding="12"><StackPanel><TextBlock Text="VERİ KATMANI" Foreground="#91ABC0" FontSize="10" FontWeight="Bold"/><TextBlock Text="HAZIR • YEDEKLİ" Foreground="{StaticResource Gold500Brush}" FontSize="15" FontWeight="Bold" Margin="0,3,0,0"/></StackPanel></Border></StackPanel></Border>
 </Grid></StackPanel>
                             </ScrollViewer>
 </Grid>
@@ -1291,9 +1291,9 @@
                             <StackPanel>
                                 <TextBlock x:Name="PlaceholderTitleTextBlock" Text="Modül" Style="{StaticResource PageTitle}"/>
                                 <TextBlock Text="Bu bölüm için tanımlı bir OEHS ekranı bulunmuyor." Style="{StaticResource PageSubtitle}"/>
-                                <Border Background="#F7F9FC" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="12" Padding="24">
+                                <Border Background="#F7F9FC" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="12" Padding="20.5">
                                     <TextBlock Text="Bu modül İhale → Yüklenici → Hat → Hakediş akışındaki kalıcı veri katmanını kullanır."
-                                               TextWrapping="Wrap" FontSize="16" Foreground="{StaticResource Text600Brush}"/>
+                                               TextWrapping="Wrap" FontSize="14" Foreground="{StaticResource Text600Brush}"/>
                                 </Border>
                             </StackPanel>
                         
