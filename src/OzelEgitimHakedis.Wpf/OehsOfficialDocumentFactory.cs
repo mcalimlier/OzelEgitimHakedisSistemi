@@ -526,8 +526,19 @@ internal static class OehsOfficialDocumentFactory
         bool includeStudentSuffix)
     {
         var work = (context.WorkName ?? string.Empty).Trim();
+        var routeNumber = string.IsNullOrWhiteSpace(context.RouteNumber)
+            ? "-"
+            : context.RouteNumber.Trim();
+
         if (work.Length == 0)
             work = "Hizmet Alımı İşi";
+
+        var existingPrefix = $"{routeNumber} Numaralı ";
+        if (!string.Equals(routeNumber, "-", StringComparison.Ordinal) &&
+            work.StartsWith(existingPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            work = work[existingPrefix.Length..].TrimStart();
+        }
 
         // Normalize a route name that may already include its display suffix.
         if (work.EndsWith(" Hattı Öğrenci Taşıma İşi", StringComparison.OrdinalIgnoreCase))
@@ -537,9 +548,6 @@ internal static class OehsOfficialDocumentFactory
         else if (work.EndsWith(" Hattı", StringComparison.OrdinalIgnoreCase))
             work = work[..^" Hattı".Length].TrimEnd();
 
-        var routeNumber = string.IsNullOrWhiteSpace(context.RouteNumber)
-            ? "-"
-            : context.RouteNumber.Trim();
         var prefix = includeRouteNumber ? $"{routeNumber} Numaralı " : string.Empty;
         var suffix = includeStudentSuffix ? "Hattı Öğrenci Taşıma İşi" : "Hattı Taşıma İşi";
         return $"{prefix}{work} {suffix}";
