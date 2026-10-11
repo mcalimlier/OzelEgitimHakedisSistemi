@@ -4,14 +4,23 @@ namespace OzelEgitimHakedis.Core.Services;
 
 public static class ProgressPaymentIcmalService
 {
+    /// <summary>
+    /// The reference workbook has 11 printed periods: September through June
+    /// in Anasayfa!I6:I15, plus the separate July column in İcmal Verileri.
+    /// </summary>
     public static IReadOnlyList<DateOnly> BuildPeriods(DateOnly periodDate)
     {
         var baseYear = periodDate.Month >= 9 ? periodDate.Year : periodDate.Year - 1;
-        return Enumerable.Range(0, 10)
+        return Enumerable.Range(0, 11)
             .Select(index => new DateOnly(baseYear, 9, 1).AddMonths(index))
             .ToArray();
     }
 
+    /// <summary>
+    /// Excel Hakediş İcmali!E21 uses the immediately preceding calendar month's
+    /// deduction cell. If that month has no payment, its value is zero; do not
+    /// substitute an older payment from a different month.
+    /// </summary>
     public static decimal FindPreviousDeduction(
         IEnumerable<ProgressPaymentHistoryData> payments,
         ProgressPaymentHistoryData current)
@@ -19,23 +28,17 @@ public static class ProgressPaymentIcmalService
         ArgumentNullException.ThrowIfNull(payments);
         ArgumentNullException.ThrowIfNull(current);
 
+        if (!current.PeriodDate.HasValue)
+            return 0m;
+
+        var previousMonth = current.PeriodDate.Value.AddMonths(-1);
         return payments
             .Where(x => x.Id != current.Id)
             .Where(x => x.PeriodDate.HasValue)
-            .Where(x => IsBefore(x, current))
-            .OrderByDescending(x => x.PeriodDate!.Value)
-            .ThenByDescending(x => x.CreatedAt)
+            .Where(x => x.PeriodDate!.Value.Year == previousMonth.Year
+                        && x.PeriodDate.Value.Month == previousMonth.Month)
+            .OrderByDescending(x => x.CreatedAt)
             .Select(x => x.Calculation.TotalDeductions)
             .FirstOrDefault();
-    }
-
-    private static bool IsBefore(
-        ProgressPaymentHistoryData candidate,
-        ProgressPaymentHistoryData current)
-    {
-        if (candidate.PeriodDate.HasValue && current.PeriodDate.HasValue)
-            return candidate.PeriodDate.Value < current.PeriodDate.Value;
-
-        return candidate.CreatedAt < current.CreatedAt;
     }
 }
