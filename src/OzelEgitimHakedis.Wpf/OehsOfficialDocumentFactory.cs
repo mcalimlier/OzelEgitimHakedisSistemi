@@ -330,8 +330,9 @@ internal static class OehsOfficialDocumentFactory
         var page = NewPage();
         const double x = 50;
         const double w = 693;
-        AddText(page, "HİZMET İŞLERİ KABUL TUTANAĞI", x, 40, w, 22, 15, true, TextAlignment.Center);
+        // Draw the white form frame before its contents; otherwise it covers the title.
         AddCell(page, "", x, 38, w, 414, 9, false, TextAlignment.Left, White, new Thickness(0));
+        AddText(page, "HİZMET İŞLERİ KABUL TUTANAĞI", x, 40, w, 22, 15, true, TextAlignment.Center);
 
         var servicePeriod = ProgressPaymentAcceptancePeriodService.BuildServicePeriod(
             c.PeriodDate ?? c.GeneratedDate);
