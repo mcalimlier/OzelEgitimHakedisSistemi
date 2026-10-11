@@ -213,9 +213,41 @@ public static class PdfVectorWriter
     private static void DrawTextBlock(XGraphics gfx, FixedPage page, TextBlock block)
     {
         var text = block.Text ?? string.Empty;
-        if (text.Length == 0 || !TryBounds(page, block, out var rect))
+        if (text.Length == 0)
             return;
 
+        // Preserve RenderTransform for labels such as the vertically oriented
+        // "KESİNTİLER VE MAHSUPLAR" cell in the official Hakediş Raporu.
+        if (block.RenderTransform is RotateTransform rotation && Math.Abs(rotation.Angle % 360) > 0.001)
+        {
+            var transform = block.TransformToAncestor(page);
+            var center = transform.Transform(new Point(block.ActualWidth / 2d, block.ActualHeight / 2d));
+            var localRect = new XRect(
+                ToPoint(center.X - block.ActualWidth / 2d),
+                ToPoint(center.Y - block.ActualHeight / 2d),
+                ToPoint(block.ActualWidth),
+                ToPoint(block.ActualHeight));
+
+            var state = gfx.Save();
+            try
+            {
+                gfx.RotateAtTransform(rotation.Angle, new XPoint(ToPoint(center.X), ToPoint(center.Y)));
+                DrawTextBlockContent(gfx, block, text, localRect);
+            }
+            finally
+            {
+                gfx.Restore(state);
+            }
+            return;
+        }
+
+        if (!TryBounds(page, block, out var rect))
+            return;
+        DrawTextBlockContent(gfx, block, text, rect);
+    }
+
+    private static void DrawTextBlockContent(XGraphics gfx, TextBlock block, string text, XRect rect)
+    {
         if (TryBrush(block.Background, out var background))
             gfx.DrawRectangle(background, rect);
 
