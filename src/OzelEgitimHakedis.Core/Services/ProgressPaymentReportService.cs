@@ -65,6 +65,7 @@ public static class ProgressPaymentReportService
         var previous = payments
             .Where(x => x.Id != current.Id)
             .Where(x => IsBeforePayment(x, current))
+            .Where(x => IsWithinCurrentFiscalYear(x, current))
             .ToArray();
 
         // Hakediş Raporu!D6: cumulative monthly service amounts, excluding the
@@ -110,6 +111,22 @@ public static class ProgressPaymentReportService
         var reportGross = reportTotals.CurrentTotal + current.Calculation.Vat;
         return decimal.Round(reportGross, 2, MidpointRounding.AwayFromZero)
                - decimal.Round(current.Calculation.TotalDeductions, 2, MidpointRounding.AwayFromZero);
+    }
+
+    private static bool IsWithinCurrentFiscalYear(
+        ProgressPaymentHistoryData candidate,
+        ProgressPaymentHistoryData current)
+    {
+        // The source workbook's monthly lookup spans the current September-July
+        // cycle. Records from a prior fiscal year must not leak into D6 or D10.
+        if (!candidate.PeriodDate.HasValue || !current.PeriodDate.HasValue)
+            return true;
+
+        static int FiscalStartYear(DateOnly date) =>
+            date.Month >= 9 ? date.Year : date.Year - 1;
+
+        return FiscalStartYear(candidate.PeriodDate.Value)
+               == FiscalStartYear(current.PeriodDate.Value);
     }
 
     private static bool IsBeforePayment(
