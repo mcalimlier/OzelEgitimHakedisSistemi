@@ -126,104 +126,107 @@ internal static class OehsOfficialDocumentFactory
     private static FixedPage BuildHakedisRaporu(OehsOfficialDocumentContext c)
     {
         var page = NewPage();
-        const double x = 16;
-        const double w = 761;
+        const double x = 67;
+        const double w = 659;
+
+        // Reference PDF 1(3): title sits above a single A4 form frame.
+        AddOuterFrame(page, x, 60, w, 1001);
         var paymentNo = c.ProgressPaymentNumber?.ToString(Turkish) ?? "-";
         var routeNo = string.IsNullOrWhiteSpace(c.RouteNumber) ? "-" : c.RouteNumber.Trim();
         var date = FormatDate(c.PeriodDate);
 
-        AddText(page, "HAK EDİŞ RAPORU", x, 16, w, 29, 16, true, TextAlignment.Center);
-        AddCell(page, $"1 Numaralı {c.WorkName}", x, 47, 470, 80, 9.5, true, TextAlignment.Left, White, new Thickness(5, 5, 5, 3));
-        AddCell(page, $"Hakediş No : {paymentNo}", x + 470, 47, w - 470, 40, 10.5, true, TextAlignment.Center);
-        AddCell(page, $"Hat No : {routeNo}", x + 470, 87, w - 470, 40, 10.5, true, TextAlignment.Center);
+        AddText(page, "HAK EDİŞ RAPORU", x, 32, w, 29, 16, true, TextAlignment.Center);
+        AddCell(page, $"1 Numaralı {c.WorkName}", x, 60, 411, 87, 9.5, true, TextAlignment.Left, White, new Thickness(5, 5, 5, 3));
+        AddCell(page, $"Hakediş No : {paymentNo}", x + 411, 60, w - 411, 43.5, 10.5, true, TextAlignment.Center);
+        AddCell(page, $"Hat No : {routeNo}", x + 411, 103.5, w - 411, 43.5, 10.5, true, TextAlignment.Center);
 
-        AddCell(page, $"{date} TARİHİNE KADAR YAPILAN İŞİN", x, 130, w, 26, 11, true, TextAlignment.Center, White);
+        AddCell(page, $"{date} TARİHİNE KADAR YAPILAN İŞİN", x, 148, w, 24, 11, true, TextAlignment.Center, White);
         var amountRows = new (string Key, string Label, decimal Value)[]
         {
             ("A", "Sözleşme Fiyatları İle Yapılan İş", c.ReportTotals.CumulativeServiceAmount),
             ("B", "Fiyat Farkı Tutarı", c.ReportTotals.CurrentPriceDifference),
             ("C", "Toplam Tutar  ( A + B )", c.ReportTotals.CumulativeTotal)
         };
-        var y = 156d;
+        var y = 172d;
         foreach (var row in amountRows)
         {
             var bold = row.Key == "C";
-            AddCell(page, row.Key, x, y, 60, 28, 10, bold, TextAlignment.Center);
-            AddCell(page, row.Label, x + 60, y, 420, 28, 10, bold, TextAlignment.Left);
-            AddCell(page, FormatMoney(row.Value), x + 480, y, w - 480, 28, 10, true, TextAlignment.Right, White, new Thickness(3, 2, 8, 2));
+            AddCell(page, row.Key, x, y, 53, 28, 10, bold, TextAlignment.Center);
+            AddCell(page, row.Label, x + 53, y, 356, 28, 10, bold, TextAlignment.Left);
+            AddCell(page, FormatMoney(row.Value), x + 409, y, w - 409, 28, 10, true, TextAlignment.Right, White, new Thickness(3, 2, 8, 2));
             y += 28;
         }
 
-        y += 26;
+        y += 32;
         var summaryRows = new (string Key, string Label, decimal Value, Brush Fill)[]
         {
             ("D", "Bir Önceki Hakedişlerin Toplam Tutarı", c.ReportTotals.PreviousTotal, White),
             ("E", "Bu Hakedişin Tutarı ( C - D )", c.ReportTotals.CurrentTotal, WarningRed),
-            ("F", "KDV %10 + %20", c.Calculation.Vat, White),
+            ("F", "KDV  %10 + %20", c.Calculation.Vat, White),
             ("G", "Tahakkuk Tutarı", c.ReportTotals.CurrentTotal + c.Calculation.Vat, TotalGray)
         };
         foreach (var row in summaryRows)
         {
             var bold = row.Key is "G" or "E";
-            AddCell(page, row.Key, x, y, 60, 28, 10, bold, TextAlignment.Center, row.Fill);
-            AddCell(page, row.Label, x + 60, y, 420, 28, 10, bold, TextAlignment.Left, row.Fill);
-            AddCell(page, FormatMoney(row.Value), x + 480, y, w - 480, 28, 10, true, TextAlignment.Right, row.Fill, new Thickness(3, 2, 8, 2));
-            y += 28;
+            AddCell(page, row.Key, x, y, 53, 29, 10, bold, TextAlignment.Center, row.Fill);
+            AddCell(page, row.Label, x + 53, y, 356, 29, 10, bold, TextAlignment.Left, row.Fill);
+            AddCell(page, FormatMoney(row.Value), x + 409, y, w - 409, 29, 10, true, TextAlignment.Right, row.Fill, new Thickness(3, 2, 8, 2));
+            y += 29;
         }
 
         var deductions = new (string Key, string Label, decimal Value, double Height)[]
         {
-            ("a)", "Gelir / Kurumlar Vergisi ( E x % .. )", 0m, 21),
-            ("b)", "Damga Vergisi ( E - g x % 9,48 )", c.Calculation.StampTax, 21),
-            ("c)", "KDV Tevkifatı ( 5/10 + 9/10 kesilen)", c.Calculation.Withholding, 21),
-            ("d)", "Sosyal Sigortalar Kurumu Kesintisi", c.Calculation.Deductions.SocialSecurityDebt, 21),
-            ("e)", "İdare Makinesi Kiraları", 0m, 21),
-            ("f)", "Gecikme Cezası", 0m, 21),
-            ("g)", "Avans Mahsubu", 0m, 21),
-            ("h)", "Bu Hakedişle Ödenen Fiyat Farkı Teminat Kesintisi", c.Calculation.AdditionalGuarantee, 28),
-            ("ı)", "Vergi Borcu", c.Calculation.Deductions.TaxDebt, 21),
-            ("j)", "İcra Borcu", 0m, 21),
-            ("k)", "Ceza ve Diğer Kesintiler", c.Calculation.Deductions.InspectionPenalty, 21),
-            ("l)", "Asgari Ücret Destek Tutarı Kesintisi", c.Calculation.Deductions.MinimumWageSupport, 21)
+            ("a)", "Gelir / Kurumlar Vergisi ( E x % .. )", 0m, 28),
+            ("b)", "Damga Vergisi  ( E - g x % 9,48 )", c.Calculation.StampTax, 28),
+            ("c)", "KDV Tevkifatı  ( 5/10 + 9/10 kesilen )", c.Calculation.Withholding, 28),
+            ("d)", "Sosyal Sigortalar Kurumu Kesintisi", c.Calculation.Deductions.SocialSecurityDebt, 28),
+            ("e)", "İdare Makinesi Kiraları", 0m, 28),
+            ("f)", "Gecikme Cezası", 0m, 28),
+            ("g)", "Avans Mahsubu", 0m, 28),
+            ("h)", "Bu Hakedişle Ödenen Fiyat Farkı Teminat Kesintisi", c.Calculation.AdditionalGuarantee, 36),
+            ("ı)", "Vergi Borcu", c.Calculation.Deductions.TaxDebt, 28),
+            ("j)", "İcra Borcu", 0m, 28),
+            ("k)", "Ceza ve Diğer Kesintiler", c.Calculation.Deductions.InspectionPenalty, 28),
+            ("l)", "Asgari Ücret Destek Tutarı Kesintisi", c.Calculation.Deductions.MinimumWageSupport, 28)
         };
+        var deductionsHeight = deductions.Sum(d => d.Height);
+        AddCell(page, "", x, y, 165, deductionsHeight, 10, true, TextAlignment.Center, White, new Thickness(0));
+        AddRotatedText(page, "KESİNTİLER VE MAHSUPLAR", x, y, 165, deductionsHeight, 10, true, -90);
 
-        var deductionsHeight = deductions.Sum(d => d.Height) + 56;
-        AddCell(page, "", x, y, 60, deductionsHeight, 10, true, TextAlignment.Center, White, new Thickness(0));
-        AddRotatedText(page, "KESİNTİLER VE MAHSUPLAR", x, y, 60, deductionsHeight, 9.5, true, -90);
         foreach (var row in deductions)
         {
-            AddCell(page, row.Key, x + 60, y, 50, row.Height, 8.8, false, TextAlignment.Center, White, new Thickness(2, 1, 2, 1));
-            AddCell(page, row.Label, x + 110, y, 425, row.Height, 8.8, false, TextAlignment.Left, White, new Thickness(3, 1, 2, 1));
-            AddCell(page, FormatMoney(row.Value), x + 535, y, w - 535, row.Height, 9, true, TextAlignment.Right, White, new Thickness(3, 1, 8, 1));
+            AddCell(page, row.Key, x + 165, y, 40, row.Height, 9, false, TextAlignment.Center, White, new Thickness(2, 1, 2, 1));
+            AddCell(page, row.Label, x + 205, y, 207, row.Height, 9, false, TextAlignment.Left, White, new Thickness(3, 1, 2, 1));
+            AddCell(page, FormatMoney(row.Value), x + 412, y, w - 412, row.Height, 9, true, TextAlignment.Right, White, new Thickness(3, 1, 8, 1));
             y += row.Height;
         }
 
-        AddCell(page, "H", x, y, 60, 28, 10, true, TextAlignment.Center, TotalGray);
-        AddCell(page, "Kesintiler ve Mahsuplar Toplamı", x + 60, y, 475, 28, 10, true, TextAlignment.Left, TotalGray);
-        AddCell(page, FormatMoney(c.Calculation.TotalDeductions), x + 535, y, w - 535, 28, 10, true, TextAlignment.Right, TotalGray, new Thickness(3, 2, 8, 2));
+        AddCell(page, "H", x, y, 53, 28, 10, true, TextAlignment.Center, TotalGray);
+        AddCell(page, "Kesintiler ve Mahsuplar Toplamı", x + 53, y, 356, 28, 10, true, TextAlignment.Left, TotalGray);
+        AddCell(page, FormatMoney(c.Calculation.TotalDeductions), x + 409, y, w - 409, 28, 10, true, TextAlignment.Right, TotalGray, new Thickness(3, 2, 8, 2));
         y += 28;
-        AddCell(page, "I", x, y, 60, 28, 10, true, TextAlignment.Center, TotalGray);
-        AddCell(page, "Yükleniciye Ödenecek Tutar ( G - H )", x + 60, y, 475, 28, 10, true, TextAlignment.Left, TotalGray);
-        AddCell(page, FormatMoney(c.ReportNetPayable), x + 535, y, w - 535, 28, 10, true, TextAlignment.Right, TotalGray, new Thickness(3, 2, 8, 2));
+        AddCell(page, "I", x, y, 53, 28, 10, true, TextAlignment.Center, TotalGray);
+        AddCell(page, "Yükleniciye Ödenecek Tutar  ( G - H )", x + 53, y, 356, 28, 10, true, TextAlignment.Left, TotalGray);
+        AddCell(page, FormatMoney(c.ReportNetPayable), x + 409, y, w - 409, 28, 10, true, TextAlignment.Right, TotalGray, new Thickness(3, 2, 8, 2));
 
-        var footerY = Math.Max(y + 22, 760);
-        AddText(page, "Yüklenici", x + 30, footerY, w - 60, 22, 10, true, TextAlignment.Left);
-        AddText(page, c.ContractorName, x + 30, footerY + 23, w - 60, 36, 9.5, false, TextAlignment.Left);
+        var footerY = Math.Max(y + 16, 820);
+        AddText(page, "Yüklenici", x + 45, footerY, w - 90, 22, 10, true, TextAlignment.Left);
+        AddText(page, c.ContractorName, x + 12, footerY + 23, w - 24, 36, 9.5, false, TextAlignment.Left);
         AddSignatures(page, footerY + 85, c.GeneratedDate, "M.Y.H.B.Y. Örnek No :4/10",
-            leftX: 100, leftWidth: 220, rightX: 480, rightWidth: 220,
-            nameOffset: 34, roleOffset: 57, dateOffset: 90, directorOffset: 130, titleOffset: 152, footerY: 1087);
+            leftX: 115, leftWidth: 205, rightX: 435, rightWidth: 200,
+            nameOffset: 28, roleOffset: 49, dateOffset: 83, directorOffset: 124, titleOffset: 146, footerY: 1065);
         return page;
     }
 
     private static FixedPage BuildHizmetIsleriHakedisRaporu(OehsOfficialDocumentContext c)
     {
         var page = NewPage();
-        const double x = 16;
-        const double w = 761;
+        const double x = 42;
+        const double w = 710;
 
         // Frame encloses the form body; the signature block remains below it,
         // following the uploaded one-page reference PDF.
-        AddCell(page, "", x, 25, w, 795, 9, false, TextAlignment.Left, White, new Thickness(0));
+        AddCell(page, "", x, 25, w, 835, 9, false, TextAlignment.Left, White, new Thickness(0));
         AddText(page, "HİZMET İŞLERİ HAK EDİŞ RAPORU", x, 29, w, 30, 15, true, TextAlignment.Center);
 
         AddText(page, "Tarihi", x + 145, 81, 155, 19, 9.5, true, TextAlignment.Left);
@@ -316,7 +319,7 @@ internal static class OehsOfficialDocumentFactory
             y += 15;
         }
 
-        AddSignatures(page, 832, c.GeneratedDate, "M.Y.H.B.Y. Örnek No: 4",
+        AddSignatures(page, 878, c.GeneratedDate, "M.Y.H.B.Y. Örnek No: 4",
             leftX: 100, leftWidth: 220, rightX: 480, rightWidth: 220,
             nameOffset: 34, roleOffset: 57, dateOffset: 124, directorOffset: 164, titleOffset: 186, footerY: 1087);
         return page;
@@ -325,10 +328,10 @@ internal static class OehsOfficialDocumentFactory
     private static FixedPage BuildKabulTutanagi(OehsOfficialDocumentContext c)
     {
         var page = NewPage();
-        const double x = 16;
-        const double w = 761;
-        AddText(page, "HİZMET İŞLERİ KABUL TUTANAĞI", x, 25, w, 30, 15, true, TextAlignment.Center);
-        AddCell(page, "", x, 55, w, 415, 9, false, TextAlignment.Left, White, new Thickness(0));
+        const double x = 50;
+        const double w = 693;
+        AddText(page, "HİZMET İŞLERİ KABUL TUTANAĞI", x, 40, w, 22, 15, true, TextAlignment.Center);
+        AddCell(page, "", x, 38, w, 414, 9, false, TextAlignment.Left, White, new Thickness(0));
 
         var servicePeriod = ProgressPaymentAcceptancePeriodService.BuildServicePeriod(
             c.PeriodDate ?? c.GeneratedDate);
@@ -336,7 +339,7 @@ internal static class OehsOfficialDocumentFactory
         var duration = CalculateDuration(c);
         var rows = new (string Label, string Value, double Height)[]
         {
-            ("İşin adı", c.WorkName, 130),
+            ("İşin adı", c.WorkName, 112),
             ("Yüklenicinin adı/ticari unvanı", c.ContractorName, 35),
             ("Sözleşme tarihi", FormatDate(c.ContractDate), 35),
             ("Sözleşme bedeli", FormatMoney(c.ContractAmount), 35),
@@ -347,11 +350,11 @@ internal static class OehsOfficialDocumentFactory
             ("İşin bitirildiği tarih", FormatLongDate(endDate), 35)
         };
 
-        var y = 55d;
+        var y = 60d;
         foreach (var row in rows)
         {
-            AddCell(page, row.Label, x, y, 347, row.Height, 9.5, true, TextAlignment.Left);
-            AddCell(page, row.Value, x + 347, y, w - 347, row.Height, 9.5, false, TextAlignment.Left);
+            AddCell(page, row.Label, x, y, 310, row.Height, 9.5, true, TextAlignment.Left);
+            AddCell(page, row.Value, x + 310, y, w - 310, row.Height, 9.5, false, TextAlignment.Left);
             y += row.Height;
         }
 
@@ -366,15 +369,15 @@ internal static class OehsOfficialDocumentFactory
         AddText(page, c.ContractorName, x + 28, 796, w - 56, 30, 9.5, false, TextAlignment.Center);
         AddSignatures(page, 902, c.GeneratedDate, "",
             leftX: 100, leftWidth: 220, rightX: 480, rightWidth: 220,
-            nameOffset: 34, roleOffset: 57, dateOffset: 45, directorOffset: 85, titleOffset: 107, footerY: 1087);
+            nameOffset: 34, roleOffset: 57, dateOffset: 90, directorOffset: 130, titleOffset: 152, footerY: 1087);
         return page;
     }
 
     private static FixedPage BuildHakedisIcmali(OehsOfficialDocumentContext c)
     {
         var page = NewPage();
-        const double x = 16;
-        const double w = 761;
+        const double x = 20;
+        const double w = 754;
         AddText(page, "HAKEDİŞ İCMALİ", x, 16, w, 28, 15, true, TextAlignment.Center);
 
         AddCell(page, c.WorkName, x, 47, 574, 70, 8.8, true, TextAlignment.Left, White, new Thickness(5, 3, 5, 2));
@@ -382,7 +385,7 @@ internal static class OehsOfficialDocumentFactory
         AddCell(page, $"Hakediş No : {c.ProgressPaymentNumber?.ToString(Turkish) ?? "-"}", x + 574, 70.3, w - 574, 23.3, 9.5, true, TextAlignment.Left);
         AddCell(page, $"Hat No : {c.RouteNumber}", x + 574, 93.6, w - 574, 23.4, 9.5, true, TextAlignment.Left);
 
-        var widths = new[] { 69d, 202d, 195d, 128d, w - 69d - 202d - 195d - 128d };
+        var widths = new[] { 69d, 202d, 195d, 107d, w - 69d - 202d - 195d - 107d };
         var headers = new[] { "Sıra No", "İşin Cinsi", "İş Tutarı\n(a)", "Fiyat Farkı\nTutarı\n(b)", "Toplam\n(a+b)" };
         var y = 117d;
         var xx = x;
@@ -555,6 +558,22 @@ internal static class OehsOfficialDocumentFactory
         FixedPage.SetLeft(block, x);
         FixedPage.SetTop(block, y);
         page.Children.Add(block);
+    }
+
+    private static void AddOuterFrame(FixedPage page, double x, double y, double width, double height)
+    {
+        var frame = new Border
+        {
+            Width = width,
+            Height = height,
+            BorderBrush = Black,
+            BorderThickness = new Thickness(1.6),
+            Background = Brushes.Transparent,
+            SnapsToDevicePixels = true
+        };
+        FixedPage.SetLeft(frame, x);
+        FixedPage.SetTop(frame, y);
+        page.Children.Add(frame);
     }
 
     private static void AddRotatedText(
