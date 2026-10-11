@@ -1213,9 +1213,35 @@
                                    TextWrapping="Wrap"/>
                     </Border>
                     <Grid Margin="0,0,0,2">
-                        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-                        <Button Grid.Column="0" Content="BELGE ÖNİZLEME" Style="{StaticResource ModernButton}" Height="54" FontSize="14.5" FontWeight="SemiBold" Margin="0,0,6,0" Click="PreviewAllRouteDocumentsButton_Click"/>
-                        <Button Grid.Column="1" Content="PDF OLARAK KAYDET" Style="{StaticResource ModernButton}" Width="230" Height="54" FontSize="14.5" FontWeight="Bold" Margin="6,0,0,0" Click="CreateSaveAllRouteDocumentsButton_Click"/>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="112"/>
+                            <ColumnDefinition Width="210"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0"
+                                Content="BELGE ÖNİZLEME"
+                                Style="{StaticResource ModernButton}"
+                                Height="54"
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Margin="0,0,6,0"
+                                Click="PreviewAllRouteDocumentsButton_Click"/>
+                        <Button Grid.Column="1"
+                                Content="YAZDIR"
+                                Style="{StaticResource ModernButton}"
+                                Height="54"
+                                FontSize="13"
+                                FontWeight="Bold"
+                                Margin="6,0,6,0"
+                                Click="PrintAllRouteDocumentsButton_Click"/>
+                        <Button Grid.Column="2"
+                                Content="PDF OLARAK KAYDET"
+                                Style="{StaticResource ModernButton}"
+                                Height="54"
+                                FontSize="13"
+                                FontWeight="Bold"
+                                Margin="6,0,0,0"
+                                Click="CreateSaveAllRouteDocumentsButton_Click"/>
                     </Grid>
                     <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,12,0,0">
                         <StackPanel>
