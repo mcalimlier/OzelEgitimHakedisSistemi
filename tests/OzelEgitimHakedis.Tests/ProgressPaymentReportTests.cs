@@ -41,6 +41,33 @@ public sealed class ProgressPaymentReportTests
     }
 
     [Fact]
+    public void ReportTotals_ShouldExcludePaymentsFromPriorFiscalYear()
+    {
+        var priorFiscalYear = History(
+            1,
+            new DateOnly(2026, 8, 31),
+            new DateTime(2026, 8, 31),
+            500m,
+            40m);
+        var currentSeptember = History(
+            2,
+            new DateOnly(2026, 9, 30),
+            new DateTime(2026, 9, 30),
+            100m,
+            5m);
+
+        var totals = ProgressPaymentReportService.Calculate(
+            currentSeptember,
+            new[] { priorFiscalYear, currentSeptember });
+
+        Assert.Equal(100m, totals.CumulativeServiceAmount);
+        Assert.Equal(5m, totals.CurrentPriceDifference);
+        Assert.Equal(105m, totals.CumulativeTotal);
+        Assert.Equal(0m, totals.PreviousTotal);
+        Assert.Equal(110m, totals.CurrentTotal);
+    }
+
+    [Fact]
     public void OfficialDocumentNames_ShouldContainTheFourRequiredDocuments()
     {
         var names = ProgressPaymentReportService.RequiredDocumentNames;
