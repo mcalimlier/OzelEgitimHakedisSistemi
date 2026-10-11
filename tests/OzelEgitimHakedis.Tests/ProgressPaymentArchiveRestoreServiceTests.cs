@@ -57,6 +57,26 @@ public sealed class ProgressPaymentArchiveRestoreServiceTests
     }
 
     [Fact]
+    public void Restore_ShouldNotAddPaymentWithDuplicateBusinessKeyAndDifferentId()
+    {
+        var archive = Archive();
+        var duplicatePayment = archive.ProgressPayment with { Id = Guid.NewGuid() };
+        var duplicateArchive = archive with { ProgressPayment = duplicatePayment };
+        var current = new OehsApplicationData(
+            archive.Contract,
+            new[] { archive.Route },
+            new[] { archive.Contractor },
+            new[] { archive.ProgressPayment },
+            new[] { archive.Contract });
+
+        var result = ProgressPaymentArchiveRestoreService.Restore(current, duplicateArchive);
+
+        Assert.Single(result.Data.ProgressPayments ?? Array.Empty<ProgressPaymentHistoryData>());
+        Assert.False(result.AddedAnything);
+        Assert.Contains("aynı ihale, hat, yüklenici, hakediş numarası ve dönem anahtarında", result.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Restore_ShouldReportExistingAndAddedItems()
     {
         var archive = Archive();
