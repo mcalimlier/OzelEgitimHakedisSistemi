@@ -35,6 +35,17 @@ jobs:
       - name: Build WPF
         run: dotnet build ".\src\OzelEgitimHakedis.Wpf\OzelEgitimHakedis.Wpf.csproj" --configuration Release --no-restore
 
+      - name: Verify WPF output UI contract
+        shell: pwsh
+        run: |
+          $xaml = Get-Content ".\src\OzelEgitimHakedis.Wpf\MainWindow.xaml" -Raw
+          $code = Get-Content ".\src\OzelEgitimHakedis.Wpf\MainWindow.xaml.cs" -Raw
+          $statusCount = ([regex]::Matches($xaml, 'Text="KAYIT DURUMU"')).Count
+          if ($statusCount -ne 1) { throw "Expected one dynamic header save-status label; found $statusCount." }
+          if ($xaml -notmatch 'dört ayrı, tek sayfalı PDF') { throw "Output page description does not match the four-PDF save behavior." }
+          if ($xaml -notmatch 'x:Name="HeaderSaveStatusTextBlock"' -or $xaml -notmatch 'x:Name="HeaderSaveStatusDot"') { throw "Dynamic save-status controls are missing." }
+          if ($code -notmatch 'SetHeaderSaveStatus\("Kaydedildi"' -or $code -notmatch 'SetHeaderSaveStatus\("Veri yükleme hatası"') { throw "Load/save status update paths are missing." }
+
       - name: Build Tests
         run: dotnet build ".\tests\OzelEgitimHakedis.Tests\OzelEgitimHakedis.Tests.csproj" --configuration Release --no-restore
 
