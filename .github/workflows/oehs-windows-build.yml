@@ -46,7 +46,7 @@ jobs:
 
       - name: Test WPF PDF Outputs
         env:
-          OEHS_PDF_SMOKE_OUTPUT_DIR: artifacts/OEHS-PDF-Smoke
+          OEHS_PDF_SMOKE_OUTPUT_DIR: ${{ github.workspace }}\artifacts\OEHS-PDF-Smoke
         run: dotnet test ".\tests\OzelEgitimHakedis.Wpf.Tests\OzelEgitimHakedis.Wpf.Tests.csproj" --configuration Release --no-build --no-restore
 
       - name: Upload PDF smoke outputs for visual review
