@@ -548,7 +548,9 @@ internal static class OehsOfficialDocumentFactory
         else if (work.EndsWith(" Hattı", StringComparison.OrdinalIgnoreCase))
             work = work[..^" Hattı".Length].TrimEnd();
 
-        var prefix = includeRouteNumber ? $"{routeNumber} Numaralı " : string.Empty;
+        var prefix = includeRouteNumber && !string.Equals(routeNumber, "-", StringComparison.Ordinal)
+            ? $"{routeNumber} Numaralı "
+            : string.Empty;
         var suffix = includeStudentSuffix ? "Hattı Öğrenci Taşıma İşi" : "Hattı Taşıma İşi";
         return $"{prefix}{work} {suffix}";
     }
