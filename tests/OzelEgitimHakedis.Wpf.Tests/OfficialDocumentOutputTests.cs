@@ -1,5 +1,6 @@
 using System.Runtime.ExceptionServices;
 using System.Threading;
+using System.IO;
 using System.Windows;
 using System.Windows.Documents;
 using OzelEgitimHakedis.Core.Models;
@@ -76,7 +77,7 @@ public sealed class OfficialDocumentOutputTests
                     Assert.True(File.Exists(pdfPath));
                     Assert.True(new FileInfo(pdfPath).Length > 1000);
 
-                    using var pdf = PdfReader.Open(pdfPath, PdfDocumentOpenMode.ReadOnly);
+                    using var pdf = PdfReader.Open(pdfPath, PdfDocumentOpenMode.Import);
                     Assert.Single(pdf.Pages);
                     Assert.Equal(595.2756d, pdf.Pages[0].Width.Point, 1);
                     Assert.Equal(841.8898d, pdf.Pages[0].Height.Point, 1);
