@@ -81,7 +81,13 @@ Aşağıdaki formüller workbook'un `Hesaplama` sayfasından okunmuştur. Taşı
 - E23: iki kesintinin toplamı.
 - E25: `E17-E23`.
 
-**Kaynak workbook anomalisi:** `İcmal Verileri` satır 3'te kesinti dönem başlıklarında `AP3` ve `AQ3` ikisi de Aralık'a bağlanıyor; Kasım başlığı eksik görünüyor. OEHS aylık kesinti aramasını gerçek tarih/yıl/ay üzerinden yapmalıdır; aksi durumda Aralık ve Kasım dönemleri yanlış sütuna bağlanabilir. Bu, kaynağın davranışını sessizce kopyalamak yerine hedeflenen “bir önceki takvim ayı” mantığıyla düzeltilmiş bir uyumsuzluk olarak test edilmelidir.
+**Kaynak workbook anomalileri (yayın öncesi iş kuralı kararı gerekiyor):**
+
+1. `Anasayfa!I6:I15` yalnızca Eylül–Haziran (10 ay) içerirken `Hakediş İcmali` PDF formunda 11 satır (Eylül–Temmuz) vardır. C/D satır formülleri ay adını bu 10 hücrelik aralıkta `MATCH` ile arar; Temmuz satırının tutarları mevcut formülde `IFERROR(...,0)` nedeniyle sıfır olur. OEHS bu davranışı şimdilik birebir taklit ediyor: Temmuz satırı gösteriliyor ancak tutarları sıfır.
+
+2. `İcmal Verileri!AN3:AX3` dönem başlıklarında `AP3` ve `AQ3` ikisi de Aralık'a bağlanıyor; Kasım başlığı eksik. `Hakediş İcmali!E21` önceki ay adını bu başlık aralığında aradığı için Aralık hakedişinin önceki Kasım kesintisi bulunamaz ve `IFERROR(...,0)` sıfır döndürür. OEHS şu anda kaynak formül davranışını testle koruyor.
+
+Bunlar istenen “Excel formülleriyle birebir uyum” için kaynak davranışı olarak kaydedilmiştir, fakat doğru iş kuralı oldukları onaylanmış değildir. Excel'in kendisi düzeltilirse OEHS kodu ve referans testleri de aynı kararla birlikte güncellenmelidir; C# içinde sessizce tarih bazlı başka sonuç üretmemelidir.
 
 ## 5. Dört PDF'nin görsel sözleşmesi
 
