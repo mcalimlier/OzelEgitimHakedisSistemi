@@ -4360,7 +4360,7 @@ public partial class MainWindow : Window
         return item.CreatedAt < current.CreatedAt;
     }
 
-    private FlowDocument? BuildSelectedRouteOutputDocument()
+    private OehsOfficialDocumentContext? BuildSelectedOfficialDocumentContext()
     {
         if (!EnsureRouteForOutput())
             return null;
@@ -4372,15 +4372,58 @@ public partial class MainWindow : Window
         if (latest is null)
             return null;
 
-        var documents = new (FlowDocument Document, string Title)[]
-        {
-            (BuildHakedişRaporu(route, latest), "Hakediş Raporu"),
-            (BuildHizmetIsleriHakedisRaporu(route, latest), "Hizmet İşleri Hakediş Raporu"),
-            (BuildKabulTutanağı(route, latest), "Hizmet İşleri Kabul Tutanağı"),
-            (BuildHakedişIcmali(route, latest), "Hakediş İcmali")
-        };
+        var payments = GetSelectedRoutePayments();
+        var reportTotals = ProgressPaymentReportService.Calculate(latest, payments);
+        var reportNetPayable = ProgressPaymentReportService.CalculateReportNetPayable(latest, reportTotals);
+        var previousDeduction = ProgressPaymentIcmalService.FindPreviousDeduction(payments, latest);
 
-        return BuildCombinedRouteDocuments(documents);
+        var contract = _contracts.FirstOrDefault(x =>
+            string.Equals(x.TenderNumber, latest.TenderNumber ?? route.TenderNumber, StringComparison.OrdinalIgnoreCase));
+
+        DateOnly? contractStartDate = latest.ContractStartDate ?? contract?.StartDate;
+        DateOnly? contractEndDate = latest.ContractEndDate ?? contract?.EndDate;
+        DateOnly? tenderDate = latest.TenderDate ?? contract?.TenderDate;
+        DateOnly? contractDate = latest.ContractDate ?? contract?.ContractDate;
+
+        if (!contractStartDate.HasValue && StartDatePicker.SelectedDate is DateTime selectedStart)
+            contractStartDate = DateOnly.FromDateTime(selectedStart);
+        if (!contractEndDate.HasValue && EndDatePicker.SelectedDate is DateTime selectedEnd)
+            contractEndDate = DateOnly.FromDateTime(selectedEnd);
+
+        var duration = contract?.ContractWorkDays ?? 0;
+        if (duration <= 0 && contractStartDate.HasValue && contractEndDate.HasValue)
+            duration = Math.Max(0, contractEndDate.Value.DayNumber - contractStartDate.Value.DayNumber);
+
+        var contractorName = string.IsNullOrWhiteSpace(latest.ContractorName)
+            ? (string.IsNullOrWhiteSpace(CurrentContractorName) ? "-" : CurrentContractorName.Trim())
+            : latest.ContractorName.Trim();
+
+        return new OehsOfficialDocumentContext(
+            WorkName: string.IsNullOrWhiteSpace(latest.WorkName) ? route.Name : latest.WorkName.Trim(),
+            TenderNumber: latest.TenderNumber ?? route.TenderNumber,
+            RouteNumber: latest.RouteNumber ?? route.RouteNumber,
+            ContractorName: contractorName,
+            ContractNumber: latest.ContractNumber ?? contract?.ContractNumber ?? string.Empty,
+            ContractAmount: latest.Input.ContractAmount,
+            TenderDate: tenderDate,
+            ContractDate: contractDate,
+            ContractStartDate: contractStartDate,
+            ContractEndDate: contractEndDate,
+            ContractWorkDays: duration,
+            PeriodDate: latest.PeriodDate,
+            ProgressPaymentNumber: latest.ProgressPaymentNumber,
+            Calculation: latest.Calculation,
+            Payments: ProgressPaymentReportService.OrderByPaymentPeriod(payments),
+            ReportTotals: reportTotals,
+            ReportNetPayable: reportNetPayable,
+            PreviousDeduction: previousDeduction,
+            GeneratedDate: DateOnly.FromDateTime(DateTime.Today));
+    }
+
+    private FixedDocument? BuildSelectedRouteOutputDocument()
+    {
+        var context = BuildSelectedOfficialDocumentContext();
+        return context is null ? null : OehsOfficialDocumentFactory.BuildCombined(context);
     }
 
     private void PreviewAllRouteDocumentsButton_Click(object sender, RoutedEventArgs e)
@@ -4778,21 +4821,13 @@ public partial class MainWindow : Window
 
     private void CreateSaveAllRouteDocumentsButton_Click(object sender, RoutedEventArgs e)
     {
-        if (!EnsureRouteForOutput())
+        var context = BuildSelectedOfficialDocumentContext();
+        if (context is null)
             return;
 
-        var route = (RouteDraft)ReportRouteComboBox.SelectedItem;
-        var latest = GetSelectedRouteLatestPayment()!;
-
-        var documents = new (FlowDocument Document, string Title)[]
-        {
-            (BuildHakedişRaporu(route, latest), "Hakediş Raporu"),
-            (BuildHizmetIsleriHakedisRaporu(route, latest), "Hizmet İşleri Hakediş Raporu"),
-            (BuildKabulTutanağı(route, latest), "Hizmet İşleri Kabul Tutanağı"),
-            (BuildHakedişIcmali(route, latest), "Hakediş İcmali")
-        };
-
-        var combined = BuildCombinedRouteDocuments(documents);
+        var latest = GetSelectedRouteLatestPayment();
+        if (latest is null)
+            return;
 
         try
         {
@@ -4800,27 +4835,38 @@ public partial class MainWindow : Window
                 latest.TenderNumber ?? string.Empty,
                 latest.RouteNumber ?? string.Empty);
 
-            var targetPath = latest.ProgressPaymentNumber.HasValue && latest.PeriodDate.HasValue
+            var baseTargetPath = latest.ProgressPaymentNumber.HasValue && latest.PeriodDate.HasValue
                 ? OehsOutputPathService.BuildPdfFilePath(
                     latest.TenderNumber ?? string.Empty,
                     latest.RouteNumber ?? string.Empty,
                     latest.ProgressPaymentNumber.Value,
                     latest.PeriodDate.Value)
-                : Path.Combine(targetFolder, "OEHS_Hakediş.pdf");
+                : Path.Combine(targetFolder, "OEHS_Hakedis.pdf");
 
+            var baseName = Path.GetFileNameWithoutExtension(baseTargetPath);
             Directory.CreateDirectory(targetFolder);
-            OehsPdfExportService.ExportFlowDocumentPages(combined, targetPath);
+
+            var outputs = OehsOfficialDocumentFactory.BuildSeparate(context);
+            var savedPaths = new List<string>(outputs.Count);
+            foreach (var output in outputs)
+            {
+                var targetPath = Path.Combine(targetFolder, $"{baseName}_{output.FileSuffix}.pdf");
+                PdfVectorWriter.Save(output.Document, targetPath);
+                savedPaths.Add(targetPath);
+            }
+
             SaveRouteDocumentsArchiveMetadata(latest);
 
             CalculationStatusTextBlock.Text =
-                $"PDF başarıyla kaydedildi: {Path.GetFileName(targetPath)}";
+                $"Dört resmi PDF şablonu vektör tabanlı olarak kaydedildi: {Path.GetFileName(savedPaths[0])} (+3 dosya).";
 
-            ShowPdfSaveInfoDialog(targetFolder, Path.GetFileName(targetPath), targetPath);
+            var savedNames = string.Join(Environment.NewLine, savedPaths.Select(Path.GetFileName));
+            ShowPdfSaveInfoDialog(targetFolder, savedNames, savedPaths[0]);
         }
         catch (Exception ex)
         {
             MessageBox.Show(
-                $"PDF oluşturulurken hata oluştu.\n\n{ex.Message}",
+                $"Resmî PDF belgeleri oluşturulurken hata oluştu.\n\n{ex.Message}",
                 "OEHS PDF Çıktı Hatası",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
