@@ -47,6 +47,9 @@ public static class ProgressPaymentIcmalService
             return 0m;
         }
 
+        if (current.PeriodDate.Value.Month == 9)
+            return 0m;
+
         var previousMonth = current.PeriodDate.Value.AddMonths(-1);
 
         // Source workbook header defect: "Kasım" is missing from AN3:AX3,
