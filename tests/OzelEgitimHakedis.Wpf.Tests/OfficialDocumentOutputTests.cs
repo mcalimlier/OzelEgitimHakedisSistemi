@@ -61,7 +61,13 @@ public sealed class OfficialDocumentOutputTests
             var outputs = OehsOfficialDocumentFactory.BuildSeparate(context);
             Assert.Equal(4, outputs.Count);
 
-            var temporaryDirectory = Directory.CreateTempSubdirectory("oehs-pdf-smoke-").FullName;
+            var configuredOutputDirectory = Environment.GetEnvironmentVariable("OEHS_PDF_SMOKE_OUTPUT_DIR");
+            var cleanupTemporaryDirectory = string.IsNullOrWhiteSpace(configuredOutputDirectory);
+            var temporaryDirectory = cleanupTemporaryDirectory
+                ? Directory.CreateTempSubdirectory("oehs-pdf-smoke-").FullName
+                : Path.GetFullPath(configuredOutputDirectory!);
+            Directory.CreateDirectory(temporaryDirectory);
+
             try
             {
                 foreach (var output in outputs)
@@ -85,7 +91,7 @@ public sealed class OfficialDocumentOutputTests
             }
             finally
             {
-                if (Directory.Exists(temporaryDirectory))
+                if (cleanupTemporaryDirectory && Directory.Exists(temporaryDirectory))
                     Directory.Delete(temporaryDirectory, recursive: true);
             }
         });
