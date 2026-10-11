@@ -60,6 +60,13 @@ if errorlevel 1 (
 
 echo.
 echo [3/4] Windows x64 self-contained yayin olusturuluyor...
+if exist "%PUBLISH%" rmdir /s /q "%PUBLISH%"
+if exist "%PUBLISH%" (
+    echo [HATA] Onceki yayin klasoru temizlenemedi.
+    echo Dosyalar bir program tarafindan kullaniliyor olabilir.
+    goto :fail
+)
+
 dotnet publish "%PROJECT%" --configuration Release --runtime win-x64 --self-contained true --output "%PUBLISH%" /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:EnableCompressionInSingleFile=true /p:DebugSymbols=false /p:DebugType=None
 if errorlevel 1 (
     echo.
