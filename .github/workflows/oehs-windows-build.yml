@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - feature/wpf-contract-entry-v0.5
+      - feature/official-payment-document-templates
   pull_request:
     branches:
       - main
