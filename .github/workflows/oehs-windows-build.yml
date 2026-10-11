@@ -29,14 +29,23 @@ jobs:
       - name: Restore Tests
         run: dotnet restore ".\tests\OzelEgitimHakedis.Tests\OzelEgitimHakedis.Tests.csproj"
 
+      - name: Restore WPF Output Tests
+        run: dotnet restore ".\tests\OzelEgitimHakedis.Wpf.Tests\OzelEgitimHakedis.Wpf.Tests.csproj"
+
       - name: Build WPF
         run: dotnet build ".\src\OzelEgitimHakedis.Wpf\OzelEgitimHakedis.Wpf.csproj" --configuration Release --no-restore
 
       - name: Build Tests
         run: dotnet build ".\tests\OzelEgitimHakedis.Tests\OzelEgitimHakedis.Tests.csproj" --configuration Release --no-restore
 
+      - name: Build WPF Output Tests
+        run: dotnet build ".\tests\OzelEgitimHakedis.Wpf.Tests\OzelEgitimHakedis.Wpf.Tests.csproj" --configuration Release --no-restore
+
       - name: Test Solution
         run: dotnet test ".\tests\OzelEgitimHakedis.Tests\OzelEgitimHakedis.Tests.csproj" --configuration Release --no-build --no-restore
+
+      - name: Test WPF PDF Outputs
+        run: dotnet test ".\tests\OzelEgitimHakedis.Wpf.Tests\OzelEgitimHakedis.Wpf.Tests.csproj" --configuration Release --no-build --no-restore
 
       - name: Publish Windows EXE
         run: >
