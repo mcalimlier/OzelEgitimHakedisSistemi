@@ -253,7 +253,7 @@ internal static class OehsOfficialDocumentFactory
             ("Sözleşmenin Sayıştayca Tescil Tarihi ve No'su", "Tescile Dahil Değil"),
             ("Tescilin Yükleniciye Tebliğ Tarihi", "Tescile Dahil Değil"),
             ("İşyeri Teslim Tarihi", FormatDate(c.ContractStartDate)),
-            ("Sözleşmeye Göre İşin Süresi", $"{CalculateDuration(c)} İş Günü"),
+            ("Sözleşmeye Göre İşin Süresi", FormatWorkDays(c)),
             ("Sözleşmeye Göre İş Bitim Tarihi", FormatDate(c.ContractEndDate)),
             ("Verilen Avanslar Toplamı", "Avans verilmeyecektir."),
             ("Mahsubu Yapılan Avansın Toplam Tutarı", "Yoktur.")
@@ -336,14 +336,13 @@ internal static class OehsOfficialDocumentFactory
         var servicePeriod = ProgressPaymentAcceptancePeriodService.BuildServicePeriod(
             c.PeriodDate ?? c.GeneratedDate);
         var endDate = c.ContractEndDate;
-        var duration = CalculateDuration(c);
         var rows = new (string Label, string Value, double Height)[]
         {
             ("İşin adı", BuildWorkTitle(c, includeRouteNumber: false, includeStudentSuffix: true), 112),
             ("Yüklenicinin adı/ticari unvanı", c.ContractorName, 35),
             ("Sözleşme tarihi", FormatDate(c.ContractDate), 35),
             ("Sözleşme bedeli", FormatMoney(c.ContractAmount), 35),
-            ("Sözleşmeye göre işin süresi(takvim günü)", $"{duration} İş Günü", 35),
+            ("Sözleşmeye göre işin süresi(takvim günü)", FormatWorkDays(c), 35),
             ("Sözleşmeye göre işin bitirilmesi gereken tarih", FormatDate(endDate), 35),
             ("Varsa süre uzatımları", "", 35),
             ("Süre uzatımı dahil işin bitirilmesi gereken tarih", FormatLongDate(endDate), 35),
@@ -555,14 +554,10 @@ internal static class OehsOfficialDocumentFactory
         return $"{prefix}{work} {suffix}";
     }
 
-    private static int CalculateDuration(OehsOfficialDocumentContext c)
-    {
-        if (c.ContractWorkDays > 0)
-            return c.ContractWorkDays;
-        if (!c.ContractStartDate.HasValue || !c.ContractEndDate.HasValue)
-            return 0;
-        return Math.Max(0, c.ContractEndDate.Value.DayNumber - c.ContractStartDate.Value.DayNumber);
-    }
+    private static string FormatWorkDays(OehsOfficialDocumentContext c) =>
+        c.ContractWorkDays > 0
+            ? $"{c.ContractWorkDays} İş Günü"
+            : "-";
 
     private static string FormatDate(DateOnly? date) =>
         date?.ToString("dd.MM.yyyy", Turkish) ?? "-";
