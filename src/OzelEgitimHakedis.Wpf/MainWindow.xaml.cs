@@ -4404,6 +4404,7 @@ public partial class MainWindow : Window
         var reportTotals = ProgressPaymentReportService.Calculate(latest, payments);
         var reportNetPayable = ProgressPaymentReportService.CalculateReportNetPayable(latest, reportTotals);
         var previousDeduction = ProgressPaymentIcmalService.FindPreviousDeduction(payments, latest);
+        var signatories = OehsOfficialDocumentSettingsStore.Load();
 
         var contract = _contracts.FirstOrDefault(x =>
             string.Equals(x.TenderNumber, latest.TenderNumber ?? route.TenderNumber, StringComparison.OrdinalIgnoreCase));
@@ -4445,7 +4446,13 @@ public partial class MainWindow : Window
             ReportTotals: reportTotals,
             ReportNetPayable: reportNetPayable,
             PreviousDeduction: previousDeduction,
-            GeneratedDate: DateOnly.FromDateTime(DateTime.Today));
+            GeneratedDate: DateOnly.FromDateTime(DateTime.Today),
+            PreparerName: signatories.PreparerName,
+            PreparerRole: signatories.PreparerRole,
+            ControllerName: signatories.ControllerName,
+            ControllerRole: signatories.ControllerRole,
+            ApproverName: signatories.ApproverName,
+            ApproverRole: signatories.ApproverRole);
     }
 
     private FixedDocument? BuildSelectedRouteOutputDocument()
