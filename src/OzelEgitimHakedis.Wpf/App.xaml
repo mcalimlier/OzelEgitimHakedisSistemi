@@ -42,14 +42,14 @@
 
         <Style TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="FontSize" Value="12.5"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
 
         <Style TargetType="TextBox">
             <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="14.5"/>
+            <Setter Property="FontSize" Value="13.5"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Padding" Value="8,0"/>
@@ -57,16 +57,16 @@
 
         <Style TargetType="ComboBox">
             <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="FontSize" Value="12.5"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-            <Setter Property="Height" Value="38"/>
+            <Setter Property="Height" Value="34"/>
         </Style>
 
         <Style x:Key="StandardButtonBase" TargetType="Button">
-            <Setter Property="Height" Value="36"/>
+            <Setter Property="Height" Value="33"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="FontSize" Value="11.5"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -100,10 +100,10 @@
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Height" Value="52"/>
-            <Setter Property="Padding" Value="14,0"/>
+            <Setter Property="Height" Value="46"/>
+            <Setter Property="Padding" Value="12,0"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="FontSize" Value="12.5"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="ClickMode" Value="Release"/>
             <Setter Property="Template">
@@ -111,7 +111,7 @@
                     <ControlTemplate TargetType="Button">
                         <Grid Background="{TemplateBinding Background}">
                             <Border x:Name="Accent" Width="4" HorizontalAlignment="Left" Background="Transparent"/>
-                            <ContentPresenter Margin="8,0,0,0" VerticalAlignment="Center"/>
+                            <ContentPresenter Margin="6,0,0,0" VerticalAlignment="Center"/>
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="Uid" Value="Active">
@@ -128,15 +128,15 @@
         </Style>
 
         <Style x:Key="SubNavButton" TargetType="Button" BasedOn="{StaticResource NavButton}">
-            <Setter Property="Height" Value="38"/>
-            <Setter Property="Padding" Value="30,0,8,0"/>
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="Padding" Value="26,0,8,0"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Foreground" Value="#E5EDF6"/>
         </Style>
 
         <Style x:Key="PageTitle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="25"/>
+            <Setter Property="FontSize" Value="23"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Foreground" Value="{StaticResource Text900Brush}"/>
             <Setter Property="Margin" Value="2,0,0,3"/>
@@ -144,21 +144,21 @@
 
         <Style x:Key="PageSubtitle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="Foreground" Value="{StaticResource Text600Brush}"/>
-            <Setter Property="Margin" Value="2,0,0,8"/>
+            <Setter Property="Margin" Value="2,0,0,7"/>
         </Style>
 
         <Style x:Key="SectionTitle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="16.5"/>
+            <Setter Property="FontSize" Value="15.5"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Foreground" Value="{StaticResource Text900Brush}"/>
         </Style>
 
         <Style x:Key="FieldLabel" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="#D8E4EF"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
@@ -197,13 +197,13 @@
             <Setter Property="BorderBrush" Value="{StaticResource PremiumGoldBorderBrush}"/>
             <Setter Property="BorderThickness" Value="1.25"/>
             <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="Padding" Value="15"/>
+            <Setter Property="Padding" Value="13"/>
             <Setter Property="SnapsToDevicePixels" Value="True"/>
         </Style>
 
         <Style x:Key="PremiumFieldTextBox" TargetType="TextBox" BasedOn="{StaticResource FieldTextBox}">
             <Setter Property="Height" Value="36"/>
-            <Setter Property="FontSize" Value="14.5"/>
+            <Setter Property="FontSize" Value="13.5"/>
         </Style>
 
         <!-- ============================================================
@@ -217,17 +217,17 @@
             <Setter Property="BorderBrush" Value="{StaticResource PremiumGoldBorderBrush}"/>
             <Setter Property="BorderThickness" Value="1.25"/>
             <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="Padding" Value="15"/>
+            <Setter Property="Padding" Value="13"/>
             <Setter Property="SnapsToDevicePixels" Value="True"/>
         </Style>
 
         <Style x:Key="CardCompact" TargetType="Border" BasedOn="{StaticResource Card}">
-            <Setter Property="Padding" Value="11"/>
+            <Setter Property="Padding" Value="10"/>
             <Setter Property="CornerRadius" Value="10"/>
         </Style>
 
         <Style x:Key="CardTitle" TargetType="TextBlock" BasedOn="{StaticResource SectionTitle}">
-            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontSize" Value="15"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
             <Setter Property="Margin" Value="0,0,0,4"/>
@@ -235,13 +235,13 @@
 
         <Style x:Key="CardSubtitle" TargetType="TextBlock" BasedOn="{StaticResource PageSubtitle}">
             <Setter Property="Margin" Value="0"/>
-            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="Foreground" Value="#C5D7E7"/>
         </Style>
 
         <Style x:Key="MetricCard" TargetType="Border" BasedOn="{StaticResource Card}">
-            <Setter Property="Padding" Value="13"/>
-            <Setter Property="MinHeight" Value="92"/>
+            <Setter Property="Padding" Value="11"/>
+            <Setter Property="MinHeight" Value="84"/>
         </Style>
 
         <Style x:Key="StatusBanner" TargetType="Border">
@@ -257,7 +257,7 @@
             <Setter Property="Background" Value="#EEF3F8"/>
             <Setter Property="BorderBrush" Value="#D2DBE7"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="Padding" Value="9,5"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -288,9 +288,9 @@
             <Setter Property="Foreground" Value="#082845"/>
             <Setter Property="BorderBrush" Value="#B8CEE3"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Height" Value="38"/>
-            <Setter Property="Padding" Value="10,3"/>
-            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="Padding" Value="8,2"/>
+            <Setter Property="FontSize" Value="12.5"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
         </Style>
@@ -302,7 +302,7 @@
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Height" Value="36"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="14.5"/>
+            <Setter Property="FontSize" Value="13.5"/>
             <Setter Property="Padding" Value="8,0"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
@@ -326,7 +326,7 @@
 
         <Style x:Key="PremiumCheckBox" TargetType="CheckBox">
             <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="FontSize" Value="12.5"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
@@ -361,7 +361,7 @@
 
         <Style x:Key="LightCheckBox" TargetType="CheckBox">
             <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="FontSize" Value="12.5"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="{StaticResource Text900Brush}"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
@@ -371,7 +371,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="CheckBox">
-                        <Grid MinHeight="38">
+                        <Grid MinHeight="32">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="28"/>
                                 <ColumnDefinition Width="*"/>
@@ -468,7 +468,7 @@
 
         <Style TargetType="ListBoxItem">
             <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="FontSize" Value="12.5"/>
             <Setter Property="Foreground" Value="{StaticResource Text900Brush}"/>
             <Setter Property="Padding" Value="8,6"/>
             <Setter Property="Margin" Value="2"/>
@@ -557,7 +557,7 @@
         <Style x:Key="ModernDataGridRow" TargetType="DataGridRow">
             <Setter Property="Background" Value="White"/>
             <Setter Property="Foreground" Value="{StaticResource Text900Brush}"/>
-            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="FontSize" Value="12.5"/>
             <Setter Property="BorderBrush" Value="#E2E8F0"/>
             <Setter Property="BorderThickness" Value="0,0,0,1"/>
             <Style.Triggers>
@@ -590,7 +590,7 @@
 
         <Style x:Key="GridCellText" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="FontSize" Value="12.5"/>
             <Setter Property="Foreground" Value="{StaticResource Text900Brush}"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
