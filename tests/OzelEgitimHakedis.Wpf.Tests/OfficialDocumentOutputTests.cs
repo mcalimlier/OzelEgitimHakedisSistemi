@@ -16,6 +16,80 @@ namespace OzelEgitimHakedis.Wpf.Tests;
 public sealed class OfficialDocumentOutputTests
 {
     [Fact]
+    public void SignatorySettingsStore_ShouldCreateEditableDefaults_WhenFileIsMissing()
+    {
+        var temporaryDirectory = Directory.CreateTempSubdirectory("oehs-document-settings-");
+        try
+        {
+            var settingsPath = Path.Combine(temporaryDirectory.FullName, "official-document-settings.json");
+            var settings = OehsOfficialDocumentSettingsStore.Load(settingsPath);
+
+            Assert.True(File.Exists(settingsPath));
+            Assert.Equal("Aşkın KESKİNBALTA", settings.PreparerName);
+            Assert.Equal("Halil ÖZENÇ", settings.ControllerName);
+            Assert.Equal("Özgür BAYSAL", settings.ApproverName);
+            Assert.Contains("\\"preparerName\\"", File.ReadAllText(settingsPath));
+        }
+        finally
+        {
+            temporaryDirectory.Delete(recursive: true);
+        }
+    }
+
+    [Fact]
+    public void SignatorySettingsStore_ShouldUseCustomValues_AndFallbackForBlankValues()
+    {
+        var temporaryDirectory = Directory.CreateTempSubdirectory("oehs-document-settings-");
+        try
+        {
+            var settingsPath = Path.Combine(temporaryDirectory.FullName, "official-document-settings.json");
+            File.WriteAllText(settingsPath, """
+            {
+              "preparerName": "  Örnek Düzenleyen  ",
+              "preparerRole": "",
+              "controllerName": "Örnek Kontrol",
+              "controllerRole": "Kontrol Görevlisi",
+              "approverName": "Örnek Onaylayan",
+              "approverRole": "Kurum Müdürü"
+            }
+            """);
+
+            var settings = OehsOfficialDocumentSettingsStore.Load(settingsPath);
+
+            Assert.Equal("Örnek Düzenleyen", settings.PreparerName);
+            Assert.Equal("Memur", settings.PreparerRole);
+            Assert.Equal("Örnek Kontrol", settings.ControllerName);
+            Assert.Equal("Kontrol Görevlisi", settings.ControllerRole);
+            Assert.Equal("Örnek Onaylayan", settings.ApproverName);
+            Assert.Equal("Kurum Müdürü", settings.ApproverRole);
+        }
+        finally
+        {
+            temporaryDirectory.Delete(recursive: true);
+        }
+    }
+
+    [Fact]
+    public void SignatorySettingsStore_ShouldReportInvalidJson()
+    {
+        var temporaryDirectory = Directory.CreateTempSubdirectory("oehs-document-settings-");
+        try
+        {
+            var settingsPath = Path.Combine(temporaryDirectory.FullName, "official-document-settings.json");
+            File.WriteAllText(settingsPath, "{ invalid json");
+
+            var exception = Assert.Throws<InvalidDataException>(
+                () => OehsOfficialDocumentSettingsStore.Load(settingsPath));
+
+            Assert.Contains(settingsPath, exception.Message);
+        }
+        finally
+        {
+            temporaryDirectory.Delete(recursive: true);
+        }
+    }
+
+    [Fact]
     public void FourOfficialTemplates_ShouldExportAsSinglePageA4VectorPdfs()
     {
         RunOnSta(() =>
