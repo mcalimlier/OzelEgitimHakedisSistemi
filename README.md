@@ -19,8 +19,13 @@ OEHS, özel eğitim hizmetleri için sözleşme/ihale bilgilerini, hatları, yü
 - Arşivleme, arşiv kayıtlarını görüntüleme, geri yükleme ve düzeltme iş akışları
 - PDF ve Excel çıktı akışları
 - Dört hakediş belgesi için ortak önizleme ve PDF çıktısı
+- Resmî belge imza adları ve unvanları için kullanıcı tarafından düzenlenebilir JSON ayarı (`%LOCALAPPDATA%\\OEHS\\official-document-settings.json`)
 - WPF `DocumentViewer` tabanlı belge önizlemesi ve doğrudan Windows yazdırma iletişim kutusu
 - xUnit testleri ve Windows üzerinde derleme/yayın akışı
+
+## Resmî belge ayarları
+
+Dört resmî belgedeki düzenleyen, kontrol eden ve onaylayan ad/unvan alanları ayar dosyasından değiştirilebilir. Ayrıntılar için [docs/RESMI_BELGE_IMZA_AYARLARI.md](docs/RESMI_BELGE_IMZA_AYARLARI.md) ve örnek JSON [docs/official-document-settings.example.json](docs/official-document-settings.example.json) dosyalarına bakın.
 
 ## Geliştirme ortamı
 
