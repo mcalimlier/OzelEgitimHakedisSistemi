@@ -56,7 +56,11 @@ public static class ProgressPaymentArchiveRestoreService
         if (addedRoute)
             routes.Add(archive.Route);
 
-        var addedPayment = payments.All(x => x.Id != archive.ProgressPayment.Id);
+        var duplicatePaymentById = payments.Any(x => x.Id == archive.ProgressPayment.Id);
+        var duplicatePaymentByBusinessKey = payments.Any(x =>
+            HasSamePaymentBusinessKey(x, archive.ProgressPayment));
+
+        var addedPayment = !duplicatePaymentById && !duplicatePaymentByBusinessKey;
         if (addedPayment)
             payments.Add(archive.ProgressPayment);
 
@@ -78,12 +82,47 @@ public static class ProgressPaymentArchiveRestoreService
         if (addedPayment) addedItems.Add("Hakediş");
 
         var message = addedItems.Count == 0
-            ? "Arşiv kaydı zaten aktif veride mevcut; yeni kayıt eklenmedi."
+            ? "Arşiv kaydı zaten aktif veride mevcut veya aynı iş anahtarına sahip hakediş bulundu; yeni kayıt eklenmedi."
             : $"Arşiv geri yüklendi: {string.Join(", ", addedItems)}.";
+
+        if (!duplicatePaymentById && duplicatePaymentByBusinessKey)
+        {
+            message += " Hakediş kopyası eklenmedi: aynı ihale, hat, yüklenici, hakediş numarası ve dönem anahtarında kayıt zaten var.";
+        }
 
         return new ProgressPaymentArchiveRestoreResult(
             merged,
             addedItems.Count > 0,
             message);
+    }
+
+    private static bool HasSamePaymentBusinessKey(
+        ProgressPaymentHistoryData existing,
+        ProgressPaymentHistoryData candidate)
+    {
+        // Only use the composite key when all identity/period components are
+        // present. Otherwise fall back to the stable GUID check above.
+        if (string.IsNullOrWhiteSpace(existing.TenderNumber) ||
+            string.IsNullOrWhiteSpace(candidate.TenderNumber) ||
+            string.IsNullOrWhiteSpace(existing.RouteNumber) ||
+            string.IsNullOrWhiteSpace(candidate.RouteNumber) ||
+            string.IsNullOrWhiteSpace(existing.ContractorTaxOrIdentityNumber) ||
+            string.IsNullOrWhiteSpace(candidate.ContractorTaxOrIdentityNumber) ||
+            !existing.ProgressPaymentNumber.HasValue ||
+            !candidate.ProgressPaymentNumber.HasValue ||
+            !existing.PeriodDate.HasValue ||
+            !candidate.PeriodDate.HasValue)
+        {
+            return false;
+        }
+
+        return string.Equals(existing.TenderNumber.Trim(), candidate.TenderNumber.Trim(), StringComparison.OrdinalIgnoreCase)
+            && string.Equals(existing.RouteNumber.Trim(), candidate.RouteNumber.Trim(), StringComparison.OrdinalIgnoreCase)
+            && string.Equals(
+                OehsIdentityService.NormalizeIdentity(existing.ContractorTaxOrIdentityNumber),
+                OehsIdentityService.NormalizeIdentity(candidate.ContractorTaxOrIdentityNumber),
+                StringComparison.Ordinal)
+            && existing.ProgressPaymentNumber.Value == candidate.ProgressPaymentNumber.Value
+            && existing.PeriodDate.Value == candidate.PeriodDate.Value;
     }
 }
