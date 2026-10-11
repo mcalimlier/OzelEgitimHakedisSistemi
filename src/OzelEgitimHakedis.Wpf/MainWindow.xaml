@@ -1,11 +1,12 @@
 <Window x:Class="OzelEgitimHakedis.Wpf.MainWindow"
+        xml:lang="tr-TR"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Özel Eğitim Hakediş Sistemi (OEHS)"
         Width="2168"
         Height="997"
-        MinWidth="1280"
-        MinHeight="720"
+        MinWidth="1024"
+        MinHeight="600"
         SizeToContent="Manual"
         ResizeMode="CanResizeWithGrip"
         WindowStartupLocation="Manual"
@@ -1203,35 +1204,48 @@
                                    TextWrapping="Wrap"/>
                     </Border>
                     <Grid Margin="0,0,0,2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="112"/>
-                            <ColumnDefinition Width="210"/>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <Button Grid.Column="0"
-                                Content="BELGE ÖNİZLEME"
+                        <Button Grid.Row="0" Grid.Column="0"
                                 Style="{StaticResource ModernButton}"
                                 Height="54"
                                 FontSize="13"
                                 FontWeight="SemiBold"
                                 Margin="0,0,6,0"
-                                Click="PreviewAllRouteDocumentsButton_Click"/>
-                        <Button Grid.Column="1"
-                                Content="YAZDIR"
+                                Click="PreviewAllRouteDocumentsButton_Click">
+                            <TextBlock Text="BELGE ÖNİZLEME"
+                                       TextWrapping="Wrap"
+                                       TextAlignment="Center"/>
+                        </Button>
+                        <Button Grid.Row="0" Grid.Column="1"
                                 Style="{StaticResource ModernButton}"
-                                Height="54"
-                                FontSize="13"
-                                FontWeight="Bold"
-                                Margin="6,0,6,0"
-                                Click="PrintAllRouteDocumentsButton_Click"/>
-                        <Button Grid.Column="2"
-                                Content="PDF OLARAK KAYDET"
-                                Style="{StaticResource ModernButton}"
+                                MinWidth="112"
                                 Height="54"
                                 FontSize="13"
                                 FontWeight="Bold"
                                 Margin="6,0,0,0"
-                                Click="CreateSaveAllRouteDocumentsButton_Click"/>
+                                Click="PrintAllRouteDocumentsButton_Click">
+                            <TextBlock Text="YAZDIR"
+                                       TextWrapping="Wrap"
+                                       TextAlignment="Center"/>
+                        </Button>
+                        <Button Grid.Row="1" Grid.ColumnSpan="2"
+                                Style="{StaticResource ModernButton}"
+                                Height="54"
+                                FontSize="13"
+                                FontWeight="Bold"
+                                Margin="0,8,0,0"
+                                Click="CreateSaveAllRouteDocumentsButton_Click">
+                            <TextBlock Text="PDF OLARAK KAYDET"
+                                       TextWrapping="Wrap"
+                                       TextAlignment="Center"/>
+                        </Button>
                     </Grid>
                     <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,12,0,0">
                         <StackPanel>
