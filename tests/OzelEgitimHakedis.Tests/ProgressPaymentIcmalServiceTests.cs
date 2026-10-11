@@ -41,6 +41,39 @@ public sealed class ProgressPaymentIcmalServiceTests
         Assert.Equal(0m, result);
     }
 
+    [Fact]
+    public void MonthLookupRange_ShouldIncludeSeptemberThroughJuneButNotJulyPlaceholder()
+    {
+        Assert.True(ProgressPaymentIcmalService.IsMonthInWorkbookLookupRange(new DateOnly(2026, 9, 1)));
+        Assert.True(ProgressPaymentIcmalService.IsMonthInWorkbookLookupRange(new DateOnly(2027, 6, 1)));
+        Assert.False(ProgressPaymentIcmalService.IsMonthInWorkbookLookupRange(new DateOnly(2027, 7, 1)));
+        Assert.False(ProgressPaymentIcmalService.IsMonthInWorkbookLookupRange(new DateOnly(2027, 8, 1)));
+    }
+
+    [Fact]
+    public void FindPreviousDeduction_ShouldMirrorMissingNovemberHeaderFallbackToZero()
+    {
+        var november = History(1, new DateOnly(2026, 11, 30), 180m);
+        var december = History(2, new DateOnly(2026, 12, 31), 250m);
+
+        var result = ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { november, december }, december);
+
+        Assert.Equal(0m, result);
+    }
+
+    [Fact]
+    public void FindPreviousDeduction_ShouldReturnZeroForJulyPlaceholderLookup()
+    {
+        var june = History(1, new DateOnly(2027, 6, 30), 180m);
+        var july = History(2, new DateOnly(2027, 7, 31), 250m);
+
+        var result = ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { june, july }, july);
+
+        Assert.Equal(0m, result);
+    }
+
     private static ProgressPaymentHistoryData History(
         int number,
         DateOnly period,
