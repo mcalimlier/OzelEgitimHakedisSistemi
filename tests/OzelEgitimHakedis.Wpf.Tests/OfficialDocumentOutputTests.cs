@@ -3,6 +3,8 @@ using System.Threading;
 using System.IO;
 using System.Windows;
 using System.Windows.Documents;
+using System.Windows.Controls;
+using System.Linq;
 using OzelEgitimHakedis.Core.Models;
 using OzelEgitimHakedis.Core.Services;
 using PdfSharp.Pdf.IO;
@@ -60,6 +62,22 @@ public sealed class OfficialDocumentOutputTests
 
             var outputs = OehsOfficialDocumentFactory.BuildSeparate(context);
             Assert.Equal(4, outputs.Count);
+
+            // The white acceptance-form frame must be behind the title, not cover it.
+            var acceptanceOutput = Assert.Single(
+                outputs.Where(output => output.Kind == OehsOfficialDocumentKind.KabulTutanagi));
+            var acceptancePage = Assert.IsType<FixedPage>(acceptanceOutput.Document.Pages[0].Child);
+            var acceptanceFrame = Assert.Single(acceptancePage.Children
+                .OfType<Border>()
+                .Where(border =>
+                    Math.Abs(FixedPage.GetLeft(border) - 50d) < 0.01 &&
+                    Math.Abs(FixedPage.GetTop(border) - 38d) < 0.01));
+            var acceptanceTitle = Assert.Single(acceptancePage.Children
+                .OfType<TextBlock>()
+                .Where(block => block.Text == "HİZMET İŞLERİ KABUL TUTANAĞI"));
+            Assert.True(
+                acceptancePage.Children.IndexOf(acceptanceTitle) > acceptancePage.Children.IndexOf(acceptanceFrame),
+                "The acceptance title must be drawn after the white form frame.");
 
             var configuredOutputDirectory = Environment.GetEnvironmentVariable("OEHS_PDF_SMOKE_OUTPUT_DIR");
             var cleanupTemporaryDirectory = string.IsNullOrWhiteSpace(configuredOutputDirectory);
