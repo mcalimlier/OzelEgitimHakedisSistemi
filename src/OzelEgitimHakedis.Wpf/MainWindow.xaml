@@ -59,8 +59,8 @@
                         <StackPanel>
                             <TextBlock Text="KAYIT DURUMU" Foreground="#8FA8C0" FontSize="10" FontWeight="SemiBold"/>
                             <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
-                                <Ellipse Width="9" Height="9" Fill="#43C77A" VerticalAlignment="Center" Margin="0,0,7,0"/>
-                                <TextBlock Text="Hazır" Foreground="#DDF6E7" FontSize="13" FontWeight="SemiBold"/>
+                                <Ellipse x:Name="HeaderSaveStatusDot" Width="9" Height="9" Fill="#FFB41F" VerticalAlignment="Center" Margin="0,0,7,0"/>
+                                <TextBlock x:Name="HeaderSaveStatusTextBlock" Text="Başlatılıyor" Foreground="#FFE2A1" FontSize="13" FontWeight="SemiBold"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>
@@ -69,7 +69,7 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="140"/>
                             <ColumnDefinition Width="10"/>
-                            <ColumnDefinition Width="104"/>
+                            <ColumnDefinition Width="10"/>
                             <ColumnDefinition Width="44"/>
                             <ColumnDefinition Width="44"/>
                             <ColumnDefinition Width="44"/>
@@ -102,17 +102,7 @@
                                            VerticalAlignment="Center"/>
                             </Grid>
                         </StackPanel>
-                        <Border Grid.Column="3"
-                                Background="#082744"
-                                BorderBrush="#24496B"
-                                BorderThickness="1"
-                                CornerRadius="9"
-                                Padding="12,7">
-                            <StackPanel>
-                                <TextBlock Text="KAYIT DURUMU" Foreground="#8FA8C0" FontSize="10" FontWeight="SemiBold"/>
-                                <TextBlock Text="Hazır" Foreground="#DDF6E7" FontSize="13" FontWeight="SemiBold" Margin="0,2,0,0"/>
-                            </StackPanel>
-                        </Border>
+
                         <Button Grid.Column="4" Content="—" ToolTip="Küçült" FontSize="21" FontWeight="SemiBold"
                                 Foreground="White" Background="Transparent" BorderThickness="0" Width="44" Height="48"
                                 Cursor="Hand" Click="Minimize_Click"/>
@@ -1189,7 +1179,7 @@
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                 <StackPanel>
                     <TextBlock Text="4 BELGE ÇIKTISI" Style="{StaticResource CardTitle}" FontSize="17"/>
-                    <TextBlock Text="Seçilen hat için dört kurum belgesi A4 düzeninde hazırlanır ve tek PDF dosyası olarak kaydedilir." Style="{StaticResource CardSubtitle}" FontSize="13.5" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                    <TextBlock Text="Seçilen hat için dört kurum belgesi A4 düzeninde hazırlanır ve dört ayrı, tek sayfalı PDF dosyası olarak kaydedilir." Style="{StaticResource CardSubtitle}" FontSize="13.5" TextWrapping="Wrap" Margin="0,0,0,12"/>
                     <TextBlock Text="İHALE / DOSYA NO" Style="{StaticResource FieldLabel}" FontSize="12.5"/>
                     <ComboBox x:Name="OutputTenderListBox"
                               Height="44"
