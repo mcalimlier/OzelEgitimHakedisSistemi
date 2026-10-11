@@ -2102,6 +2102,7 @@ public partial class MainWindow : Window
                 ClearContractFormOnly();
 
             _dataLoadFailed = false;
+            SetHeaderSaveStatus("Veri yüklendi", isError: false);
             UpdateContractSelectors();
             UpdateRouteListView();
             UpdateContractSummaryView();
@@ -2110,6 +2111,7 @@ public partial class MainWindow : Window
         catch (OehsApplicationDataStoreException ex)
         {
             _dataLoadFailed = true;
+            SetHeaderSaveStatus("Veri yükleme hatası", isError: true);
             _contracts.Clear();
             _contractors.Clear();
             _routes.Clear();
@@ -2128,10 +2130,28 @@ public partial class MainWindow : Window
         }
     }
 
+    private void SetHeaderSaveStatus(string status, bool isError)
+    {
+        if (HeaderSaveStatusTextBlock is null || HeaderSaveStatusDot is null)
+            return;
+
+        var foreground = isError
+            ? System.Windows.Media.Color.FromRgb(255, 190, 190)
+            : System.Windows.Media.Color.FromRgb(221, 246, 231);
+        var indicator = isError
+            ? System.Windows.Media.Color.FromRgb(230, 65, 78)
+            : System.Windows.Media.Color.FromRgb(67, 199, 122);
+
+        HeaderSaveStatusTextBlock.Text = status;
+        HeaderSaveStatusTextBlock.Foreground = new System.Windows.Media.SolidColorBrush(foreground);
+        HeaderSaveStatusDot.Fill = new System.Windows.Media.SolidColorBrush(indicator);
+    }
+
     private void SavePersistedData()
     {
         if (_dataLoadFailed)
         {
+            SetHeaderSaveStatus("Kaydetme durduruldu", isError: true);
             MessageBox.Show(
                 "OEHS veri dosyası güvenli olarak yüklenemedi. Veri kaybını önlemek için kaydetme durduruldu.",
                 "OEHS — Kaydetme Durduruldu",
@@ -2156,9 +2176,11 @@ public partial class MainWindow : Window
         try
         {
             _dataStore.Save(data);
+            SetHeaderSaveStatus("Kaydedildi", isError: false);
         }
         catch (OehsApplicationDataStoreException ex)
         {
+            SetHeaderSaveStatus("Kaydetme hatası", isError: true);
             MessageBox.Show(
                 $"{ex.Message}\n\nMevcut veri dosyası korunmuştur. OEHS değişikliklerinizi kaydetmedi.",
                 "OEHS — Veri Kaydetme Hatası",
