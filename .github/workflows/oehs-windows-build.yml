@@ -49,8 +49,15 @@ jobs:
           /p:IncludeNativeLibrariesForSelfExtract=true
 
       - name: Upload OEHS EXE
+        id: upload_oehs_exe
+        if: github.event_name != 'pull_request'
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: OEHS-Windows-x64
           path: artifacts/OEHS/
-          retention-days: 14
+          retention-days: 3
+
+      - name: Report artifact upload limitation
+        if: steps.upload_oehs_exe.outcome == 'failure'
+        run: echo "::warning::Build, tests, and publish succeeded, but GitHub Actions could not store the binary because artifact storage may be full. Free storage or download locally with the OEHS packaging script."
