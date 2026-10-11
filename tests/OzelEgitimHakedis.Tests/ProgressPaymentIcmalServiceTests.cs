@@ -7,13 +7,13 @@ namespace OzelEgitimHakedis.Tests;
 public sealed class ProgressPaymentIcmalServiceTests
 {
     [Fact]
-    public void BuildPeriods_ShouldMatchXlsmTenMonthCycle()
+    public void BuildPeriods_ShouldMatchXlsmElevenMonthCycle()
     {
         var periods = ProgressPaymentIcmalService.BuildPeriods(new DateOnly(2026, 10, 31));
 
-        Assert.Equal(10, periods.Count);
+        Assert.Equal(11, periods.Count);
         Assert.Equal(new DateOnly(2026, 9, 1), periods[0]);
-        Assert.Equal(new DateOnly(2027, 6, 1), periods[^1]);
+        Assert.Equal(new DateOnly(2027, 7, 1), periods[^1]);
     }
 
     [Fact]
@@ -27,6 +27,18 @@ public sealed class ProgressPaymentIcmalServiceTests
             new[] { older, immediatePrevious, current }, current);
 
         Assert.Equal(200m, result);
+    }
+
+    [Fact]
+    public void FindPreviousDeduction_ShouldReturnZeroWhenImmediatelyPreviousMonthHasNoPayment()
+    {
+        var september = History(1, new DateOnly(2026, 9, 30), 100m);
+        var november = History(2, new DateOnly(2026, 11, 30), 300m);
+
+        var result = ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { september, november }, november);
+
+        Assert.Equal(0m, result);
     }
 
     private static ProgressPaymentHistoryData History(
