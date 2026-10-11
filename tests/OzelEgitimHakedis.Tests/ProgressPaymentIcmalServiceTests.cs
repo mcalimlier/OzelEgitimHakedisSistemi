@@ -51,6 +51,18 @@ public sealed class ProgressPaymentIcmalServiceTests
     }
 
     [Fact]
+    public void FindPreviousDeduction_ShouldReturnZeroForFirstSeptemberOfFiscalYear()
+    {
+        var august = History(1, new DateOnly(2026, 8, 31), 450m);
+        var september = History(2, new DateOnly(2026, 9, 30), 250m);
+
+        var result = ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { august, september }, september);
+
+        Assert.Equal(0m, result);
+    }
+
+    [Fact]
     public void FindPreviousDeduction_ShouldMirrorMissingNovemberHeaderFallbackToZero()
     {
         var november = History(1, new DateOnly(2026, 11, 30), 180m);
