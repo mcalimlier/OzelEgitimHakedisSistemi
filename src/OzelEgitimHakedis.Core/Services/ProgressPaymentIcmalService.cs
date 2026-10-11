@@ -5,8 +5,10 @@ namespace OzelEgitimHakedis.Core.Services;
 public static class ProgressPaymentIcmalService
 {
     /// <summary>
-    /// The reference workbook has 11 printed periods: September through June
-    /// in Anasayfa!I6:I15, plus the separate July column in İcmal Verileri.
+    /// The output form displays 11 rows (September through July). The source
+    /// workbook's live month lookup, however, contains only September-June
+    /// (Anasayfa!I6:I15); its July row resolves through IFERROR(...,0).
+    /// Preserve the printed placeholder while matching the workbook's value behavior.
     /// </summary>
     public static IReadOnlyList<DateOnly> BuildPeriods(DateOnly periodDate)
     {
@@ -17,9 +19,20 @@ public static class ProgressPaymentIcmalService
     }
 
     /// <summary>
-    /// Excel Hakediş İcmali!E21 uses the immediately preceding calendar month's
-    /// deduction cell. If that month has no payment, its value is zero; do not
-    /// substitute an older payment from a different month.
+    /// True when the month can be matched in the source workbook's Anasayfa!I6:I15
+    /// lookup range. July remains on the printed form but returns zero in the
+    /// source workbook's current C/D month formulas.
+    /// </summary>
+    public static bool IsMonthInWorkbookLookupRange(DateOnly month) =>
+        month.Month >= 9 || month.Month <= 6;
+
+    /// <summary>
+    /// Mirrors the source formula in Hakediş İcmali!E21:
+    /// current month is matched in Anasayfa!I6:I15; the previous month's name
+    /// is then matched in İcmal Verileri!AN3:AX3. That header range currently
+    /// omits November and contains December twice, so a December payment's
+    /// previous-November lookup falls through IFERROR to zero. Do not silently
+    /// return a different amount until the reference workbook is corrected.
     /// </summary>
     public static decimal FindPreviousDeduction(
         IEnumerable<ProgressPaymentHistoryData> payments,
@@ -28,10 +41,19 @@ public static class ProgressPaymentIcmalService
         ArgumentNullException.ThrowIfNull(payments);
         ArgumentNullException.ThrowIfNull(current);
 
-        if (!current.PeriodDate.HasValue)
+        if (!current.PeriodDate.HasValue ||
+            !IsMonthInWorkbookLookupRange(current.PeriodDate.Value))
+        {
             return 0m;
+        }
 
         var previousMonth = current.PeriodDate.Value.AddMonths(-1);
+
+        // Source workbook header defect: "Kasım" is missing from AN3:AX3,
+        // so MATCH("Kasım", ...) errors and outer IFERROR(...,0) returns zero.
+        if (previousMonth.Month == 11)
+            return 0m;
+
         return payments
             .Where(x => x.Id != current.Id)
             .Where(x => x.PeriodDate.HasValue)
