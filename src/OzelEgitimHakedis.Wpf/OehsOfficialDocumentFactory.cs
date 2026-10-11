@@ -188,8 +188,9 @@ internal static class OehsOfficialDocumentFactory
         };
 
         var deductionsHeight = deductions.Sum(d => d.Height) + 56;
-        AddCell(page, "KESİNTİLER VE MAHSUPLAR", x, y, 165, deductionsHeight, 10, true, TextAlignment.Center, White,
+        AddCell(page, "", x, y, 165, deductionsHeight, 10, true, TextAlignment.Center, White,
             new Thickness(4, 4, 4, 4));
+        AddRotatedText(page, "KESİNTİLER VE MAHSUPLAR", x, y, 165, deductionsHeight, 10, true, -90);
         foreach (var row in deductions)
         {
             AddCell(page, row.Key + "  " + row.Label, x + 165, y, 245, row.Height, 9, false, TextAlignment.Left, White,
@@ -428,19 +429,33 @@ internal static class OehsOfficialDocumentFactory
             y += 32;
         }
 
-        xx = x;
-        var totals = new[]
+        var totalWidths = new[] { widths[0] + widths[1], widths[2], widths[3] };
+        var totalX = new[]
         {
-            "Toplam", "", FormatLira(sumService), FormatLira(sumDifference), ""
+            x,
+            x + widths[0] + widths[1],
+            x + widths[0] + widths[1] + widths[2]
         };
-        var totalWidths = new[] { widths[0] + widths[1], widths[2], widths[3], widths[4] };
-        var totalX = new[] { x, x + widths[0] + widths[1], x + widths[0] + widths[1] + widths[2], x + widths[0] + widths[1] + widths[2] + widths[3] };
+        var totals = new[] { "Toplam", FormatLira(sumService), FormatLira(sumDifference) };
         for (var col = 0; col < totalWidths.Length; col++)
-            AddCell(page, totals[col], totalX[col], y, totalWidths[col], 32, 9.5, true, col == 0 ? TextAlignment.Center : TextAlignment.Center, TotalGray);
+            AddCell(page, totals[col], totalX[col], y, totalWidths[col], 32, 9.5, true, TextAlignment.Center, TotalGray);
+
+        // The workbook's total amount cell spans the monthly subtotal row and
+        // the separate A/TOPLAM row on the right edge.
+        AddCell(
+            page,
+            FormatLira(sumService + sumDifference),
+            x + widths[0] + widths[1] + widths[2] + widths[3],
+            y,
+            widths[4],
+            65,
+            10,
+            true,
+            TextAlignment.Center,
+            TotalGray);
         y += 32;
         AddCell(page, "A", x, y, widths[0], 33, 10, true, TextAlignment.Center, TotalGray);
         AddCell(page, "T  O  P  L  A  M", x + widths[0], y, widths[1] + widths[2] + widths[3], 33, 10, true, TextAlignment.Center, TotalGray);
-        AddCell(page, FormatLira(sumService + sumDifference), x + widths[0] + widths[1] + widths[2] + widths[3], y, widths[4], 33, 10, true, TextAlignment.Center, TotalGray);
         y += 51;
 
         AddCell(page, "", x, y, widths[0], 29, 9, false, TextAlignment.Center, White);
@@ -542,6 +557,30 @@ internal static class OehsOfficialDocumentFactory
         block.Height = height;
         FixedPage.SetLeft(block, x);
         FixedPage.SetTop(block, y);
+        page.Children.Add(block);
+    }
+
+    private static void AddRotatedText(
+        FixedPage page,
+        string text,
+        double x,
+        double y,
+        double cellWidth,
+        double cellHeight,
+        double fontSize,
+        bool bold,
+        double angle)
+    {
+        // Store the unrotated control dimensions in swapped order so its visual
+        // bounds after rotation exactly fit the target merged cell.
+        var block = MakeText(text, fontSize, bold, TextAlignment.Center, Black, new Thickness(0));
+        block.TextWrapping = TextWrapping.NoWrap;
+        block.Width = cellHeight;
+        block.Height = cellWidth;
+        block.RenderTransformOrigin = new Point(0.5, 0.5);
+        block.RenderTransform = new RotateTransform(angle);
+        FixedPage.SetLeft(block, x + (cellWidth - cellHeight) / 2d);
+        FixedPage.SetTop(block, y + (cellHeight - cellWidth) / 2d);
         page.Children.Add(block);
     }
 
