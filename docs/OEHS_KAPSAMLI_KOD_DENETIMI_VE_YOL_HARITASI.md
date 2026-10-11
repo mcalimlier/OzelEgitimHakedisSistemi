@@ -23,11 +23,11 @@
 
 ## 2. CI durumu
 
-Son başarılı doğrulanmış çalışma [OEHS Windows Build #1171](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/38157474563): 91/91 Core testi, 1/1 WPF PDF smoke testi, üç proje derlemesi ve Windows x64 dotnet publish başarılı, 0 derleme hatası.
+Son doğrulanmış çalışma [OEHS Windows Build #1186](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/38158074721): 93/93 Core testi, 1/1 WPF PDF smoke testi, üç proje derlemesi ve Windows x64 dotnet publish başarılı, 0 derleme hatası.
 
-Ancak #1171, sonradan eklenen ilk açılış yedeği, arşiv bileşik anahtar kontrolü ve smoke PDF artifact saklama değişikliklerini kapsamıyor. Bu değişiklikleri içeren yeni çalışma [OEHS Windows Build #1182](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/38157792475) kontrol ediliyor. Bu çalışma tamamlanmadan son commit'ler için CI başarısı ileri sürülmemelidir.
+#1186, ilk açılış yedeği, arşiv bileşik anahtar kontrolü ve mutlak smoke PDF çıktı dizini değişikliklerini de kapsıyor. Bu değişiklikler için derleme/test/publish başarılı oldu.
 
-PR tetiklerinde ana uygulama artifact'i atlanabilir; bu nedenle başarılı publish, indirilebilir EXE bulunduğunun kanıtı değildir. Smoke PDF artifact'inin Actions sayfasında gerçekten oluştuğu ayrıca kontrol edilmeli. Önceki bir koşuda storage kotası hatası görülmüştü.
+Smoke PDF artifact upload adımı, dosyaları bulup yüklemeyi denedi ancak GitHub "Artifact storage quota has been hit" hatası verdi; dolayısıyla PDF'ler koşucuda oluşturuldu fakat indirilebilir olarak saklanmadı. PR tetiklerinde ana uygulama artifact'i de atlanır; başarılı publish, indirilebilir EXE bulunduğunun kanıtı değildir. Görsel PDF karşılaştırması kota çözülene kadar engelli.
 
 ## 3. Referans Excel ve PDF gözlemleri
 
@@ -116,7 +116,7 @@ Açık öneriler:
 4. Pozitif/negatif fiyat farkı, iskonto, KDV muafiyeti, rehber, kesinti ve kuruş yuvarlama kombinasyonlarına golden-master testleri.
 
 ### P1 — Görsel ve yazdırma
-1. #1182 PDF smoke artifact'ini ve CI sonucunu kontrol et.
+1. Artifact kotasını çöz; #1186 smoke PDF dosyalarını indirip görsel karşılaştırmayı tamamla.
 2. Dört PDF'yi orijinal örneklerle aynı DPI'da render edip farkları düzelt.
 3. DocumentViewer, Microsoft Print to PDF ve fiziksel yazıcıda sayfa/kenar/sarma kontrolü.
 4. Onaylı üzerine yazma, aktarım hatası ve metadata başarısızlığı senaryolarını Windows'ta dene.
@@ -134,7 +134,8 @@ Açık öneriler:
 
 ## 8. Yayın kabul kontrol listesi
 
-- [ ] CI #1182 ve daha sonraki son commit kontrolleri başarılı.
+- [x] CI #1186: 93 Core testi + 1 WPF PDF smoke testi, üç proje derlemesi ve win-x64 publish başarılı.
+- [ ] Smoke PDF artifact'ini indirebilmek için GitHub Actions depolama kotasını çöz.
 - [ ] Dört PDF örneğiyle görüntü fark karşılaştırması tamam; taşma/çakışma yok.
 - [ ] PDF metni aranabilir/seçilebilir; gerçek yazıcı sonucu kontrol edildi.
 - [ ] D11/“C-D”, AG/D28, Temmuz ve Kasım/Aralık davranışı yazılı onaylandı.
@@ -146,4 +147,4 @@ Açık öneriler:
 - [ ] Gerçek indirilebilir win-x64 paketi ve temiz Windows profil testi tamam.
 - [ ] Installer/update/uninstall veri koruma testleri başarılı.
 
-**Mevcut karar:** PDF mimarisi ve ilk smoke test çalışır durumda; #1171 temel build/test/publish'i doğruladı. Son yedekleme, arşiv yinelenen kayıt ve PDF artifact saklama değişiklikleri #1182 ile doğrulanmalı. Gerçek PDF görüntü farkı ve Windows yazıcı/kurulum testleri tamamlanmadan “birebir aynı” veya “hatasız yayın” kabulü yapılmamalı.
+**Mevcut karar:** PDF mimarisi ve smoke testi çalışır durumda; #1186, 93 Core + 1 WPF PDF smoke testinin ve win-x64 publish'in başarılı olduğunu doğruladı. Smoke PDF artifact yüklemesi kota nedeniyle başarısız oldu ve gerçek dosyalarla görüntü karşılaştırması henüz yapılamadı. Gerçek PDF görüntü farkı ve Windows yazıcı/kurulum testleri tamamlanmadan “birebir aynı” veya “hatasız yayın” kabulü yapılmamalı.
