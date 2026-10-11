@@ -4507,6 +4507,7 @@ public partial class MainWindow : Window
         if (latest is null)
             return;
 
+        string? stagingFolder = null;
         try
         {
             var targetFolder = OehsOutputPathService.BuildPdfDirectory(
@@ -4525,21 +4526,115 @@ public partial class MainWindow : Window
             Directory.CreateDirectory(targetFolder);
 
             var outputs = OehsOfficialDocumentFactory.BuildSeparate(context);
-            var savedPaths = new List<string>(outputs.Count);
-            foreach (var output in outputs)
+            if (outputs.Count != 4)
+                throw new InvalidOperationException("Dört resmî PDF şablonunun tamamı üretilemedi.");
+
+            var targetPaths = outputs
+                .Select(output => Path.Combine(targetFolder, $"{baseName}_{output.FileSuffix}.pdf"))
+                .ToArray();
+
+            var existingPaths = targetPaths.Where(File.Exists).ToArray();
+            if (existingPaths.Length > 0)
             {
-                var targetPath = Path.Combine(targetFolder, $"{baseName}_{output.FileSuffix}.pdf");
-                PdfVectorWriter.Save(output.Document, targetPath);
-                savedPaths.Add(targetPath);
+                var existingNames = string.Join(
+                    Environment.NewLine,
+                    existingPaths.Select(Path.GetFileName));
+
+                var choice = MessageBox.Show(
+                    this,
+                    "Bu hakediş için aynı isimde PDF dosyaları zaten var. Onay verirsen yalnızca listelenen mevcut dosyalar yenileriyle değiştirilecek. Devam etmeden önce var olan dosyaların yedeği geçici olarak alınacak.\n\n" +
+                    existingNames +
+                    "\n\nMevcut PDF dosyalarının üzerine yazılsın mı?",
+                    "OEHS — Mevcut PDF Dosyaları",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning,
+                    MessageBoxResult.No);
+
+                if (choice != MessageBoxResult.Yes)
+                    return;
             }
 
-            SaveRouteDocumentsArchiveMetadata(latest, savedPaths);
+            // Create all four new PDFs in a private staging folder first. No final
+            // output is touched unless every file was generated and minimally checked.
+            stagingFolder = Path.Combine(targetFolder, ".oehs-pdf-staging-" + Guid.NewGuid().ToString("N"));
+            var stagedPaths = outputs
+                .Select(output => Path.Combine(stagingFolder, $"{baseName}_{output.FileSuffix}.pdf"))
+                .ToArray();
+
+            for (var index = 0; index < outputs.Count; index++)
+            {
+                PdfVectorWriter.Save(outputs[index].Document, stagedPaths[index]);
+                if (!File.Exists(stagedPaths[index]) || new FileInfo(stagedPaths[index]).Length < 500)
+                    throw new IOException($"PDF dosyası doğrulanamadı: {Path.GetFileName(stagedPaths[index])}");
+            }
+
+            var backupFolder = Path.Combine(stagingFolder, "originals");
+            Directory.CreateDirectory(backupFolder);
+            var originals = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var targetPath in existingPaths)
+            {
+                var backupPath = Path.Combine(backupFolder, Path.GetFileName(targetPath));
+                File.Copy(targetPath, backupPath, overwrite: false);
+                originals[targetPath] = backupPath;
+            }
+
+            var replacedPaths = new List<string>();
+            try
+            {
+                for (var index = 0; index < targetPaths.Length; index++)
+                {
+                    File.Move(stagedPaths[index], targetPaths[index], overwrite: true);
+                    replacedPaths.Add(targetPaths[index]);
+                }
+            }
+            catch
+            {
+                // Best-effort rollback if an individual target could not be replaced.
+                foreach (var targetPath in replacedPaths.AsEnumerable().Reverse())
+                {
+                    try
+                    {
+                        if (originals.TryGetValue(targetPath, out var backupPath) && File.Exists(backupPath))
+                            File.Copy(backupPath, targetPath, overwrite: true);
+                        else if (File.Exists(targetPath))
+                            File.Delete(targetPath);
+                    }
+                    catch
+                    {
+                        // Preserve the primary error; the staging originals are left for recovery.
+                    }
+                }
+                throw;
+            }
+
+            var metadataSaved = true;
+            string? metadataError = null;
+            try
+            {
+                SaveRouteDocumentsArchiveMetadata(latest, targetPaths);
+            }
+            catch (Exception ex)
+            {
+                metadataSaved = false;
+                metadataError = ex.Message;
+            }
 
             CalculationStatusTextBlock.Text =
-                $"Dört resmi PDF şablonu vektör tabanlı olarak kaydedildi: {Path.GetFileName(savedPaths[0])} (+3 dosya).";
+                $"Dört resmî PDF dosyası oluşturuldu: {Path.GetFileName(targetPaths[0])} (+3 dosya).";
 
-            var savedNames = string.Join(Environment.NewLine, savedPaths.Select(Path.GetFileName));
-            ShowPdfSaveInfoDialog(targetFolder, savedNames, savedPaths[0]);
+            if (!metadataSaved)
+            {
+                MessageBox.Show(
+                    this,
+                    "Dört PDF dosyası oluşturuldu; ancak arşiv bilgi dosyası güncellenemedi. PDF dosyaları kayıt klasöründedir. Arşiv bilgi dosyası hatası:\n\n" + metadataError,
+                    "OEHS — PDF Kaydedildi, Arşiv Bilgisi Uyarısı",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
+
+            var savedNames = string.Join(Environment.NewLine, targetPaths.Select(Path.GetFileName));
+            ShowPdfSaveInfoDialog(targetFolder, savedNames, targetPaths[0]);
         }
         catch (Exception ex)
         {
@@ -4548,6 +4643,21 @@ public partial class MainWindow : Window
                 "OEHS PDF Çıktı Hatası",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
+        }
+        finally
+        {
+            if (!string.IsNullOrWhiteSpace(stagingFolder) && Directory.Exists(stagingFolder))
+            {
+                try
+                {
+                    Directory.Delete(stagingFolder, recursive: true);
+                }
+                catch
+                {
+                    // Any leftover staging/originals files are safer than masking the
+                    // actual save result. The folder name makes them easy to identify.
+                }
+            }
         }
     }
 
