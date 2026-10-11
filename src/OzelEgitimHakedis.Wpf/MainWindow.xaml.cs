@@ -4360,13 +4360,17 @@ public partial class MainWindow : Window
         return item.CreatedAt < current.CreatedAt;
     }
 
-    private void PreviewAllRouteDocumentsButton_Click(object sender, RoutedEventArgs e)
+    private FlowDocument? BuildSelectedRouteOutputDocument()
     {
         if (!EnsureRouteForOutput())
-            return;
+            return null;
 
-        var route = (RouteDraft)ReportRouteComboBox.SelectedItem;
-        var latest = GetSelectedRouteLatestPayment()!;
+        if (ReportRouteComboBox.SelectedItem is not RouteDraft route)
+            return null;
+
+        var latest = GetSelectedRouteLatestPayment();
+        if (latest is null)
+            return null;
 
         var documents = new (FlowDocument Document, string Title)[]
         {
@@ -4376,154 +4380,53 @@ public partial class MainWindow : Window
             (BuildHakedişIcmali(route, latest), "Hakediş İcmali")
         };
 
-        var combined = BuildCombinedRouteDocuments(documents);
-        var pages = OehsPdfExportService.RenderDocumentPages(combined);
+        return BuildCombinedRouteDocuments(documents);
+    }
 
-        var workArea = SystemParameters.WorkArea;
-        var previewWidth = Math.Min(1180d, Math.Max(760d, workArea.Width - 40d));
-        var previewHeight = Math.Min(900d, Math.Max(620d, workArea.Height - 60d));
-
-        var previewWindow = new Window
+    private void PreviewAllRouteDocumentsButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
         {
-            Title = "OEHS — Belge Önizleme",
-            Owner = this,
-            Width = previewWidth,
-            Height = previewHeight,
-            MinWidth = Math.Min(900d, previewWidth),
-            MinHeight = Math.Min(620d, previewHeight),
-            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            Background = System.Windows.Media.Brushes.White
-        };
+            var document = BuildSelectedRouteOutputDocument();
+            if (document is null)
+                return;
 
-        var root = new Grid { Margin = new Thickness(8) };
-        root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-        root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-
-        var titleBlock = new TextBlock
-        {
-            Text = "BELGE ÖNİZLEME — A4",
-            FontSize = 18,
-            FontWeight = FontWeights.Bold,
-            Foreground = System.Windows.Media.Brushes.DarkSlateGray,
-            Margin = new Thickness(4, 4, 4, 6)
-        };
-        Grid.SetRow(titleBlock, 0);
-        root.Children.Add(titleBlock);
-
-        var image = new Image
-        {
-            Source = pages[0],
-            Stretch = System.Windows.Media.Stretch.None,
-            HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Top,
-            SnapsToDevicePixels = true,
-            UseLayoutRounding = true
-        };
-
-        var zoom = 1.1;
-        var pageIndex = 0;
-
-        var scroll = new ScrollViewer
-        {
-            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
-            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-            HorizontalContentAlignment = HorizontalAlignment.Center,
-            VerticalContentAlignment = VerticalAlignment.Top,
-            Background = System.Windows.Media.Brushes.White,
-            Content = image
-        };
-
-        Button MakeButton(string text, double width)
-        {
-            return new Button
-            {
-                Content = text,
-                Width = width,
-                Height = 38,
-                Margin = new Thickness(3, 0, 3, 0),
-                Style = (Style)FindResource("SecondaryButton")
-            };
+            new DocumentPreviewWindow(document) { Owner = this }.ShowDialog();
         }
-
-        var previous = MakeButton("◀", 48);
-        var zoomOut = MakeButton("−", 48);
-        var reset = MakeButton("100%", 72);
-        var zoomIn = MakeButton("+", 48);
-        var next = MakeButton("▶", 48);
-        var close = MakeButton("KAPAT", 105);
-        var pageInfo = new TextBlock
+        catch (Exception ex)
         {
-            Text = $"1 / {pages.Count} • %110",
-            FontSize = 14,
-            FontWeight = FontWeights.SemiBold,
-            VerticalAlignment = VerticalAlignment.Center,
-            Margin = new Thickness(12, 0, 12, 0)
-        };
-
-        void RefreshPreview()
-        {
-            image.Source = pages[pageIndex];
-            image.LayoutTransform = new System.Windows.Media.ScaleTransform(zoom, zoom);
-            pageInfo.Text = $"{pageIndex + 1} / {pages.Count} • %{Math.Round(zoom * 100):0}";
-            scroll.ScrollToHome();
+            MessageBox.Show(
+                $"Belge önizlemesi açılamadı.\\n\\n{ex.Message}",
+                "OEHS — Belge Önizleme",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
         }
+    }
 
-        previous.Click += (_, _) =>
+    private void PrintAllRouteDocumentsButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
         {
-            if (pageIndex > 0)
-            {
-                pageIndex--;
-                RefreshPreview();
-            }
-        };
-        next.Click += (_, _) =>
-        {
-            if (pageIndex < pages.Count - 1)
-            {
-                pageIndex++;
-                RefreshPreview();
-            }
-        };
-        zoomOut.Click += (_, _) =>
-        {
-            zoom = Math.Max(0.8, zoom - 0.1);
-            RefreshPreview();
-        };
-        reset.Click += (_, _) =>
-        {
-            zoom = 1.0;
-            RefreshPreview();
-        };
-        zoomIn.Click += (_, _) =>
-        {
-            zoom = Math.Min(1.6, zoom + 0.1);
-            RefreshPreview();
-        };
-        close.Click += (_, _) => previewWindow.Close();
+            var document = BuildSelectedRouteOutputDocument();
+            if (document is null)
+                return;
 
-        var controls = new StackPanel
+            var dialog = new PrintDialog();
+            if (dialog.ShowDialog() != true)
+                return;
+
+            var paginator = ((IDocumentPaginatorSource)document).DocumentPaginator;
+            paginator.ComputePageCount();
+            dialog.PrintDocument(paginator, "OEHS Hakediş Belgeleri");
+        }
+        catch (Exception ex)
         {
-            Orientation = Orientation.Horizontal,
-            HorizontalAlignment = HorizontalAlignment.Center,
-            Margin = new Thickness(4, 8, 4, 2)
-        };
-        controls.Children.Add(previous);
-        controls.Children.Add(zoomOut);
-        controls.Children.Add(reset);
-        controls.Children.Add(zoomIn);
-        controls.Children.Add(pageInfo);
-        controls.Children.Add(next);
-        controls.Children.Add(close);
-
-        Grid.SetRow(scroll, 1);
-        Grid.SetRow(controls, 2);
-        root.Children.Add(scroll);
-        root.Children.Add(controls);
-
-        previewWindow.Content = root;
-        RefreshPreview();
-        previewWindow.ShowDialog();
+            MessageBox.Show(
+                $"Yazdırma işlemi başlatılamadı.\\n\\n{ex.Message}",
+                "OEHS — Yazdırma",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
     }
 
     private bool EnsureRouteForOutput()
