@@ -4396,9 +4396,9 @@ public partial class MainWindow : Window
         if (!contractEndDate.HasValue && EndDatePicker.SelectedDate is DateTime selectedEnd)
             contractEndDate = DateOnly.FromDateTime(selectedEnd);
 
+        // Do not label a calendar-day subtraction as contract workdays.
+        // If the authoritative workday count is absent, official forms show "-".
         var duration = contract?.ContractWorkDays ?? 0;
-        if (duration <= 0 && contractStartDate.HasValue && contractEndDate.HasValue)
-            duration = Math.Max(0, contractEndDate.Value.DayNumber - contractStartDate.Value.DayNumber);
 
         var contractorName = string.IsNullOrWhiteSpace(latest.ContractorName)
             ? (string.IsNullOrWhiteSpace(CurrentContractorName) ? "-" : CurrentContractorName.Trim())
