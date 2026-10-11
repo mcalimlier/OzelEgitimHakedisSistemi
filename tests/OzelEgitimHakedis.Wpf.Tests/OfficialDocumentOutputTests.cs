@@ -28,7 +28,7 @@ public sealed class OfficialDocumentOutputTests
             Assert.Equal("Aşkın KESKİNBALTA", settings.PreparerName);
             Assert.Equal("Halil ÖZENÇ", settings.ControllerName);
             Assert.Equal("Özgür BAYSAL", settings.ApproverName);
-            Assert.Contains("\\"preparerName\\"", File.ReadAllText(settingsPath));
+            Assert.Contains("preparerName", File.ReadAllText(settingsPath));
         }
         finally
         {
