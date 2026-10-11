@@ -2249,7 +2249,7 @@ public partial class MainWindow : Window
             Title = "OEHS — PDF Kayıt Bilgisi",
             Owner = this,
             Width = 680,
-            Height = 390,
+            Height = fileName.Contains(Environment.NewLine, StringComparison.Ordinal) ? 470 : 390,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
             ResizeMode = ResizeMode.NoResize,
             Background = System.Windows.Media.Brushes.White
@@ -2265,7 +2265,7 @@ public partial class MainWindow : Window
         });
         panel.Children.Add(new TextBlock
         {
-            Text = "PDF başarıyla oluşturuldu. Bu işlemde yazıcı kullanılmadı; dosya doğrudan OEHS kayıt klasörüne kaydedildi.",
+            Text = fileName.Contains(Environment.NewLine, StringComparison.Ordinal)\n                ? "Dört resmî belge ayrı PDF dosyaları olarak oluşturuldu. Yazıcı kullanılmadı; dosyalar vektör tabanlı belge motoruyla OEHS kayıt klasörüne kaydedildi."\n                : "PDF başarıyla oluşturuldu. Bu işlemde yazıcı kullanılmadı; dosya doğrudan OEHS kayıt klasörüne kaydedildi.",
             FontSize = 13.5,
             Foreground = System.Windows.Media.Brushes.DimGray,
             TextWrapping = TextWrapping.Wrap,
@@ -2288,7 +2288,7 @@ public partial class MainWindow : Window
         });
         panel.Children.Add(new TextBlock
         {
-            Text = "ÖNERİLEN DOSYA ADI",
+            Text = fileName.Contains(Environment.NewLine, StringComparison.Ordinal) ? "OLUŞTURULAN PDF DOSYALARI" : "ÖNERİLEN DOSYA ADI",
             FontSize = 12,
             FontWeight = FontWeights.Bold,
             Foreground = System.Windows.Media.Brushes.SteelBlue
@@ -2305,7 +2305,7 @@ public partial class MainWindow : Window
 
         panel.Children.Add(new TextBlock
         {
-            Text = $"Oluşturulan dosya: {targetPath}",
+            Text = fileName.Contains(Environment.NewLine, StringComparison.Ordinal)\n                ? $"İlk PDF dosyası: {targetPath}"\n                : $"Oluşturulan dosya: {targetPath}",
             FontSize = 11.5,
             Foreground = System.Windows.Media.Brushes.DimGray,
             TextWrapping = TextWrapping.Wrap,
