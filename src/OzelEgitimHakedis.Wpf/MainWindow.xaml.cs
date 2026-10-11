@@ -2197,27 +2197,26 @@ public partial class MainWindow : Window
         return $"{tender}_{route}_Hakedis-{progress}_{period}_{item.Id:N}";
     }
 
-    private static string SaveRouteDocumentsArchiveMetadata(ProgressPaymentHistoryData latest)
+    private static string SaveRouteDocumentsArchiveMetadata(
+        ProgressPaymentHistoryData latest,
+        IReadOnlyList<string> pdfPaths)
     {
+        ArgumentNullException.ThrowIfNull(latest);
+        ArgumentNullException.ThrowIfNull(pdfPaths);
+        if (pdfPaths.Count != 4)
+            throw new ArgumentException("Arşiv meta verisi için dört PDF dosyasının da yolu gerekir.", nameof(pdfPaths));
+
         var tender = latest.TenderNumber ?? string.Empty;
         var route = latest.RouteNumber ?? string.Empty;
         var documentFolder = OehsOutputPathService.BuildPdfDirectory(tender, route);
         Directory.CreateDirectory(documentFolder);
 
-        var fileName = latest.ProgressPaymentNumber.HasValue && latest.PeriodDate.HasValue
-            ? OehsFileNameService.BuildProgressPdfFileName(
-                tender,
-                route,
-                latest.ProgressPaymentNumber.Value,
-                latest.PeriodDate.Value)
-            : "OEHS_Hakediş.pdf";
-
+        var fileNames = pdfPaths.Select(Path.GetFileName).ToArray();
         var metadataSuffix = latest.ProgressPaymentNumber.HasValue && latest.PeriodDate.HasValue
             ? $"_{latest.ProgressPaymentNumber.Value:00}_{latest.PeriodDate.Value:yyyy-MM-dd}"
             : "_Yeni";
 
         var metadataPath = Path.Combine(documentFolder, $"OEHS_PDF_Bilgi{metadataSuffix}.json");
-        var pdfTargetPath = Path.Combine(documentFolder, fileName);
         var metadata = JsonSerializer.Serialize(new
         {
             latest.Id,
@@ -2229,14 +2228,17 @@ public partial class MainWindow : Window
             latest.ContractorName,
             latest.BankAccountNumber,
             TransportDailyPrice = latest.Input.DailyPrice,
-            PdfFileName = fileName,
-            PdfTargetPath = pdfTargetPath,
-            PdfGenerator = "OEHS PDF Export",
+            PdfFileName = fileNames[0],
+            PdfFileNames = fileNames,
+            PdfTargetPaths = pdfPaths.ToArray(),
+            PdfGenerator = "OEHS FixedDocument / PdfVectorWriter (DoğruTemin port)",
             Documents = OfficialDocumentNames,
             SavedAt = DateTime.Now
         }, JsonWriteOptions);
 
-        File.WriteAllText(metadataPath, metadata);
+        var tempPath = metadataPath + ".tmp";
+        File.WriteAllText(tempPath, metadata);
+        File.Move(tempPath, metadataPath, overwrite: true);
         return documentFolder;
     }
 
@@ -4855,7 +4857,7 @@ public partial class MainWindow : Window
                 savedPaths.Add(targetPath);
             }
 
-            SaveRouteDocumentsArchiveMetadata(latest);
+            SaveRouteDocumentsArchiveMetadata(latest, savedPaths);
 
             CalculationStatusTextBlock.Text =
                 $"Dört resmi PDF şablonu vektör tabanlı olarak kaydedildi: {Path.GetFileName(savedPaths[0])} (+3 dosya).";
