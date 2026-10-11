@@ -23,6 +23,10 @@ Bu dalda aşağıdaki düzeltmeler yapılıyor:
 4. Windows uygulama bildirimi Per-Monitor DPI Awareness V2 olarak tanımlanıyor. Bu ayar tek başına responsive yerleşimin yerini tutmaz; gerçek %100/%125/%150 testleri ayrıca yapılmalıdır.
 5. Türkçe dil bilgisi pencere köküne ekleniyor; mevcut Segoe UI görsel dili korunuyor.
 
+### İkinci görsel sıkılaştırma turu
+
+Ekran görüntüsü geri bildirimine göre ortak tipografi ve aralıklar bir tur daha küçültüldü: ana yazılar yaklaşık %10–15, kontrollerin yüksekliği ve kart iç boşlukları da yaklaşık %10–15 azaltıldı. Sol navigasyon 62 DIP'ten 52 DIP'e, üst bar 82 DIP'ten 72 DIP'e indirildi; ana menü 290 DIP yerine 260 DIP kullanıyor. Segoe UI ve renk paleti korunuyor. Bu değişiklik daha fazla alanı görünür kılmayı amaçlar; ekran görüntüsüyle kabul kontrolü yine gereklidir.
+
 ## 3. Önerilen UI mimarisi
 
 ### Katmanlar
