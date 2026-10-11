@@ -135,7 +135,7 @@ internal static class OehsOfficialDocumentFactory
 
         AddText(page, "HAK EDİŞ RAPORU", x, 16, w, 29, 16, true, TextAlignment.Center);
         AddCell(page,
-            $"ı Numaralı {c.WorkName}\n",
+            $"1 Numaralı {c.WorkName}\n",
             x, 47, 505, 77, 10, true, TextAlignment.Left, White, new Thickness(7, 5, 6, 3));
         AddCell(page, $"Hakediş No : {paymentNo}", x + 505, 47, w - 505, 38, 11, true, TextAlignment.Center);
         AddCell(page, $"Hat No : {routeNo}", x + 505, 85, w - 505, 39, 11, true, TextAlignment.Center);
