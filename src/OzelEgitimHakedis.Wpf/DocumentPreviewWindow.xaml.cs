@@ -5,7 +5,7 @@ namespace OzelEgitimHakedis.Wpf;
 
 public partial class DocumentPreviewWindow : Window
 {
-    public DocumentPreviewWindow(FlowDocument document)
+    public DocumentPreviewWindow(FixedDocument document)
     {
         ArgumentNullException.ThrowIfNull(document);
 
