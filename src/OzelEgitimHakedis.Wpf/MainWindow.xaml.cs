@@ -4493,7 +4493,7 @@ public partial class MainWindow : Window
             ("k)", "Ceza ve Diğer Kesintiler", FormatMoney(d.InspectionPenalty)),
             ("l)", "Asgari Ücret Destek Tutarı Kesintisi", FormatMoney(d.MinimumWageSupport)),
             ("H", "Kesintiler ve Mahsuplar Toplamı", FormatMoney(latest.Calculation.TotalDeductions)),
-            ("I", "Yükleniciye Ödenecek Tutar  ( G - H )", FormatMoney(latest.Calculation.NetPayable))
+            ("I", "Yükleniciye Ödenecek Tutar  ( G - H )", FormatMoney(ProgressPaymentReportService.CalculateReportNetPayable(latest, reportTotals)))
         };
         doc.Blocks.Add(CreateDeductionTable(hRows.ToArray()));
 
@@ -4684,13 +4684,16 @@ public partial class MainWindow : Window
         foreach (var month in ProgressPaymentIcmalService.BuildPeriods(latestDate))
         {
             var monthIndex = rows.Count;
-            var monthPayment = payments.LastOrDefault(x =>
-                x.PeriodDate.HasValue &&
-                x.PeriodDate.Value.Year == month.Year &&
-                x.PeriodDate.Value.Month == month.Month);
+            var monthPayments = payments
+                .Where(x => x.PeriodDate.HasValue &&
+                            x.PeriodDate.Value.Year == month.Year &&
+                            x.PeriodDate.Value.Month == month.Month)
+                .ToArray();
 
-            var a = monthPayment?.Calculation.CombinedServiceAmount ?? 0m;
-            var b = monthPayment?.Calculation.CombinedPriceDifferenceExcludingVat ?? 0m;
+            // Workbook İcmal Verileri keeps service amounts and raw transport/guide
+            // price differences in separate monthly columns.
+            var a = monthPayments.Sum(ProgressPaymentReportService.CalculateWorkbookServiceAmount);
+            var b = monthPayments.Sum(ProgressPaymentReportService.CalculateWorkbookPriceDifference);
             var monthlyTotal = a + b;
             totalA += a;
             totalB += b;
