@@ -267,7 +267,13 @@ public static class PdfVectorWriter
             ? text.Replace("\r", string.Empty).Split('\n').ToList()
             : WrapText(gfx, text, font, Math.Max(1, rect.Width));
 
+        var totalTextHeight = lines.Count * lineHeight;
         var y = rect.Top;
+        if (block.VerticalAlignment == VerticalAlignment.Center)
+            y += Math.Max(0, (rect.Height - totalTextHeight) / 2d);
+        else if (block.VerticalAlignment == VerticalAlignment.Bottom)
+            y = Math.Max(rect.Top, rect.Bottom - totalTextHeight);
+
         foreach (var line in lines)
         {
             if (y + lineHeight > rect.Bottom + 0.5)
