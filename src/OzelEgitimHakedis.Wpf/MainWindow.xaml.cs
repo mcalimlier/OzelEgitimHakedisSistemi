@@ -2265,7 +2265,9 @@ public partial class MainWindow : Window
         });
         panel.Children.Add(new TextBlock
         {
-            Text = fileName.Contains(Environment.NewLine, StringComparison.Ordinal)\n                ? "Dört resmî belge ayrı PDF dosyaları olarak oluşturuldu. Yazıcı kullanılmadı; dosyalar vektör tabanlı belge motoruyla OEHS kayıt klasörüne kaydedildi."\n                : "PDF başarıyla oluşturuldu. Bu işlemde yazıcı kullanılmadı; dosya doğrudan OEHS kayıt klasörüne kaydedildi.",
+            Text = fileName.Contains(Environment.NewLine, StringComparison.Ordinal)
+                ? "Dört resmî belge ayrı PDF dosyaları olarak oluşturuldu. Yazıcı kullanılmadı; dosyalar vektör tabanlı belge motoruyla OEHS kayıt klasörüne kaydedildi."
+                : "PDF başarıyla oluşturuldu. Bu işlemde yazıcı kullanılmadı; dosya doğrudan OEHS kayıt klasörüne kaydedildi.",
             FontSize = 13.5,
             Foreground = System.Windows.Media.Brushes.DimGray,
             TextWrapping = TextWrapping.Wrap,
@@ -2305,7 +2307,9 @@ public partial class MainWindow : Window
 
         panel.Children.Add(new TextBlock
         {
-            Text = fileName.Contains(Environment.NewLine, StringComparison.Ordinal)\n                ? $"İlk PDF dosyası: {targetPath}"\n                : $"Oluşturulan dosya: {targetPath}",
+            Text = fileName.Contains(Environment.NewLine, StringComparison.Ordinal)
+                ? $"İlk PDF dosyası: {targetPath}"
+                : $"Oluşturulan dosya: {targetPath}",
             FontSize = 11.5,
             Foreground = System.Windows.Media.Brushes.DimGray,
             TextWrapping = TextWrapping.Wrap,
