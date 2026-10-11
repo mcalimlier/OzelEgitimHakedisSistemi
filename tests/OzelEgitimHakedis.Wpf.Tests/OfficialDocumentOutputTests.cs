@@ -58,10 +58,32 @@ public sealed class OfficialDocumentOutputTests
                     CurrentTotal: 120m),
                 ReportNetPayable: 115m,
                 PreviousDeduction: 0m,
-                GeneratedDate: new DateOnly(2026, 10, 31));
+                GeneratedDate: new DateOnly(2026, 10, 31),
+                PreparerName: "TEST DÜZENLEYEN",
+                PreparerRole: "TEST MEMUR",
+                ControllerName: "TEST KONTROL EDEN",
+                ControllerRole: "TEST ŞUBE MÜDÜRÜ",
+                ApproverName: "TEST ONAYLAYAN",
+                ApproverRole: "TEST MÜDÜR");
 
             var outputs = OehsOfficialDocumentFactory.BuildSeparate(context);
             Assert.Equal(4, outputs.Count);
+
+            // Every form consumes the signature identities from the data context.
+            foreach (var output in outputs)
+            {
+                var outputPage = Assert.IsType<FixedPage>(output.Document.Pages[0].Child);
+                var textBlocks = outputPage.Children.OfType<TextBlock>()
+                    .Select(block => block.Text)
+                    .ToArray();
+
+                Assert.Contains("TEST DÜZENLEYEN", textBlocks);
+                Assert.Contains("TEST MEMUR", textBlocks);
+                Assert.Contains("TEST KONTROL EDEN", textBlocks);
+                Assert.Contains("TEST ŞUBE MÜDÜRÜ", textBlocks);
+                Assert.Contains("TEST ONAYLAYAN", textBlocks);
+                Assert.Contains("TEST MÜDÜR", textBlocks);
+            }
 
             // The white acceptance-form frame must be behind the title, not cover it.
             var acceptanceOutput = Assert.Single(
