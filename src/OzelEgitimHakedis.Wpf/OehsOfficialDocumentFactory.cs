@@ -136,7 +136,7 @@ internal static class OehsOfficialDocumentFactory
         var date = FormatDate(c.PeriodDate);
 
         AddText(page, "HAK EDİŞ RAPORU", x, 32, w, 29, 16, true, TextAlignment.Center);
-        AddCell(page, $"1 Numaralı {c.WorkName}", x, 60, 411, 87, 9.5, true, TextAlignment.Left, White, new Thickness(5, 5, 5, 3));
+        AddCell(page, BuildWorkTitle(c, includeRouteNumber: true, includeStudentSuffix: false), x, 60, 411, 87, 9.5, true, TextAlignment.Left, White, new Thickness(5, 5, 5, 3));
         AddCell(page, $"Hakediş No : {paymentNo}", x + 411, 60, w - 411, 43.5, 10.5, true, TextAlignment.Center);
         AddCell(page, $"Hat No : {routeNo}", x + 411, 103.5, w - 411, 43.5, 10.5, true, TextAlignment.Center);
 
@@ -241,7 +241,7 @@ internal static class OehsOfficialDocumentFactory
 
         AddText(page, "Yapılan Hizmetin Adı", x + 2, 173, 310, 50, 9.5, true, TextAlignment.Left);
         AddText(page, ":", x + 324, 173, 14, 50, 9.5, true, TextAlignment.Center);
-        AddText(page, c.WorkName, x + 356, 151, w - 360, 77, 8.6, true, TextAlignment.Left);
+        AddText(page, BuildWorkTitle(c, includeRouteNumber: false, includeStudentSuffix: true), x + 356, 151, w - 360, 77, 8.6, true, TextAlignment.Left);
 
         var info = new (string Label, string Value)[]
         {
@@ -339,7 +339,7 @@ internal static class OehsOfficialDocumentFactory
         var duration = CalculateDuration(c);
         var rows = new (string Label, string Value, double Height)[]
         {
-            ("İşin adı", c.WorkName, 112),
+            ("İşin adı", BuildWorkTitle(c, includeRouteNumber: false, includeStudentSuffix: true), 112),
             ("Yüklenicinin adı/ticari unvanı", c.ContractorName, 35),
             ("Sözleşme tarihi", FormatDate(c.ContractDate), 35),
             ("Sözleşme bedeli", FormatMoney(c.ContractAmount), 35),
@@ -359,7 +359,7 @@ internal static class OehsOfficialDocumentFactory
         }
 
         var paragraphOne =
-            $"İlçe Milli Eğitim Müdürlüğü'nün {c.RouteNumber} Numaralı {c.WorkName} işi yüklenicisi {c.ContractorName} arasında imzalanan sözleşme kapsamında gerçekleştirilen iş için, Memur Aşkın KESKİNBALTA ve İlçe Milli Eğitim Şube Müdürü Halil ÖZENÇ tarafından inceleme yapılmış yüklenici, {c.ContractorName} tarafından {servicePeriod.Start:dd.MM.yyyy} / {servicePeriod.End:dd.MM.yyyy} tarihleri arasında yapılan işlerin,";
+            $"İlçe Milli Eğitim Müdürlüğü'nün {BuildWorkTitle(c, includeRouteNumber: true, includeStudentSuffix: false)} yüklenicisi {c.ContractorName} arasında imzalanan sözleşme kapsamında gerçekleştirilen iş için, Memur Aşkın KESKİNBALTA ve İlçe Milli Eğitim Şube Müdürü Halil ÖZENÇ tarafından inceleme yapılmış yüklenici, {c.ContractorName} tarafından {servicePeriod.Start:dd.MM.yyyy} / {servicePeriod.End:dd.MM.yyyy} tarihleri arasında yapılan işlerin,";
         var paragraphTwo =
             "Sözleşme ve eklerine uygun olduğu ve kabule engel olabilecek eksik kusur ve arızaların bulunmadığı görülmüştür.";
         AddText(page, paragraphOne, x + 2, 501, w - 4, 124, 9.5, false, TextAlignment.Justify);
@@ -380,7 +380,7 @@ internal static class OehsOfficialDocumentFactory
         const double w = 754;
         AddText(page, "HAKEDİŞ İCMALİ", x, 16, w, 28, 15, true, TextAlignment.Center);
 
-        AddCell(page, c.WorkName, x, 47, 574, 70, 8.8, true, TextAlignment.Left, White, new Thickness(5, 3, 5, 2));
+        AddCell(page, BuildWorkTitle(c, includeRouteNumber: false, includeStudentSuffix: true), x, 47, 574, 70, 8.8, true, TextAlignment.Left, White, new Thickness(5, 3, 5, 2));
         AddCell(page, "Sayfa No : 1", x + 574, 47, w - 574, 23.3, 9.5, true, TextAlignment.Left);
         AddCell(page, $"Hakediş No : {c.ProgressPaymentNumber?.ToString(Turkish) ?? "-"}", x + 574, 70.3, w - 574, 23.3, 9.5, true, TextAlignment.Left);
         AddCell(page, $"Hat No : {c.RouteNumber}", x + 574, 93.6, w - 574, 23.4, 9.5, true, TextAlignment.Left);
@@ -518,6 +518,31 @@ internal static class OehsOfficialDocumentFactory
         AddText(page, "İlçe Milli Eğitim Müdürü", 270, y + titleOffset, 250, 22, 9.5, false, TextAlignment.Center);
         if (!string.IsNullOrWhiteSpace(footer))
             AddText(page, footer, 22, footerY, 330, 17, 8, false, TextAlignment.Left);
+    }
+
+    private static string BuildWorkTitle(
+        OehsOfficialDocumentContext context,
+        bool includeRouteNumber,
+        bool includeStudentSuffix)
+    {
+        var work = (context.WorkName ?? string.Empty).Trim();
+        if (work.Length == 0)
+            work = "Hizmet Alımı İşi";
+
+        // Normalize a route name that may already include its display suffix.
+        if (work.EndsWith(" Hattı Öğrenci Taşıma İşi", StringComparison.OrdinalIgnoreCase))
+            work = work[..^" Hattı Öğrenci Taşıma İşi".Length].TrimEnd();
+        else if (work.EndsWith(" Hattı Taşıma İşi", StringComparison.OrdinalIgnoreCase))
+            work = work[..^" Hattı Taşıma İşi".Length].TrimEnd();
+        else if (work.EndsWith(" Hattı", StringComparison.OrdinalIgnoreCase))
+            work = work[..^" Hattı".Length].TrimEnd();
+
+        var routeNumber = string.IsNullOrWhiteSpace(context.RouteNumber)
+            ? "-"
+            : context.RouteNumber.Trim();
+        var prefix = includeRouteNumber ? $"{routeNumber} Numaralı " : string.Empty;
+        var suffix = includeStudentSuffix ? "Hattı Öğrenci Taşıma İşi" : "Hattı Taşıma İşi";
+        return $"{prefix}{work} {suffix}";
     }
 
     private static int CalculateDuration(OehsOfficialDocumentContext c)
