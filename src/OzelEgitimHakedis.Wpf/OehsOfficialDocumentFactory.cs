@@ -214,7 +214,7 @@ internal static class OehsOfficialDocumentFactory
         AddText(page, c.ContractorName, x + 12, footerY + 23, w - 24, 36, 9.5, false, TextAlignment.Left);
         AddSignatures(page, footerY + 85, c.GeneratedDate, "M.Y.H.B.Y. Örnek No :4/10",
             leftX: 115, leftWidth: 205, rightX: 435, rightWidth: 200,
-            nameOffset: 28, roleOffset: 49, dateOffset: 83, directorOffset: 124, titleOffset: 146, footerY: 1065);
+            nameOffset: 34, roleOffset: 54, dateOffset: 83, directorOffset: 119, titleOffset: 137, footerY: 1065);
         return page;
     }
 
