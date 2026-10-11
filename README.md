@@ -1,14 +1,47 @@
 # Özel Eğitim Hakediş Sistemi (OEHS)
 
-Özel eğitim hakediş hesaplama, kontrol, icmal ve raporlama süreçlerini Excel bağımlılığından çıkararak bağımsız bir Windows masaüstü uygulamasına dönüştürme projesi.
+OEHS, özel eğitim hizmetleri için sözleşme/ihale bilgilerini, hatları, yüklenicileri, hakediş hesaplarını, geçmiş kayıtları ve resmî rapor çıktısını Windows masaüstü uygulamasında yönetmek amacıyla geliştirilmektedir.
 
-## Teknoloji
-- C#
-- .NET 8
-- WPF
-- Core / WPF / Tests ayrımı
+## Teknoloji ve çözüm yapısı
 
-## Durum
-Analiz ve mimari tasarım aşaması.
+- C# / .NET 8
+- Windows WPF masaüstü uygulaması
+- `src/OzelEgitimHakedis.Core`: iş modelleri, hesaplama ve veri servisleri
+- `src/OzelEgitimHakedis.Wpf`: kullanıcı arayüzü, raporlama ve dışa aktarma
+- `tests/OzelEgitimHakedis.Tests`: xUnit otomatik testleri
 
-Excel'deki iş kuralları çıkarılmadan hesaplama kodu yazılmayacaktır.
+Çözüm dosyası: `OzelEgitimHakedisSistemi.sln`.
+
+## Mevcut kapsam
+
+- İhale/sözleşme, hat ve yüklenici bilgileri
+- Hakediş hesaplama, geçmiş kayıtları ve icmal/rapor ekranları
+- Arşivleme, arşiv kayıtlarını görüntüleme, geri yükleme ve düzeltme iş akışları
+- PDF ve Excel çıktı akışları
+- Dört hakediş belgesi için ortak önizleme ve PDF çıktısı
+- WPF `DocumentViewer` tabanlı belge önizlemesi ve doğrudan Windows yazdırma iletişim kutusu
+- xUnit testleri ve Windows üzerinde derleme/yayın akışı
+
+## Geliştirme ortamı
+
+Windows ve .NET 8 SDK gereklidir. Depo kökünde PowerShell veya Terminal açarak:
+
+```powershell
+dotnet --version
+dotnet restore .\OzelEgitimHakedisSistemi.sln
+dotnet test .\OzelEgitimHakedisSistemi.sln --configuration Release
+```
+
+WPF uygulamasını yerel olarak derlemek için:
+
+```powershell
+dotnet build .\OzelEgitimHakedisSistemi.sln --configuration Release
+```
+
+Arkadaşa gönderilecek Windows x64 test paketi için `OEHS_TEST_PAKETI_OLUSTUR_GUNCEL.bat` çalıştırılabilir. Paket oluşturucu öncelikle testleri çalıştırır; testler geçmezse yeni paket yayımlamaz ve önceki başarılı ZIP dosyasını korur. Eski `OEHS_TEST_PAKETI_OLUSTUR.bat` adı geriye dönük kullanım için güncel oluşturucuya yönlendirir.
+
+## Dikkat edilmesi gereken kalite adımı
+
+Git'e gönderilen kodun Windows üzerinde gerçekten derlenmesi ve testlerden geçmesi ayrıca doğrulanmalıdır. Önizleme/yazdırma akışı güncellenmiştir; PDF çıktısının vektör tabanlı motora geçirilmesi ve gerçek sayfa düzeninin (Türkçe karakterler, tablolar, uzun tutarlar ve çok sayfalı belgeler) Windows üzerinde gözle kontrol edilmesi ayrı doğrulama konularıdır.
+
+Gerçek kurum verilerini, kişisel bilgileri veya üretim kayıtlarını test paketi içine koymayın.

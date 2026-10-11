@@ -1,0 +1,104 @@
+using OzelEgitimHakedis.Core.Models;
+using OzelEgitimHakedis.Core.Services;
+using Xunit;
+
+namespace OzelEgitimHakedis.Tests;
+
+public sealed class ProgressPaymentIcmalServiceTests
+{
+    [Fact]
+    public void BuildPeriods_ShouldMatchXlsmElevenMonthCycle()
+    {
+        var periods = ProgressPaymentIcmalService.BuildPeriods(new DateOnly(2026, 10, 31));
+
+        Assert.Equal(11, periods.Count);
+        Assert.Equal(new DateOnly(2026, 9, 1), periods[0]);
+        Assert.Equal(new DateOnly(2027, 7, 1), periods[^1]);
+    }
+
+    [Fact]
+    public void FindPreviousDeduction_ShouldUseImmediatePreviousPaymentOnly()
+    {
+        var older = History(1, new DateOnly(2026, 9, 30), 100m);
+        var immediatePrevious = History(2, new DateOnly(2026, 10, 31), 200m);
+        var current = History(3, new DateOnly(2026, 11, 30), 300m);
+
+        var result = ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { older, immediatePrevious, current }, current);
+
+        Assert.Equal(200m, result);
+    }
+
+    [Fact]
+    public void FindPreviousDeduction_ShouldReturnZeroWhenImmediatelyPreviousMonthHasNoPayment()
+    {
+        var september = History(1, new DateOnly(2026, 9, 30), 100m);
+        var november = History(2, new DateOnly(2026, 11, 30), 300m);
+
+        var result = ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { september, november }, november);
+
+        Assert.Equal(0m, result);
+    }
+
+    [Fact]
+    public void MonthLookupRange_ShouldIncludeSeptemberThroughJuneButNotJulyPlaceholder()
+    {
+        Assert.True(ProgressPaymentIcmalService.IsMonthInWorkbookLookupRange(new DateOnly(2026, 9, 1)));
+        Assert.True(ProgressPaymentIcmalService.IsMonthInWorkbookLookupRange(new DateOnly(2027, 6, 1)));
+        Assert.False(ProgressPaymentIcmalService.IsMonthInWorkbookLookupRange(new DateOnly(2027, 7, 1)));
+        Assert.False(ProgressPaymentIcmalService.IsMonthInWorkbookLookupRange(new DateOnly(2027, 8, 1)));
+    }
+
+    [Fact]
+    public void FindPreviousDeduction_ShouldReturnZeroForFirstSeptemberOfFiscalYear()
+    {
+        var august = History(1, new DateOnly(2026, 8, 31), 450m);
+        var september = History(2, new DateOnly(2026, 9, 30), 250m);
+
+        var result = ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { august, september }, september);
+
+        Assert.Equal(0m, result);
+    }
+
+    [Fact]
+    public void FindPreviousDeduction_ShouldMirrorMissingNovemberHeaderFallbackToZero()
+    {
+        var november = History(1, new DateOnly(2026, 11, 30), 180m);
+        var december = History(2, new DateOnly(2026, 12, 31), 250m);
+
+        var result = ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { november, december }, december);
+
+        Assert.Equal(0m, result);
+    }
+
+    [Fact]
+    public void FindPreviousDeduction_ShouldReturnZeroForJulyPlaceholderLookup()
+    {
+        var june = History(1, new DateOnly(2027, 6, 30), 180m);
+        var july = History(2, new DateOnly(2027, 7, 31), 250m);
+
+        var result = ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { june, july }, july);
+
+        Assert.Equal(0m, result);
+    }
+
+    private static ProgressPaymentHistoryData History(
+        int number,
+        DateOnly period,
+        decimal deduction) =>
+        new(
+            Guid.NewGuid(),
+            DateTime.UtcNow,
+            new ProgressPaymentInput(1, 1000m, 0m, 0m, 100000m, false, 0m, 0m, 0m),
+            new ProgressPaymentCalculation(
+                1000m, 0m, 1000m, 0m, 0m, 1000m, 0m, 1000m, deduction, 1000m - deduction, 0m,
+                new DeductionBreakdown(0m, 0m, 0m, 0m, 0m, 0m, 0m)),
+            number,
+            period,
+            "1", "Hat 1", "İş", "Firma", "TENDER", "SOZ",
+            ContractorTaxOrIdentityNumber: "12345678901");
+}

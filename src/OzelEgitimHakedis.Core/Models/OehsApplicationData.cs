@@ -1,0 +1,58 @@
+namespace OzelEgitimHakedis.Core.Models;
+
+public sealed record OehsApplicationData(
+    ContractDraftData? Contract,
+    IReadOnlyList<RouteData> Routes,
+    IReadOnlyList<Contractor> Contractors,
+    IReadOnlyList<ProgressPaymentHistoryData>? ProgressPayments = null,
+    IReadOnlyList<ContractDraftData>? Contracts = null)
+{
+    public static OehsApplicationData Empty =>
+        new(null, Array.Empty<RouteData>(), Array.Empty<Contractor>(), null, Array.Empty<ContractDraftData>());
+}
+
+public sealed record ContractDraftData(
+    string TenderNumber,
+    string ContractNumber,
+    string WorkName,
+    string ContractorName,
+    decimal ContractAmount,
+    DateOnly StartDate,
+    DateOnly EndDate,
+    bool VatExempt,
+    DateOnly? TenderDate = null,
+    DateOnly? ContractDate = null,
+    string ContractorTaxOrIdentityNumber = "",
+    string BankAccountNumber = "",
+    int ContractWorkDays = 0,
+    decimal TransportDailyPrice = 0m);
+
+public sealed record RouteData(
+    string RouteNumber,
+    string Name,
+    decimal DailyPrice,
+    int GuideWorkDays = 0,
+    decimal GuideDailyPrice = 0m,
+    int TransportWorkDays = 0,
+    string TenderNumber = "",
+    string ContractorTaxOrIdentityNumber = "");
+
+public sealed record ProgressPaymentHistoryData(
+    Guid Id,
+    DateTime CreatedAt,
+    ProgressPaymentInput Input,
+    ProgressPaymentCalculation Calculation,
+    int? ProgressPaymentNumber = null,
+    DateOnly? PeriodDate = null,
+    string? RouteNumber = null,
+    string? RouteName = null,
+    string? WorkName = null,
+    string? ContractorName = null,
+    string? TenderNumber = null,
+    string? ContractNumber = null,
+    DateOnly? TenderDate = null,
+    DateOnly? ContractDate = null,
+    DateOnly? ContractStartDate = null,
+    DateOnly? ContractEndDate = null,
+    string? BankAccountNumber = null,
+    string? ContractorTaxOrIdentityNumber = null);

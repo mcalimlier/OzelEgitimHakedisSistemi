@@ -4,78 +4,134 @@ namespace OzelEgitimHakedis.Core.Services;
 
 public sealed class ProgressPaymentCalculator
 {
-    public const decimal VatRate = 0.10m;
-    public const decimal WithholdingRate = 0.05m;
+    public const decimal TransportVatRate = 0.10m;
+    public const decimal GuideVatRate = 0.20m;
+    public const decimal TransportWithholdingShare = 0.50m;
+    public const decimal GuideWithholdingShare = 0.90m;
+    public const decimal TransportWithholdingRate = 0.05m;
+    public const decimal GuideWithholdingRate = 0.18m;
     public const decimal StampTaxRate = 0.00948m;
     public const decimal AdditionalGuaranteeRate = 0.06m;
+
+    // Geriye dönük kod uyumluluğu için eski sabit isimleri koruyoruz.
+    public const decimal VatRate = TransportVatRate;
+    public const decimal WithholdingRate = TransportWithholdingRate;
 
     public static ProgressPaymentCalculation Calculate(ProgressPaymentInput input)
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        if (input.WorkDays < 0)
-        {
+        if (input.WorkDays < 0 || input.GuideWorkDays < 0)
             throw new ArgumentOutOfRangeException(nameof(input), "İş günü negatif olamaz.");
-        }
 
-        if (input.DailyPrice < 0)
-        {
+        if (input.DailyPrice < 0 || input.GuideDailyPrice < 0)
             throw new ArgumentOutOfRangeException(nameof(input), "Günlük fiyat negatif olamaz.");
-        }
 
         if (input.ContractAmount < 0)
-        {
             throw new ArgumentOutOfRangeException(nameof(input), "Sözleşme bedeli negatif olamaz.");
-        }
 
-        if (input.InspectionPenaltyRatePerThousand < 0)
+        if (input.TaxDebt < 0 ||
+            input.SocialSecurityDebt < 0 ||
+            input.MinimumWageSupport < 0 ||
+            input.InspectionPenalty < 0)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(input),
-                "Denetim cezası oranı negatif olamaz.");
+                "Kesinti ve denetim cezası tutarları negatif olamaz.");
         }
 
-        var serviceAmount = Round(input.WorkDays * input.DailyPrice);
-        var priceDifferenceExcludingVat = Round(input.DiscountAmount + input.PriceDifference);
-        var totalAmount = Round(serviceAmount + priceDifferenceExcludingVat);
+        // Nihai XLSM'nin Hesaplama sayfasındaki zincir, ara hücrelerde
+        // gösterilen bir ROUND işlemi bulunmadığı sürece tam decimal hassasiyetinde
+        // korunur. UI ve resmi çıktılar görüntüleme aşamasında iki ondalık gösterir.
+        //
+        // Taşıma:
+        // K = (G*H) + I - J
+        // L = IF(E="Hayır", K*10%, 0)
+        // M = L/2
+        // N = K+M
+        // O = K+L
+        var transportServiceAmount = input.WorkDays * input.DailyPrice;
+        var transportPriceDifference = input.PriceDifference - input.DiscountAmount;
+        var transportNetAmount = transportServiceAmount + transportPriceDifference;
 
-        var vat = input.IsVatExempt
-            ? 0m
-            : Round(totalAmount * VatRate);
+        // Rehber:
+        // T = (P*Q) + R - S
+        // U = IF(E="Hayır", T*20%, 0)
+        // V = IF(E="Hayır", U*9/10, 0)
+        // W = T+V
+        // X = T+U
+        var guideServiceAmount = input.GuideWorkDays * input.GuideDailyPrice;
+        var guidePriceDifference = input.GuidePriceDifference - input.GuideDiscountAmount;
+        var guideNetAmount = guideServiceAmount + guidePriceDifference;
 
-        var withholding = input.IsVatExempt || totalAmount <= 0m
-            ? 0m
-            : Round(totalAmount * WithholdingRate);
+        var totalAmount = transportNetAmount + guideNetAmount;
 
-        var invoiceAmountAfterWithholding =
-            Round(totalAmount + vat - withholding);
-
-        var stampTax =
-            Round(Math.Max(totalAmount, 0m) * StampTaxRate);
-
-        var inspectionPenalty = input.HasInspectionPenalty
-            ? Round(input.ContractAmount * input.InspectionPenaltyRatePerThousand / 1000m)
+        var transportVat = input.IncludeVat
+            ? transportNetAmount * TransportVatRate
+            : 0m;
+        var guideVat = input.IncludeVat
+            ? guideNetAmount * GuideVatRate
             : 0m;
 
+        var transportWithholding = input.IncludeVat
+            ? transportVat * TransportWithholdingShare
+            : 0m;
+        var guideWithholding = input.IncludeVat
+            ? guideVat * GuideWithholdingShare
+            : 0m;
+
+        var vat = transportVat + guideVat;
+        var withholding = transportWithholding + guideWithholding;
+
+        // Excel'deki N + W:
+        // Taşıma N=K+M, Rehber W=T+V.
+        var transportInvoiceAmount = transportNetAmount + transportWithholding;
+        var guideInvoiceAmount = guideNetAmount + guideWithholding;
+        var invoiceAmountAfterWithholding =
+            transportInvoiceAmount + guideInvoiceAmount;
+
+        // Excel AD:
+        // AD = (K*9.48/1000) + (T*9.48/1000)
+        var transportStampTax = transportNetAmount * StampTaxRate;
+        var guideStampTax = guideNetAmount * StampTaxRate;
+        var stampTax = transportStampTax + guideStampTax;
+
+        // Excel AC doğrudan ham fiyat farkı hücrelerini kullanır:
+        // AC = (I*6%) + (R*6%).
+        var transportAdditionalGuarantee = input.PriceDifference * AdditionalGuaranteeRate;
+        var guideAdditionalGuarantee = input.GuidePriceDifference * AdditionalGuaranteeRate;
         var additionalGuarantee =
-            Round(Math.Max(priceDifferenceExcludingVat, 0m) * AdditionalGuaranteeRate);
+            transportAdditionalGuarantee + guideAdditionalGuarantee;
+
+        // Excel AE = M+V+Y+Z+AA+AB+AC+AD.
+        var totalDeductions =
+            transportWithholding
+            + guideWithholding
+            + input.TaxDebt
+            + input.InspectionPenalty
+            + input.SocialSecurityDebt
+            + input.MinimumWageSupport
+            + additionalGuarantee
+            + stampTax;
+
+        // Excel AF = O+X; AG = AF-AE.
+        var transportGrossAmount = transportNetAmount + transportVat;
+        var guideGrossAmount = guideNetAmount + guideVat;
+        var grossAmount = transportGrossAmount + guideGrossAmount;
+        var netPayable = grossAmount - totalDeductions;
 
         var deductions = new DeductionBreakdown(
             withholding,
             stampTax,
             input.TaxDebt,
-            inspectionPenalty,
+            input.InspectionPenalty,
             input.SocialSecurityDebt,
             input.MinimumWageSupport,
             additionalGuarantee);
 
-        var grossAmount = Round(totalAmount + vat);
-        var totalDeductions = Round(deductions.Total);
-        var netPayable = Round(grossAmount - totalDeductions);
-
         return new ProgressPaymentCalculation(
-            serviceAmount,
-            priceDifferenceExcludingVat,
+            transportServiceAmount,
+            transportPriceDifference,
             totalAmount,
             vat,
             withholding,
@@ -85,9 +141,14 @@ public sealed class ProgressPaymentCalculator
             totalDeductions,
             netPayable,
             additionalGuarantee,
-            deductions);
+            deductions,
+            guideServiceAmount,
+            guidePriceDifference,
+            transportNetAmount,
+            guideNetAmount,
+            transportVat,
+            guideVat,
+            transportWithholding,
+            guideWithholding);
     }
-
-    private static decimal Round(decimal value) =>
-        decimal.Round(value, 2, MidpointRounding.AwayFromZero);
 }

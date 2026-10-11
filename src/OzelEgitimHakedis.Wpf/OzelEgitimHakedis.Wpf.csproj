@@ -13,4 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\OzelEgitimHakedis.Core\OzelEgitimHakedis.Core.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="PDFsharp-WPF" Version="6.2.4" />
+  </ItemGroup>
 </Project>
