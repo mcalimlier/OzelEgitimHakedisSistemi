@@ -256,13 +256,13 @@ internal static class OehsOfficialDocumentFactory
             ("Sözleşme Bedeli", FormatMoney(c.ContractAmount)),
             ("İhale Tarihi", FormatDate(c.TenderDate)),
             ("Sözleşme Tarihi ve No.su", $"{FormatDate(c.ContractDate)}{(string.IsNullOrWhiteSpace(c.ContractNumber) ? "" : " / " + c.ContractNumber)}"),
-            ("Sözleşmenin Sayıştayca Tescil Tarihi ve No'su", "Tescile Dahil Değil"),
-            ("Tescilin Yükleniciye Tebliğ Tarihi", "Tescile Dahil Değil"),
+            ("Sözleşmenin Sayıştayca Tescil Tarihi ve No'su", ""),
+            ("Tescilin Yükleniciye Tebliğ Tarihi", ""),
             ("İşyeri Teslim Tarihi", FormatDate(c.ContractStartDate)),
             ("Sözleşmeye Göre İşin Süresi", FormatWorkDays(c)),
             ("Sözleşmeye Göre İş Bitim Tarihi", FormatDate(c.ContractEndDate)),
-            ("Verilen Avanslar Toplamı", "Avans verilmeyecektir."),
-            ("Mahsubu Yapılan Avansın Toplam Tutarı", "Yoktur.")
+            ("Verilen Avanslar Toplamı", ""),
+            ("Mahsubu Yapılan Avansın Toplam Tutarı", "")
         };
         var infoY = 239d;
         foreach (var row in info)
@@ -353,7 +353,7 @@ internal static class OehsOfficialDocumentFactory
             ("Sözleşmeye göre işin bitirilmesi gereken tarih", FormatDate(endDate), 35),
             ("Varsa süre uzatımları", "", 35),
             ("Süre uzatımı dahil işin bitirilmesi gereken tarih", FormatLongDate(endDate), 35),
-            ("İşin bitirildiği tarih", FormatLongDate(endDate), 35)
+            ("İşin bitirildiği tarih", FormatLongDate(servicePeriod.End), 35)
         };
 
         var y = 60d;
