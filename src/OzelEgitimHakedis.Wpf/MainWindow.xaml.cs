@@ -1778,20 +1778,8 @@ public partial class MainWindow : Window
         RouteGuideWorkDaysTextBox.Clear();
         RouteGuideDailyPriceTextBox.Clear();
 
-        _suppressSelectionEvents = true;
-        try
-        {
-            RouteTenderListBox.SelectedItem = null;
-            RouteContractorListBox.ItemsSource = _contractors.ToArray();
-            RouteContractorListBox.SelectedItem = null;
-        }
-        finally
-        {
-            _suppressSelectionEvents = false;
-        }
-
-        RouteSelectedTenderTextBlock.Text = "İhale: seçilmedi";
-        RouteSelectedContractorTextBlock.Text = "Yüklenici: firma seçilmemiş";
+        // Keep the chosen tender/contractor filters so the saved route remains
+        // visible in the right-hand list; only the entry fields are reset.
         UpdateRouteListView();
         UpdateRouteSummary();
         ClearRouteValidationVisuals();
@@ -2077,8 +2065,6 @@ public partial class MainWindow : Window
 
         _editingContractTender = null;
         SetContractEditorMode(false);
-        ClearContractFormOnly();
-        ClearContractValidationVisuals();
         SavePersistedData();
         UpdateContractSelectors();
         UpdateRouteListView();
@@ -2086,6 +2072,8 @@ public partial class MainWindow : Window
         UpdateContractSummaryView();
         UpdateHomeSummaryView();
         UpdateAcceptanceView();
+        ClearContractFormOnly();
+        ClearContractValidationVisuals();
 
         ContractStatusTextBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(36, 104, 216));
         ContractStatusTextBlock.Text = $"İhale kaydedildi: {proposedContract.TenderNumber}.";
