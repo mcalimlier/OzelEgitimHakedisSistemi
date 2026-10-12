@@ -61,6 +61,18 @@ jobs:
           if ($xaml -notmatch 'x:Name="HeaderSaveStatusTextBlock"' -or $xaml -notmatch 'x:Name="HeaderSaveStatusDot"') { throw "Dynamic save-status controls are missing." }
           if ($code -notmatch 'SetHeaderSaveStatus\("Kaydedildi"' -or $code -notmatch 'SetHeaderSaveStatus\("Veri yükleme hatası"') { throw "Load/save status update paths are missing." }
 
+      - name: Verify compact UI layout
+        shell: pwsh
+        run: |
+          $xaml = Get-Content ".\src\OzelEgitimHakedis.Wpf\MainWindow.xaml" -Raw
+          $app = Get-Content ".\src\OzelEgitimHakedis.Wpf\App.xaml" -Raw
+          $sidebarColumns = ([regex]::Matches($xaml, '<ColumnDefinition Width="215"/>')).Count
+          if ($sidebarColumns -ne 2) { throw "Expected both app-shell and header sidebar columns to be 215 DIP; found $sidebarColumns." }
+          if (-not $xaml.Contains('<Grid Width="48" Height="48">')) { throw "The readiness ring container must be 48x48 DIP so its arc is not vertically clipped." }
+          if (-not $xaml.Contains('Text="YÜKLENİCİ FİRMALAR"')) { throw "The long contractor navigation label is missing." }
+          if ($app -notmatch '<Style x:Key="NavButton"[\s\S]*?<Setter Property="Height" Value="40"/>') { throw "Navigation button height no longer matches the compact layout." }
+          if ($app -notmatch '<Style x:Key="PageTitle"[\s\S]*?<Setter Property="FontSize" Value="19.5"/>') { throw "Page title typography was not reduced to the compact target." }
+
       - name: Build Tests
         run: dotnet build ".\tests\OzelEgitimHakedis.Tests\OzelEgitimHakedis.Tests.csproj" --configuration Release --no-restore
 
