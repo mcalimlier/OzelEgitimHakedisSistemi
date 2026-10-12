@@ -157,3 +157,25 @@ GitHub Actions derleme ve PDF smoke testlerini çalıştırır; GitHub artefakt 
 ```
 
 Varsayılan çıktı klasörü `artifacts\OEHS-PDF-Smoke` olur. Komut önce WPF PDF testlerini çalıştırır, ardından dört beklenen tek sayfalı A4 PDF dosyasının mevcut olduğunu doğrular. Bu örnek PDF'ler test verisi içerir; uygulamadaki kullanıcı verilerini veya kayıtlarını değiştirmez. Son görsel kabul için dört PDF'yi açıp başlık, tablo çizgileri, Türkçe karakterler, tutar hizaları ve imza alanlarını kontrol edin.
+
+
+## 11. Resmî PDF smoke incelemesi ve veri eşleme sonuçları
+
+Dört PDF smoke çıktısı, WPF test projesinin örnek kayıtlarından üretilir; canlı uygulamada seçili ihale/hat kaydını kullanmaz. Son test verisi Eylül 2026 için 100,00 TL ve Ekim 2026 için 100,00 TL hizmet + 10,00 TL fiyat farkı içerir. Testler bu değerlerin rapor ve icmal şablonlarına taşındığını doğrular; canlı kayıt doğrulaması için ayrıca uygulamadaki **ÇIKTILAR** ekranından PDF almak gerekir.
+
+Son incelemede şu düzeltmeler yapıldı:
+
+- PDF çizicisi artık paragrafın son satırını iki yana yaslamak için kelimeler arasına aşırı boşluk yaymaz; yalnızca paragrafın son satırı sola hizalanır.
+- Kabul tutanağının açıklama paragrafı sabit Aşkın KESKİNBALTA / Halil ÖZENÇ adlarını değil, düzenleyen ve kontrol eden ayarlarını kullanır.
+- Kabul tutanağında “takvim günü” alanı ContractWorkDays iş günü değerini yanlış etiketlemek yerine sözleşme başlangıç/bitiş tarihlerinden hesaplanır.
+- “İşin bitirildiği tarih” seçili hizmet döneminin bitiş tarihidir; sözleşmedeki planlanan bitiş tarihi ayrı kalır.
+- OEHS'de tutulmayan Sayıştay tescili ve avans bilgileri için otomatik “dahil değil / avans verilmeyecektir / yoktur” beyanı yazılmaz; alanlar boş bırakılır.
+- PDF smoke testi boş ödeme geçmişi kullanmak yerine önceki ve mevcut döneme ait tutarlı iki örnek kayıt kullanır; hizmet, fiyat farkı, kesinti ve imza bilgilerinin doğru alanlara yerleşmesi sınanır.
+
+### Kaynak formül ile basılı etiket arasındaki açık fark
+
+**Hakediş Raporu** üzerinde E satırının etiketi “Bu Hakedişin Tutarı (C - D)” şeklindedir. Buna karşın ProgressPaymentReportService.Calculate, kaynak Excel'de bulunduğu belirtilen D11 kuralını uygulayarak mevcut hesap tutarı ile fiyat farkını toplar (fiyat farkı negatifse çıkarır). Örnek smoke değerlerinde C = 210,00 TL, D = 100,00 TL iken bu kural E = 120,00 TL üretir; basılı C − D ifadesi ise 110,00 TL verir.
+
+Bu bir görsel hizalama hatası değil, **finansal kural ile form metni arasındaki anlam çelişkisidir**. Kaynak Excel formülü korunmuştur; hesabı sessizce değiştirmek doğru olmaz. Ana dala birleştirmeden önce yetkili kaynakta formülün mü yoksa etiketin mi esas alınacağı doğrulanmalıdır.
+
+Son doğrulama: 93 Core testi ve 4 WPF PDF testinin tamamı geçti; CI dört tek sayfalı A4 PDF smoke dosyasını üretti. GitHub Actions artefakt kotası dolu olduğu için dosyalar CI'dan indirilemiyor; Windows'ta yerel üretim için Bölüm 10'daki script kullanılmalıdır.
