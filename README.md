@@ -23,6 +23,10 @@ OEHS, özel eğitim hizmetleri için sözleşme/ihale bilgilerini, hatları, yü
 - WPF `DocumentViewer` tabanlı belge önizlemesi ve doğrudan Windows yazdırma iletişim kutusu
 - xUnit testleri ve Windows üzerinde derleme/yayın akışı
 
+## Excel kaynak analizi ve hakediş iş akışı
+
+Orijinal XLSM'nin sekiz sayfası, VBA makroları ve Hesaplamayı Kontrol Et denetimi için [kaynak inceleme ve tek diyagramlı iş akışı](docs/XLSM_KAYNAK_INCELEMESI_VE_HAKEDIS_AKISI.md) eklendi. Bu doküman, her bir PDF alanının hangi Excel sayfası/hücresinden geldiğini, aylık K+T aktarımını ve E = C − D doğrulamasını açıklar.
+
 ## Son PDF görsel kontrolü
 
 Windows'ta dört örnek A4 PDF çıktısını yerel ortamda oluşturmak için depo kökünde PowerShell açıp ` .\scripts\Generate-OfficialPdfSmoke.ps1` komutunu çalıştırın. Kılavuz: [PDF görsel inceleme adımları](docs/UI_UX_TASMA_VE_DPI_DUZELTME_KILAVUZU.md#10-son-gorsel-kontrol-icin-yerel-pdf-uretimi).
