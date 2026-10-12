@@ -83,6 +83,10 @@ jobs:
           if (-not $code.Contains("Calculation = ProgressPaymentCalculator.Calculate(updatedArchive.ProgressPayment.Input)")) { throw "Archive edits must recalculate the payment from saved inputs before replacement." }
           if (-not $code.Contains("_archiveStore.Replace(_editingArchiveSourcePath, updatedArchive)")) { throw "Archive edits must replace the selected file rather than creating a new revision." }
           if (-not $code.Contains("private void ClearProgressEntryFields()")) { throw "Archive progress-edit inputs must be cleared after successful save." }
+          if ($code -notmatch 'UpdateAcceptanceView\(\);\s*ClearContractFormOnly\(\);') { throw "The contract input form must clear after a successful save and view refresh." }
+          if ($code -notmatch 'SetContractorEditorMode\(false\);\s*ContractorStatusTextBlock.Text = "Yeni firma kaydı için alanlar temizlendi\."') { throw "The contractor form must return to create mode after save." }
+          if (-not $code.Contains("Keep the chosen tender/contractor filters")) { throw "Clearing the route form must preserve context for its right-hand saved-record list." }
+          if ($code -notmatch 'SetRouteEditorMode\(false\);') { throw "The route editor must return to create mode after clearing." }
           if (-not $xaml.Contains("İŞ AKIŞI / İLERLEME ŞABLONU")) { throw "The clickable workflow roadmap is missing from the home screen." }
           foreach ($step in @('Tag="Contract"', 'Tag="Contractors"', 'Tag="Lines"', 'Tag="Progress"', 'Tag="Archives"', 'Tag="Reports"')) {
             if (-not $xaml.Contains($step)) { throw "Workflow roadmap navigation target is missing: $step" }
