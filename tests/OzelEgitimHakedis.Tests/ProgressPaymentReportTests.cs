@@ -64,7 +64,7 @@ public sealed class ProgressPaymentReportTests
         Assert.Equal(5m, totals.CurrentPriceDifference);
         Assert.Equal(105m, totals.CumulativeTotal);
         Assert.Equal(0m, totals.PreviousTotal);
-        Assert.Equal(110m, totals.CurrentTotal);
+        Assert.Equal(105m, totals.CurrentTotal);
     }
 
     [Fact]
