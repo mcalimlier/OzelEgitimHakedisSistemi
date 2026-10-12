@@ -146,3 +146,14 @@ Bunlar başlangıç değerleridir; mevcut ekranlardaki açık `FontSize` değerl
 `OzelEgitimHakedisSistemi.sln` Visual Studio 18 üst bilgisiyle depoya kaydedildi. Dört proje ve her birinin Debug/Release yapılandırma eşlemeleri korunmuştur. `.sln` dosya biçimi `Format Version 12.00` olarak kalır; `# Visual Studio Version 18` ve `VisualStudioVersion` alanları dosyayı son kaydeden Visual Studio ailesi/sürümü hakkında bilgi taşır. Bu ayrım Microsoft'un [Solution (.sln) file açıklamasında](https://learn.microsoft.com/en-us/visualstudio/extensibility/internals/solution-dot-sln-file) belgelenmiştir.
 
 CI artık çözüm üst bilgisinin VS18 olduğunu, `dotnet sln list` komutunun dört projeyi bulduğunu ve tüm çözümün derlenebildiğini doğrulayan adımlar içerir. Böylece gelecekte ana dalda VS17 üst bilgisine geri dönüş veya proje eşlemelerinin kaybolması otomatik kontrolde yakalanır. VS18 dosyası depodan alındıktan sonra yalnızca IDE sürüm/biçim değişikliği yüzünden yine Changes çıkarsa bu dosyayı commit etmeden önce diff karşılaştırılmalıdır.
+
+
+## 10. Son görsel kontrol için yerel PDF üretimi
+
+GitHub Actions derleme ve PDF smoke testlerini çalıştırır; GitHub artefakt depolama kotası doluysa çıkan dosyaları saklayamayabilir. PDF'leri Windows bilgisayarında oluşturup gerçek görüntülerini kontrol etmek için depo kökünde PowerShell açın ve çalıştırın:
+
+```powershell
+.\scripts\Generate-OfficialPdfSmoke.ps1
+```
+
+Varsayılan çıktı klasörü `artifacts\OEHS-PDF-Smoke` olur. Komut önce WPF PDF testlerini çalıştırır, ardından dört beklenen tek sayfalı A4 PDF dosyasının mevcut olduğunu doğrular. Bu örnek PDF'ler test verisi içerir; uygulamadaki kullanıcı verilerini veya kayıtlarını değiştirmez. Son görsel kabul için dört PDF'yi açıp başlık, tablo çizgileri, Türkçe karakterler, tutar hizaları ve imza alanlarını kontrol edin.
