@@ -67,8 +67,9 @@ public static class ProgressPaymentReportService
             .Where(x => IsWithinCurrentFiscalYear(x, current))
             .ToArray();
 
-        // Hakediş Raporu!D6: cumulative monthly service amounts, excluding the
-        // separately stored raw price-difference cells.
+        // Hakediş Raporu!D6: sum of monthly K+T values transferred by VBA.
+        // Despite the row caption, each monthly K+T value already includes
+        // the I/R price-difference inputs and J/S discounts.
         var previousServiceAmount = previous.Sum(CalculateWorkbookMonthlyPaymentAmount);
         var currentServiceAmount = CalculateWorkbookMonthlyPaymentAmount(current);
         var currentPriceDifference = CalculateWorkbookPriceDifference(current);
@@ -77,14 +78,15 @@ public static class ProgressPaymentReportService
         // Hakediş Raporu!D8 = D6 + D7.
         var cumulativeTotal = cumulativeServiceAmount + currentPriceDifference;
 
-        // Hakediş Raporu!D10 reads the previous cumulative service-only value
-        // from İcmal Verileri!O. Price differences are kept in their own columns.
+        // Hakediş Raporu!D10 reads the prior-month cumulative K+T total from
+        // İcmal Verileri!O. The current raw I+R value is then added separately
+        // by D7, matching the original workbook's transfer and validation logic.
         var previousTotal = previousServiceAmount;
 
         // The workbook's "Hesaplamayı Kontrol Et" macro is the authoritative
         // validation rule: D11 must equal D8 - D10. The visible E-row label also
-        // states C - D. Do not add the price difference to Calculation.TotalAmount
-        // again; it already includes it for the current period.
+        // states C - D. Calculation.TotalAmount is the current K+T monthly value;
+        // D7 adds raw I+R separately as the source workbook does.
         var currentTotal = cumulativeTotal - previousTotal;
 
         return new ProgressPaymentReportTotals(
