@@ -2956,6 +2956,11 @@ public partial class MainWindow : Window
                     ? $"Düzeltme başarıyla arşive eklendi: v{revision:00}."
                     : $"Hakediş arşivlendi: v{revision:00}.";
 
+            // The archive operation has succeeded; the calculated item remains
+            // available in history, while the entry form is ready for the next one.
+            _lastCalculatedHistoryId = null;
+            ClearProgressEntryFields();
+            SetProgressEditorMode(false);
             UpdateArchiveView();
             NavigationButton_Click(NavArchives, new RoutedEventArgs(Button.ClickEvent, NavArchives));
 
