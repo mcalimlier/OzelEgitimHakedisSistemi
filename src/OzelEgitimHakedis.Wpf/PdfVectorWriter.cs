@@ -264,7 +264,9 @@ public static class PdfVectorWriter
             : Math.Max(fontSize * 1.18, font.GetHeight());
 
         var lines = block.TextWrapping == TextWrapping.NoWrap
-            ? text.Replace("\r", string.Empty).Split('\n').ToList()
+            ? text.Replace("\r", string.Empty).Split('\n')
+                .Select(line => new WrappedLine(line, IsLastLineOfParagraph: true))
+                .ToList()
             : WrapText(gfx, text, font, Math.Max(1, rect.Width));
 
         var totalTextHeight = lines.Count * lineHeight;
@@ -279,7 +281,14 @@ public static class PdfVectorWriter
             if (y + lineHeight > rect.Bottom + 0.5)
                 break;
 
-            DrawTextLine(gfx, line, font, brush, new XRect(rect.Left, y, rect.Width, lineHeight), block.TextAlignment);
+            DrawTextLine(
+                gfx,
+                line.Text,
+                font,
+                brush,
+                new XRect(rect.Left, y, rect.Width, lineHeight),
+                block.TextAlignment,
+                line.IsLastLineOfParagraph);
             y += lineHeight;
         }
     }
@@ -313,17 +322,20 @@ public static class PdfVectorWriter
         return first.Length == 0 ? "Arial" : first;
     }
 
-    private static List<string> WrapText(XGraphics gfx, string text, XFont font, double width)
+    private readonly record struct WrappedLine(string Text, bool IsLastLineOfParagraph);
+
+    private static List<WrappedLine> WrapText(XGraphics gfx, string text, XFont font, double width)
     {
-        var result = new List<string>();
+        var result = new List<WrappedLine>();
         foreach (var paragraph in text.Replace("\r", string.Empty).Split('\n'))
         {
             if (paragraph.Length == 0)
             {
-                result.Add(string.Empty);
+                result.Add(new WrappedLine(string.Empty, IsLastLineOfParagraph: true));
                 continue;
             }
 
+            var paragraphLines = new List<string>();
             var words = paragraph.Split(' ', StringSplitOptions.None);
             var line = string.Empty;
             foreach (var word in words)
@@ -335,25 +347,45 @@ public static class PdfVectorWriter
                     continue;
                 }
 
-                result.Add(line);
+                paragraphLines.Add(line);
                 line = word;
             }
-            result.Add(line);
+            paragraphLines.Add(line);
+
+            for (var index = 0; index < paragraphLines.Count; index++)
+            {
+                result.Add(new WrappedLine(
+                    paragraphLines[index],
+                    IsLastLineOfParagraph: index == paragraphLines.Count - 1));
+            }
         }
         return result;
     }
 
-    private static void DrawTextLine(XGraphics gfx, string line, XFont font, XBrush brush, XRect rect, TextAlignment alignment)
+    private static void DrawTextLine(
+        XGraphics gfx,
+        string line,
+        XFont font,
+        XBrush brush,
+        XRect rect,
+        TextAlignment alignment,
+        bool isLastLineOfParagraph)
     {
-        if (alignment == TextAlignment.Justify)
+        // Justify all wrapped lines except the last line of each paragraph.
+        // Stretching the final line across the page causes extreme word spacing
+        // for short sentences such as the acceptance statement.
+        if (alignment == TextAlignment.Justify && !isLastLineOfParagraph)
         {
             DrawJustifiedLine(gfx, line, font, brush, rect);
             return;
         }
 
+        var effectiveAlignment = alignment == TextAlignment.Justify
+            ? TextAlignment.Left
+            : alignment;
         var format = new XStringFormat
         {
-            Alignment = alignment switch
+            Alignment = effectiveAlignment switch
             {
                 TextAlignment.Center => XStringAlignment.Center,
                 TextAlignment.Right => XStringAlignment.Far,
