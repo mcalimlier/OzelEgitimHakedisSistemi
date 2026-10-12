@@ -342,10 +342,10 @@ public sealed class OfficialDocumentOutputTests
     }
 
     private static string[] GetPageText(FixedPage page) =>
-        page.Children.SelectMany(element => element switch
+        page.Children.Cast<UIElement>().SelectMany(element => element switch
         {
-            TextBlock textBlock => new[] { textBlock.Text },
-            Border { Child: TextBlock textBlock } => new[] { textBlock.Text },
+            TextBlock directText => new[] { directText.Text },
+            Border { Child: TextBlock borderText } => new[] { borderText.Text },
             _ => Array.Empty<string>()
         }).ToArray();
 
