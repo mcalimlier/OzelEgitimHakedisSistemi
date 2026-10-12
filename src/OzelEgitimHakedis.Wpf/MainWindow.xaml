@@ -258,7 +258,57 @@
                                             </StackPanel>
                                         </Border>
                                     </Grid>
-                                </Border>                                <Grid Margin="0,0,0,0">
+                                </Border>                                                                <Border Style="{StaticResource Card}" Padding="8.5" Margin="0,0,0,8.5">
+                                    <StackPanel>
+                                        <TextBlock Text="İŞ AKIŞI / İLERLEME ŞABLONU" Style="{StaticResource CardTitle}"/>
+                                        <TextBlock Text="Bu sırayı izleyin. Her adım ilgili forma gider; kayıt başarılı olduğunda giriş alanları temizlenir." Style="{StaticResource CardSubtitle}" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                                        <UniformGrid Columns="6" Margin="0,8,0,0">
+                                            <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="6" Margin="0,0,4,0">
+                                                <StackPanel>
+                                                    <TextBlock Text="01 →" Foreground="{StaticResource Gold500Brush}" FontSize="10.5" FontWeight="Bold"/>
+                                                    <Button Content="SÖZLEŞME" Tag="Contract" Click="NavigationButton_Click" Style="{StaticResource SecondaryButton}" Height="30" FontSize="10.5" Margin="0,4,0,3"/>
+                                                    <TextBlock Text="İhale no, bedel, tarihler" Foreground="#C5D7E7" FontSize="10" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                            </Border>
+                                            <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="6" Margin="0,0,4,0">
+                                                <StackPanel>
+                                                    <TextBlock Text="02 →" Foreground="{StaticResource Gold500Brush}" FontSize="10.5" FontWeight="Bold"/>
+                                                    <Button Content="YÜKLENİCİ" Tag="Contractors" Click="NavigationButton_Click" Style="{StaticResource SecondaryButton}" Height="30" FontSize="10.5" Margin="0,4,0,3"/>
+                                                    <TextBlock Text="Kimlik, iletişim, banka" Foreground="#C5D7E7" FontSize="10" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                            </Border>
+                                            <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="6" Margin="0,0,4,0">
+                                                <StackPanel>
+                                                    <TextBlock Text="03 →" Foreground="{StaticResource Gold500Brush}" FontSize="10.5" FontWeight="Bold"/>
+                                                    <Button Content="HAT" Tag="Lines" Click="NavigationButton_Click" Style="{StaticResource SecondaryButton}" Height="30" FontSize="10.5" Margin="0,4,0,3"/>
+                                                    <TextBlock Text="İş günleri, rehber fiyatı" Foreground="#C5D7E7" FontSize="10" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                            </Border>
+                                            <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="6" Margin="0,0,4,0">
+                                                <StackPanel>
+                                                    <TextBlock Text="04 →" Foreground="{StaticResource Gold500Brush}" FontSize="10.5" FontWeight="Bold"/>
+                                                    <Button Content="HAKEDİŞ" Tag="Progress" Click="NavigationButton_Click" Style="{StaticResource SecondaryButton}" Height="30" FontSize="10.5" Margin="0,4,0,3"/>
+                                                    <TextBlock Text="Dönem, farklar, kesintiler" Foreground="#C5D7E7" FontSize="10" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                            </Border>
+                                            <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="6" Margin="0,0,4,0">
+                                                <StackPanel>
+                                                    <TextBlock Text="05 →" Foreground="{StaticResource Gold500Brush}" FontSize="10.5" FontWeight="Bold"/>
+                                                    <Button Content="ARŞİV" Tag="Archives" Click="NavigationButton_Click" Style="{StaticResource SecondaryButton}" Height="30" FontSize="10.5" Margin="0,4,0,3"/>
+                                                    <TextBlock Text="Kontrol et, kaydı sakla" Foreground="#C5D7E7" FontSize="10" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                            </Border>
+                                            <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="6">
+                                                <StackPanel>
+                                                    <TextBlock Text="06 ✓" Foreground="{StaticResource Gold500Brush}" FontSize="10.5" FontWeight="Bold"/>
+                                                    <Button Content="ÇIKTILAR" Tag="Reports" Click="NavigationButton_Click" Style="{StaticResource SecondaryButton}" Height="30" FontSize="10.5" Margin="0,4,0,3"/>
+                                                    <TextBlock Text="Önizle, dört PDF kaydet" Foreground="#C5D7E7" FontSize="10" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </UniformGrid>
+                                    </StackPanel>
+                                </Border>
+<Grid Margin="0,0,0,0">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
