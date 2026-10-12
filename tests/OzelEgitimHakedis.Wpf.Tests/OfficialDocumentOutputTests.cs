@@ -228,13 +228,20 @@ public sealed class OfficialDocumentOutputTests
             // as the application report services rather than empty hard-coded history.
             var paymentOutput = Assert.Single(
                 outputs.Where(output => output.Kind == OehsOfficialDocumentKind.HakedisRaporu));
-            var paymentText = GetPageText(Assert.IsType<FixedPage>(paymentOutput.Document.Pages[0].Child));
-            Assert.Contains("210,00 TL", paymentText);
-            Assert.Contains("10,00 TL", paymentText);
-            Assert.Contains("220,00 TL", paymentText);
-            Assert.Contains("100,00 TL", paymentText);
-            Assert.Contains("120,00 TL", paymentText);
-            Assert.Contains("115,00 TL", paymentText);
+            var paymentPage = Assert.IsType<FixedPage>(paymentOutput.Document.Pages[0].Child);
+            var paymentText = GetPageText(paymentPage);
+
+            // Match Excel sheet4 cell sequence: A=210, B=10, C=220, D=100, E=120.
+            Assert.Equal("210,00 TL", GetCellTextAt(paymentPage, 476d, 172d)); // A
+            Assert.Equal("10,00 TL", GetCellTextAt(paymentPage, 476d, 200d));  // B
+            Assert.Equal("220,00 TL", GetCellTextAt(paymentPage, 476d, 228d)); // C = A + B
+            Assert.Equal("100,00 TL", GetCellTextAt(paymentPage, 476d, 274d)); // D
+            Assert.Equal("120,00 TL", GetCellTextAt(paymentPage, 476d, 303d)); // E = C - D
+            Assert.Equal("0,00 TL", GetCellTextAt(paymentPage, 476d, 332d));   // F
+            Assert.Equal("120,00 TL", GetCellTextAt(paymentPage, 476d, 361d)); // G
+            Assert.Equal("5,00 TL", GetCellTextAt(paymentPage, 476d, 734d));   // H
+            Assert.Equal("115,00 TL", GetCellTextAt(paymentPage, 476d, 762d)); // I
+            Assert.Equal("Bu Hakedişin Tutarı  ( C - D )", GetCellTextAt(paymentPage, 120d, 303d));
             Assert.Contains("Hakediş No : 2", paymentText);
 
             var serviceReport = Assert.Single(
@@ -245,16 +252,21 @@ public sealed class OfficialDocumentOutputTests
             Assert.Contains("100.000,00 TL", serviceReportText);
             Assert.Contains("25.08.2026 / TEST-SOZ", serviceReportText);
             Assert.Contains("180 İş Günü", serviceReportText);
+            Assert.Contains("Tescile Dahil Değil", serviceReportText);
+            Assert.Contains("Avans verilmeyecektir.", serviceReportText);
+            Assert.Contains("Yoktur.", serviceReportText);
 
             var acceptanceOutputForMapping = Assert.Single(
                 outputs.Where(output => output.Kind == OehsOfficialDocumentKind.KabulTutanagi));
             var acceptanceMappingPage = Assert.IsType<FixedPage>(
                 acceptanceOutputForMapping.Document.Pages[0].Child);
             var acceptanceMappingText = GetPageText(acceptanceMappingPage);
-            Assert.Contains("303 Takvim Günü", acceptanceMappingText);
+            // Preserve the original workbook's visible label/value mismatch:
+            // the label says calendar days but the source formula emits workdays.
+            Assert.Contains("180 İş Günü", acceptanceMappingText);
             Assert.Contains("30.06.2027", acceptanceMappingText);
-            Assert.Contains("31 Ekim 2026 Cumartesi", acceptanceMappingText);
-            Assert.DoesNotContain("30 Haziran 2027 Çarşamba", acceptanceMappingText);
+            Assert.Contains("30 Haziran 2027 Çarşamba", acceptanceMappingText);
+            Assert.Contains("01.10.2026 / 31.10.2026", acceptanceMappingText);
             Assert.DoesNotContain("Tescile Dahil Değil", acceptanceMappingText);
             Assert.DoesNotContain("Avans verilmeyecektir.", acceptanceMappingText);
             Assert.DoesNotContain("Yoktur.", acceptanceMappingText);
@@ -382,6 +394,14 @@ public sealed class OfficialDocumentOutputTests
             Border { Child: TextBlock borderText } => new[] { borderText.Text },
             _ => Array.Empty<string>()
         }).ToArray();
+
+    private static string? GetCellTextAt(FixedPage page, double left, double top) =>
+        page.Children.OfType<Border>()
+            .Where(border =>
+                Math.Abs(FixedPage.GetLeft(border) - left) < 0.01 &&
+                Math.Abs(FixedPage.GetTop(border) - top) < 0.01)
+            .Select(border => (border.Child as TextBlock)?.Text)
+            .SingleOrDefault();
 
     private static void RunOnSta(Action action)
     {
