@@ -234,7 +234,7 @@ public sealed class OfficialDocumentOutputTests
             Assert.Contains("100,00 TL", paymentText);
             Assert.Contains("120,00 TL", paymentText);
             Assert.Contains("115,00 TL", paymentText);
-            Assert.Contains("2", paymentText);
+            Assert.Contains("Hakediş No : 2", paymentText);
 
             var serviceReport = Assert.Single(
                 outputs.Where(output => output.Kind == OehsOfficialDocumentKind.HizmetIsleriHakedisRaporu));
