@@ -413,7 +413,7 @@ internal static class OehsOfficialDocumentFactory
                             p.PeriodDate.Value.Month == month.Month)
                 .ToArray();
             var service = ProgressPaymentIcmalService.IsMonthInWorkbookLookupRange(month)
-                ? monthPayments.Sum(ProgressPaymentReportService.CalculateWorkbookServiceAmount)
+                ? monthPayments.Sum(ProgressPaymentReportService.CalculateWorkbookMonthlyPaymentAmount)
                 : 0m;
             var difference = ProgressPaymentIcmalService.IsMonthInWorkbookLookupRange(month)
                 ? monthPayments.Sum(ProgressPaymentReportService.CalculateWorkbookPriceDifference)
