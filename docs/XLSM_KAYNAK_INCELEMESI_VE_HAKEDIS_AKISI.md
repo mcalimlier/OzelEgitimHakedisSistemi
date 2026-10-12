@@ -23,7 +23,7 @@ Asıl hata, önceki C# eşlemesinin aylık hakediş tutarından fiyat farkını 
 
 ### Somut sayı örneği
 
-Önceki dönemin K+T tutarı 100 TL, güncel dönemin K+T tutarı 110 TL, güncel ham fiyat farkı I+R de 10 TL ise:
+Önceki dönem K+T tutarı 100 TL, güncel dönem K+T tutarı 110 TL ve güncel ham fiyat farkı I+R 10 TL ise:
 
 1. A = D6 = 100 + 110 = **210 TL**
 2. B = D7 = **10 TL**
@@ -31,7 +31,7 @@ Asıl hata, önceki C# eşlemesinin aylık hakediş tutarından fiyat farkını 
 4. D = D10 = **100 TL**
 5. E = D11 = C − D = **120 TL**
 
-Sorunlu PDF'de C=210 TL görünürken E=120 TL gösteriliyordu. Kaynağa göre C aslında 220 TL olmalı. Önceki C# kodu aylık tutardan ham fiyat farkını tekrar çıkardığı için C'yi eksik üretiyordu. Bu artık düzeltildi: CalculateWorkbookMonthlyPaymentAmount, Calculation.TotalAmount değerini aynen kullanıyor; E ise C−D ile hesaplanıyor.
+Sorunlu PDF'de C=210 TL görünürken E=120 TL gösteriliyordu. Kaynağa göre C aslında 220 TL olmalı. Önceki C# kodu aylık K+T tutarından ham fiyat farkını tekrar çıkardığı için A'yı 10 TL eksik üretiyordu. Bu düzeltildi: CalculateWorkbookMonthlyPaymentAmount, Calculation.TotalAmount değerini aynen kullanıyor. Böylece A=210, C=220 ve E=120 aynı veri kümesinde tutarlı olur.
 
 Orijinal D11 formülü IF(D7<0,H2-ABS(D7),H2+D7), H2 ise Hesaplama K+T toplamıdır. Formülün iki dalı da matematiksel olarak H2+D7 sonucunu verir. Aylık aktarım doğru yapıldığında bu, D8−D10 eşitliğini karşılamalıdır; HesapKontrol makrosu tam da bu ilişkiyi doğrular.
 
@@ -43,7 +43,7 @@ Orijinal D11 formülü IF(D7<0,H2-ABS(D7),H2+D7), H2 ise Hesaplama K+T toplamıd
 | **2. İhale Verileri** | Hat/yüklenici/sözleşme ana kaydı, A:P, en çok 100 hat | Hat adı, yüklenici, kimlik/vergi, taşıma/rehber gün ve günlük fiyatları, yıllık tutar, sözleşme bedeli ve tarihler buradan okunur. G = E×F; J = H×I; L = G+J. |
 | **3. Hesaplama** | Hat satırı başına taşıma, rehber, KDV/tevkifat ve kesinti hesabı, satırlar 4:103 | Taşıma G:O; rehber P:X; kesinti Y:AE; brüt AF; net AG. K = G×H+I−J; T = P×Q+R−S; L KDV %10; U KDV %20; M = L/2; V = U×9/10; AC ek kesin teminat; AD damga vergisi; AE kesinti toplamı; AF brüt; AG net. |
 | **4. Hakediş Raporu** | A–I resmî özeti, kesinti dökümü, yüklenici ve Örnek No 4/10 | Aylık K+T, güncel ham fiyat farkı, önceki toplam, E kontrolü ve net tutar aynı ödeme anlık görüntüsünden hesaplanır. Baskı alanı A1:F42. |
-| **5. Hizmetişleri Hakediş Raporu** | İş/sözleşme/yüklenici bilgileri, sözleşme artışları ve süre uzatımı çizelgeleri, imzalar | Baskı alanı A1:J45. Bilgi yoksa sözleşme artışı/süre uzatımı satırları doldurulmamalı. |
+| **5. Hizmetişleri Hakediş Raporu** | İş/sözleşme/yüklenici bilgileri, sözleşme artışları ve süre uzatımı çizelgeleri, imzalar | Baskı alanı A1:J45. Veri yokken sözleşme artış ve süre uzatımı alanları kaynak şablondaki gibi noktalı/boş kalır. Tescil ve avans satırlarında kaynak sayfanın sabit metinleri korunur. |
 | **6. Hizmet İşleri K. Tutanağı** | Kabul tutanağı, dönem paragrafı, yüklenici ve imzalar | B2:B10 sözleşme/iş alanları; A12 paragrafı seçili ihale, yüklenici, imzacı ve dönem tarihlerini birleştirir. Anasayfa E5 değişince ve son hakediş yanıtı “Evet” olunca B8 metni B7 bitiş tarihiyle güncellenir. Baskı alanı A1:B34. |
 | **7. Hakediş İcmali** | Ay bazında aylık K+T, ayrı fiyat farkı ve kesinti dökümü; toplam/önceki kesinti/net toplam | Aylık hizmet tutarı, fiyat farkı ve net/tahakkuk toplamı ayrı alanlardır. Baskı alanı A1:E42. |
 | **8. İcmal Verileri** | 100 hat × 11 dönem için kalıcı aylık hareket tablosu | D:N = aylık K+T; P:Z = taşıma ham fiyat farkı I; AB:AL = rehber ham fiyat farkı R; AN:AX = kesinti toplamı AE. O/AA/AM ara toplamları üretir. |
@@ -115,5 +115,6 @@ flowchart TD
 
 - Anasayfa'nın LibreOffice tabanlı önizlemesinde B21'deki net tutarı metne dönüştüren formül ve AA2 alanı hata gösteriyor. XML'deki önbellek değerleriyle önizleme sonucu farklı olduğundan, Excel masaüstünde aynı hücrelerin tekrar hesaplanıp hesaplanmadığı doğrulanmalı; bu dosyayı değiştirerek tahmin yürütmedik.
 - HesapKontrol VBA kaynağı incelendi ve matematiksel kural C# testlerine taşındı. Bu ortamda Windows Excel içinde düğmeye fiziksel tıklama çalıştırılmadı.
-- Kabul tutanağında sözleşmenin planlanan bitiş tarihi, fiilî hizmet döneminin bitiş tarihi ve süre uzatımı dahil tarih ayrı tutulmalı. Gerçek uzatım kaydı yoksa uydurulmamalı; kaynakta olmayan tescil/avans bilgileri kesin beyanla doldurulmamalı.
+- Kabul tutanağında kaynak Excel'in mevcut eşlemesi korunur: iş süresi etiketinde “takvim günü” yazmasına rağmen değer “181 İş Günü” biçiminde gelir; “süre uzatımı dahil tarih” ve “işin bitirildiği tarih” hücreleri sözleşme bitiş tarihi formülünü kullanır. Bunlar kaynak şablon tutarsızlıklarıdır; farklı bir iş kuralı kararı verilmeden sessizce değiştirilmemelidir.
+- Hizmet İşleri Hakediş Raporu sayfasında “Tescile Dahil Değil”, “Avans verilmeyecektir.” ve “Yoktur.” sabit metinleri kaynak Excel'de açıkça vardır ve bu şablonda korunmalıdır. Kabul tutanağında bu metinler yer almaz; iki belge birbirine karıştırılmamalıdır.
 - Son kabul için test amaçlı PDF'lere ek olarak OEHS ÇIKTILAR ekranından gerçek kayıtla üretilmiş dört PDF de incelenmeli.
