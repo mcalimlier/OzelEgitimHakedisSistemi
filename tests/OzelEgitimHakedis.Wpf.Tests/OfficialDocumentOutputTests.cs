@@ -232,8 +232,8 @@ public sealed class OfficialDocumentOutputTests
             Assert.Contains("10,00 TL", paymentText);
             Assert.Contains("210,00 TL", paymentText);
             Assert.Contains("100,00 TL", paymentText);
-            Assert.Contains("120,00 TL", paymentText);
-            Assert.Contains("115,00 TL", paymentText);
+            Assert.Contains("110,00 TL", paymentText);
+            Assert.Contains("105,00 TL", paymentText);
             Assert.Contains("Hakediş No : 2", paymentText);
 
             var serviceReport = Assert.Single(
@@ -276,8 +276,16 @@ public sealed class OfficialDocumentOutputTests
             Assert.Contains("₺10,00", icmalText);
             Assert.Contains("₺210,00", icmalText);
 
-            // Every form consumes the signature identities from the data context.
-            foreach (var output in outputs)
+            // The Excel workbook's Hakediş Raporu has a contractor footer but no
+            // signature panel. The other three forms use the shared signatory settings.
+            var contractorReportPage = Assert.IsType<FixedPage>(paymentOutput.Document.Pages[0].Child);
+            Assert.Contains("Örnek Yüklenici", GetPageText(contractorReportPage));
+            Assert.Contains("M.Y.H.B.Y. Örnek No :4/10", GetPageText(contractorReportPage));
+            Assert.DoesNotContain("TEST DÜZENLEYEN", GetPageText(contractorReportPage));
+            Assert.DoesNotContain("TEST ONAYLAYAN", GetPageText(contractorReportPage));
+
+            foreach (var output in outputs.Where(output =>
+                         output.Kind != OehsOfficialDocumentKind.HakedisRaporu))
             {
                 var outputPage = Assert.IsType<FixedPage>(output.Document.Pages[0].Child);
                 var textBlocks = GetPageText(outputPage);
@@ -289,6 +297,28 @@ public sealed class OfficialDocumentOutputTests
                 Assert.Contains("TEST ONAYLAYAN", textBlocks);
                 Assert.Contains("TEST MÜDÜR", textBlocks);
             }
+
+            var reportOuterFrame = Assert.Single(contractorReportPage.Children
+                .OfType<Border>()
+                .Where(border =>
+                    Math.Abs(FixedPage.GetLeft(border) - 67d) < 0.01 &&
+                    Math.Abs(FixedPage.GetTop(border) - 31d) < 0.01 &&
+                    Math.Abs(border.Width - 659d) < 0.01 &&
+                    Math.Abs(border.Height - 1030d) < 0.01));
+            var reportTitle = Assert.Single(contractorReportPage.Children
+                .OfType<TextBlock>()
+                .Where(block => block.Text == "HAK EDİŞ RAPORU"));
+            Assert.True(
+                contractorReportPage.Children.IndexOf(reportTitle) > contractorReportPage.Children.IndexOf(reportOuterFrame),
+                "The Hakediş Raporu title must be inside the Excel form frame.");
+            
+            var eRowCells = contractorReportPage.Children
+                .OfType<Border>()
+                .Where(border => Math.Abs(FixedPage.GetTop(border) - 303d) < 0.01)
+                .ToArray();
+            Assert.Equal(3, eRowCells.Length);
+            Assert.All(eRowCells, border =>
+                Assert.Equal(Colors.White, Assert.IsType<SolidColorBrush>(border.Background).Color));
 
             // The white acceptance-form frame must be behind the title, not cover it.
             var acceptanceOutput = Assert.Single(
