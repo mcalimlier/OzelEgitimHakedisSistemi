@@ -118,3 +118,10 @@ flowchart TD
 - Kabul tutanağında kaynak Excel'in mevcut eşlemesi korunur: iş süresi etiketinde “takvim günü” yazmasına rağmen değer “181 İş Günü” biçiminde gelir; “süre uzatımı dahil tarih” ve “işin bitirildiği tarih” hücreleri sözleşme bitiş tarihi formülünü kullanır. Bunlar kaynak şablon tutarsızlıklarıdır; farklı bir iş kuralı kararı verilmeden sessizce değiştirilmemelidir.
 - Hizmet İşleri Hakediş Raporu sayfasında “Tescile Dahil Değil”, “Avans verilmeyecektir.” ve “Yoktur.” sabit metinleri kaynak Excel'de açıkça vardır ve bu şablonda korunmalıdır. Kabul tutanağında bu metinler yer almaz; iki belge birbirine karıştırılmamalıdır.
 - Son kabul için test amaçlı PDF'lere ek olarak OEHS ÇIKTILAR ekranından gerçek kayıtla üretilmiş dört PDF de incelenmeli.
+
+
+## 7. Son kayıt düzenleme akışı
+
+Ana ekrana altı tıklanabilir adımlı bir iş akışı eklendi: Sözleşme → Yüklenici → Hat → Hakediş → Arşiv → Çıktılar.
+
+Arşivden açılan bir hakediş düzeltildiğinde OEHS güncel girdilerden yeniden hesaplama yapar ve eski/yeni net tutarı göstererek onay ister. Onay verilirse seçilen arşiv dosyası aynı revision numarasıyla güncellenir. Onay reddedilirse kayıt korunur. Sözleşme, firma ve hat kayıtlarında da kaydetme başarılı olduğunda form alanları temizlenir; kayıtlı öğe listede kalır.
