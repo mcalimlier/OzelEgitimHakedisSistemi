@@ -30,12 +30,12 @@ public sealed class ProgressPaymentWorkbookFormulaTests
         var totals = ProgressPaymentReportService.Calculate(current, new[] { previous, current });
 
         // K+T = 175; service amount excluding raw I+R is 135 after J/S discounts.
-        // D7 = I+R = 40; source D11 = H2 + D7 = 215.
+        // D7 = I+R = 40; validation macro requires D11 = D8 - D10 = 175.
         Assert.Equal(270m, totals.CumulativeServiceAmount);
         Assert.Equal(40m, totals.CurrentPriceDifference);
         Assert.Equal(310m, totals.CumulativeTotal);
         Assert.Equal(135m, totals.PreviousTotal);
-        Assert.Equal(215m, totals.CurrentTotal);
+        Assert.Equal(175m, totals.CurrentTotal);
     }
 
     [Fact]
