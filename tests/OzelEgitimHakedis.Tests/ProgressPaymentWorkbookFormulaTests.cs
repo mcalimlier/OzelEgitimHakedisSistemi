@@ -35,7 +35,7 @@ public sealed class ProgressPaymentWorkbookFormulaTests
         Assert.Equal(40m, totals.CurrentPriceDifference);
         Assert.Equal(390m, totals.CumulativeTotal);
         Assert.Equal(175m, totals.PreviousTotal);
-        Assert.Equal(175m, totals.CurrentTotal);
+        Assert.Equal(215m, totals.CurrentTotal);
     }
 
     [Fact]
