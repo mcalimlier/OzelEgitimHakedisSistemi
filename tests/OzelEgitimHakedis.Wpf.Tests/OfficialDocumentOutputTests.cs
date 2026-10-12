@@ -94,6 +94,64 @@ public sealed class OfficialDocumentOutputTests
     {
         RunOnSta(() =>
         {
+            var previousInput = new ProgressPaymentInput(
+                WorkDays: 1,
+                DailyPrice: 100m,
+                DiscountAmount: 0m,
+                PriceDifference: 0m,
+                ContractAmount: 100000m,
+                IsVatExempt: true,
+                TaxDebt: 0m,
+                SocialSecurityDebt: 0m,
+                MinimumWageSupport: 0m,
+                InspectionPenalty: 0m);
+
+            var noDeductions = new DeductionBreakdown(0m, 0m, 0m, 0m, 0m, 0m, 0m);
+            var previousCalculation = new ProgressPaymentCalculation(
+                ServiceAmount: 100m,
+                PriceDifferenceExcludingVat: 0m,
+                TotalAmount: 100m,
+                Vat: 0m,
+                Withholding: 0m,
+                InvoiceAmountAfterWithholding: 100m,
+                StampTax: 0m,
+                GrossAmount: 100m,
+                TotalDeductions: 0m,
+                NetPayable: 100m,
+                AdditionalGuarantee: 0m,
+                Deductions: noDeductions);
+
+            var previousPayment = new ProgressPaymentHistoryData(
+                Id: Guid.NewGuid(),
+                CreatedAt: new DateTime(2026, 9, 30, 12, 0, 0, DateTimeKind.Utc),
+                Input: previousInput,
+                Calculation: previousCalculation,
+                ProgressPaymentNumber: 1,
+                PeriodDate: new DateOnly(2026, 9, 30),
+                RouteNumber: "1",
+                RouteName: "Örnek Güzergâh",
+                WorkName: "Örnek Güzergâh",
+                ContractorName: "Örnek Yüklenici",
+                TenderNumber: "TEST-IHALE",
+                ContractNumber: "TEST-SOZ",
+                TenderDate: new DateOnly(2026, 8, 25),
+                ContractDate: new DateOnly(2026, 8, 25),
+                ContractStartDate: new DateOnly(2026, 9, 1),
+                ContractEndDate: new DateOnly(2027, 6, 30),
+                ContractorTaxOrIdentityNumber: "12345678901");
+
+            var input = new ProgressPaymentInput(
+                WorkDays: 1,
+                DailyPrice: 100m,
+                DiscountAmount: 0m,
+                PriceDifference: 10m,
+                ContractAmount: 100000m,
+                IsVatExempt: true,
+                TaxDebt: 2m,
+                SocialSecurityDebt: 0m,
+                MinimumWageSupport: 0m,
+                InspectionPenalty: 2m);
+
             var calculation = new ProgressPaymentCalculation(
                 ServiceAmount: 100m,
                 PriceDifferenceExcludingVat: 10m,
@@ -106,7 +164,35 @@ public sealed class OfficialDocumentOutputTests
                 TotalDeductions: 5m,
                 NetPayable: 105m,
                 AdditionalGuarantee: 0m,
-                Deductions: new DeductionBreakdown(0m, 1m, 0m, 0m, 0m, 0m, 0m));
+                Deductions: new DeductionBreakdown(0m, 1m, 2m, 2m, 0m, 0m, 0m));
+
+            var currentPayment = new ProgressPaymentHistoryData(
+                Id: Guid.NewGuid(),
+                CreatedAt: new DateTime(2026, 10, 31, 12, 0, 0, DateTimeKind.Utc),
+                Input: input,
+                Calculation: calculation,
+                ProgressPaymentNumber: 2,
+                PeriodDate: new DateOnly(2026, 10, 31),
+                RouteNumber: "1",
+                RouteName: "Örnek Güzergâh",
+                WorkName: "Örnek Güzergâh",
+                ContractorName: "Örnek Yüklenici",
+                TenderNumber: "TEST-IHALE",
+                ContractNumber: "TEST-SOZ",
+                TenderDate: new DateOnly(2026, 8, 25),
+                ContractDate: new DateOnly(2026, 8, 25),
+                ContractStartDate: new DateOnly(2026, 9, 1),
+                ContractEndDate: new DateOnly(2027, 6, 30),
+                ContractorTaxOrIdentityNumber: "12345678901");
+
+            var payments = new[] { previousPayment, currentPayment };
+            var reportTotals = ProgressPaymentReportService.Calculate(currentPayment, payments);
+            var reportNetPayable = ProgressPaymentReportService.CalculateReportNetPayable(
+                currentPayment,
+                reportTotals);
+            var previousDeduction = ProgressPaymentIcmalService.FindPreviousDeduction(
+                payments,
+                currentPayment);
 
             var context = new OehsOfficialDocumentContext(
                 WorkName: "Örnek Güzergâh",
@@ -121,17 +207,12 @@ public sealed class OfficialDocumentOutputTests
                 ContractEndDate: new DateOnly(2027, 6, 30),
                 ContractWorkDays: 180,
                 PeriodDate: new DateOnly(2026, 10, 31),
-                ProgressPaymentNumber: 1,
+                ProgressPaymentNumber: 2,
                 Calculation: calculation,
-                Payments: Array.Empty<ProgressPaymentHistoryData>(),
-                ReportTotals: new ProgressPaymentReportTotals(
-                    CumulativeServiceAmount: 200m,
-                    CurrentPriceDifference: 10m,
-                    CumulativeTotal: 210m,
-                    PreviousTotal: 100m,
-                    CurrentTotal: 120m),
-                ReportNetPayable: 115m,
-                PreviousDeduction: 0m,
+                Payments: ProgressPaymentReportService.OrderByPaymentPeriod(payments),
+                ReportTotals: reportTotals,
+                ReportNetPayable: reportNetPayable,
+                PreviousDeduction: previousDeduction,
                 GeneratedDate: new DateOnly(2026, 10, 31),
                 PreparerName: "TEST DÜZENLEYEN",
                 PreparerRole: "TEST MEMUR",
@@ -139,17 +220,61 @@ public sealed class OfficialDocumentOutputTests
                 ControllerRole: "TEST ŞUBE MÜDÜRÜ",
                 ApproverName: "TEST ONAYLAYAN",
                 ApproverRole: "TEST MÜDÜR");
-
             var outputs = OehsOfficialDocumentFactory.BuildSeparate(context);
             Assert.Equal(4, outputs.Count);
+
+            // Verify that the test PDFs use the same previous/current period data
+            // as the application report services rather than empty hard-coded history.
+            var paymentOutput = Assert.Single(
+                outputs.Where(output => output.Kind == OehsOfficialDocumentKind.HakedisRaporu));
+            var paymentText = GetPageText(Assert.IsType<FixedPage>(paymentOutput.Document.Pages[0].Child));
+            Assert.Contains("200,00 TL", paymentText);
+            Assert.Contains("10,00 TL", paymentText);
+            Assert.Contains("210,00 TL", paymentText);
+            Assert.Contains("100,00 TL", paymentText);
+            Assert.Contains("120,00 TL", paymentText);
+            Assert.Contains("115,00 TL", paymentText);
+            Assert.Contains("2", paymentText);
+
+            var serviceReport = Assert.Single(
+                outputs.Where(output => output.Kind == OehsOfficialDocumentKind.HizmetIsleriHakedisRaporu));
+            var serviceReportText = GetPageText(
+                Assert.IsType<FixedPage>(serviceReport.Document.Pages[0].Child));
+            Assert.Contains("Örnek Yüklenici", serviceReportText);
+            Assert.Contains("100.000,00 TL", serviceReportText);
+            Assert.Contains("25.08.2026 / TEST-SOZ", serviceReportText);
+            Assert.Contains("180 İş Günü", serviceReportText);
+
+            var acceptanceOutputForMapping = Assert.Single(
+                outputs.Where(output => output.Kind == OehsOfficialDocumentKind.KabulTutanagi));
+            var acceptanceMappingPage = Assert.IsType<FixedPage>(
+                acceptanceOutputForMapping.Document.Pages[0].Child);
+            var acceptanceMappingText = GetPageText(acceptanceMappingPage);
+            Assert.Contains("303 Takvim Günü", acceptanceMappingText);
+            var acceptanceNarrative = Assert.Single(acceptanceMappingPage.Children
+                .OfType<TextBlock>()
+                .Where(block => block.Text.StartsWith(
+                    "İlçe Milli Eğitim Müdürlüğü",
+                    StringComparison.Ordinal)));
+            Assert.Contains("TEST MEMUR TEST DÜZENLEYEN", acceptanceNarrative.Text);
+            Assert.Contains("TEST ŞUBE MÜDÜRÜ TEST KONTROL EDEN", acceptanceNarrative.Text);
+            Assert.DoesNotContain("Aşkın KESKİNBALTA", acceptanceNarrative.Text);
+            Assert.DoesNotContain("Halil ÖZENÇ", acceptanceNarrative.Text);
+
+            var icmalOutput = Assert.Single(
+                outputs.Where(output => output.Kind == OehsOfficialDocumentKind.HakedisIcmali));
+            var icmalText = GetPageText(Assert.IsType<FixedPage>(icmalOutput.Document.Pages[0].Child));
+            Assert.Contains("Hizmet Alımı İşi Eylül 2026", icmalText);
+            Assert.Contains("Hizmet Alımı İşi Ekim 2026", icmalText);
+            Assert.Contains("₺100,00", icmalText);
+            Assert.Contains("₺10,00", icmalText);
+            Assert.Contains("₺210,00", icmalText);
 
             // Every form consumes the signature identities from the data context.
             foreach (var output in outputs)
             {
                 var outputPage = Assert.IsType<FixedPage>(output.Document.Pages[0].Child);
-                var textBlocks = outputPage.Children.OfType<TextBlock>()
-                    .Select(block => block.Text)
-                    .ToArray();
+                var textBlocks = GetPageText(outputPage);
 
                 Assert.Contains("TEST DÜZENLEYEN", textBlocks);
                 Assert.Contains("TEST MEMUR", textBlocks);
@@ -210,6 +335,14 @@ public sealed class OfficialDocumentOutputTests
             }
         });
     }
+
+    private static string[] GetPageText(FixedPage page) =>
+        page.Children.SelectMany(element => element switch
+        {
+            TextBlock textBlock => new[] { textBlock.Text },
+            Border { Child: TextBlock textBlock } => new[] { textBlock.Text },
+            _ => Array.Empty<string>()
+        }).ToArray();
 
     private static void RunOnSta(Action action)
     {
