@@ -349,7 +349,7 @@ internal static class OehsOfficialDocumentFactory
             ("Yüklenicinin adı/ticari unvanı", c.ContractorName, 35),
             ("Sözleşme tarihi", FormatDate(c.ContractDate), 35),
             ("Sözleşme bedeli", FormatMoney(c.ContractAmount), 35),
-            ("Sözleşmeye göre işin süresi(takvim günü)", FormatWorkDays(c), 35),
+            ("Sözleşmeye göre işin süresi(takvim günü)", FormatCalendarDays(c.ContractStartDate, endDate), 35),
             ("Sözleşmeye göre işin bitirilmesi gereken tarih", FormatDate(endDate), 35),
             ("Varsa süre uzatımları", "", 35),
             ("Süre uzatımı dahil işin bitirilmesi gereken tarih", FormatLongDate(endDate), 35),
@@ -365,7 +365,7 @@ internal static class OehsOfficialDocumentFactory
         }
 
         var paragraphOne =
-            $"İlçe Milli Eğitim Müdürlüğü'nün {BuildWorkTitle(c, includeRouteNumber: true, includeStudentSuffix: false)} yüklenicisi {c.ContractorName} arasında imzalanan sözleşme kapsamında gerçekleştirilen iş için, Memur Aşkın KESKİNBALTA ve İlçe Milli Eğitim Şube Müdürü Halil ÖZENÇ tarafından inceleme yapılmış yüklenici, {c.ContractorName} tarafından {servicePeriod.Start:dd.MM.yyyy} / {servicePeriod.End:dd.MM.yyyy} tarihleri arasında yapılan işlerin,";
+            $"İlçe Milli Eğitim Müdürlüğü'nün {BuildWorkTitle(c, includeRouteNumber: true, includeStudentSuffix: false)} yüklenicisi {c.ContractorName} arasında imzalanan sözleşme kapsamında gerçekleştirilen iş için, {c.PreparerRole} {c.PreparerName} ve {c.ControllerRole} {c.ControllerName} tarafından inceleme yapılmış yüklenici, {c.ContractorName} tarafından {servicePeriod.Start:dd.MM.yyyy} / {servicePeriod.End:dd.MM.yyyy} tarihleri arasında yapılan işlerin,";
         var paragraphTwo =
             "Sözleşme ve eklerine uygun olduğu ve kabule engel olabilecek eksik kusur ve arızaların bulunmadığı görülmüştür.";
         AddText(page, paragraphOne, x + 2, 501, w - 4, 124, 9.5, false, TextAlignment.Justify);
@@ -565,6 +565,18 @@ internal static class OehsOfficialDocumentFactory
         c.ContractWorkDays > 0
             ? $"{c.ContractWorkDays} İş Günü"
             : "-";
+
+    private static string FormatCalendarDays(DateOnly? startDate, DateOnly? endDate)
+    {
+        if (!startDate.HasValue || !endDate.HasValue || endDate.Value < startDate.Value)
+            return "-";
+
+        // The acceptance template explicitly asks for calendar days, while the
+        // contract editor stores workdays. Derive this separate value from the
+        // authoritative contract start/end dates instead of mislabeling workdays.
+        var inclusiveDays = endDate.Value.DayNumber - startDate.Value.DayNumber + 1;
+        return $"{inclusiveDays.ToString(Turkish)} Takvim Günü";
+    }
 
     private static string FormatDate(DateOnly? date) =>
         date?.ToString("dd.MM.yyyy", Turkish) ?? "-";
