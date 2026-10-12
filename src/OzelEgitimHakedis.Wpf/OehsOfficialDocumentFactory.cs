@@ -352,7 +352,7 @@ internal static class OehsOfficialDocumentFactory
             ("Sözleşmeye göre işin süresi(takvim günü)", FormatCalendarDays(c.ContractStartDate, endDate), 35),
             ("Sözleşmeye göre işin bitirilmesi gereken tarih", FormatDate(endDate), 35),
             ("Varsa süre uzatımları", "", 35),
-            ("Süre uzatımı dahil işin bitirilmesi gereken tarih", FormatLongDate(endDate), 35),
+            ("Süre uzatımı dahil işin bitirilmesi gereken tarih", "", 35),
             ("İşin bitirildiği tarih", FormatLongDate(servicePeriod.End), 35)
         };
 
