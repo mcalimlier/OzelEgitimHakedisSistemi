@@ -215,6 +215,41 @@ public sealed class ProgressPaymentArchiveStoreTests
     }
 
     [Fact]
+    public void Replace_ShouldOverwriteSameArchiveFileWithRecalculatedPaymentAndKeepRevision()
+    {
+        using var temp = new TempDirectory();
+        var store = new ProgressPaymentArchiveStore(temp.Path);
+        var original = CreateArchive(1);
+        var path = store.Save(original);
+
+        var saved = ProgressPaymentArchiveStore.Load(path);
+        var changedInput = saved.ProgressPayment.Input with
+        {
+            WorkDays = 24,
+            DailyPrice = 1200m,
+            DiscountAmount = 25m
+        };
+        var recalculatedPayment = saved.ProgressPayment with
+        {
+            Input = changedInput,
+            Calculation = ProgressPaymentCalculator.Calculate(changedInput)
+        };
+        var updated = saved with { ProgressPayment = recalculatedPayment };
+
+        var replacedPath = store.Replace(path, updated);
+        var loaded = ProgressPaymentArchiveStore.Load(replacedPath);
+
+        Assert.Equal(path, replacedPath);
+        Assert.True(File.Exists(path));
+        Assert.Equal(1, loaded.Revision);
+        Assert.Equal(24, loaded.ProgressPayment.Input.WorkDays);
+        Assert.Equal(1200m, loaded.ProgressPayment.Input.DailyPrice);
+        Assert.Equal(ProgressPaymentCalculator.Calculate(changedInput), loaded.ProgressPayment.Calculation);
+        Assert.Single(store.List());
+        Assert.DoesNotContain("_v02.json", replacedPath, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void Replace_ShouldRefuseIdentityCollisionAndPreserveBothArchives()
     {
         using var temp = new TempDirectory();
