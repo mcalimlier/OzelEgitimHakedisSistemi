@@ -1792,6 +1792,8 @@ public partial class MainWindow : Window
 
         RouteSelectedTenderTextBlock.Text = "İhale: seçilmedi";
         RouteSelectedContractorTextBlock.Text = "Yüklenici: firma seçilmemiş";
+        UpdateRouteListView();
+        UpdateRouteSummary();
         ClearRouteValidationVisuals();
         SetRouteEditorMode(false);
     }
