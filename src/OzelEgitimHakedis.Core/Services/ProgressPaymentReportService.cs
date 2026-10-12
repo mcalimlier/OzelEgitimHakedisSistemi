@@ -82,12 +82,11 @@ public static class ProgressPaymentReportService
         // from İcmal Verileri!O. Price differences are kept in their own columns.
         var previousTotal = previousServiceAmount;
 
-        // Excel formula in Hakediş Raporu!D11, despite the row label saying C-D:
-        // H2 = K + T; D7 = raw I + R; D11 = IF(D7<0,H2-ABS(D7),H2+D7).
-        // Keep the source formula exactly; do not silently replace it with C-D.
-        var currentTotal = currentPriceDifference < 0m
-            ? current.Calculation.TotalAmount - Math.Abs(currentPriceDifference)
-            : current.Calculation.TotalAmount + currentPriceDifference;
+        // The workbook's "Hesaplamayı Kontrol Et" macro is the authoritative
+        // validation rule: D11 must equal D8 - D10. The visible E-row label also
+        // states C - D. Do not add the price difference to Calculation.TotalAmount
+        // again; it already includes it for the current period.
+        var currentTotal = cumulativeTotal - previousTotal;
 
         return new ProgressPaymentReportTotals(
             cumulativeServiceAmount,
