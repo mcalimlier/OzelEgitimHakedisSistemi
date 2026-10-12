@@ -255,13 +255,13 @@ internal static class OehsOfficialDocumentFactory
             ("Sözleşme Bedeli", FormatMoney(c.ContractAmount)),
             ("İhale Tarihi", FormatDate(c.TenderDate)),
             ("Sözleşme Tarihi ve No.su", $"{FormatDate(c.ContractDate)}{(string.IsNullOrWhiteSpace(c.ContractNumber) ? "" : " / " + c.ContractNumber)}"),
-            ("Sözleşmenin Sayıştayca Tescil Tarihi ve No'su", ""),
-            ("Tescilin Yükleniciye Tebliğ Tarihi", ""),
+            ("Sözleşmenin Sayıştayca Tescil Tarihi ve No'su", "Tescile Dahil Değil"),
+            ("Tescilin Yükleniciye Tebliğ Tarihi", "Tescile Dahil Değil"),
             ("İşyeri Teslim Tarihi", FormatDate(c.ContractStartDate)),
             ("Sözleşmeye Göre İşin Süresi", FormatWorkDays(c)),
             ("Sözleşmeye Göre İş Bitim Tarihi", FormatDate(c.ContractEndDate)),
-            ("Verilen Avanslar Toplamı", ""),
-            ("Mahsubu Yapılan Avansın Toplam Tutarı", "")
+            ("Verilen Avanslar Toplamı", "Avans verilmeyecektir."),
+            ("Mahsubu Yapılan Avansın Toplam Tutarı", "Yoktur.")
         };
         var infoY = 239d;
         foreach (var row in info)
