@@ -261,7 +261,7 @@
                                 </Border>                                                                <Border Style="{StaticResource Card}" Padding="8.5" Margin="0,0,0,8.5">
                                     <StackPanel>
                                         <TextBlock Text="İŞ AKIŞI / İLERLEME ŞABLONU" Style="{StaticResource CardTitle}"/>
-                                        <TextBlock Text="Bu sırayı izleyin. Her adım ilgili forma gider; kayıt başarılı olduğunda giriş alanları temizlenir." Style="{StaticResource CardSubtitle}" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                                        <TextBlock Text="Önce ana bilgileri girin; dönem hesabını kontrol edip arşivleyin, ardından dört belgeyi üretin. Ana kayıt formları kaydetme sonrası temizlenir." Style="{StaticResource CardSubtitle}" Margin="0,3,0,0" TextWrapping="Wrap"/>
                                         <UniformGrid Columns="6" Margin="0,8,0,0">
                                             <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="6" Margin="0,0,4,0">
                                                 <StackPanel>
