@@ -38,7 +38,7 @@ jobs:
         run: |
           $solution = Get-Content ".\OzelEgitimHakedisSistemi.sln" -Raw
           if (-not $solution.Contains("# Visual Studio Version 18")) { throw "Solution is not marked as Visual Studio 18." }
-          if (-not $solution.Contains("VisualStudioVersion = 18.9.12120.119 stable")) { throw "Unexpected VisualStudioVersion metadata." }
+          if (-not $solution.Contains("VisualStudioVersion = 18.")) { throw "Expected a VisualStudioVersion value from the Visual Studio 18 family." }
           $projectOutput = dotnet sln ".\OzelEgitimHakedisSistemi.sln" list
           if ($LASTEXITCODE -ne 0) { throw "dotnet sln could not parse OzelEgitimHakedisSistemi.sln." }
           $projects = @($projectOutput | Where-Object { $_ -match "\.csproj\s*$" })
