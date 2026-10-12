@@ -138,3 +138,10 @@ Bunlar başlangıç değerleridir; mevcut ekranlardaki açık `FontSize` değerl
 3. Uygulamayı gerçek Windows ortamında kabul testi listesiyle kontrol edin.
 4. Ekran görüntüsü ve gerekçesiyle doğrulamadan tüm uygulamaya küresel stil değişikliği uygulamayın.
 5. Bir ekrandaki düzeltmeyi diğer ekranlara kontrollü şekilde adapte edin.
+
+
+## 9. Visual Studio 18 çözüm dosyası kararlılığı
+
+`OzelEgitimHakedisSistemi.sln` Visual Studio 18 üst bilgisiyle depoya kaydedildi. Dört proje ve her birinin Debug/Release yapılandırma eşlemeleri korunmuştur. `.sln` dosya biçimi `Format Version 12.00` olarak kalır; `# Visual Studio Version 18` ve `VisualStudioVersion` alanları dosyayı son kaydeden Visual Studio ailesi/sürümü hakkında bilgi taşır. Bu ayrım Microsoft'un [Solution (.sln) file açıklamasında](https://learn.microsoft.com/en-us/visualstudio/extensibility/internals/solution-dot-sln-file) belgelenmiştir.
+
+CI artık çözüm üst bilgisinin VS18 olduğunu, `dotnet sln list` komutunun dört projeyi bulduğunu ve tüm çözümün derlenebildiğini doğrulayan adımlar içerir. Böylece gelecekte ana dalda VS17 üst bilgisine geri dönüş veya proje eşlemelerinin kaybolması otomatik kontrolde yakalanır. VS18 dosyası depodan alındıktan sonra yalnızca IDE sürüm/biçim değişikliği yüzünden yine Changes çıkarsa bu dosyayı commit etmeden önce diff karşılaştırılmalıdır.
