@@ -509,10 +509,10 @@ public partial class MainWindow : Window
         ContractWorkDaysTextBox.Clear();
         ContractTransportDailyPriceTextBox.Clear();
         ContractAmountTextBox.Clear();
-        StartDatePicker.SelectedDate = DateTime.Today;
-        EndDatePicker.SelectedDate = DateTime.Today;
-        TenderDatePicker.SelectedDate = DateTime.Today;
-        ContractDatePicker.SelectedDate = DateTime.Today;
+        StartDatePicker.SelectedDate = null;
+        EndDatePicker.SelectedDate = null;
+        TenderDatePicker.SelectedDate = null;
+        ContractDatePicker.SelectedDate = null;
         VatExemptCheckBox.IsChecked = false;
     }
 
@@ -653,29 +653,68 @@ public partial class MainWindow : Window
         return "OEHS_Hakediş.pdf";
     }
 
-    private void SaveArchiveCorrectionSnapshot(ProgressPaymentArchive updatedArchive, string sectionName)
+    private bool SaveArchiveCorrectionSnapshot(ProgressPaymentArchive updatedArchive, string sectionName)
     {
+        var correctionSection = _archiveCorrectionSection;
+
         try
         {
-            var finalPath = _archiveStore.Replace(_editingArchiveSourcePath!, updatedArchive);
+            // Recalculate from saved inputs before asking permission to replace the archive.
+            var recalculatedPayment = updatedArchive.ProgressPayment with
+            {
+                Calculation = ProgressPaymentCalculator.Calculate(updatedArchive.ProgressPayment.Input)
+            };
+            updatedArchive = updatedArchive with
+            {
+                ProgressPayment = recalculatedPayment,
+                PdfFileName = BuildArchivePdfFileName(recalculatedPayment)
+            };
+
+            var oldNetPayable = _editingArchiveSnapshot?.ProgressPayment.Calculation.NetPayable ?? 0m;
+            var newNetPayable = recalculatedPayment.Calculation.NetPayable;
+            var confirmation = MessageBox.Show(
+                $"{sectionName} değişiklikleri uygulansın mı?\n\n" +
+                $"Hakediş No: {recalculatedPayment.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"}\n" +
+                $"Dönem: {recalculatedPayment.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"}\n" +
+                $"Önceki net tutar: {FormatMoney(oldNetPayable)}\n" +
+                $"Yeni hesaplanan net tutar: {FormatMoney(newNetPayable)}\n\n" +
+                "Evet seçilirse mevcut arşiv kaydı yeniden hesaplanıp aynı kayıt/revision üzerine yazılacak. " +
+                "Hayır seçilirse kayıt değişmeden kalacak.",
+                "OEHS — Değişiklik Onayı",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (confirmation != MessageBoxResult.Yes)
+            {
+                CalculationStatusTextBlock.Text = "Değişiklikler uygulanmadı; arşiv kaydı korunuyor.";
+                ArchiveStatusTextBlock.Text = "DEĞİŞİKLİK İPTAL EDİLDİ";
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(_editingArchiveSourcePath))
+                throw new ProgressPaymentArchiveException("Güncellenecek arşiv dosyası belirlenemedi.");
+
+            var finalPath = _archiveStore.Replace(_editingArchiveSourcePath, updatedArchive);
             ArchiveStatusTextBlock.Text = $"ARŞİV v{updatedArchive.Revision:00} GÜNCELLENDİ";
             CalculationStatusTextBlock.Text =
-                $"{sectionName} düzeltmesi mevcut arşiv v{updatedArchive.Revision:00} üzerinde kaydedildi.";
+                $"{sectionName} değişiklikleri yeniden hesaplandı ve mevcut arşiv v{updatedArchive.Revision:00} üzerine kaydedildi.";
 
+            ClearArchivedEditorFields(correctionSection);
             ClearArchiveCorrectionState();
             UpdateArchiveView();
             NavigationButton_Click(NavArchives, new RoutedEventArgs(Button.ClickEvent, NavArchives));
 
             MessageBox.Show(
-                $"{sectionName} başarıyla güncellendi.\n\n" +
-                $"Mevcut arşiv v{updatedArchive.Revision:00} aynı revision numarasıyla güncellendi.\n" +
-                "Yeni arşiv/revision oluşturulmadı.\n\n" +
+                $"{sectionName} değişiklikleri başarıyla uygulandı.\n\n" +
+                $"Yeni hesaplanan net tutar: {FormatMoney(newNetPayable)}\n" +
+                $"Mevcut arşiv revision'ı v{updatedArchive.Revision:00} korundu; yeni revision oluşturulmadı.\n\n" +
                 $"Dosya: {Path.GetFileName(finalPath)}",
                 "OEHS — Arşiv Güncellendi",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
+            return true;
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ProgressPaymentArchiveException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ProgressPaymentArchiveException or ArgumentOutOfRangeException)
         {
             ArchiveStatusTextBlock.Text = "ARŞİV HATASI";
             CalculationStatusTextBlock.Text = ex.Message;
@@ -684,6 +723,49 @@ public partial class MainWindow : Window
                 "OEHS — Arşiv Hatası",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
+            return false;
+        }
+    }
+
+    private void ClearArchivedEditorFields(ArchiveCorrectionSection section)
+    {
+        switch (section)
+        {
+            case ArchiveCorrectionSection.Contract:
+                _editingContractTender = null;
+                ClearContractFormOnly();
+                ClearContractValidationVisuals();
+                ContractStatusTextBlock.Text = "Arşiv sözleşmesi güncellendi; giriş alanları temizlendi.";
+                break;
+
+            case ArchiveCorrectionSection.Contractor:
+                _editingContractorKey = null;
+                ContractorNameTextBox.Clear();
+                ContractorTaxTextBox.Clear();
+                ContractorAddressTextBox.Clear();
+                ContractorPhoneTextBox.Clear();
+                ContractorEmailTextBox.Clear();
+                ContractorBankTextBox.Clear();
+                ContractorContactTextBox.Clear();
+                ContractorStatusTextBlock.Text = "Arşiv yüklenicisi güncellendi; giriş alanları temizlendi.";
+                break;
+
+            case ArchiveCorrectionSection.Route:
+                _editingRoute = null;
+                RouteNumberTextBox.Clear();
+                RouteNameTextBox.Clear();
+                RouteTransportWorkDaysTextBox.Clear();
+                RouteGuideWorkDaysTextBox.Clear();
+                RouteGuideDailyPriceTextBox.Clear();
+                ClearRouteValidationVisuals();
+                RouteStatusTextBlock.Text = "Arşiv hattı güncellendi; giriş alanları temizlendi.";
+                break;
+
+            case ArchiveCorrectionSection.ProgressPayment:
+                _editingHistoryId = null;
+                ClearProgressEntryFields();
+                CalculationStatusTextBlock.Text = "Arşiv hakedişi güncellendi; giriş alanları temizlendi.";
+                break;
         }
     }
 
@@ -1139,6 +1221,7 @@ public partial class MainWindow : Window
         ContractorEmailTextBox.Clear();
         ContractorBankTextBox.Clear();
         ContractorContactTextBox.Clear();
+        SetContractorEditorMode(false);
         ContractorStatusTextBlock.Text = "Yeni firma kaydı için alanlar temizlendi.";
     }
 
@@ -1691,10 +1774,26 @@ public partial class MainWindow : Window
         RouteNumberTextBox.IsReadOnly = false;
         RouteNumberTextBox.Clear();
         RouteNameTextBox.Clear();
-        RouteTransportWorkDaysTextBox.Text = "0";
-        RouteGuideWorkDaysTextBox.Text = "0";
-        RouteGuideDailyPriceTextBox.Text = "0";
+        RouteTransportWorkDaysTextBox.Clear();
+        RouteGuideWorkDaysTextBox.Clear();
+        RouteGuideDailyPriceTextBox.Clear();
+
+        _suppressSelectionEvents = true;
+        try
+        {
+            RouteTenderListBox.SelectedItem = null;
+            RouteContractorListBox.ItemsSource = _contractors.ToArray();
+            RouteContractorListBox.SelectedItem = null;
+        }
+        finally
+        {
+            _suppressSelectionEvents = false;
+        }
+
+        RouteSelectedTenderTextBlock.Text = "İhale: seçilmedi";
+        RouteSelectedContractorTextBlock.Text = "Yüklenici: firma seçilmemiş";
         ClearRouteValidationVisuals();
+        SetRouteEditorMode(false);
     }
 
     private void UpdateRouteSummary()
@@ -1976,7 +2075,8 @@ public partial class MainWindow : Window
 
         _editingContractTender = null;
         SetContractEditorMode(false);
-        ApplyContractToForm(proposedContract);
+        ClearContractFormOnly();
+        ClearContractValidationVisuals();
         SavePersistedData();
         UpdateContractSelectors();
         UpdateRouteListView();
@@ -2720,10 +2820,6 @@ public partial class MainWindow : Window
                         PdfFileName = BuildArchivePdfFileName(updatedPayment)
                     },
                     "Hakediş girdileri");
-
-                ProgressCalculationSummaryTextBlock.Text = "ARŞİV GÜNCELLENDİ";
-                ArchiveCurrentProgressButton.Visibility = Visibility.Collapsed;
-                CorrectCurrentProgressButton.Visibility = Visibility.Collapsed;
                 return;
             }
 
@@ -4736,6 +4832,57 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
     {
         if (sender is TextBox textBox && string.IsNullOrWhiteSpace(textBox.Text))
             textBox.Text = "0";
+    }
+
+    private void ClearProgressEntryFields()
+    {
+        foreach (var textBox in new[]
+        {
+            WorkDaysTextBox, DailyPriceTextBox, GuideWorkDaysTextBox, GuideDailyPriceTextBox,
+            DiscountTextBox, GuideDiscountTextBox, PriceDifferenceTextBox, GuidePriceDifferenceTextBox,
+            TaxDebtTextBox, SocialSecurityDebtTextBox, MinimumWageSupportTextBox, InspectionPenaltyTextBox
+        })
+        {
+            textBox.Clear();
+        }
+
+        ProgressNumberTextBox.Clear();
+        ProgressPeriodDatePicker.SelectedDate = null;
+        _suppressSelectionEvents = true;
+        try
+        {
+            ProgressTenderListBox.SelectedItem = null;
+            ProgressRouteComboBox.SelectedItem = null;
+        }
+        finally
+        {
+            _suppressSelectionEvents = false;
+        }
+
+        ClearProgressValidationVisuals();
+        ProgressValidationBanner.Visibility = Visibility.Collapsed;
+        ProgressValidationMessageTextBlock.Text = string.Empty;
+        ServiceAmountResultTextBlock.Text = FormatMoney(0m);
+        GuideServiceAmountResultTextBlock.Text = FormatMoney(0m);
+        TransportPriceDifferenceResultTextBlock.Text = FormatMoney(0m);
+        GuidePriceDifferenceResultTextBlock.Text = FormatMoney(0m);
+        CombinedPriceDifferenceResultTextBlock.Text = FormatMoney(0m);
+        TotalAmountResultTextBlock.Text = FormatMoney(0m);
+        VatResultTextBlock.Text = FormatMoney(0m);
+        DeductionsResultTextBlock.Text = FormatMoney(0m);
+        GrossResultTextBlock.Text = FormatMoney(0m);
+        NetResultTextBlock.Text = FormatMoney(0m);
+        NetControlResultTextBlock.Text = FormatMoney(0m);
+        WithholdingResultTextBlock.Text = FormatMoney(0m);
+        StampTaxResultTextBlock.Text = FormatMoney(0m);
+        TaxDebtResultTextBlock.Text = FormatMoney(0m);
+        SocialSecurityDebtResultTextBlock.Text = FormatMoney(0m);
+        MinimumWageSupportResultTextBlock.Text = FormatMoney(0m);
+        InspectionPenaltyResultTextBlock.Text = FormatMoney(0m);
+        AdditionalGuaranteeResultTextBlock.Text = FormatMoney(0m);
+        ProgressWorkDaysSummaryTextBlock.Text = "0";
+        ProgressNetSummaryTextBlock.Text = FormatMoney(0m);
+        ProgressCalculationSummaryTextBlock.Text = "HAZIR";
     }
 
     private void ClearProgressValidationVisuals()
