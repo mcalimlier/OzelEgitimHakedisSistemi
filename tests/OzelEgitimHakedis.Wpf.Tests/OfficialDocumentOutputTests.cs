@@ -253,6 +253,7 @@ public sealed class OfficialDocumentOutputTests
             Assert.Contains("303 Takvim Günü", acceptanceMappingText);
             Assert.Contains("30.06.2027", acceptanceMappingText);
             Assert.Contains("31 Ekim 2026 Cumartesi", acceptanceMappingText);
+            Assert.DoesNotContain("30 Haziran 2027 Çarşamba", acceptanceMappingText);
             Assert.DoesNotContain("Tescile Dahil Değil", acceptanceMappingText);
             Assert.DoesNotContain("Avans verilmeyecektir.", acceptanceMappingText);
             Assert.DoesNotContain("Yoktur.", acceptanceMappingText);
