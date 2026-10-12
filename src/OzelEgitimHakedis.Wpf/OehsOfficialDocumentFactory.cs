@@ -348,11 +348,11 @@ internal static class OehsOfficialDocumentFactory
             ("Yüklenicinin adı/ticari unvanı", c.ContractorName, 35),
             ("Sözleşme tarihi", FormatDate(c.ContractDate), 35),
             ("Sözleşme bedeli", FormatMoney(c.ContractAmount), 35),
-            ("Sözleşmeye göre işin süresi(takvim günü)", FormatCalendarDays(c.ContractStartDate, endDate), 35),
+            ("Sözleşmeye göre işin süresi(takvim günü)", FormatWorkDays(c), 35),
             ("Sözleşmeye göre işin bitirilmesi gereken tarih", FormatDate(endDate), 35),
             ("Varsa süre uzatımları", "", 35),
-            ("Süre uzatımı dahil işin bitirilmesi gereken tarih", "", 35),
-            ("İşin bitirildiği tarih", FormatLongDate(servicePeriod.End), 35)
+            ("Süre uzatımı dahil işin bitirilmesi gereken tarih", FormatDate(endDate), 35),
+            ("İşin bitirildiği tarih", FormatLongDate(endDate), 35)
         };
 
         var y = 60d;
@@ -565,17 +565,6 @@ internal static class OehsOfficialDocumentFactory
             ? $"{c.ContractWorkDays} İş Günü"
             : "-";
 
-    private static string FormatCalendarDays(DateOnly? startDate, DateOnly? endDate)
-    {
-        if (!startDate.HasValue || !endDate.HasValue || endDate.Value < startDate.Value)
-            return "-";
-
-        // The acceptance template explicitly asks for calendar days, while the
-        // contract editor stores workdays. Derive this separate value from the
-        // authoritative contract start/end dates instead of mislabeling workdays.
-        var inclusiveDays = endDate.Value.DayNumber - startDate.Value.DayNumber + 1;
-        return $"{inclusiveDays.ToString(Turkish)} Takvim Günü";
-    }
 
     private static string FormatDate(DateOnly? date) =>
         date?.ToString("dd.MM.yyyy", Turkish) ?? "-";
