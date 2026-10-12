@@ -267,7 +267,6 @@ public sealed class OfficialDocumentOutputTests
             Assert.Contains("180 İş Günü", acceptanceMappingText);
             Assert.Contains("30.06.2027", acceptanceMappingText);
             Assert.Contains("30 Haziran 2027 Çarşamba", acceptanceMappingText);
-            Assert.Contains("01.10.2026 / 31.10.2026", acceptanceMappingText);
             Assert.DoesNotContain("Tescile Dahil Değil", acceptanceMappingText);
             Assert.DoesNotContain("Avans verilmeyecektir.", acceptanceMappingText);
             Assert.DoesNotContain("Yoktur.", acceptanceMappingText);
@@ -278,6 +277,7 @@ public sealed class OfficialDocumentOutputTests
                     StringComparison.Ordinal)));
             Assert.Contains("TEST MEMUR TEST DÜZENLEYEN", acceptanceNarrative.Text);
             Assert.Contains("TEST ŞUBE MÜDÜRÜ TEST KONTROL EDEN", acceptanceNarrative.Text);
+            Assert.Contains("01.10.2026 / 31.10.2026", acceptanceNarrative.Text);
             Assert.DoesNotContain("Aşkın KESKİNBALTA", acceptanceNarrative.Text);
             Assert.DoesNotContain("Halil ÖZENÇ", acceptanceNarrative.Text);
 
