@@ -62,7 +62,6 @@ internal static class OehsOfficialDocumentFactory
     private static readonly Brush Black = Brushes.Black;
     private static readonly Brush White = Brushes.White;
     private static readonly Brush TotalGray = new SolidColorBrush(Color.FromRgb(217, 217, 217));
-    private static readonly Brush WarningRed = new SolidColorBrush(Color.FromRgb(255, 0, 0));
     private static readonly Brush LightGray = new SolidColorBrush(Color.FromRgb(242, 242, 242));
 
     public static FixedDocument BuildCombined(OehsOfficialDocumentContext context)
@@ -135,13 +134,13 @@ internal static class OehsOfficialDocumentFactory
         const double x = 67;
         const double w = 659;
 
-        // Reference PDF 1(3): title sits above a single A4 form frame.
-        AddOuterFrame(page, x, 60, w, 1001);
+        // Match the source workbook print area: title is inside the outer frame.
+        AddOuterFrame(page, x, 31, w, 1030);
         var paymentNo = c.ProgressPaymentNumber?.ToString(Turkish) ?? "-";
         var routeNo = string.IsNullOrWhiteSpace(c.RouteNumber) ? "-" : c.RouteNumber.Trim();
         var date = FormatDate(c.PeriodDate);
 
-        AddText(page, "HAK EDİŞ RAPORU", x, 32, w, 29, 16, true, TextAlignment.Center);
+        AddText(page, "HAK EDİŞ RAPORU", x, 32, w, 25, 16, true, TextAlignment.Center);
         AddCell(page, BuildWorkTitle(c, includeRouteNumber: true, includeStudentSuffix: false), x, 60, 411, 87, 9.5, true, TextAlignment.Left, White, new Thickness(5, 5, 5, 3));
         AddCell(page, $"Hakediş No : {paymentNo}", x + 411, 60, w - 411, 43.5, 10.5, true, TextAlignment.Center);
         AddCell(page, $"Hat No : {routeNo}", x + 411, 103.5, w - 411, 43.5, 10.5, true, TextAlignment.Center);
@@ -163,11 +162,11 @@ internal static class OehsOfficialDocumentFactory
             y += 28;
         }
 
-        y += 32;
+        y += 18;
         var summaryRows = new (string Key, string Label, decimal Value, Brush Fill)[]
         {
             ("D", "Bir Önceki Hakedişlerin Toplam Tutarı", c.ReportTotals.PreviousTotal, White),
-            ("E", "Bu Hakedişin Tutarı ( C - D )", c.ReportTotals.CurrentTotal, WarningRed),
+            ("E", "Bu Hakedişin Tutarı ( C - D )", c.ReportTotals.CurrentTotal, White),
             ("F", "KDV  %10 + %20", c.Calculation.Vat, White),
             ("G", "Tahakkuk Tutarı", c.ReportTotals.CurrentTotal + c.Calculation.Vat, TotalGray)
         };
@@ -196,8 +195,7 @@ internal static class OehsOfficialDocumentFactory
             ("l)", "Asgari Ücret Destek Tutarı Kesintisi", c.Calculation.Deductions.MinimumWageSupport, 28)
         };
         var deductionsHeight = deductions.Sum(d => d.Height);
-        AddCell(page, "", x, y, 165, deductionsHeight, 10, true, TextAlignment.Center, White, new Thickness(0));
-        AddRotatedText(page, "KESİNTİLER VE MAHSUPLAR", x, y, 165, deductionsHeight, 10, true, -90);
+        AddCell(page, "KESİNTİLER VE MAHSUPLAR", x, y, 165, deductionsHeight, 9, true, TextAlignment.Center, White, new Thickness(4, 0, 4, 0));
 
         foreach (var row in deductions)
         {
@@ -218,9 +216,10 @@ internal static class OehsOfficialDocumentFactory
         var footerY = Math.Max(y + 16, 820);
         AddText(page, "Yüklenici", x + 45, footerY, w - 90, 22, 10, true, TextAlignment.Left);
         AddText(page, c.ContractorName, x + 12, footerY + 23, w - 24, 36, 9.5, false, TextAlignment.Left);
-        AddSignatures(page, footerY + 85, c, "M.Y.H.B.Y. Örnek No :4/10",
-            leftX: 115, leftWidth: 205, rightX: 435, rightWidth: 200,
-            nameOffset: 34, roleOffset: 48, dateOffset: 80, directorOffset: 112, titleOffset: 128, footerY: 1060);
+        // The original Hakediş Raporu sheet ends with the contractor block and
+        // the M.Y.H.B.Y. form number; unlike the other three sheets it has no
+        // shared signature panel. Keep this template faithful to that print area.
+        AddText(page, "M.Y.H.B.Y. Örnek No :4/10", x + 4, 1040, 220, 16, 7.5, false, TextAlignment.Left);
         return page;
     }
 
