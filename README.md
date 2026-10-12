@@ -23,6 +23,10 @@ OEHS, özel eğitim hizmetleri için sözleşme/ihale bilgilerini, hatları, yü
 - WPF `DocumentViewer` tabanlı belge önizlemesi ve doğrudan Windows yazdırma iletişim kutusu
 - xUnit testleri ve Windows üzerinde derleme/yayın akışı
 
+## Son PDF görsel kontrolü
+
+Windows'ta dört örnek A4 PDF çıktısını yerel ortamda oluşturmak için depo kökünde PowerShell açıp ` .\scripts\Generate-OfficialPdfSmoke.ps1` komutunu çalıştırın. Kılavuz: [PDF görsel inceleme adımları](docs/UI_UX_TASMA_VE_DPI_DUZELTME_KILAVUZU.md#10-son-gorsel-kontrol-icin-yerel-pdf-uretimi).
+
 ## Arayüz düzeni ve DPI
 
 WPF ekranlarında metin kesilmesi, düğme taşması ve yüksek DPI ölçeklendirmesi için [UI/UX taşma ve DPI düzeltme kılavuzu](docs/UI_UX_TASMA_VE_DPI_DUZELTME_KILAVUZU.md) hazırlanmıştır. Kılavuzda mevcut riskler, önerilen XAML örüntüleri ve Windows üzerinde uygulanacak görsel kabul testleri açıklanır.
