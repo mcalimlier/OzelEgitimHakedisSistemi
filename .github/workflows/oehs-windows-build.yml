@@ -73,6 +73,22 @@ jobs:
           if ($app -notmatch '<Style x:Key="NavButton"[\s\S]*?<Setter Property="Height" Value="40"/>') { throw "Navigation button height no longer matches the compact layout." }
           if ($app -notmatch '<Style x:Key="PageTitle"[\s\S]*?<Setter Property="FontSize" Value="19.5"/>') { throw "Page title typography was not reduced to the compact target." }
 
+      - name: Verify archive edits and workflow roadmap
+        shell: pwsh
+        run: |
+          $code = Get-Content ".\src\OzelEgitimHakedis.Wpf\MainWindow.xaml.cs" -Raw
+          $xaml = Get-Content ".\src\OzelEgitimHakedis.Wpf\MainWindow.xaml" -Raw
+          $archiveTests = Get-Content ".\tests\OzelEgitimHakedis.Tests\ProgressPaymentArchiveStoreTests.cs" -Raw
+          if (-not $code.Contains("değişiklikleri uygulansın mı?")) { throw "Archive edit confirmation prompt is missing." }
+          if (-not $code.Contains("Calculation = ProgressPaymentCalculator.Calculate(updatedArchive.ProgressPayment.Input)")) { throw "Archive edits must recalculate the payment from saved inputs before replacement." }
+          if (-not $code.Contains("_archiveStore.Replace(_editingArchiveSourcePath, updatedArchive)")) { throw "Archive edits must replace the selected file rather than creating a new revision." }
+          if (-not $code.Contains("private void ClearProgressEntryFields()")) { throw "Archive progress-edit inputs must be cleared after successful save." }
+          if (-not $xaml.Contains("İŞ AKIŞI / İLERLEME ŞABLONU")) { throw "The clickable workflow roadmap is missing from the home screen." }
+          foreach ($step in @('Tag="Contract"', 'Tag="Contractors"', 'Tag="Lines"', 'Tag="Progress"', 'Tag="Archives"', 'Tag="Reports"')) {
+            if (-not $xaml.Contains($step)) { throw "Workflow roadmap navigation target is missing: $step" }
+          }
+          if (-not $archiveTests.Contains("Replace_ShouldOverwriteSameArchiveFileWithRecalculatedPaymentAndKeepRevision")) { throw "Same-file, same-revision recalculated archive replacement is not covered by a test." }
+
       - name: Build Tests
         run: dotnet build ".\tests\OzelEgitimHakedis.Tests\OzelEgitimHakedis.Tests.csproj" --configuration Release --no-restore
 
