@@ -233,16 +233,17 @@ public sealed class OfficialDocumentOutputTests
 
             // Match Excel sheet4 cell sequence: A=210, B=10, C=220, D=100, E=120.
             Assert.Equal("210,00 TL", GetCellTextAt(paymentPage, 476d, 172d)); // A
-            Assert.Equal("10,00 TL", GetCellTextAt(paymentPage, 476d, 200d));  // B
-            Assert.Equal("220,00 TL", GetCellTextAt(paymentPage, 476d, 228d)); // C = A + B
-            Assert.Equal("100,00 TL", GetCellTextAt(paymentPage, 476d, 274d)); // D
-            Assert.Equal("120,00 TL", GetCellTextAt(paymentPage, 476d, 303d)); // E = C - D
-            Assert.Equal("0,00 TL", GetCellTextAt(paymentPage, 476d, 332d));   // F
-            Assert.Equal("120,00 TL", GetCellTextAt(paymentPage, 476d, 361d)); // G
-            Assert.Equal("5,00 TL", GetCellTextAt(paymentPage, 476d, 734d));   // H
-            Assert.Equal("115,00 TL", GetCellTextAt(paymentPage, 476d, 762d)); // I
-            Assert.Equal("Bu Hakedişin Tutarı ( C - D )", GetCellTextAt(paymentPage, 120d, 303d));
+            Assert.Equal("10,00 TL", GetCellTextAt(paymentPage, 476d, 201d));  // B
+            Assert.Equal("220,00 TL", GetCellTextAt(paymentPage, 476d, 230d)); // C = A + B
+            Assert.Equal("100,00 TL", GetCellTextAt(paymentPage, 476d, 293d)); // D
+            Assert.Equal("120,00 TL", GetCellTextAt(paymentPage, 476d, 322d)); // E = C - D
+            Assert.Equal("0,00 TL", GetCellTextAt(paymentPage, 476d, 351d));   // F
+            Assert.Equal("120,00 TL", GetCellTextAt(paymentPage, 476d, 380d)); // G
+            Assert.Equal("5,00 TL", GetCellTextAt(paymentPage, 476d, 768d));   // H
+            Assert.Equal("115,00 TL", GetCellTextAt(paymentPage, 476d, 797d)); // I
+            Assert.Equal("Bu Hakedişin Tutarı ( C - D )", GetCellTextAt(paymentPage, 120d, 322d));
             Assert.Contains("Hakediş No : 2", paymentText);
+            Assert.Contains("KESİNTİLER VE MAHSUPLAR", paymentText);
 
             var serviceReport = Assert.Single(
                 outputs.Where(output => output.Kind == OehsOfficialDocumentKind.HizmetIsleriHakedisRaporu));
@@ -291,16 +292,13 @@ public sealed class OfficialDocumentOutputTests
             Assert.Contains("₺210,00", icmalText); // monthly K+T total
             Assert.Contains("₺220,00", icmalText); // summary total after current raw I+R
 
-            // The Excel workbook's Hakediş Raporu has a contractor footer but no
-            // signature panel. The other three forms use the shared signatory settings.
+            // The source Excel Hakediş Raporu contains signature drawings; all four
+            // PDF templates therefore use the configured signatories.
             var contractorReportPage = Assert.IsType<FixedPage>(paymentOutput.Document.Pages[0].Child);
             Assert.Contains("Örnek Yüklenici", GetPageText(contractorReportPage));
             Assert.Contains("M.Y.H.B.Y. Örnek No :4/10", GetPageText(contractorReportPage));
-            Assert.DoesNotContain("TEST DÜZENLEYEN", GetPageText(contractorReportPage));
-            Assert.DoesNotContain("TEST ONAYLAYAN", GetPageText(contractorReportPage));
 
-            foreach (var output in outputs.Where(output =>
-                         output.Kind != OehsOfficialDocumentKind.HakedisRaporu))
+            foreach (var output in outputs)
             {
                 var outputPage = Assert.IsType<FixedPage>(output.Document.Pages[0].Child);
                 var textBlocks = GetPageText(outputPage);
@@ -317,19 +315,20 @@ public sealed class OfficialDocumentOutputTests
                 .OfType<Border>()
                 .Where(border =>
                     Math.Abs(FixedPage.GetLeft(border) - 67d) < 0.01 &&
-                    Math.Abs(FixedPage.GetTop(border) - 31d) < 0.01 &&
+                    Math.Abs(FixedPage.GetTop(border) - 56d) < 0.01 &&
                     Math.Abs(border.Width - 659d) < 0.01 &&
-                    Math.Abs(border.Height - 1030d) < 0.01));
+                    Math.Abs(border.Height - 1014d) < 0.01));
+            Assert.Equal(0d, reportOuterFrame.BorderThickness.Bottom);
             var reportTitle = Assert.Single(contractorReportPage.Children
                 .OfType<TextBlock>()
                 .Where(block => block.Text == "HAK EDİŞ RAPORU"));
             Assert.True(
-                contractorReportPage.Children.IndexOf(reportTitle) > contractorReportPage.Children.IndexOf(reportOuterFrame),
-                "The Hakediş Raporu title must be inside the Excel form frame.");
+                FixedPage.GetTop(reportTitle) < FixedPage.GetTop(reportOuterFrame),
+                "The Hakediş Raporu title must sit above the source workbook's top form rule.");
             
             var eRowCells = contractorReportPage.Children
                 .OfType<Border>()
-                .Where(border => Math.Abs(FixedPage.GetTop(border) - 303d) < 0.01)
+                .Where(border => Math.Abs(FixedPage.GetTop(border) - 322d) < 0.01)
                 .ToArray();
             Assert.Equal(3, eRowCells.Length);
             Assert.All(eRowCells, border =>
