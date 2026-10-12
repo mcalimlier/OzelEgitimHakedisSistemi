@@ -231,7 +231,7 @@ public sealed class OfficialDocumentOutputTests
             var paymentText = GetPageText(Assert.IsType<FixedPage>(paymentOutput.Document.Pages[0].Child));
             Assert.Contains("210,00 TL", paymentText);
             Assert.Contains("10,00 TL", paymentText);
-            Assert.Contains("210,00 TL", paymentText);
+            Assert.Contains("220,00 TL", paymentText);
             Assert.Contains("100,00 TL", paymentText);
             Assert.Contains("120,00 TL", paymentText);
             Assert.Contains("115,00 TL", paymentText);
