@@ -32,17 +32,16 @@ public static class ProgressPaymentReportService
     }
 
     /// <summary>
-    /// Maps a saved payment to the Excel workbook's monthly service-amount area.
-    /// The workbook keeps the price-difference cells separately, so subtract the
-    /// raw I/R inputs from K+T. This also preserves J/S discounts in the service base.
+    /// Matches Module1.HakedişToplamlariniAktar: the workbook writes Hesaplama!K +
+    /// Hesaplama!T directly into the selected month's D:N cells. K and T already
+    /// apply the I/R price-difference inputs and J/S discounts; don't subtract I/R
+    /// again when aggregating the monthly values in Hakediş Raporu!D6.
     /// </summary>
-    public static decimal CalculateWorkbookServiceAmount(ProgressPaymentHistoryData payment)
+    public static decimal CalculateWorkbookMonthlyPaymentAmount(ProgressPaymentHistoryData payment)
     {
         ArgumentNullException.ThrowIfNull(payment);
 
-        return payment.Calculation.TotalAmount
-               - payment.Input.PriceDifference
-               - payment.Input.GuidePriceDifference;
+        return payment.Calculation.TotalAmount;
     }
 
     /// <summary>
@@ -70,8 +69,8 @@ public static class ProgressPaymentReportService
 
         // Hakediş Raporu!D6: cumulative monthly service amounts, excluding the
         // separately stored raw price-difference cells.
-        var previousServiceAmount = previous.Sum(CalculateWorkbookServiceAmount);
-        var currentServiceAmount = CalculateWorkbookServiceAmount(current);
+        var previousServiceAmount = previous.Sum(CalculateWorkbookMonthlyPaymentAmount);
+        var currentServiceAmount = CalculateWorkbookMonthlyPaymentAmount(current);
         var currentPriceDifference = CalculateWorkbookPriceDifference(current);
         var cumulativeServiceAmount = previousServiceAmount + currentServiceAmount;
 
