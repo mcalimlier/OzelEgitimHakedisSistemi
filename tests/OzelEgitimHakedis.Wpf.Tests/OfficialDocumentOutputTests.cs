@@ -251,6 +251,11 @@ public sealed class OfficialDocumentOutputTests
                 acceptanceOutputForMapping.Document.Pages[0].Child);
             var acceptanceMappingText = GetPageText(acceptanceMappingPage);
             Assert.Contains("303 Takvim Günü", acceptanceMappingText);
+            Assert.Contains("30.06.2027", acceptanceMappingText);
+            Assert.Contains("31 Ekim 2026 Cumartesi", acceptanceMappingText);
+            Assert.DoesNotContain("Tescile Dahil Değil", acceptanceMappingText);
+            Assert.DoesNotContain("Avans verilmeyecektir.", acceptanceMappingText);
+            Assert.DoesNotContain("Yoktur.", acceptanceMappingText);
             var acceptanceNarrative = Assert.Single(acceptanceMappingPage.Children
                 .OfType<TextBlock>()
                 .Where(block => block.Text.StartsWith(
