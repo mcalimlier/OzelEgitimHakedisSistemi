@@ -75,6 +75,14 @@ jobs:
           OEHS_PDF_SMOKE_OUTPUT_DIR: ${{ github.workspace }}\artifacts\OEHS-PDF-Smoke
         run: dotnet test ".\tests\OzelEgitimHakedis.Wpf.Tests\OzelEgitimHakedis.Wpf.Tests.csproj" --configuration Release --no-build --no-restore
 
+      - name: Verify PDF smoke output files
+        shell: pwsh
+        run: |
+          $outputDirectory = Join-Path $env:GITHUB_WORKSPACE "artifacts\OEHS-PDF-Smoke"
+          $pdfFiles = @(Get-ChildItem -Path $outputDirectory -Filter "*.pdf" -File -ErrorAction SilentlyContinue)
+          if ($pdfFiles.Count -ne 4) { throw "Expected 4 PDF smoke files in '$outputDirectory'; found $($pdfFiles.Count)." }
+          $pdfFiles | Select-Object Name, Length | Format-Table -AutoSize
+
       - name: Upload PDF smoke outputs for visual review
         id: upload_pdf_smoke
         if: always()
@@ -83,6 +91,7 @@ jobs:
         with:
           name: OEHS-PDF-Smoke-Review
           path: artifacts/OEHS-PDF-Smoke/*.pdf
+          if-no-files-found: error
           retention-days: 3
 
       - name: Report PDF smoke artifact limitation
