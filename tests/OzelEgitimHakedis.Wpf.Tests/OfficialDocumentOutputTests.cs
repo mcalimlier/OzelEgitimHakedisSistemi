@@ -229,12 +229,12 @@ public sealed class OfficialDocumentOutputTests
             var paymentOutput = Assert.Single(
                 outputs.Where(output => output.Kind == OehsOfficialDocumentKind.HakedisRaporu));
             var paymentText = GetPageText(Assert.IsType<FixedPage>(paymentOutput.Document.Pages[0].Child));
-            Assert.Contains("200,00 TL", paymentText);
+            Assert.Contains("210,00 TL", paymentText);
             Assert.Contains("10,00 TL", paymentText);
             Assert.Contains("210,00 TL", paymentText);
             Assert.Contains("100,00 TL", paymentText);
-            Assert.Contains("110,00 TL", paymentText);
-            Assert.Contains("105,00 TL", paymentText);
+            Assert.Contains("120,00 TL", paymentText);
+            Assert.Contains("115,00 TL", paymentText);
             Assert.Contains("Hakediş No : 2", paymentText);
 
             var serviceReport = Assert.Single(
@@ -273,9 +273,11 @@ public sealed class OfficialDocumentOutputTests
             var icmalText = GetPageText(Assert.IsType<FixedPage>(icmalOutput.Document.Pages[0].Child));
             Assert.Contains("Hizmet Alımı İşi Eylül 2026", icmalText);
             Assert.Contains("Hizmet Alımı İşi Ekim 2026", icmalText);
-            Assert.Contains("₺100,00", icmalText);
-            Assert.Contains("₺10,00", icmalText);
-            Assert.Contains("₺210,00", icmalText);
+            Assert.Contains("₺100,00", icmalText); // September K+T
+            Assert.Contains("₺110,00", icmalText); // October K+T
+            Assert.Contains("₺10,00", icmalText);  // raw current-period I+R
+            Assert.Contains("₺210,00", icmalText); // monthly K+T total
+            Assert.Contains("₺220,00", icmalText); // summary total after current raw I+R
 
             // The Excel workbook's Hakediş Raporu has a contractor footer but no
             // signature panel. The other three forms use the shared signatory settings.
