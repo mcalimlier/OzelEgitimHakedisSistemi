@@ -33,6 +33,212 @@ jobs:
       - name: Restore WPF Output Tests
         run: dotnet restore ".\tests\OzelEgitimHakedis.Wpf.Tests\OzelEgitimHakedis.Wpf.Tests.csproj"
 
+      - name: Verify Visual Studio 18 solution metadata
+        shell: pwsh
+        run: |
+          $solution = Get-Content ".\\OzelEgitimHakedisSistemi.sln" -Raw
+          if ($solution -notmatch '(?m)^# Visual Studio Version 18        run: dotnet build ".\src\OzelEgitimHakedis.Wpf\OzelEgitimHakedis.Wpf.csproj" --configuration Release --no-restore
+
+      - name: Verify WPF output UI contract
+        shell: pwsh
+        run: |
+          $xaml = Get-Content ".\src\OzelEgitimHakedis.Wpf\MainWindow.xaml" -Raw
+          $code = Get-Content ".\src\OzelEgitimHakedis.Wpf\MainWindow.xaml.cs" -Raw
+          $statusCount = ([regex]::Matches($xaml, 'Text="KAYIT DURUMU"')).Count
+          if ($statusCount -ne 1) { throw "Expected one dynamic header save-status label; found $statusCount." }
+          if ($xaml -notmatch 'dört ayrı, tek sayfalı PDF') { throw "Output page description does not match the four-PDF save behavior." }
+          if ($xaml -notmatch 'x:Name="HeaderSaveStatusTextBlock"' -or $xaml -notmatch 'x:Name="HeaderSaveStatusDot"') { throw "Dynamic save-status controls are missing." }
+          if ($code -notmatch 'SetHeaderSaveStatus\("Kaydedildi"' -or $code -notmatch 'SetHeaderSaveStatus\("Veri yükleme hatası"') { throw "Load/save status update paths are missing." }
+
+      - name: Build Tests
+        run: dotnet build ".\tests\OzelEgitimHakedis.Tests\OzelEgitimHakedis.Tests.csproj" --configuration Release --no-restore
+
+      - name: Build WPF Output Tests
+        run: dotnet build ".\tests\OzelEgitimHakedis.Wpf.Tests\OzelEgitimHakedis.Wpf.Tests.csproj" --configuration Release --no-restore
+
+      - name: Test Solution
+        run: dotnet test ".\tests\OzelEgitimHakedis.Tests\OzelEgitimHakedis.Tests.csproj" --configuration Release --no-build --no-restore
+
+      - name: Test WPF PDF Outputs
+        env:
+          OEHS_PDF_SMOKE_OUTPUT_DIR: ${{ github.workspace }}\artifacts\OEHS-PDF-Smoke
+        run: dotnet test ".\tests\OzelEgitimHakedis.Wpf.Tests\OzelEgitimHakedis.Wpf.Tests.csproj" --configuration Release --no-build --no-restore
+
+      - name: Upload PDF smoke outputs for visual review
+        id: upload_pdf_smoke
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: OEHS-PDF-Smoke-Review
+          path: artifacts/OEHS-PDF-Smoke/*.pdf
+          retention-days: 3
+
+      - name: Report PDF smoke artifact limitation
+        if: steps.upload_pdf_smoke.outcome == 'failure'
+        run: echo "::warning::PDF smoke tests may have passed, but GitHub Actions could not store the sample PDFs. The storage quota may be full."
+
+      - name: Publish Windows EXE
+        run: >
+          dotnet publish ".\src\OzelEgitimHakedis.Wpf\OzelEgitimHakedis.Wpf.csproj"
+          --configuration Release
+          --runtime win-x64
+          --self-contained true
+          --output ".\artifacts\OEHS"
+          /p:PublishSingleFile=true
+          /p:IncludeNativeLibrariesForSelfExtract=true
+
+      - name: Upload OEHS EXE
+        id: upload_oehs_exe
+        if: github.event_name != 'pull_request'
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: OEHS-Windows-x64
+          path: artifacts/OEHS/
+          retention-days: 3
+
+      - name: Report artifact upload limitation
+        if: steps.upload_oehs_exe.outcome == 'failure'
+        run: echo "::warning::Build, tests, and publish succeeded, but GitHub Actions could not store the binary because artifact storage may be full. Free storage or download locally with the OEHS packaging script."
+) { throw "Solution is not marked as Visual Studio 18." }
+          if ($solution -notmatch '(?m)^VisualStudioVersion = 18\\.9\\.12120\\.119 stable        run: dotnet build ".\src\OzelEgitimHakedis.Wpf\OzelEgitimHakedis.Wpf.csproj" --configuration Release --no-restore
+
+      - name: Verify WPF output UI contract
+        shell: pwsh
+        run: |
+          $xaml = Get-Content ".\src\OzelEgitimHakedis.Wpf\MainWindow.xaml" -Raw
+          $code = Get-Content ".\src\OzelEgitimHakedis.Wpf\MainWindow.xaml.cs" -Raw
+          $statusCount = ([regex]::Matches($xaml, 'Text="KAYIT DURUMU"')).Count
+          if ($statusCount -ne 1) { throw "Expected one dynamic header save-status label; found $statusCount." }
+          if ($xaml -notmatch 'dört ayrı, tek sayfalı PDF') { throw "Output page description does not match the four-PDF save behavior." }
+          if ($xaml -notmatch 'x:Name="HeaderSaveStatusTextBlock"' -or $xaml -notmatch 'x:Name="HeaderSaveStatusDot"') { throw "Dynamic save-status controls are missing." }
+          if ($code -notmatch 'SetHeaderSaveStatus\("Kaydedildi"' -or $code -notmatch 'SetHeaderSaveStatus\("Veri yükleme hatası"') { throw "Load/save status update paths are missing." }
+
+      - name: Build Tests
+        run: dotnet build ".\tests\OzelEgitimHakedis.Tests\OzelEgitimHakedis.Tests.csproj" --configuration Release --no-restore
+
+      - name: Build WPF Output Tests
+        run: dotnet build ".\tests\OzelEgitimHakedis.Wpf.Tests\OzelEgitimHakedis.Wpf.Tests.csproj" --configuration Release --no-restore
+
+      - name: Test Solution
+        run: dotnet test ".\tests\OzelEgitimHakedis.Tests\OzelEgitimHakedis.Tests.csproj" --configuration Release --no-build --no-restore
+
+      - name: Test WPF PDF Outputs
+        env:
+          OEHS_PDF_SMOKE_OUTPUT_DIR: ${{ github.workspace }}\artifacts\OEHS-PDF-Smoke
+        run: dotnet test ".\tests\OzelEgitimHakedis.Wpf.Tests\OzelEgitimHakedis.Wpf.Tests.csproj" --configuration Release --no-build --no-restore
+
+      - name: Upload PDF smoke outputs for visual review
+        id: upload_pdf_smoke
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: OEHS-PDF-Smoke-Review
+          path: artifacts/OEHS-PDF-Smoke/*.pdf
+          retention-days: 3
+
+      - name: Report PDF smoke artifact limitation
+        if: steps.upload_pdf_smoke.outcome == 'failure'
+        run: echo "::warning::PDF smoke tests may have passed, but GitHub Actions could not store the sample PDFs. The storage quota may be full."
+
+      - name: Publish Windows EXE
+        run: >
+          dotnet publish ".\src\OzelEgitimHakedis.Wpf\OzelEgitimHakedis.Wpf.csproj"
+          --configuration Release
+          --runtime win-x64
+          --self-contained true
+          --output ".\artifacts\OEHS"
+          /p:PublishSingleFile=true
+          /p:IncludeNativeLibrariesForSelfExtract=true
+
+      - name: Upload OEHS EXE
+        id: upload_oehs_exe
+        if: github.event_name != 'pull_request'
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: OEHS-Windows-x64
+          path: artifacts/OEHS/
+          retention-days: 3
+
+      - name: Report artifact upload limitation
+        if: steps.upload_oehs_exe.outcome == 'failure'
+        run: echo "::warning::Build, tests, and publish succeeded, but GitHub Actions could not store the binary because artifact storage may be full. Free storage or download locally with the OEHS packaging script."
+) { throw "Unexpected VisualStudioVersion metadata." }
+          $projectOutput = dotnet sln ".\\OzelEgitimHakedisSistemi.sln" list
+          if ($LASTEXITCODE -ne 0) { throw "dotnet sln could not parse OzelEgitimHakedisSistemi.sln." }
+          $projects = @($projectOutput | Where-Object { $_ -match '\\.csproj\\s*        run: dotnet build ".\src\OzelEgitimHakedis.Wpf\OzelEgitimHakedis.Wpf.csproj" --configuration Release --no-restore
+
+      - name: Verify WPF output UI contract
+        shell: pwsh
+        run: |
+          $xaml = Get-Content ".\src\OzelEgitimHakedis.Wpf\MainWindow.xaml" -Raw
+          $code = Get-Content ".\src\OzelEgitimHakedis.Wpf\MainWindow.xaml.cs" -Raw
+          $statusCount = ([regex]::Matches($xaml, 'Text="KAYIT DURUMU"')).Count
+          if ($statusCount -ne 1) { throw "Expected one dynamic header save-status label; found $statusCount." }
+          if ($xaml -notmatch 'dört ayrı, tek sayfalı PDF') { throw "Output page description does not match the four-PDF save behavior." }
+          if ($xaml -notmatch 'x:Name="HeaderSaveStatusTextBlock"' -or $xaml -notmatch 'x:Name="HeaderSaveStatusDot"') { throw "Dynamic save-status controls are missing." }
+          if ($code -notmatch 'SetHeaderSaveStatus\("Kaydedildi"' -or $code -notmatch 'SetHeaderSaveStatus\("Veri yükleme hatası"') { throw "Load/save status update paths are missing." }
+
+      - name: Build Tests
+        run: dotnet build ".\tests\OzelEgitimHakedis.Tests\OzelEgitimHakedis.Tests.csproj" --configuration Release --no-restore
+
+      - name: Build WPF Output Tests
+        run: dotnet build ".\tests\OzelEgitimHakedis.Wpf.Tests\OzelEgitimHakedis.Wpf.Tests.csproj" --configuration Release --no-restore
+
+      - name: Test Solution
+        run: dotnet test ".\tests\OzelEgitimHakedis.Tests\OzelEgitimHakedis.Tests.csproj" --configuration Release --no-build --no-restore
+
+      - name: Test WPF PDF Outputs
+        env:
+          OEHS_PDF_SMOKE_OUTPUT_DIR: ${{ github.workspace }}\artifacts\OEHS-PDF-Smoke
+        run: dotnet test ".\tests\OzelEgitimHakedis.Wpf.Tests\OzelEgitimHakedis.Wpf.Tests.csproj" --configuration Release --no-build --no-restore
+
+      - name: Upload PDF smoke outputs for visual review
+        id: upload_pdf_smoke
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: OEHS-PDF-Smoke-Review
+          path: artifacts/OEHS-PDF-Smoke/*.pdf
+          retention-days: 3
+
+      - name: Report PDF smoke artifact limitation
+        if: steps.upload_pdf_smoke.outcome == 'failure'
+        run: echo "::warning::PDF smoke tests may have passed, but GitHub Actions could not store the sample PDFs. The storage quota may be full."
+
+      - name: Publish Windows EXE
+        run: >
+          dotnet publish ".\src\OzelEgitimHakedis.Wpf\OzelEgitimHakedis.Wpf.csproj"
+          --configuration Release
+          --runtime win-x64
+          --self-contained true
+          --output ".\artifacts\OEHS"
+          /p:PublishSingleFile=true
+          /p:IncludeNativeLibrariesForSelfExtract=true
+
+      - name: Upload OEHS EXE
+        id: upload_oehs_exe
+        if: github.event_name != 'pull_request'
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: OEHS-Windows-x64
+          path: artifacts/OEHS/
+          retention-days: 3
+
+      - name: Report artifact upload limitation
+        if: steps.upload_oehs_exe.outcome == 'failure'
+        run: echo "::warning::Build, tests, and publish succeeded, but GitHub Actions could not store the binary because artifact storage may be full. Free storage or download locally with the OEHS packaging script."
+ })
+          if ($projects.Count -ne 4) { throw "Expected four projects in the solution; found $($projects.Count)." }
+
+      - name: Build full solution
+        run: dotnet build ".\\OzelEgitimHakedisSistemi.sln" --configuration Release --no-restore
+
       - name: Build WPF
         run: dotnet build ".\src\OzelEgitimHakedis.Wpf\OzelEgitimHakedis.Wpf.csproj" --configuration Release --no-restore
 
