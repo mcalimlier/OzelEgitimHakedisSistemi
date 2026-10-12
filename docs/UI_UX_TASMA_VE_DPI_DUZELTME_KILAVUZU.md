@@ -29,6 +29,7 @@ Bu dalda aşağıdaki düzeltmeler yapılıyor:
 - Son ekran görüntüsü geri bildirimi üzerine ortak metin stilleri, sekme/panel başlıkları ve giriş alanları yaklaşık bir kademe daha küçültüldü. Sol navigasyon 46 DIP'e, üst bar 64 DIP'e, ana menü sütunu 250 DIP'e alındı.
 - Kart dolguları, satır aralıkları ve form kontrol yükseklikleri tekrar sıkılaştırıldı; menü simgeleri de küçültüldü. Segoe UI ve renk paleti korundu. Resmî PDF şablonları ve hesaplama kuralları değiştirilmedi.
 - Son ekran görüntüsünde hâlâ iri görünen ana sayfa ve panel içerikleri için, `MainWindow.xaml` içindeki açık `FontSize` değerleri yaklaşık %12 azaltıldı (11.5 DIP altına indirmeden); sayfa genelindeki `Margin` / `Padding` aralıkları da bir kademe daraltıldı. Sol menü 230 DIP, üst bar 60 DIP oldu; ana özet alanındaki sabit sütun ve eylem düğmesi genişlikleri de azaltıldı.
+- Son gelen ekran görüntüsü üzerine yazı ve aralıklar tekrar ölçülü biçimde küçültüldü; ortak başlık/alan/kart stilleri bir kademe daha daraltıldı. Sol menü 215 DIP'e çekildi; uzun `YÜKLENİCİ FİRMALAR` etiketi için alan korunuyor. Üst çubuktaki hazırlık halkası 48 × 48 DIP yapılarak çizim alanının içinde kalacak şekilde düzeltildi. CI bu iki yerleşim kararını da koruma denetimine aldı.
 
 Amaç, özellikle 1366 × 768'de daha fazla panel içeriğini görünür yapmak ve görsel yoğunluğu azaltmaktır. Her ekranda gerçek Windows görüntüsüyle kabul kontrolü yine gereklidir.
 
