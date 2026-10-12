@@ -241,7 +241,7 @@ public sealed class OfficialDocumentOutputTests
             Assert.Equal("120,00 TL", GetCellTextAt(paymentPage, 476d, 361d)); // G
             Assert.Equal("5,00 TL", GetCellTextAt(paymentPage, 476d, 734d));   // H
             Assert.Equal("115,00 TL", GetCellTextAt(paymentPage, 476d, 762d)); // I
-            Assert.Equal("Bu Hakedişin Tutarı  ( C - D )", GetCellTextAt(paymentPage, 120d, 303d));
+            Assert.Equal("Bu Hakedişin Tutarı ( C - D )", GetCellTextAt(paymentPage, 120d, 303d));
             Assert.Contains("Hakediş No : 2", paymentText);
 
             var serviceReport = Assert.Single(
