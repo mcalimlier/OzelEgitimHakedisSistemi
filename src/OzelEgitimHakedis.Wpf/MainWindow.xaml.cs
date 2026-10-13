@@ -708,13 +708,13 @@ public partial class MainWindow : Window
         VatExemptCheckBox.Unchecked += ArchiveCorrectionInput_Toggled;
     }
 
-    private void ArchiveCorrectionInput_TextChanged(object sender, TextChangedEventArgs e) =>
+    private void ArchiveCorrectionInput_TextChanged(object? sender, TextChangedEventArgs e) =>
         RefreshArchiveCorrectionStatus();
 
-    private void ArchiveCorrectionInput_DateChanged(object sender, SelectionChangedEventArgs e) =>
+    private void ArchiveCorrectionInput_DateChanged(object? sender, SelectionChangedEventArgs e) =>
         RefreshArchiveCorrectionStatus();
 
-    private void ArchiveCorrectionInput_Toggled(object sender, RoutedEventArgs e) =>
+    private void ArchiveCorrectionInput_Toggled(object? sender, RoutedEventArgs e) =>
         RefreshArchiveCorrectionStatus();
 
     private static bool TextDiffers(TextBox textBox, string? expected) =>
