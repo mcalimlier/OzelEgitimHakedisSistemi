@@ -1569,6 +1569,14 @@ public partial class MainWindow : Window
             UpdateArchiveView();
             NavigationButton_Click(NavArchives, new RoutedEventArgs(Button.ClickEvent, NavArchives));
 
+            // Panel navigation and selection refreshes can restore previous payment
+            // editor values. Clear the hakediş inputs after navigation as a final guard.
+            if (correctionSection == ArchiveCorrectionSection.ProgressPayment)
+            {
+                ClearProgressEntryFields();
+                SetProgressEditorMode(false);
+            }
+
             MessageBox.Show(
                 $"{sectionName} değişiklikleri başarıyla uygulandı.\n\n" +
                 $"Yeni hesaplanan net tutar: {FormatMoney(newNetPayable)}\n" +
