@@ -34,6 +34,8 @@ public partial class MainWindow : Window
     private RouteDraft? _editingRoute;
     private bool _suppressSelectionEvents;
     private bool _suppressArchiveDirtyTracking;
+    private Guid? _historyCorrectionTargetId;
+    private HistoryCorrectionSection _historyCorrectionSection;
     private readonly OehsApplicationDataStore _dataStore = new();
     private readonly ProgressPaymentArchiveStore _archiveStore = new();
     private readonly ObservableCollection<ArchiveRow> _archiveRows = new();
@@ -115,6 +117,15 @@ public partial class MainWindow : Window
     }
 
     private enum ArchiveCorrectionSection
+    {
+        None,
+        Contract,
+        Contractor,
+        Route,
+        ProgressPayment
+    }
+
+    private enum HistoryCorrectionSection
     {
         None,
         Contract,
@@ -240,6 +251,7 @@ public partial class MainWindow : Window
         _editingArchiveSnapshot = null;
         _archiveCorrectionSection = ArchiveCorrectionSection.None;
         _suppressArchiveDirtyTracking = false;
+        ClearLiveHistoryCorrectionContext();
         ResetEditorUiToCreateMode();
     }
 
