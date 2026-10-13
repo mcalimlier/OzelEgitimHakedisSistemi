@@ -102,12 +102,10 @@ public sealed class ProgressPaymentCalculator
         // (yüklenici lehine bir ek ödeme) oluşturulmamalıdır. Kaynak Excel'deki AC
         // formülü ham I/R girdilerini kullanır; burada yalnızca negatif tutarı sıfırla
         // sınırlıyoruz, iskonto J/S'yi teminat tabanına dahil etmiyoruz.
-        var transportAdditionalGuarantee =
-            Math.Max(0m, input.PriceDifference) * AdditionalGuaranteeRate;
-        var guideAdditionalGuarantee =
-            Math.Max(0m, input.GuidePriceDifference) * AdditionalGuaranteeRate;
+        var combinedPriceDifference =
+            input.PriceDifference + input.GuidePriceDifference;
         var additionalGuarantee =
-            transportAdditionalGuarantee + guideAdditionalGuarantee;
+            Math.Max(0m, combinedPriceDifference) * AdditionalGuaranteeRate;
 
         // Excel AE = M+V+Y+Z+AA+AB+AC+AD.
         var totalDeductions =
