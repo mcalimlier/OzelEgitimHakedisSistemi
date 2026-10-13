@@ -164,6 +164,8 @@ public partial class MainWindow : Window
         CancelProgressEditButton.Visibility = Visibility.Collapsed;
         EditCurrentProgressButton.IsEnabled = true;
         ProgressEditorTitleTextBlock.Text = "DÖNEM HESAP BİLGİLERİ";
+        ProgressTenderListBox.IsEnabled = true;
+        ProgressRouteComboBox.IsEnabled = true;
     }
 
     private void SetContractEditorMode(bool editing)
