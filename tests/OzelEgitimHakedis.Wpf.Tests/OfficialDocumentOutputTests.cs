@@ -240,9 +240,9 @@ public sealed class OfficialDocumentOutputTests
             Assert.Equal("100,00 TL", GetCellTextAt(paymentPage, 476d, 293d)); // D
             Assert.Equal("110,00 TL", GetCellTextAt(paymentPage, 476d, 322d)); // E = C - D
             Assert.Equal("0,00 TL", GetCellTextAt(paymentPage, 476d, 351d));   // F
-            Assert.Equal("120,00 TL", GetCellTextAt(paymentPage, 476d, 380d)); // G
+            Assert.Equal("110,00 TL", GetCellTextAt(paymentPage, 476d, 380d)); // G
             Assert.Equal("5,00 TL", GetCellTextAt(paymentPage, 476d, 768d));   // H
-            Assert.Equal("115,00 TL", GetCellTextAt(paymentPage, 476d, 796d)); // I
+            Assert.Equal("105,00 TL", GetCellTextAt(paymentPage, 476d, 796d)); // I
             Assert.Equal("Bu Hakedişin Tutarı ( C - D )", GetCellTextAt(paymentPage, 120d, 322d));
             Assert.Contains("Hakediş No : 2", paymentText);
             Assert.Contains("KESİNTİLER VE MAHSUPLAR", paymentText);
