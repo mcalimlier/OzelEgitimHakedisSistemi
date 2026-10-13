@@ -60,11 +60,11 @@ public sealed class ProgressPaymentReportTests
             currentSeptember,
             new[] { priorFiscalYear, currentSeptember });
 
-        Assert.Equal(105m, totals.CumulativeServiceAmount);
+        Assert.Equal(100m, totals.CumulativeServiceAmount);
         Assert.Equal(5m, totals.CurrentPriceDifference);
-        Assert.Equal(110m, totals.CumulativeTotal);
+        Assert.Equal(105m, totals.CumulativeTotal);
         Assert.Equal(0m, totals.PreviousTotal);
-        Assert.Equal(110m, totals.CurrentTotal);
+        Assert.Equal(105m, totals.CurrentTotal);
     }
 
     [Fact]
