@@ -2458,7 +2458,10 @@ public partial class MainWindow : Window
         SavePersistedData();
         UpdateRouteSummary();
         UpdateRouteListView();
-        UpdateProgressContractorAndRoutes(contract);
+        // A route editor's tender must not implicitly select/populate the payment form.
+        UpdateProgressContractorAndRoutes(
+            ProgressTenderListBox.SelectedItem as ContractDraftData,
+            preserveSelection: false);
         UpdateOutputRoutesForContract(contract);
         UpdateContractSummaryView();
         UpdateHomeSummaryView();
