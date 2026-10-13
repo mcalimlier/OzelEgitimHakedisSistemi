@@ -321,6 +321,46 @@ public sealed class ProgressPaymentArchiveStoreTests
     }
 
     [Fact]
+    public void SaveRevision_ShouldRejectCorrectionFromStaleRevision()
+    {
+        using var temp = new TempDirectory();
+        var store = new ProgressPaymentArchiveStore(temp.Path);
+        var v1Path = store.Save(CreateArchive(1));
+        var v1 = ProgressPaymentArchiveStore.Load(v1Path);
+
+        var changedInput = v1.ProgressPayment.Input with { WorkDays = 23 };
+        var v2 = v1 with
+        {
+            ArchivedAt = DateTime.UtcNow,
+            Source = "ArchiveCorrection",
+            ProgressPayment = v1.ProgressPayment with
+            {
+                Input = changedInput,
+                Calculation = ProgressPaymentCalculator.Calculate(changedInput)
+            }
+        };
+        var v2Path = store.SaveRevision(v1Path, v2);
+
+        var staleInput = v1.ProgressPayment.Input with { WorkDays = 30 };
+        var staleUpdate = v1 with
+        {
+            ProgressPayment = v1.ProgressPayment with
+            {
+                Input = staleInput,
+                Calculation = ProgressPaymentCalculator.Calculate(staleInput)
+            }
+        };
+
+        var ex = Assert.Throws<ProgressPaymentArchiveException>(
+            () => store.SaveRevision(v1Path, staleUpdate));
+
+        Assert.Contains("daha yeni bir revision", ex.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(2, store.List().Count);
+        Assert.Equal(20, ProgressPaymentArchiveStore.Load(v1Path).ProgressPayment.Input.WorkDays);
+        Assert.Equal(23, ProgressPaymentArchiveStore.Load(v2Path).ProgressPayment.Input.WorkDays);
+    }
+
+    [Fact]
     public void ThirdSave_ShouldCreateV03WithoutOverwritingEarlierRevisions()
     {
         using var temp = new TempDirectory();
