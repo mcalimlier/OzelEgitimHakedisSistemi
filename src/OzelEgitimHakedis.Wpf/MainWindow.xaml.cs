@@ -110,7 +110,7 @@ public partial class MainWindow : Window
 
         // Açılışta kayıtlı veriler yalnızca listelerde/özetlerde görünür; giriş formları boş başlar.
         ClearContractFormOnly();
-        ClearProgressEntryFields(clearTenderSelection: false);
+        ClearProgressEntryFields();
         UpdateProgressRouteDefaults();
     }
 
@@ -528,6 +528,8 @@ public partial class MainWindow : Window
     private void UpdateContractSelectors()
     {
         var selectedTender = TenderNumberTextBox.Text.Trim();
+        var previouslySelectedProgressTender = ProgressTenderListBox.SelectedItem as ContractDraftData;
+
         HomeTenderListBox.ItemsSource = _contracts.ToArray();
         RouteTenderListBox.ItemsSource = _contracts.ToArray();
         ProgressTenderListBox.ItemsSource = _contracts.ToArray();
@@ -536,32 +538,37 @@ public partial class MainWindow : Window
 
         var contract = _contracts.FirstOrDefault(x => string.Equals(x.TenderNumber, selectedTender, StringComparison.OrdinalIgnoreCase))
                        ?? _contracts.FirstOrDefault();
+        var progressTender = previouslySelectedProgressTender is null
+            ? null
+            : _contracts.FirstOrDefault(x =>
+                string.Equals(x.TenderNumber, previouslySelectedProgressTender.TenderNumber, StringComparison.OrdinalIgnoreCase));
+
+        _suppressSelectionEvents = true;
+        try
+        {
+            HomeTenderListBox.SelectedItem = contract;
+            RouteTenderListBox.SelectedItem = contract;
+            // Keep the payment tender empty on first launch. Preserve a prior user choice only if it still exists.
+            ProgressTenderListBox.SelectedItem = progressTender;
+            OutputTenderListBox.SelectedItem = contract;
+        }
+        finally
+        {
+            _suppressSelectionEvents = false;
+        }
 
         if (contract is not null)
         {
-            _suppressSelectionEvents = true;
-            try
-            {
-                HomeTenderListBox.SelectedItem = contract;
-                RouteTenderListBox.SelectedItem = contract;
-                ProgressTenderListBox.SelectedItem = contract;
-                OutputTenderListBox.SelectedItem = contract;
-            }
-            finally
-            {
-                _suppressSelectionEvents = false;
-            }
-
             UpdateRouteContractorSelector(contract);
-            UpdateProgressContractorAndRoutes(contract);
             UpdateOutputRoutesForContract(contract);
             UpdateHomeTenderSummary(contract);
         }
         else
         {
             RouteContractorListBox.ItemsSource = Array.Empty<ContractorDraft>();
-            ProgressRouteComboBox.ItemsSource = Array.Empty<RouteDraft>();
         }
+
+        UpdateProgressContractorAndRoutes(progressTender, preserveSelection: false);
     }
 
     private void UpdateRouteContractorSelector(ContractDraftData? contract)
