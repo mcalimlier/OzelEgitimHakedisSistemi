@@ -83,7 +83,7 @@ jobs:
           if (-not $code.Contains("Calculation = ProgressPaymentCalculator.Calculate(updatedArchive.ProgressPayment.Input)")) { throw "Archive edits must recalculate the payment from saved inputs before replacement." }
           if (-not $code.Contains("_archiveStore.Replace(_editingArchiveSourcePath, updatedArchive)")) { throw "Archive edits must replace the selected file rather than creating a new revision." }
           if (-not $code.Contains("private void ClearProgressEntryFields(bool clearTenderSelection = true)")) { throw "Archive and new-payment entry forms must clear after save/reset." }
-          if ($code -notmatch 'UpdateAcceptanceView\(\);\s*ClearContractFormOnly\(\);') { throw "The contract input form must clear after a successful save and view refresh." }
+          if ($code -notmatch 'UpdateAcceptanceView\(\);[\s\S]{0,320}ClearContractFormOnly\(\);') { throw "The contract input form must clear after a successful save and view refresh." }
           if ($code -notmatch 'SetContractorEditorMode\(false\);\s*ContractorStatusTextBlock.Text = "Yeni firma kaydı için alanlar temizlendi\."') { throw "The contractor form must return to create mode after save." }
           if (-not $code.Contains("Keep the chosen tender/contractor filters")) { throw "Clearing the route form must preserve context for its right-hand saved-record list." }
           if ($code -notmatch 'ArchiveStatusTextBlock\.Text = "ARŞİV OLUŞTURULDU"[\s\S]{0,900}ClearProgressEntryFields\(\)[\s\S]{0,120}SetProgressEditorMode\(false\)') { throw "The payment form must clear after a successful archive save." }
@@ -101,6 +101,10 @@ jobs:
           if (-not $code.Contains("ProgressTenderListBox.SelectedItem = progressTender;")) { throw "The payment tender selector must stay blank on launch unless the user had explicitly selected a tender." }
           if (-not $code.Contains("private void BeginHistoryOrArchiveCorrection(ProgressPaymentHistoryData item)")) { throw "History edits must resolve archived payments to their authoritative archive record." }
           if (-not $code.Contains("_progressHistory[matchingHistoryIndex] = recalculatedPayment;")) { throw "Approved archive corrections must update the matching primary history row." }
+          if (-not $code.Contains("private void RefreshHistoryCorrectionStatus()")) { throw "Non-archived history corrections must refresh the live status and calculation preview." }
+          if (-not $code.Contains("private bool ConfirmLiveHistoryCorrection(")) { throw "Non-archived corrections must require confirmation before overwriting history." }
+          if (-not $code.Contains("private void RefreshViewsAfterHistoryCorrection()")) { throw "Corrected history must refresh summary, report, and progress views." }
+          if (-not $code.Contains('ConfirmLiveHistoryCorrection("Hakediş girdileri", historyItem)')) { throw "Editing a history payment must ask for confirmation before replacing its existing row." }
           if ($code -notmatch 'if \(clearTenderSelection\)[\s\S]{0,220}ProgressRouteComboBox\.ItemsSource = Array\.Empty<RouteDraft>\(\);') { throw "Clearing a fresh payment form must also clear stale route choices when the tender is cleared." }
           if (-not $archiveTests.Contains("Replace_ShouldOverwriteSameArchiveFileWithRecalculatedPaymentAndKeepRevision")) { throw "Same-file, same-revision recalculated archive replacement is not covered by a test." }
 
