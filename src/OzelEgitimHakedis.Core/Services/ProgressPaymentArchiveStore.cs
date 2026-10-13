@@ -151,6 +151,12 @@ public sealed class ProgressPaymentArchiveStore
             }
         }
 
+        if (sourceArchive.Revision < maxRevision)
+        {
+            throw new ProgressPaymentArchiveException(
+                $"Bu hakedişin daha yeni bir revision'ı (v{maxRevision:00}) var. Eski revision üzerinden düzeltme yapılamaz; en güncel arşiv kaydını çağırın.");
+        }
+
         var nextRevision = checked(maxRevision + 1);
         string targetPath;
         ProgressPaymentArchive revised;
