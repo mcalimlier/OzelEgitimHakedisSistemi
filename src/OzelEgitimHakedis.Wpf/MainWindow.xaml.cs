@@ -3014,7 +3014,7 @@ public partial class MainWindow : Window
             }
             else
             {
-                RequireSelectedRoute();
+                // New calculations require an explicit route choice; never silently use the first route.
                 selectedRoute = ProgressRouteComboBox.SelectedItem as RouteDraft;
             }
 
@@ -4516,8 +4516,8 @@ public partial class MainWindow : Window
 
     private void RequireSelectedRoute()
     {
-        if (ProgressRouteComboBox.SelectedItem is null && _routes.Count > 0)
-            ProgressRouteComboBox.SelectedIndex = 0;
+        // This helper is for document/output navigation only. Hakediş calculation
+        // must leave the route unselected until the user explicitly picks one.
         if (ReportRouteComboBox.SelectedItem is null && _routes.Count > 0)
             ReportRouteComboBox.SelectedIndex = 0;
     }
