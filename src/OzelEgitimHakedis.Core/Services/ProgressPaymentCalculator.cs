@@ -96,10 +96,16 @@ public sealed class ProgressPaymentCalculator
         var guideStampTax = guideNetAmount * StampTaxRate;
         var stampTax = transportStampTax + guideStampTax;
 
-        // Excel AC doğrudan ham fiyat farkı hücrelerini kullanır:
-        // AC = (I*6%) + (R*6%).
-        var transportAdditionalGuarantee = input.PriceDifference * AdditionalGuaranteeRate;
-        var guideAdditionalGuarantee = input.GuidePriceDifference * AdditionalGuaranteeRate;
+        // 4735 sayılı Kanun'un 12. maddesindeki ek kesin teminat,
+        // fiyat farkının sözleşme bedelinde artış meydana getirdiği tutar üzerinden
+        // alınır. Negatif fiyat farkı artış doğurmadığından negatif teminat kesintisi
+        // (yüklenici lehine bir ek ödeme) oluşturulmamalıdır. Kaynak Excel'deki AC
+        // formülü ham I/R girdilerini kullanır; burada yalnızca negatif tutarı sıfırla
+        // sınırlıyoruz, iskonto J/S'yi teminat tabanına dahil etmiyoruz.
+        var transportAdditionalGuarantee =
+            Math.Max(0m, input.PriceDifference) * AdditionalGuaranteeRate;
+        var guideAdditionalGuarantee =
+            Math.Max(0m, input.GuidePriceDifference) * AdditionalGuaranteeRate;
         var additionalGuarantee =
             transportAdditionalGuarantee + guideAdditionalGuarantee;
 
