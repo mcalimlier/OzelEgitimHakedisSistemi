@@ -176,51 +176,54 @@ public sealed class ProgressPaymentArchiveStoreTests
     }
 
     [Fact]
-    public void Replace_ShouldUpdateSameRevisionAndRenameIdentityWhenRouteChanges()
+    public void SaveRevision_ShouldCreateNewRevisionAndPreserveOriginalWhenRouteChanges()
     {
         using var temp = new TempDirectory();
         var store = new ProgressPaymentArchiveStore(temp.Path);
 
         var path = store.Save(CreateArchive(1));
-        var updated = CreateArchive(1) with
+        var original = ProgressPaymentArchiveStore.Load(path);
+        var updated = original with
         {
-            Route = new RouteData(
-                "02",
-                "Düzeltilmiş Hat",
-                1000m,
-                TransportWorkDays: 21,
-                TenderNumber: "IHALE-01",
-                ContractorTaxOrIdentityNumber: "12345678901"),
-            ProgressPayment = CreateHistory(1) with
+            ArchivedAt = DateTime.UtcNow,
+            Source = "ArchiveCorrection",
+            Route = original.Route with
+            {
+                RouteNumber = "02",
+                Name = "Düzeltilmiş Hat",
+                TransportWorkDays = 21
+            },
+            ProgressPayment = original.ProgressPayment with
             {
                 RouteNumber = "02",
                 RouteName = "Düzeltilmiş Hat"
             }
         };
 
-        var replacedPath = store.Replace(path, updated);
-        var loaded = ProgressPaymentArchiveStore.Load(replacedPath);
+        var revisedPath = store.SaveRevision(path, updated);
+        var oldVersion = ProgressPaymentArchiveStore.Load(path);
+        var newVersion = ProgressPaymentArchiveStore.Load(revisedPath);
 
-        Assert.NotEqual(path, replacedPath);
-        Assert.False(File.Exists(path));
-        Assert.True(File.Exists(replacedPath));
-        Assert.EndsWith("_Hat-02_Hakediş-01_2026-10-31_v01.json", replacedPath, StringComparison.OrdinalIgnoreCase);
-        Assert.Equal(1, loaded.Revision);
-        Assert.Equal("02", loaded.Route.RouteNumber);
-        Assert.Equal("02", loaded.ProgressPayment.RouteNumber);
-        Assert.Equal("Düzeltilmiş Hat", loaded.Route.Name);
-        Assert.Equal("Düzeltilmiş Hat", loaded.ProgressPayment.RouteName);
-        Assert.Single(store.List());
-        Assert.DoesNotContain("_v02.json", replacedPath, StringComparison.OrdinalIgnoreCase);
+        Assert.NotEqual(path, revisedPath);
+        Assert.True(File.Exists(path));
+        Assert.True(File.Exists(revisedPath));
+        Assert.EndsWith("_Hat-02_Hakediş-01_2026-10-31_v02.json", revisedPath, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(1, oldVersion.Revision);
+        Assert.Equal("01", oldVersion.Route.RouteNumber);
+        Assert.Equal(2, newVersion.Revision);
+        Assert.Equal("02", newVersion.Route.RouteNumber);
+        Assert.Equal("02", newVersion.ProgressPayment.RouteNumber);
+        Assert.Equal("Düzeltilmiş Hat", newVersion.Route.Name);
+        Assert.Equal("Düzeltilmiş Hat", newVersion.ProgressPayment.RouteName);
+        Assert.Equal(2, store.List().Count);
     }
 
     [Fact]
-    public void Replace_ShouldOverwriteSameArchiveFileWithRecalculatedPaymentAndKeepRevision()
+    public void SaveRevision_ShouldCreateV02AndKeepV01ForRecalculatedPayment()
     {
         using var temp = new TempDirectory();
         var store = new ProgressPaymentArchiveStore(temp.Path);
-        var original = CreateArchive(1);
-        var path = store.Save(original);
+        var path = store.Save(CreateArchive(1));
 
         var saved = ProgressPaymentArchiveStore.Load(path);
         var changedInput = saved.ProgressPayment.Input with
@@ -234,28 +237,38 @@ public sealed class ProgressPaymentArchiveStoreTests
             Input = changedInput,
             Calculation = ProgressPaymentCalculator.Calculate(changedInput)
         };
-        var updated = saved with { ProgressPayment = recalculatedPayment };
+        var updated = saved with
+        {
+            ArchivedAt = DateTime.UtcNow,
+            Source = "ArchiveCorrection",
+            ProgressPayment = recalculatedPayment
+        };
 
-        var replacedPath = store.Replace(path, updated);
-        var loaded = ProgressPaymentArchiveStore.Load(replacedPath);
+        var revisedPath = store.SaveRevision(path, updated);
+        var oldVersion = ProgressPaymentArchiveStore.Load(path);
+        var newVersion = ProgressPaymentArchiveStore.Load(revisedPath);
 
-        Assert.Equal(path, replacedPath);
+        Assert.NotEqual(path, revisedPath);
         Assert.True(File.Exists(path));
-        Assert.Equal(1, loaded.Revision);
-        Assert.Equal(24, loaded.ProgressPayment.Input.WorkDays);
-        Assert.Equal(1200m, loaded.ProgressPayment.Input.DailyPrice);
-        Assert.Equal(ProgressPaymentCalculator.Calculate(changedInput), loaded.ProgressPayment.Calculation);
-        Assert.Single(store.List());
-        Assert.DoesNotContain("_v02.json", replacedPath, StringComparison.OrdinalIgnoreCase);
+        Assert.True(File.Exists(revisedPath));
+        Assert.EndsWith("_v02.json", revisedPath, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(1, oldVersion.Revision);
+        Assert.Equal(20, oldVersion.ProgressPayment.Input.WorkDays);
+        Assert.Equal(2, newVersion.Revision);
+        Assert.Equal(24, newVersion.ProgressPayment.Input.WorkDays);
+        Assert.Equal(1200m, newVersion.ProgressPayment.Input.DailyPrice);
+        Assert.Equal(ProgressPaymentCalculator.Calculate(changedInput), newVersion.ProgressPayment.Calculation);
+        Assert.Equal(2, store.List().Count);
     }
 
     [Fact]
-    public void Replace_ShouldRefuseIdentityCollisionAndPreserveBothArchives()
+    public void SaveRevision_ShouldRefuseIdentityCollisionAndPreserveBothArchives()
     {
         using var temp = new TempDirectory();
         var store = new ProgressPaymentArchiveStore(temp.Path);
 
         var originalPath = store.Save(CreateArchive(1));
+        var original = ProgressPaymentArchiveStore.Load(originalPath);
         var other = CreateArchive(1) with
         {
             Route = new RouteData(
@@ -273,25 +286,20 @@ public sealed class ProgressPaymentArchiveStoreTests
         };
         var otherPath = store.Save(other);
 
-        var attemptedUpdate = CreateArchive(1) with
+        var attemptedUpdate = original with
         {
-            Route = new RouteData(
-                "02",
-                "Çakışan Hat",
-                1000m,
-                TransportWorkDays: 22,
-                TenderNumber: "IHALE-01",
-                ContractorTaxOrIdentityNumber: "12345678901"),
-            ProgressPayment = CreateHistory(1) with
+            Route = original.Route with { RouteNumber = "02", Name = "Çakışan Hat", TransportWorkDays = 22 },
+            ProgressPayment = original.ProgressPayment with
             {
                 RouteNumber = "02",
                 RouteName = "Çakışan Hat"
             }
         };
 
-        var ex = Assert.Throws<ProgressPaymentArchiveException>(() => store.Replace(originalPath, attemptedUpdate));
+        var ex = Assert.Throws<ProgressPaymentArchiveException>(
+            () => store.SaveRevision(originalPath, attemptedUpdate));
 
-        Assert.Contains("zaten mevcut", ex.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("başka bir arşiv", ex.Message, StringComparison.OrdinalIgnoreCase);
         Assert.True(File.Exists(originalPath));
         Assert.True(File.Exists(otherPath));
         Assert.Equal(2, store.List().Count);
@@ -299,14 +307,14 @@ public sealed class ProgressPaymentArchiveStoreTests
     }
 
     [Fact]
-    public void Replace_ShouldNotCreateNewArchiveWhenTargetFileIsMissing()
+    public void SaveRevision_ShouldRejectMissingSourceWithoutCreatingArchive()
     {
         using var temp = new TempDirectory();
         var store = new ProgressPaymentArchiveStore(temp.Path);
         var missingPath = Path.Combine(temp.Path, "OEHS_IHALE_Hat-01_Hakedis-01_2026-10-31_v01.json");
 
         Assert.Throws<ProgressPaymentArchiveException>(() =>
-            store.Replace(missingPath, CreateArchive(1)));
+            store.SaveRevision(missingPath, CreateArchive(1)));
 
         Assert.Empty(store.List());
         Assert.False(File.Exists(missingPath));
