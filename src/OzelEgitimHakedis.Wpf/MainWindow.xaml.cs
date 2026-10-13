@@ -1088,9 +1088,35 @@ public partial class MainWindow : Window
                 throw new ProgressPaymentArchiveException("Güncellenecek arşiv dosyası belirlenemedi.");
 
             var finalPath = _archiveStore.Replace(_editingArchiveSourcePath, updatedArchive);
+            var historyMirrorSaved = true;
+            var matchingHistoryIndex = _progressHistory
+                .Select((item, index) => (item, index))
+                .Where(pair => pair.item.Id == recalculatedPayment.Id)
+                .Select(pair => pair.index)
+                .DefaultIfEmpty(-1)
+                .First();
+
+            if (matchingHistoryIndex >= 0)
+            {
+                // Keep the editable history row synchronized with its authoritative archive snapshot.
+                _progressHistory[matchingHistoryIndex] = recalculatedPayment;
+                SavePersistedData();
+                historyMirrorSaved = !string.Equals(
+                    HeaderSaveStatusTextBlock.Text,
+                    "Kaydetme hatası",
+                    StringComparison.Ordinal);
+                UpdateHistoryView();
+                UpdateSummaryView();
+                UpdateReportView();
+                UpdateHomeSummaryView();
+                UpdateAcceptanceView();
+            }
+
             ArchiveStatusTextBlock.Text = $"ARŞİV v{updatedArchive.Revision:00} GÜNCELLENDİ";
             CalculationStatusTextBlock.Text =
-                $"{sectionName} değişiklikleri yeniden hesaplandı ve mevcut arşiv v{updatedArchive.Revision:00} üzerine kaydedildi.";
+                historyMirrorSaved
+                    ? $"{sectionName} değişiklikleri yeniden hesaplandı ve mevcut arşiv v{updatedArchive.Revision:00} üzerine kaydedildi."
+                    : $"{sectionName} arşive kaydedildi; ancak ana hakediş geçmişi diske yazılamadı. Kayıt durumunu kontrol edin.";
 
             _suppressArchiveDirtyTracking = true;
             try
@@ -1108,11 +1134,14 @@ public partial class MainWindow : Window
             MessageBox.Show(
                 $"{sectionName} değişiklikleri başarıyla uygulandı.\n\n" +
                 $"Yeni hesaplanan net tutar: {FormatMoney(newNetPayable)}\n" +
-                $"Mevcut arşiv revision'ı v{updatedArchive.Revision:00} korundu; yeni revision oluşturulmadı.\n\n" +
+                $"Mevcut arşiv revision'ı v{updatedArchive.Revision:00} korundu; yeni revision oluşturulmadı.\n" +
+                (historyMirrorSaved
+                    ? "Ana hakediş geçmişi de güncellendi.\n\n"
+                    : "DİKKAT: Arşiv güncellendi ancak ana hakediş geçmişi diske yazılamadı. Üstteki kayıt durumunu kontrol edin.\n\n") +
                 $"Dosya: {Path.GetFileName(finalPath)}",
                 "OEHS — Arşiv Güncellendi",
                 MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                historyMirrorSaved ? MessageBoxImage.Information : MessageBoxImage.Warning);
             return true;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ProgressPaymentArchiveException or ArgumentOutOfRangeException)
@@ -3728,7 +3757,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        BeginProgressHistoryEdit(latest);
+        BeginHistoryOrArchiveCorrection(latest);
     }
 
     private void EditHistoryButton_Click(object sender, RoutedEventArgs e)
@@ -3738,8 +3767,61 @@ public partial class MainWindow : Window
         {
             var item = _progressHistory.FirstOrDefault(x => x.Id == row.Id);
             if (item is not null)
-                EditProgressWithTarget(item);
+                BeginHistoryOrArchiveCorrection(item);
         }
+    }
+
+    private void BeginHistoryOrArchiveCorrection(ProgressPaymentHistoryData item)
+    {
+        ArchiveRow? matchingArchiveRow = null;
+        var matchingRevision = 0;
+
+        try
+        {
+            foreach (var file in _archiveStore.List())
+            {
+                ProgressPaymentArchive archive;
+                try
+                {
+                    archive = ProgressPaymentArchiveStore.Load(file.FullName);
+                }
+                catch (ProgressPaymentArchiveException)
+                {
+                    // Invalid archives remain visible in the archive panel, but cannot be edited as a snapshot.
+                    continue;
+                }
+
+                if (archive.ProgressPayment.Id != item.Id || archive.Revision <= matchingRevision)
+                    continue;
+
+                matchingRevision = archive.Revision;
+                var payment = archive.ProgressPayment;
+                matchingArchiveRow = new ArchiveRow(
+                    file.FullName,
+                    $"İhale/Dosya: {payment.TenderNumber ?? "-"} • Hat {payment.RouteNumber ?? "-"} • Hakediş {payment.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"}",
+                    $"Dönem: {payment.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"} • Yüklenici: {archive.Contractor.Name}",
+                    FormatMoney(payment.Calculation.NetPayable),
+                    $"v{archive.Revision:00}");
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ProgressPaymentArchiveException)
+        {
+            MessageBox.Show(
+                $"Hakedişin arşiv kaydı aranamadı; herhangi bir kayıt değiştirilmedi.\n\n{ex.Message}",
+                "OEHS — Arşiv Arama Hatası",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
+        }
+
+        if (matchingArchiveRow is not null)
+        {
+            BeginCorrectionFromArchive(matchingArchiveRow);
+            return;
+        }
+
+        // If this history row has never been archived, keep the regular live-record editing flow.
+        EditProgressWithTarget(item);
     }
 
     private ProgressCorrectionTarget? AskHistoryEditTarget(ProgressPaymentHistoryData item)
