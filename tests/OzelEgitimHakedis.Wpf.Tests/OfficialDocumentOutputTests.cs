@@ -231,12 +231,14 @@ public sealed class OfficialDocumentOutputTests
             var paymentPage = Assert.IsType<FixedPage>(paymentOutput.Document.Pages[0].Child);
             var paymentText = GetPageText(paymentPage);
 
-            // Match Excel sheet4 cell sequence: A=210, B=10, C=220, D=100, E=120.
-            Assert.Equal("210,00 TL", GetCellTextAt(paymentPage, 476d, 172d)); // A
+            // A is cumulative contract-price work excluding the separate B price-difference line.
+            // With two 100 TL base periods and a current 10 TL price difference:
+            // A=200, B=10, C=210, D=100, E=110.
+            Assert.Equal("200,00 TL", GetCellTextAt(paymentPage, 476d, 172d)); // A
             Assert.Equal("10,00 TL", GetCellTextAt(paymentPage, 476d, 201d));  // B
-            Assert.Equal("220,00 TL", GetCellTextAt(paymentPage, 476d, 230d)); // C = A + B
+            Assert.Equal("210,00 TL", GetCellTextAt(paymentPage, 476d, 230d)); // C = A + B
             Assert.Equal("100,00 TL", GetCellTextAt(paymentPage, 476d, 293d)); // D
-            Assert.Equal("120,00 TL", GetCellTextAt(paymentPage, 476d, 322d)); // E = C - D
+            Assert.Equal("110,00 TL", GetCellTextAt(paymentPage, 476d, 322d)); // E = C - D
             Assert.Equal("0,00 TL", GetCellTextAt(paymentPage, 476d, 351d));   // F
             Assert.Equal("120,00 TL", GetCellTextAt(paymentPage, 476d, 380d)); // G
             Assert.Equal("5,00 TL", GetCellTextAt(paymentPage, 476d, 768d));   // H
@@ -262,8 +264,9 @@ public sealed class OfficialDocumentOutputTests
             var acceptanceMappingPage = Assert.IsType<FixedPage>(
                 acceptanceOutputForMapping.Document.Pages[0].Child);
             var acceptanceMappingText = GetPageText(acceptanceMappingPage);
-            // Preserve the original workbook's visible label/value mismatch:
-            // the label says calendar days but the source formula emits workdays.
+            // The displayed value is in workdays, so the label must use the same unit.
+            Assert.Contains("Sözleşmeye göre işin süresi (iş günü)", acceptanceMappingText);
+            Assert.DoesNotContain("takvim günü", acceptanceMappingText);
             Assert.Contains("180 İş Günü", acceptanceMappingText);
             Assert.Contains("30.06.2027", acceptanceMappingText);
             Assert.Contains("30 Haziran 2027 Çarşamba", acceptanceMappingText);
@@ -286,11 +289,11 @@ public sealed class OfficialDocumentOutputTests
             var icmalText = GetPageText(Assert.IsType<FixedPage>(icmalOutput.Document.Pages[0].Child));
             Assert.Contains("Hizmet Alımı İşi Eylül 2026", icmalText);
             Assert.Contains("Hizmet Alımı İşi Ekim 2026", icmalText);
-            Assert.Contains("₺100,00", icmalText); // September K+T
-            Assert.Contains("₺110,00", icmalText); // October K+T
+            Assert.Contains("₺100,00", icmalText); // September contract-price work
+            Assert.Contains("₺100,00", icmalText); // October contract-price work, excluding I/R
             Assert.Contains("₺10,00", icmalText);  // raw current-period I+R
-            Assert.Contains("₺210,00", icmalText); // monthly K+T total
-            Assert.Contains("₺220,00", icmalText); // summary total after current raw I+R
+            Assert.Contains("₺200,00", icmalText); // cumulative contract-price work
+            Assert.Contains("₺210,00", icmalText); // summary total after current raw I+R
 
             // The source Excel Hakediş Raporu contains signature drawings; all four
             // PDF templates therefore use the configured signatories.
