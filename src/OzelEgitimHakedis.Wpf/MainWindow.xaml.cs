@@ -1504,8 +1504,8 @@ public partial class MainWindow : Window
                 $"Dönem: {recalculatedPayment.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"}\n" +
                 $"Önceki net tutar: {FormatMoney(oldNetPayable)}\n" +
                 $"Yeni hesaplanan net tutar: {FormatMoney(newNetPayable)}\n\n" +
-                "Evet seçilirse mevcut arşiv kaydı yeniden hesaplanıp aynı kayıt/revision üzerine yazılacak. " +
-                "Hayır seçilirse kayıt değişmeden kalacak.",
+                "Evet seçilirse düzeltme yeni bir revision olarak kaydedilecek; eski revisionlar korunacak. " +
+                "Hayır seçilirse hiçbir revision değiştirilmeyecek.",
                 "OEHS — Değişiklik Onayı",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
@@ -1521,7 +1521,15 @@ public partial class MainWindow : Window
             if (string.IsNullOrWhiteSpace(_editingArchiveSourcePath))
                 throw new ProgressPaymentArchiveException("Güncellenecek arşiv dosyası belirlenemedi.");
 
-            var finalPath = _archiveStore.Replace(_editingArchiveSourcePath, updatedArchive);
+            updatedArchive = updatedArchive with
+            {
+                ArchivedAt = DateTime.UtcNow,
+                Source = "ArchiveCorrection"
+            };
+            var finalPath = _archiveStore.SaveRevision(_editingArchiveSourcePath, updatedArchive);
+            updatedArchive = ProgressPaymentArchiveStore.Load(finalPath);
+            recalculatedPayment = updatedArchive.ProgressPayment;
+
             var historyMirrorUpdated = false;
             var historyMirrorSaved = true;
             var matchingHistoryIndex = _progressHistory
@@ -1548,13 +1556,13 @@ public partial class MainWindow : Window
                 UpdateAcceptanceView();
             }
 
-            ArchiveStatusTextBlock.Text = $"ARŞİV v{updatedArchive.Revision:00} GÜNCELLENDİ";
+            ArchiveStatusTextBlock.Text = $"YENİ ARŞİV REVİZYONU v{updatedArchive.Revision:00} OLUŞTURULDU";
             CalculationStatusTextBlock.Text =
                 !historyMirrorSaved
-                    ? $"{sectionName} arşive kaydedildi; ancak ana hakediş geçmişi diske yazılamadı. Kayıt durumunu kontrol edin."
+                    ? $"{sectionName} düzeltmesi yeni arşiv revision'ı olarak kaydedildi; ancak ana hakediş geçmişi diske yazılamadı. Kayıt durumunu kontrol edin."
                     : historyMirrorUpdated
-                        ? $"{sectionName} değişiklikleri yeniden hesaplandı ve arşiv ile ana hakediş geçmişine kaydedildi."
-                        : $"{sectionName} değişiklikleri yeniden hesaplandı ve arşiv v{updatedArchive.Revision:00} üzerine kaydedildi.";
+                        ? $"{sectionName} değişiklikleri yeni arşiv revision'ı ve ana hakediş geçmişine kaydedildi. Önceki revisionlar korundu."
+                        : $"{sectionName} değişiklikleri yeni arşiv revision'ı v{updatedArchive.Revision:00} olarak kaydedildi. Önceki revisionlar korundu.";
 
             _suppressArchiveDirtyTracking = true;
             try
@@ -1580,7 +1588,7 @@ public partial class MainWindow : Window
             MessageBox.Show(
                 $"{sectionName} değişiklikleri başarıyla uygulandı.\n\n" +
                 $"Yeni hesaplanan net tutar: {FormatMoney(newNetPayable)}\n" +
-                $"Mevcut arşiv revision'ı v{updatedArchive.Revision:00} korundu; yeni revision oluşturulmadı.\n" +
+                $"Yeni arşiv revision'ı: v{updatedArchive.Revision:00}. Önceki revisionlar korunmuştur.\n" +
                 (!historyMirrorSaved
                     ? "DİKKAT: Arşiv güncellendi ancak ana hakediş geçmişi diske yazılamadı. Üstteki kayıt durumunu kontrol edin.\n\n"
                     : historyMirrorUpdated
