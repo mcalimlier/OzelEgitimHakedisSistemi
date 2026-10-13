@@ -32,16 +32,20 @@ public static class ProgressPaymentReportService
     }
 
     /// <summary>
-    /// Matches Module1.HakedişToplamlariniAktar: the workbook writes Hesaplama!K +
-    /// Hesaplama!T directly into the selected month's D:N cells. K and T already
-    /// apply the I/R price-difference inputs and J/S discounts; don't subtract I/R
-    /// again when aggregating the monthly values in Hakediş Raporu!D6.
+    /// Calculates the contract-price work amount for the report's A line.
+    /// The source workbook's K/T cells include I/R price-difference inputs,
+    /// while the report adds raw I+R separately in B. Therefore this monthly
+    /// amount must subtract I/R from K+T (equivalently: work-day amounts less J/S
+    /// discounts) to prevent the current month's price difference being counted twice.
     /// </summary>
     public static decimal CalculateWorkbookMonthlyPaymentAmount(ProgressPaymentHistoryData payment)
     {
         ArgumentNullException.ThrowIfNull(payment);
 
-        return payment.Calculation.TotalAmount;
+        return payment.Input.WorkDays * payment.Input.DailyPrice
+               - payment.Input.DiscountAmount
+               + payment.Input.GuideWorkDays * payment.Input.GuideDailyPrice
+               - payment.Input.GuideDiscountAmount;
     }
 
     /// <summary>
