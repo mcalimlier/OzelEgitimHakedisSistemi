@@ -117,7 +117,7 @@ public sealed class ProgressPaymentReportTests
             ContractorTaxOrIdentityNumber: "12345678901");
 
     [Fact]
-    public void FinalXlsmRoute1Report_ShouldMatchWorkbookReference()
+    public void FinalXlsmRoute1Report_ShouldSeparateContractWorkAndPriceDifference()
     {
         var previous = History(
             1,
