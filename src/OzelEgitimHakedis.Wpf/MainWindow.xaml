@@ -767,7 +767,7 @@
                                         </Border>
                                     </UniformGrid>
 
-                                    <Border x:Name="RouteSelectionCard" Panel.ZIndex="1000" Style="{StaticResource Card}" Padding="8.5" Margin="0,0,0,8.5">
+                                    <Border x:Name="RouteSelectionCard" Panel.ZIndex="1000" Style="{StaticResource Card}" Padding="7.5" Margin="0,0,0,6">
                                         <Grid>
                                             <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
                                             <StackPanel Grid.Column="0" Margin="0,0,6.5,0">
@@ -814,24 +814,24 @@
                                                 <TextBlock x:Name="RouteEditorTitleTextBlock" Text="YENİ HAT" Style="{StaticResource CardTitle}"/>
                                                 <TextBlock x:Name="RouteEditorSubtitleTextBlock" Text="Hat bilgilerini girin" Style="{StaticResource CardSubtitle}" Margin="0,0,0,6.5"/>
                                                 <TextBlock x:Name="RouteSelectedTenderTextBlock" Text="İhale: seçilmedi" Style="{StaticResource FieldLabel}" FontSize="11.5" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                                                <TextBlock x:Name="RouteSelectedContractorTextBlock" Text="Yüklenici: seçilmedi" Style="{StaticResource FieldLabel}" FontSize="11.5" Margin="0,0,0,8"/><TextBlock x:Name="RouteStatusTextBlock" Margin="0,0,0,6" Foreground="{StaticResource Blue600Brush}" TextWrapping="Wrap"/><Border x:Name="RouteValidationBanner" Visibility="Collapsed" Background="#FFF1F1" BorderBrush="#E53935" BorderThickness="1.5" CornerRadius="9" Padding="8,7" Margin="0,0,0,8.5"><StackPanel><TextBlock Text="EKSİK / HATALI HAT BİLGİSİ" Foreground="#C62828" FontSize="11.5" FontWeight="Bold"/><TextBlock x:Name="RouteValidationMessageTextBlock" Foreground="#8E1B1B" FontSize="11.5" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,3,0,0"/></StackPanel></Border>
+                                                <TextBlock x:Name="RouteSelectedContractorTextBlock" Text="Yüklenici: seçilmedi" Style="{StaticResource FieldLabel}" FontSize="11.5" Margin="0,0,0,8"/><TextBlock x:Name="RouteStatusTextBlock" Margin="0,0,0,6" Foreground="{StaticResource Blue600Brush}" TextWrapping="Wrap"/><Border x:Name="RouteValidationBanner" Visibility="Collapsed" Background="#FFF1F1" BorderBrush="#E53935" BorderThickness="1.5" CornerRadius="9" Padding="8,7" Margin="0,0,0,6"><StackPanel><TextBlock Text="EKSİK / HATALI HAT BİLGİSİ" Foreground="#C62828" FontSize="11.5" FontWeight="Bold"/><TextBlock x:Name="RouteValidationMessageTextBlock" Foreground="#8E1B1B" FontSize="11.5" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,3,0,0"/></StackPanel></Border>
 
                                                 <TextBlock Text="Hat No" Style="{StaticResource FieldLabel}"/>
-                                                <TextBox x:Name="RouteNumberTextBox" Style="{StaticResource FieldTextBox}" Margin="0,6,0,8.5"/>
+                                                <TextBox x:Name="RouteNumberTextBox" Style="{StaticResource FieldTextBox}" Margin="0,4,0,6"/>
 
                                                 <TextBlock Text="Hat Adı" Style="{StaticResource FieldLabel}"/>
-                                                <TextBox x:Name="RouteNameTextBox" Style="{StaticResource FieldTextBox}" Margin="0,6,0,8.5"/>
+                                                <TextBox x:Name="RouteNameTextBox" Style="{StaticResource FieldTextBox}" Margin="0,4,0,6"/>
 
                                                 <TextBlock Text="Taşıma İş Günü" Style="{StaticResource FieldLabel}"/>
                                                 <TextBox x:Name="RouteTransportWorkDaysTextBox"
                                                          Style="{StaticResource FieldTextBox}"
-                                                         Margin="0,6,0,8.5"/>
+                                                         Margin="0,4,0,6"/>
 
                                                 <TextBlock Text="Rehber Yıllık İş Günü" Style="{StaticResource FieldLabel}"/>
-                                                <TextBox x:Name="RouteGuideWorkDaysTextBox" Style="{StaticResource FieldTextBox}" Margin="0,6,0,8"/>
+                                                <TextBox x:Name="RouteGuideWorkDaysTextBox" Style="{StaticResource FieldTextBox}" Margin="0,4,0,6"/>
 
                                                 <TextBlock Text="Rehber Personel Günlük Fiyat" Style="{StaticResource FieldLabel}"/>
-                                                <TextBox x:Name="RouteGuideDailyPriceTextBox" Style="{StaticResource FieldTextBox}" Margin="0,6,0,11.5"/>
+                                                <TextBox x:Name="RouteGuideDailyPriceTextBox" Style="{StaticResource FieldTextBox}" Margin="0,4,0,8"/>
 
                                                 <StackPanel Orientation="Horizontal">
                                                     <Button x:Name="AddRouteButton" Content="HAT EKLE" Click="AddRouteButton_Click" Style="{StaticResource ModernButton}" Width="140"/>
@@ -848,7 +848,7 @@
                                                 <ItemsControl x:Name="RoutesListBox">
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <Border Background="#F7FAFC" BorderBrush="#D7E2EC" BorderThickness="1" CornerRadius="8" Padding="6.5" Margin="0,3">
+                                                            <Border Background="#F7FAFC" BorderBrush="#D7E2EC" BorderThickness="1" CornerRadius="8" Padding="5.5" Margin="0,2.5">
                                                             <Grid Margin="0">
                                                                 <Grid.ColumnDefinitions>
                                                                     <ColumnDefinition Width="62"/>
@@ -897,7 +897,7 @@
             <TextBlock Text="Firma bilgilerini bir kez tanımlayın. Aynı firma birden fazla ihale/dosya numarasıyla ilişkilendirilebilir." Style="{StaticResource PageSubtitle}"/>
             <Grid Margin="0,0,0,8.5">
                 <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-                <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,6.5,0" Padding="11.5">
+                <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,5,0" Padding="9.5">
                     <StackPanel>
                         <TextBlock x:Name="ContractorEditorTitleTextBlock" Text="FİRMA BİLGİLERİ" Style="{StaticResource CardTitle}"/>
                         <TextBlock x:Name="ContractorStatusTextBlock" Margin="0,4,0,6" Foreground="{StaticResource Blue600Brush}" FontWeight="SemiBold" TextWrapping="Wrap"/>
@@ -907,36 +907,36 @@
                                 <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Firma Adı / Ticari Unvan" Style="{StaticResource FieldLabel}" Margin="0,6"/>
-                            <TextBox x:Name="ContractorNameTextBox" Grid.Row="0" Grid.Column="1" Margin="6" Style="{StaticResource FieldTextBox}"/>
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="TC / Vergi No" Style="{StaticResource FieldLabel}" Margin="0,6"/>
-                            <TextBox x:Name="ContractorTaxTextBox" Grid.Row="1" Grid.Column="1" Margin="6" Style="{StaticResource FieldTextBox}"/>
-                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Adres" Style="{StaticResource FieldLabel}" Margin="0,6"/>
-                            <TextBox x:Name="ContractorAddressTextBox" Grid.Row="2" Grid.Column="1" Margin="6" Height="42" TextWrapping="Wrap" AcceptsReturn="True" Style="{StaticResource FieldTextBox}"/>
-                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Telefon" Style="{StaticResource FieldLabel}" Margin="0,6"/>
-                            <TextBox x:Name="ContractorPhoneTextBox" Grid.Row="3" Grid.Column="1" Margin="6" Style="{StaticResource FieldTextBox}"/>
-                            <TextBlock Grid.Row="4" Grid.Column="0" Text="E-posta" Style="{StaticResource FieldLabel}" Margin="0,6"/>
-                            <TextBox x:Name="ContractorEmailTextBox" Grid.Row="4" Grid.Column="1" Margin="6" Style="{StaticResource FieldTextBox}"/>
-                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Banka Hesap No / IBAN" Style="{StaticResource FieldLabel}" Margin="0,6"/>
-                            <TextBox x:Name="ContractorBankTextBox" Grid.Row="5" Grid.Column="1" Margin="6" Style="{StaticResource FieldTextBox}"/>
-                            <TextBlock Grid.Row="6" Grid.Column="0" Text="Yetkili Kişi" Style="{StaticResource FieldLabel}" Margin="0,6"/>
-                            <TextBox x:Name="ContractorContactTextBox" Grid.Row="6" Grid.Column="1" Margin="6" Style="{StaticResource FieldTextBox}"/>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Firma Adı / Ticari Unvan" Style="{StaticResource FieldLabel}" Margin="0,4"/>
+                            <TextBox x:Name="ContractorNameTextBox" Grid.Row="0" Grid.Column="1" Margin="4" Style="{StaticResource FieldTextBox}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="TC / Vergi No" Style="{StaticResource FieldLabel}" Margin="0,4"/>
+                            <TextBox x:Name="ContractorTaxTextBox" Grid.Row="1" Grid.Column="1" Margin="4" Style="{StaticResource FieldTextBox}"/>
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Adres" Style="{StaticResource FieldLabel}" Margin="0,4"/>
+                            <TextBox x:Name="ContractorAddressTextBox" Grid.Row="2" Grid.Column="1" Margin="4" Height="42" TextWrapping="Wrap" AcceptsReturn="True" Style="{StaticResource FieldTextBox}"/>
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Telefon" Style="{StaticResource FieldLabel}" Margin="0,4"/>
+                            <TextBox x:Name="ContractorPhoneTextBox" Grid.Row="3" Grid.Column="1" Margin="4" Style="{StaticResource FieldTextBox}"/>
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="E-posta" Style="{StaticResource FieldLabel}" Margin="0,4"/>
+                            <TextBox x:Name="ContractorEmailTextBox" Grid.Row="4" Grid.Column="1" Margin="4" Style="{StaticResource FieldTextBox}"/>
+                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Banka Hesap No / IBAN" Style="{StaticResource FieldLabel}" Margin="0,4"/>
+                            <TextBox x:Name="ContractorBankTextBox" Grid.Row="5" Grid.Column="1" Margin="4" Style="{StaticResource FieldTextBox}"/>
+                            <TextBlock Grid.Row="6" Grid.Column="0" Text="Yetkili Kişi" Style="{StaticResource FieldLabel}" Margin="0,4"/>
+                            <TextBox x:Name="ContractorContactTextBox" Grid.Row="6" Grid.Column="1" Margin="4" Style="{StaticResource FieldTextBox}"/>
                         </Grid>
-                        <StackPanel Orientation="Horizontal" Margin="6,8,0,0">
+                        <StackPanel Orientation="Horizontal" Margin="4.5,6,0,0">
                             <Button x:Name="SaveContractorButton" Content="KAYDET" Click="SaveContractorButton_Click" Style="{StaticResource ModernButton}" Width="130"/>
                             <Button x:Name="CancelContractorEditButton" Content="DÜZENLEME İPTAL" Click="CancelContractorEditButton_Click" Style="{StaticResource SecondaryButton}" Width="160" Margin="8,0,0,0" Visibility="Collapsed"/>
                             <Button x:Name="ClearContractorButton" Content="TEMİZLE" Click="ClearContractorButton_Click" Style="{StaticResource SecondaryButton}" Width="120" Margin="8,0,0,0"/>
                         </StackPanel>
                     </StackPanel>
                 </Border>
-                <Border Grid.Column="1" Style="{StaticResource Card}" Margin="6.5,0,0,0" Padding="11.5">
+                <Border Grid.Column="1" Style="{StaticResource Card}" Margin="5,0,0,0" Padding="9.5">
                     <StackPanel>
                         <TextBlock Text="KAYITLI FİRMALAR" Style="{StaticResource CardTitle}"/>
                         <TextBlock x:Name="ContractorCountTextBlock" Text="0" Foreground="{StaticResource Blue600Brush}" FontSize="18" FontWeight="Bold" Margin="0,6,0,0"/>
                         <ItemsControl x:Name="ContractorsListBox" Margin="0,6.5,0,0">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="8" Margin="0,3">
+                                    <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="8" Margin="0,2.5">
                                         <Grid>
                                             <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="125"/><ColumnDefinition Width="110"/><ColumnDefinition Width="70"/></Grid.ColumnDefinitions>
                                             <StackPanel>
