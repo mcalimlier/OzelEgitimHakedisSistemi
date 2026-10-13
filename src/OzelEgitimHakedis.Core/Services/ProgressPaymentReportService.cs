@@ -4,7 +4,7 @@ namespace OzelEgitimHakedis.Core.Services;
 
 public sealed record ProgressPaymentReportTotals(
     decimal CumulativeServiceAmount,
-    decimal CumulativePriceDifference,
+    decimal CurrentPriceDifference,
     decimal CumulativeTotal,
     decimal PreviousTotal,
     decimal CurrentTotal);
@@ -58,6 +58,19 @@ public static class ProgressPaymentReportService
         return payment.Input.PriceDifference + payment.Input.GuidePriceDifference;
     }
 
+    /// <summary>
+    /// Mirrors the XLSM's monthly K+T value: contract-price work after discount
+    /// plus the signed transport and guide price differences for that month.
+    /// Used for completed prior periods, whose price differences are already part
+    /// of the previous cumulative payment.
+    /// </summary>
+    public static decimal CalculateWorkbookMonthlyPaymentTotal(ProgressPaymentHistoryData payment)
+    {
+        ArgumentNullException.ThrowIfNull(payment);
+        return CalculateWorkbookMonthlyPaymentAmount(payment)
+               + CalculateWorkbookPriceDifference(payment);
+    }
+
     public static ProgressPaymentReportTotals Calculate(
         ProgressPaymentHistoryData current,
         IEnumerable<ProgressPaymentHistoryData> payments)
@@ -71,28 +84,24 @@ public static class ProgressPaymentReportService
             .Where(x => IsWithinCurrentFiscalYear(x, current))
             .ToArray();
 
-        // Official report A is cumulative contract-price work; B is cumulative
-        // price difference through the current claim. The source workbook currently
-        // transfers K+T (which already contains I/R) into A and then adds I+R again
-        // in B. Keep its input formulas as the baseline, but separate their meaning
-        // here so every month's price difference is included exactly once.
-        var previousServiceAmount = previous.Sum(CalculateWorkbookMonthlyPaymentAmount);
+        // The XLSM's prior monthly K+T values contain each prior month's signed
+        // price difference. For the current report, A is therefore the sum of prior
+        // monthly K+T values plus the current month's contract-price work (excluding
+        // current I+R). B is only the current month's signed I+R amount.
+        var previousTotal = previous.Sum(CalculateWorkbookMonthlyPaymentTotal);
         var currentServiceAmount = CalculateWorkbookMonthlyPaymentAmount(current);
-        var cumulativeServiceAmount = previousServiceAmount + currentServiceAmount;
-
-        var previousPriceDifference = previous.Sum(CalculateWorkbookPriceDifference);
         var currentPriceDifference = CalculateWorkbookPriceDifference(current);
-        var cumulativePriceDifference = previousPriceDifference + currentPriceDifference;
+        var cumulativeServiceAmount = previousTotal + currentServiceAmount;
 
-        // C = A + B; D = all prior claims' contract-price work plus prior price differences;
-        // E = C - D, therefore the current period's work + its signed price difference.
-        var cumulativeTotal = cumulativeServiceAmount + cumulativePriceDifference;
-        var previousTotal = previousServiceAmount + previousPriceDifference;
+        // C = A + current B; D = prior cumulative K+T; E = C - D.
+        // This produces current contract-price work + current signed price difference
+        // once, while preserving prior periods' K+T totals and negative F values.
+        var cumulativeTotal = cumulativeServiceAmount + currentPriceDifference;
         var currentTotal = cumulativeTotal - previousTotal;
 
         return new ProgressPaymentReportTotals(
             cumulativeServiceAmount,
-            cumulativePriceDifference,
+            currentPriceDifference,
             cumulativeTotal,
             previousTotal,
             currentTotal);
