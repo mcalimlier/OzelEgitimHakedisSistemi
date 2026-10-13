@@ -33,6 +33,7 @@ public partial class MainWindow : Window
     private string? _editingContractorKey;
     private RouteDraft? _editingRoute;
     private bool _suppressSelectionEvents;
+    private bool _suppressArchiveDirtyTracking;
     private readonly OehsApplicationDataStore _dataStore = new();
     private readonly ProgressPaymentArchiveStore _archiveStore = new();
     private readonly ObservableCollection<ArchiveRow> _archiveRows = new();
@@ -63,6 +64,7 @@ public partial class MainWindow : Window
         ConfigureWindow();
         ConfigureZeroValueInputs();
         ConfigureContractValidationInputs();
+        ConfigureArchiveCorrectionChangeTracking();
         SourceInitialized += MainWindow_SourceInitialized;
         StartDatePicker.SelectedDate = DateTime.Today;
         EndDatePicker.SelectedDate = DateTime.Today;
@@ -93,10 +95,7 @@ public partial class MainWindow : Window
 
         UpdateContractSelectors();
         if (_routes.Count > 0)
-        {
-            ProgressRouteComboBox.SelectedIndex = 0;
             ReportRouteComboBox.SelectedIndex = 0;
-        }
 
         UpdateRouteSummary();
         UpdateContractorSummary();
@@ -108,6 +107,11 @@ public partial class MainWindow : Window
         UpdateReportView();
         UpdateAcceptanceView();
         UpdateArchiveView();
+
+        // Açılışta kayıtlı veriler yalnızca listelerde/özetlerde görünür; giriş formları boş başlar.
+        ClearContractFormOnly();
+        ClearProgressEntryFields(clearTenderSelection: false);
+        UpdateProgressRouteDefaults();
     }
 
     private enum ArchiveCorrectionSection
@@ -224,6 +228,8 @@ public partial class MainWindow : Window
         ProgressEditorTitleTextBlock.Text = editing
             ? (archiveCorrection ? "ARŞİV HAKEDİŞ DÜZENLE" : "HAKEDİŞ DÜZENLE")
             : "DÖNEM HESAP BİLGİLERİ";
+        ProgressTenderListBox.IsEnabled = !(editing && archiveCorrection);
+        ProgressRouteComboBox.IsEnabled = !(editing && archiveCorrection);
     }
 
     private void ClearArchiveCorrectionState()
@@ -231,6 +237,7 @@ public partial class MainWindow : Window
         _editingArchiveSourcePath = null;
         _editingArchiveSnapshot = null;
         _archiveCorrectionSection = ArchiveCorrectionSection.None;
+        _suppressArchiveDirtyTracking = false;
         ResetEditorUiToCreateMode();
     }
 
@@ -589,32 +596,49 @@ public partial class MainWindow : Window
             .ToArray();
     }
 
-    private void UpdateProgressContractorAndRoutes(ContractDraftData? contract)
+    private void UpdateProgressContractorAndRoutes(ContractDraftData? contract, bool preserveSelection = true)
     {
         if (contract is null)
         {
-            ProgressContractorTextBlock.Text = "Seçilmedi";
-            ProgressRouteComboBox.ItemsSource = Array.Empty<RouteDraft>();
-            ProgressRouteRelationTextBlock.Text = "Hat seçiniz.";
+            _suppressSelectionEvents = true;
+            try
+            {
+                ProgressContractorTextBlock.Text = "Seçilmedi";
+                ProgressRouteComboBox.ItemsSource = Array.Empty<RouteDraft>();
+                ProgressRouteComboBox.SelectedItem = null;
+                ProgressRouteRelationTextBlock.Text = "İhale ve hat seçiniz.";
+            }
+            finally
+            {
+                _suppressSelectionEvents = false;
+            }
+
+            UpdateProgressRouteDefaults();
             return;
         }
 
         var routes = _routes.Where(x =>
             string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase))
             .ToArray();
+        var previous = preserveSelection ? ProgressRouteComboBox.SelectedItem as RouteDraft : null;
 
-        var previous = ProgressRouteComboBox.SelectedItem as RouteDraft;
-        ProgressRouteComboBox.ItemsSource = routes;
-
-        if (previous is not null)
-            ProgressRouteComboBox.SelectedItem = routes.FirstOrDefault(x =>
-                x.RouteNumber == previous.RouteNumber &&
-                string.Equals(
-                    OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
-                    OehsIdentityService.NormalizeIdentity(previous.ContractorTaxOrIdentityNumber),
-                    StringComparison.Ordinal));
-        if (ProgressRouteComboBox.SelectedItem is null && routes.Length > 0)
-            ProgressRouteComboBox.SelectedIndex = 0;
+        _suppressSelectionEvents = true;
+        try
+        {
+            ProgressRouteComboBox.ItemsSource = routes;
+            ProgressRouteComboBox.SelectedItem = previous is null
+                ? null
+                : routes.FirstOrDefault(x =>
+                    x.RouteNumber == previous.RouteNumber &&
+                    string.Equals(
+                        OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
+                        OehsIdentityService.NormalizeIdentity(previous.ContractorTaxOrIdentityNumber),
+                        StringComparison.Ordinal));
+        }
+        finally
+        {
+            _suppressSelectionEvents = false;
+        }
 
         UpdateProgressRouteDefaults();
     }
@@ -1303,7 +1327,6 @@ public partial class MainWindow : Window
 
         if (HomeTenderListBox.SelectedItem is ContractDraftData contract)
         {
-            ApplyContractToForm(contract);
             UpdateHomeTenderSummary(contract);
             var latest = _progressHistory
                 .Where(x => string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase))
@@ -1447,14 +1470,14 @@ public partial class MainWindow : Window
 
     private void ProgressTenderListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (_suppressSelectionEvents)
+        if (_suppressSelectionEvents || IsArchiveEditing)
             return;
 
-        if (ProgressTenderListBox.SelectedItem is ContractDraftData contract)
-        {
-            ApplyContractToForm(contract);
-            UpdateProgressContractorAndRoutes(contract);
-        }
+        _lastCalculatedHistoryId = null;
+        ClearProgressEntryFields(clearTenderSelection: false);
+        UpdateProgressContractorAndRoutes(
+            ProgressTenderListBox.SelectedItem as ContractDraftData,
+            preserveSelection: false);
     }
 
     private void AddRouteButton_Click(object sender, RoutedEventArgs e)
@@ -2158,10 +2181,7 @@ public partial class MainWindow : Window
                 });
             }
 
-            if (_contracts.Count > 0)
-                ApplyContractToForm(_contracts[0]);
-            else
-                ClearContractFormOnly();
+            ClearContractFormOnly();
 
             _dataLoadFailed = false;
             SetHeaderSaveStatus("Veri yüklendi", isError: false);
@@ -2521,21 +2541,21 @@ public partial class MainWindow : Window
             invalidFields.Add((DailyPriceTextBox, "Taşıma Günlük Fiyat"));
         if (!TryParseDecimal(GuideDailyPriceTextBox.Text, out var guideDailyPrice) || guideDailyPrice < 0)
             invalidFields.Add((GuideDailyPriceTextBox, "Rehber Günlük Fiyat"));
-        if (!TryParseDecimal(DiscountTextBox.Text, out var discount) || discount < 0)
+        if (!TryParseDecimalOrZero(DiscountTextBox.Text, out var discount) || discount < 0)
             invalidFields.Add((DiscountTextBox, "Taşıma İskonto"));
-        if (!TryParseDecimal(GuideDiscountTextBox.Text, out var guideDiscount) || guideDiscount < 0)
+        if (!TryParseDecimalOrZero(GuideDiscountTextBox.Text, out var guideDiscount) || guideDiscount < 0)
             invalidFields.Add((GuideDiscountTextBox, "Rehber İskonto"));
-        if (!TryParseDecimal(PriceDifferenceTextBox.Text, out var priceDifference))
+        if (!TryParseDecimalOrZero(PriceDifferenceTextBox.Text, out var priceDifference))
             invalidFields.Add((PriceDifferenceTextBox, "Taşıma Fiyat Farkı"));
-        if (!TryParseDecimal(GuidePriceDifferenceTextBox.Text, out var guidePriceDifference))
+        if (!TryParseDecimalOrZero(GuidePriceDifferenceTextBox.Text, out var guidePriceDifference))
             invalidFields.Add((GuidePriceDifferenceTextBox, "Rehber Fiyat Farkı"));
-        if (!TryParseDecimal(TaxDebtTextBox.Text, out var taxDebt) || taxDebt < 0)
+        if (!TryParseDecimalOrZero(TaxDebtTextBox.Text, out var taxDebt) || taxDebt < 0)
             invalidFields.Add((TaxDebtTextBox, "Vergi Borcu"));
-        if (!TryParseDecimal(SocialSecurityDebtTextBox.Text, out var socialSecurityDebt) || socialSecurityDebt < 0)
+        if (!TryParseDecimalOrZero(SocialSecurityDebtTextBox.Text, out var socialSecurityDebt) || socialSecurityDebt < 0)
             invalidFields.Add((SocialSecurityDebtTextBox, "SGK Borcu"));
-        if (!TryParseDecimal(MinimumWageSupportTextBox.Text, out var minimumWageSupport) || minimumWageSupport < 0)
+        if (!TryParseDecimalOrZero(MinimumWageSupportTextBox.Text, out var minimumWageSupport) || minimumWageSupport < 0)
             invalidFields.Add((MinimumWageSupportTextBox, "Asgari Ücret Desteği"));
-        if (!TryParseDecimal(InspectionPenaltyTextBox.Text, out var inspectionPenalty) || inspectionPenalty < 0)
+        if (!TryParseDecimalOrZero(InspectionPenaltyTextBox.Text, out var inspectionPenalty) || inspectionPenalty < 0)
             invalidFields.Add((InspectionPenaltyTextBox, "Denetim Cezası"));
 
         if (invalidFields.Count > 0)
@@ -3853,7 +3873,7 @@ public partial class MainWindow : Window
 
     private void ProgressRouteComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (!IsInitialized)
+        if (!IsInitialized || _suppressSelectionEvents)
             return;
 
         UpdateProgressRouteDefaults();
@@ -3873,7 +3893,6 @@ public partial class MainWindow : Window
             : route.ContractorName;
         ProgressRouteRelationTextBlock.Text = $"İhale: {route.TenderNumber} • Yüklenici: {route.ContractorName} • Hat: {route.RouteNumber} — {route.Name}";
 
-        RouteTransportWorkDaysTextBox.Text = route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
         DailyPriceTextBox.Text = route.DailyPrice.ToString("N2", CultureInfo.CurrentCulture);
         GuideDailyPriceTextBox.Text = route.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
 
@@ -4810,7 +4829,6 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         })
         {
             textBox.GotFocus += ZeroValueTextBox_GotFocus;
-            textBox.LostFocus += ZeroValueTextBox_LostFocus;
         }
     }
 
@@ -4823,13 +4841,7 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         }
     }
 
-    private static void ZeroValueTextBox_LostFocus(object sender, RoutedEventArgs e)
-    {
-        if (sender is TextBox textBox && string.IsNullOrWhiteSpace(textBox.Text))
-            textBox.Text = "0";
-    }
-
-    private void ClearProgressEntryFields()
+    private void ClearProgressEntryFields(bool clearTenderSelection = true)
     {
         foreach (var textBox in new[]
         {
@@ -4846,7 +4858,8 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         _suppressSelectionEvents = true;
         try
         {
-            ProgressTenderListBox.SelectedItem = null;
+            if (clearTenderSelection)
+                ProgressTenderListBox.SelectedItem = null;
             ProgressRouteComboBox.SelectedItem = null;
         }
         finally
