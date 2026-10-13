@@ -350,7 +350,7 @@ internal static class OehsOfficialDocumentFactory
             ("Yüklenicinin adı/ticari unvanı", c.ContractorName, 35),
             ("Sözleşme tarihi", FormatDate(c.ContractDate), 35),
             ("Sözleşme bedeli", FormatMoney(c.ContractAmount), 35),
-            ("Sözleşmeye göre işin süresi(takvim günü)", FormatWorkDays(c), 35),
+            ("Sözleşmeye göre işin süresi (iş günü)", FormatWorkDays(c), 35),
             ("Sözleşmeye göre işin bitirilmesi gereken tarih", FormatDate(endDate), 35),
             ("Varsa süre uzatımları", "", 35),
             ("Süre uzatımı dahil işin bitirilmesi gereken tarih", FormatDate(endDate), 35),
