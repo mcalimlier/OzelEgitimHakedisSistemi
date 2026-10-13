@@ -81,7 +81,7 @@ jobs:
           $archiveTests = Get-Content ".\tests\OzelEgitimHakedis.Tests\ProgressPaymentArchiveStoreTests.cs" -Raw
           if (-not $code.Contains("değişiklikleri uygulansın mı?")) { throw "Archive edit confirmation prompt is missing." }
           if (-not $code.Contains("Calculation = ProgressPaymentCalculator.Calculate(updatedArchive.ProgressPayment.Input)")) { throw "Archive edits must recalculate the payment from saved inputs before replacement." }
-          if (-not $code.Contains("_archiveStore.Replace(_editingArchiveSourcePath, updatedArchive)")) { throw "Archive edits must replace the selected file rather than creating a new revision." }
+          if (-not $code.Contains("_archiveStore.SaveRevision(_editingArchiveSourcePath, updatedArchive)")) { throw "Archive edits must create an immutable new revision and preserve prior revisions." }
           if (-not $code.Contains("private void ClearProgressEntryFields(bool clearTenderSelection = true)")) { throw "Archive and new-payment entry forms must clear after save/reset." }
           if ($code -notmatch 'UpdateAcceptanceView\(\);[\s\S]{0,320}ClearContractFormOnly\(\);') { throw "The contract input form must clear after a successful save and view refresh." }
           if ($code -notmatch 'SetContractorEditorMode\(false\);\s*ContractorStatusTextBlock.Text = "Yeni firma kaydı için alanlar temizlendi\."') { throw "The contractor form must return to create mode after save." }
@@ -106,7 +106,8 @@ jobs:
           if (-not $code.Contains("private void RefreshViewsAfterHistoryCorrection()")) { throw "Corrected history must refresh summary, report, and progress views." }
           if (-not $code.Contains('ConfirmLiveHistoryCorrection("Hakediş girdileri", historyItem)')) { throw "Editing a history payment must ask for confirmation before replacing its existing row." }
           if ($code -notmatch 'if \(clearTenderSelection\)[\s\S]{0,220}ProgressRouteComboBox\.ItemsSource = Array\.Empty<RouteDraft>\(\);') { throw "Clearing a fresh payment form must also clear stale route choices when the tender is cleared." }
-          if (-not $archiveTests.Contains("Replace_ShouldOverwriteSameArchiveFileWithRecalculatedPaymentAndKeepRevision")) { throw "Same-file, same-revision recalculated archive replacement is not covered by a test." }
+          if (-not $archiveTests.Contains("SaveRevision_ShouldCreateV02AndKeepV01ForRecalculatedPayment")) { throw "Archive correction must create v02 and preserve v01 in a regression test." }
+          if (-not $archiveTests.Contains("SaveRevision_ShouldCreateNewRevisionAndPreserveOriginalWhenRouteChanges")) { throw "Archive identity corrections must preserve the earlier revision." }
 
       - name: Build Tests
         run: dotnet build ".\tests\OzelEgitimHakedis.Tests\OzelEgitimHakedis.Tests.csproj" --configuration Release --no-restore
