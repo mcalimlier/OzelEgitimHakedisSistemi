@@ -33,11 +33,11 @@ public sealed class ProgressPaymentReportTests
 
         var totals = ProgressPaymentReportService.Calculate(current, new[] { previous, current });
 
-        Assert.Equal(265m, totals.CumulativeServiceAmount);
+        Assert.Equal(250m, totals.CumulativeServiceAmount);
         Assert.Equal(10m, totals.CurrentPriceDifference);
-        Assert.Equal(275m, totals.CumulativeTotal);
-        Assert.Equal(105m, totals.PreviousTotal);
-        Assert.Equal(170m, totals.CurrentTotal);
+        Assert.Equal(260m, totals.CumulativeTotal);
+        Assert.Equal(100m, totals.PreviousTotal);
+        Assert.Equal(160m, totals.CurrentTotal);
     }
 
     [Fact]
@@ -137,11 +137,11 @@ public sealed class ProgressPaymentReportTests
             current,
             new[] { previous, current });
 
-        Assert.Equal(234528.48m, totals.CumulativeServiceAmount);
+        Assert.Equal(233028.48m, totals.CumulativeServiceAmount);
         Assert.Equal(1500m, totals.CurrentPriceDifference);
-        Assert.Equal(236028.48m, totals.CumulativeTotal);
+        Assert.Equal(234528.48m, totals.CumulativeTotal);
         Assert.Equal(116514.24m, totals.PreviousTotal);
-        Assert.Equal(119514.24m, totals.CurrentTotal);
+        Assert.Equal(118014.24m, totals.CurrentTotal);
     }
 
 
@@ -153,21 +153,21 @@ public sealed class ProgressPaymentReportTests
 
         var totals = ProgressPaymentReportService.Calculate(current, new[] { previous, current });
 
-        Assert.Equal(245m, totals.CumulativeTotal); // C
-        Assert.Equal(125m, totals.PreviousTotal);   // D
-        Assert.Equal(120m, totals.CurrentTotal);    // E = C - D
+        Assert.Equal(210m, totals.CumulativeTotal); // C = cumulative contract work + current F
+        Assert.Equal(100m, totals.PreviousTotal);   // D = prior cumulative contract work
+        Assert.Equal(110m, totals.CurrentTotal);    // E = current contract work + current F
         Assert.Equal(totals.CumulativeTotal - totals.PreviousTotal, totals.CurrentTotal);
     }
 
 
     [Fact]
-    public void NegativeCurrentPriceDifference_ShouldSubtractAbsoluteValueFromH2()
+    public void NegativeCurrentPriceDifference_ShouldBeAppliedOnceAndRemainNegative()
     {
         var current = History(2, new DateOnly(2026, 11, 30), new DateTime(2026, 11, 1), 100m, -10m);
 
         var totals = ProgressPaymentReportService.Calculate(current, new[] { current });
 
-        Assert.Equal(80m, totals.CurrentTotal);
+        Assert.Equal(90m, totals.CurrentTotal);
     }
 
 }
