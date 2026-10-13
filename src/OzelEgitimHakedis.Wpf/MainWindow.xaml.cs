@@ -1016,24 +1016,293 @@ public partial class MainWindow : Window
         }
     }
 
-    private void RefreshArchiveCorrectionStatus()
+    private void ClearLiveHistoryCorrectionContext()
     {
-        if (_suppressArchiveDirtyTracking || !IsArchiveCorrection || _editingArchiveSnapshot is null)
+        _historyCorrectionTargetId = null;
+        _historyCorrectionSection = HistoryCorrectionSection.None;
+    }
+
+    private void SetLiveHistoryCorrectionContext(Guid targetId, HistoryCorrectionSection section)
+    {
+        _historyCorrectionTargetId = targetId;
+        _historyCorrectionSection = section;
+        RefreshArchiveCorrectionStatus();
+    }
+
+    private ProgressPaymentHistoryData? GetLiveHistoryCorrectionTarget() =>
+        _historyCorrectionTargetId is Guid id
+            ? _progressHistory.FirstOrDefault(x => x.Id == id)
+            : null;
+
+    private void SetHistoryCorrectionStatus(string message, bool warning)
+    {
+        var brush = new System.Windows.Media.SolidColorBrush(
+            warning
+                ? System.Windows.Media.Color.FromRgb(230, 163, 40)
+                : System.Windows.Media.Color.FromRgb(36, 104, 216));
+
+        switch (_historyCorrectionSection)
+        {
+            case HistoryCorrectionSection.Contract:
+                ContractStatusTextBlock.Text = message;
+                ContractStatusTextBlock.Foreground = brush;
+                ContractStatusTextBlock.FontWeight = warning ? FontWeights.Bold : FontWeights.SemiBold;
+                break;
+            case HistoryCorrectionSection.Contractor:
+                ContractorStatusTextBlock.Text = message;
+                ContractorStatusTextBlock.Foreground = brush;
+                ContractorStatusTextBlock.FontWeight = warning ? FontWeights.Bold : FontWeights.SemiBold;
+                break;
+            case HistoryCorrectionSection.Route:
+                RouteStatusTextBlock.Text = message;
+                RouteStatusTextBlock.Foreground = brush;
+                RouteStatusTextBlock.FontWeight = warning ? FontWeights.Bold : FontWeights.SemiBold;
+                break;
+            case HistoryCorrectionSection.ProgressPayment:
+                CalculationStatusTextBlock.Text = message;
+                CalculationStatusTextBlock.Foreground = brush;
+                CalculationStatusTextBlock.FontWeight = warning ? FontWeights.Bold : FontWeights.SemiBold;
+                break;
+        }
+    }
+
+    private bool HistoryCorrectionInputsDiffer()
+    {
+        var item = GetLiveHistoryCorrectionTarget();
+        if (item is null)
+            return false;
+
+        return _historyCorrectionSection switch
+        {
+            HistoryCorrectionSection.Contract =>
+                _contracts.FirstOrDefault(x =>
+                    string.Equals(x.TenderNumber, item.TenderNumber, StringComparison.OrdinalIgnoreCase)) is not ContractDraftData contract ||
+                TextDiffers(TenderNumberTextBox, contract.TenderNumber) ||
+                TextDiffers(ContractNumberTextBox, contract.ContractNumber) ||
+                TextDiffers(WorkNameTextBox, contract.WorkName) ||
+                DecimalDiffers(ContractAmountTextBox, contract.ContractAmount) ||
+                IntDiffers(ContractWorkDaysTextBox, contract.ContractWorkDays) ||
+                DecimalDiffers(ContractTransportDailyPriceTextBox, contract.TransportDailyPrice) ||
+                DatePickerDiffers(StartDatePicker, contract.StartDate) ||
+                DatePickerDiffers(EndDatePicker, contract.EndDate) ||
+                DatePickerDiffers(TenderDatePicker, contract.TenderDate) ||
+                DatePickerDiffers(ContractDatePicker, contract.ContractDate) ||
+                ((VatExemptCheckBox.IsChecked == true) != contract.VatExempt),
+
+            HistoryCorrectionSection.Contractor =>
+                FindContractor(item.ContractorTaxOrIdentityNumber ?? string.Empty) is not ContractorDraft contractor ||
+                TextDiffers(ContractorNameTextBox, contractor.Name) ||
+                !string.Equals(
+                    OehsIdentityService.NormalizeIdentity(ContractorTaxTextBox.Text),
+                    OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber),
+                    StringComparison.Ordinal) ||
+                TextDiffers(ContractorAddressTextBox, contractor.Address) ||
+                TextDiffers(ContractorPhoneTextBox, contractor.Phone) ||
+                TextDiffers(ContractorEmailTextBox, contractor.Email) ||
+                TextDiffers(ContractorBankTextBox, contractor.BankAccountNumber) ||
+                TextDiffers(ContractorContactTextBox, contractor.ContactPerson),
+
+            HistoryCorrectionSection.Route =>
+                _routes.FirstOrDefault(x =>
+                    string.Equals(
+                        OehsIdentityService.BuildRouteKey(x.TenderNumber, x.RouteNumber, x.ContractorTaxOrIdentityNumber),
+                        OehsIdentityService.BuildRouteKey(
+                            item.TenderNumber ?? string.Empty,
+                            item.RouteNumber ?? string.Empty,
+                            item.ContractorTaxOrIdentityNumber ?? string.Empty),
+                        StringComparison.Ordinal)) is not RouteDraft route ||
+                TextDiffers(RouteNumberTextBox, route.RouteNumber) ||
+                TextDiffers(RouteNameTextBox, route.Name) ||
+                IntDiffers(RouteTransportWorkDaysTextBox, route.TransportWorkDays) ||
+                IntDiffers(RouteGuideWorkDaysTextBox, route.GuideWorkDays) ||
+                DecimalDiffers(RouteGuideDailyPriceTextBox, route.GuideDailyPrice),
+
+            HistoryCorrectionSection.ProgressPayment =>
+                IntDiffers(WorkDaysTextBox, item.Input.WorkDays) ||
+                DecimalDiffers(DailyPriceTextBox, item.Input.DailyPrice) ||
+                IntDiffers(GuideWorkDaysTextBox, item.Input.GuideWorkDays) ||
+                DecimalDiffers(GuideDailyPriceTextBox, item.Input.GuideDailyPrice) ||
+                DecimalDiffers(DiscountTextBox, item.Input.DiscountAmount) ||
+                DecimalDiffers(GuideDiscountTextBox, item.Input.GuideDiscountAmount) ||
+                DecimalDiffers(PriceDifferenceTextBox, item.Input.PriceDifference) ||
+                DecimalDiffers(GuidePriceDifferenceTextBox, item.Input.GuidePriceDifference) ||
+                DecimalDiffers(TaxDebtTextBox, item.Input.TaxDebt) ||
+                DecimalDiffers(SocialSecurityDebtTextBox, item.Input.SocialSecurityDebt) ||
+                DecimalDiffers(MinimumWageSupportTextBox, item.Input.MinimumWageSupport) ||
+                DecimalDiffers(InspectionPenaltyTextBox, item.Input.InspectionPenalty) ||
+                NullableIntDiffers(ProgressNumberTextBox, item.ProgressPaymentNumber) ||
+                DatePickerDiffers(ProgressPeriodDatePicker, item.PeriodDate),
+
+            _ => false
+        };
+    }
+
+    private bool TryCreateHistoryCorrectionPreview(
+        out ProgressPaymentInput input,
+        out ProgressPaymentCalculation calculation,
+        out string message)
+    {
+        var item = GetLiveHistoryCorrectionTarget();
+        input = item?.Input ?? default!;
+        calculation = item?.Calculation ?? default!;
+        message = string.Empty;
+        if (item is null)
+        {
+            message = "Düzenlenen hakediş geçmişinde bulunamadı. Kayıt değiştirilmedi.";
+            return false;
+        }
+
+        switch (_historyCorrectionSection)
+        {
+            case HistoryCorrectionSection.Contract:
+                if (string.IsNullOrWhiteSpace(TenderNumberTextBox.Text) ||
+                    string.IsNullOrWhiteSpace(ContractNumberTextBox.Text) ||
+                    string.IsNullOrWhiteSpace(WorkNameTextBox.Text))
+                {
+                    message = "İhale/Dosya No, sözleşme no ve işin adı zorunludur.";
+                    return false;
+                }
+                if (!TryParseDecimal(ContractAmountTextBox.Text, out var contractAmount) || contractAmount < 0)
+                {
+                    message = "Sözleşme bedelini geçerli bir tutar olarak girin.";
+                    return false;
+                }
+                if (!TryParseDecimal(ContractTransportDailyPriceTextBox.Text, out var contractDailyPrice) || contractDailyPrice < 0)
+                {
+                    message = "Taşıma günlük fiyatını geçerli bir tutar olarak girin.";
+                    return false;
+                }
+                input = item.Input with
+                {
+                    ContractAmount = contractAmount,
+                    DailyPrice = contractDailyPrice,
+                    IsVatExempt = VatExemptCheckBox.IsChecked == true
+                };
+                break;
+
+            case HistoryCorrectionSection.Contractor:
+                // Contractor identity/address changes do not alter the calculation inputs.
+                input = item.Input;
+                break;
+
+            case HistoryCorrectionSection.Route:
+                if (string.IsNullOrWhiteSpace(RouteNumberTextBox.Text) || string.IsNullOrWhiteSpace(RouteNameTextBox.Text))
+                {
+                    message = "Hat No ve hat adı zorunludur.";
+                    return false;
+                }
+                if (!int.TryParse(RouteTransportWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var transportWorkDays) || transportWorkDays < 0)
+                {
+                    message = "Taşıma iş gününü sıfır veya daha büyük bir tam sayı olarak girin.";
+                    return false;
+                }
+                if (!int.TryParse(RouteGuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var guideWorkDays) || guideWorkDays < 0)
+                {
+                    message = "Rehber iş gününü sıfır veya daha büyük bir tam sayı olarak girin.";
+                    return false;
+                }
+                if (!TryParseDecimal(RouteGuideDailyPriceTextBox.Text, out var guideDailyPrice) || guideDailyPrice < 0)
+                {
+                    message = "Rehber günlük fiyatını geçerli bir tutar olarak girin.";
+                    return false;
+                }
+                input = item.Input with
+                {
+                    WorkDays = transportWorkDays,
+                    GuideWorkDays = guideWorkDays,
+                    GuideDailyPrice = guideDailyPrice
+                };
+                break;
+
+            case HistoryCorrectionSection.ProgressPayment:
+                if (!int.TryParse(WorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var workDays) || workDays < 0)
+                {
+                    message = "Taşıma iş gününü kontrol edin.";
+                    return false;
+                }
+                if (!int.TryParse(GuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var paymentGuideWorkDays) || paymentGuideWorkDays < 0)
+                {
+                    message = "Rehber iş gününü kontrol edin.";
+                    return false;
+                }
+                if (!TryParseDecimal(DailyPriceTextBox.Text, out var dailyPrice) || dailyPrice < 0)
+                {
+                    message = "Taşıma günlük fiyatını kontrol edin.";
+                    return false;
+                }
+                if (!TryParseDecimal(GuideDailyPriceTextBox.Text, out var paymentGuideDailyPrice) || paymentGuideDailyPrice < 0)
+                {
+                    message = "Rehber günlük fiyatını kontrol edin.";
+                    return false;
+                }
+                if (!TryParseDecimalOrZero(DiscountTextBox.Text, out var discount) ||
+                    !TryParseDecimalOrZero(GuideDiscountTextBox.Text, out var guideDiscount) ||
+                    !TryParseDecimalOrZero(PriceDifferenceTextBox.Text, out var priceDifference) ||
+                    !TryParseDecimalOrZero(GuidePriceDifferenceTextBox.Text, out var guidePriceDifference))
+                {
+                    message = "İskonto ve fiyat farkı alanlarını tutar olarak girin.";
+                    return false;
+                }
+                if (!TryParseDecimalOrZero(TaxDebtTextBox.Text, out var taxDebt) || taxDebt < 0 ||
+                    !TryParseDecimalOrZero(SocialSecurityDebtTextBox.Text, out var socialSecurityDebt) || socialSecurityDebt < 0 ||
+                    !TryParseDecimalOrZero(MinimumWageSupportTextBox.Text, out var minimumWageSupport) || minimumWageSupport < 0 ||
+                    !TryParseDecimalOrZero(InspectionPenaltyTextBox.Text, out var inspectionPenalty) || inspectionPenalty < 0)
+                {
+                    message = "Borç, destek ve ceza alanları negatif olamaz; tutarları kontrol edin.";
+                    return false;
+                }
+                input = item.Input with
+                {
+                    WorkDays = workDays,
+                    DailyPrice = dailyPrice,
+                    GuideWorkDays = paymentGuideWorkDays,
+                    GuideDailyPrice = paymentGuideDailyPrice,
+                    DiscountAmount = discount,
+                    GuideDiscountAmount = guideDiscount,
+                    PriceDifference = priceDifference,
+                    GuidePriceDifference = guidePriceDifference,
+                    TaxDebt = taxDebt,
+                    SocialSecurityDebt = socialSecurityDebt,
+                    MinimumWageSupport = minimumWageSupport,
+                    InspectionPenalty = inspectionPenalty
+                };
+                break;
+
+            default:
+                message = "Düzenleme bölümü belirlenemedi.";
+                return false;
+        }
+
+        try
+        {
+            calculation = ProgressPaymentCalculator.Calculate(input);
+            return true;
+        }
+        catch (Exception ex) when (ex is ArgumentException or OverflowException)
+        {
+            message = ex.Message;
+            return false;
+        }
+    }
+
+    private void RefreshHistoryCorrectionStatus()
+    {
+        var item = GetLiveHistoryCorrectionTarget();
+        if (item is null)
             return;
 
-        var archive = _editingArchiveSnapshot;
-        if (!ArchiveCorrectionInputsDiffer())
+        if (!HistoryCorrectionInputsDiffer())
         {
-            UpdateProgressCalculationDisplay(archive.ProgressPayment.Calculation, archive.ProgressPayment.Input.WorkDays);
+            UpdateProgressCalculationDisplay(item.Calculation, item.Input.WorkDays);
             ProgressCalculationSummaryTextBlock.Text = "KAYITLI HESAP";
-            SetArchiveCorrectionStatus("Arşiv düzeltme modu açık. Henüz değişiklik yok.", warning: false);
+            SetHistoryCorrectionStatus("Hakediş düzeltme modu açık. Henüz değişiklik yok.", warning: false);
             return;
         }
 
-        if (!TryCreateArchiveCorrectionPreview(out var input, out var calculation, out var message))
+        if (!TryCreateHistoryCorrectionPreview(out var input, out var calculation, out var message))
         {
             ProgressCalculationSummaryTextBlock.Text = "KONTROL GEREKLİ";
-            SetArchiveCorrectionStatus(
+            SetHistoryCorrectionStatus(
                 $"DEĞİŞİKLİK ALGILANDI — {message} Net ödeme önizlemesi için alanı düzeltin.",
                 warning: true);
             return;
@@ -1041,10 +1310,156 @@ public partial class MainWindow : Window
 
         UpdateProgressCalculationDisplay(calculation, input.WorkDays);
         ProgressCalculationSummaryTextBlock.Text = "ÖNİZLEME • KAYDEDİLMEDİ";
-        SetArchiveCorrectionStatus(
-            $"DEĞİŞİKLİK ALGILANDI — Net ödeme: {FormatMoney(archive.ProgressPayment.Calculation.NetPayable)} → " +
-            $"{FormatMoney(calculation.NetPayable)}. DÜZENLE düğmesine basıp onayladığınızda mevcut arşiv kaydı güncellenir.",
+        SetHistoryCorrectionStatus(
+            $"DEĞİŞİKLİK ALGILANDI — Net ödeme: {FormatMoney(item.Calculation.NetPayable)} → " +
+            $"{FormatMoney(calculation.NetPayable)}. DÜZENLE düğmesine basıp onayladığınızda mevcut hakediş kaydı güncellenecek.",
             warning: true);
+    }
+
+    private bool ConfirmLiveHistoryCorrection(string sectionName, ProgressPaymentHistoryData? proposedPayment = null)
+    {
+        if (_historyCorrectionTargetId is not Guid targetId ||
+            _historyCorrectionSection == HistoryCorrectionSection.None ||
+            !HistoryCorrectionInputsDiffer())
+            return true;
+
+        var original = _progressHistory.FirstOrDefault(x => x.Id == targetId);
+        if (original is null)
+        {
+            SetHistoryCorrectionStatus("Düzenlenen hakediş artık geçmiş listesinde bulunmuyor; kayıt değiştirilmedi.", warning: true);
+            return false;
+        }
+
+        decimal newNetPayable;
+        if (proposedPayment is not null)
+        {
+            newNetPayable = proposedPayment.Calculation.NetPayable;
+        }
+        else if (TryCreateHistoryCorrectionPreview(out _, out var preview, out var message))
+        {
+            newNetPayable = preview.NetPayable;
+        }
+        else
+        {
+            SetHistoryCorrectionStatus($"Düzeltme onaylanamadı: {message}", warning: true);
+            return false;
+        }
+
+        var confirmation = MessageBox.Show(
+            $"{sectionName} değişiklikleri uygulansın mı?\n\n" +
+            $"İhale/Dosya: {original.TenderNumber ?? "-"} • Hat: {original.RouteNumber ?? "-"} • " +
+            $"Hakediş: {original.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"}\n" +
+            $"Önceki net tutar: {FormatMoney(original.Calculation.NetPayable)}\n" +
+            $"Yeni hesaplanan net tutar: {FormatMoney(newNetPayable)}\n\n" +
+            "Evet seçilirse mevcut hakediş kaydı yeniden hesaplanıp aynı kayıt üzerine yazılacak. " +
+            "Hayır seçilirse mevcut kayıt korunacak.",
+            "OEHS — Hakediş Düzeltme Onayı",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (confirmation == MessageBoxResult.Yes)
+            return true;
+
+        SetHistoryCorrectionStatus("Değişiklikler iptal edildi; mevcut hakediş kaydı korunuyor. Alanları düzenleyip yeniden onaylayabilirsiniz.", warning: true);
+        return false;
+    }
+
+    private void RefreshViewsAfterHistoryCorrection()
+    {
+        var targetId = _historyCorrectionTargetId;
+        UpdateHistoryView();
+        UpdateSummaryView();
+        UpdateReportView();
+        UpdateHomeSummaryView();
+        UpdateAcceptanceView();
+
+        if (targetId is Guid id && _progressHistory.FirstOrDefault(x => x.Id == id) is ProgressPaymentHistoryData item)
+        {
+            _lastCalculatedHistoryId = id;
+
+            var contract = _contracts.FirstOrDefault(x =>
+                string.Equals(x.TenderNumber, item.TenderNumber, StringComparison.OrdinalIgnoreCase));
+            _suppressSelectionEvents = true;
+            try
+            {
+                ProgressTenderListBox.SelectedItem = contract;
+                ProgressRouteComboBox.ItemsSource = contract is null
+                    ? Array.Empty<RouteDraft>()
+                    : _routes.Where(x =>
+                        string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase)).ToArray();
+                ProgressRouteComboBox.SelectedItem = _routes.FirstOrDefault(x =>
+                    string.Equals(x.TenderNumber, item.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(x.RouteNumber, item.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(
+                        OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
+                        OehsIdentityService.NormalizeIdentity(item.ContractorTaxOrIdentityNumber),
+                        StringComparison.Ordinal));
+            }
+            finally
+            {
+                _suppressSelectionEvents = false;
+            }
+
+            ProgressContractorTextBlock.Text = item.ContractorName ?? "Seçilmedi";
+            ProgressRouteRelationTextBlock.Text = $"İhale: {item.TenderNumber} • Hat: {item.RouteNumber} — {item.RouteName}";
+            WorkDaysTextBox.Text = item.Input.WorkDays.ToString(CultureInfo.CurrentCulture);
+            DailyPriceTextBox.Text = item.Input.DailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+            GuideWorkDaysTextBox.Text = item.Input.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
+            GuideDailyPriceTextBox.Text = item.Input.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+            DiscountTextBox.Text = item.Input.DiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
+            GuideDiscountTextBox.Text = item.Input.GuideDiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
+            PriceDifferenceTextBox.Text = item.Input.PriceDifference.ToString("N2", CultureInfo.CurrentCulture);
+            GuidePriceDifferenceTextBox.Text = item.Input.GuidePriceDifference.ToString("N2", CultureInfo.CurrentCulture);
+            TaxDebtTextBox.Text = item.Input.TaxDebt.ToString("N2", CultureInfo.CurrentCulture);
+            SocialSecurityDebtTextBox.Text = item.Input.SocialSecurityDebt.ToString("N2", CultureInfo.CurrentCulture);
+            MinimumWageSupportTextBox.Text = item.Input.MinimumWageSupport.ToString("N2", CultureInfo.CurrentCulture);
+            InspectionPenaltyTextBox.Text = item.Input.InspectionPenalty.ToString("N2", CultureInfo.CurrentCulture);
+            ProgressNumberTextBox.Text = item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
+            ProgressPeriodDatePicker.SelectedDate = item.PeriodDate?.ToDateTime(TimeOnly.MinValue);
+            UpdateProgressCalculationDisplay(item.Calculation, item.Input.WorkDays);
+            ProgressCalculationSummaryTextBlock.Text = "TAMAM";
+            SetProgressEditorMode(false);
+        }
+
+        ClearLiveHistoryCorrectionContext();
+    }
+
+    private void RefreshArchiveCorrectionStatus()
+    {
+        if (_suppressArchiveDirtyTracking)
+            return;
+
+        if (IsArchiveCorrection && _editingArchiveSnapshot is not null)
+        {
+            var archive = _editingArchiveSnapshot;
+            if (!ArchiveCorrectionInputsDiffer())
+            {
+                UpdateProgressCalculationDisplay(archive.ProgressPayment.Calculation, archive.ProgressPayment.Input.WorkDays);
+                ProgressCalculationSummaryTextBlock.Text = "KAYITLI HESAP";
+                SetArchiveCorrectionStatus("Arşiv düzeltme modu açık. Henüz değişiklik yok.", warning: false);
+                return;
+            }
+
+            if (!TryCreateArchiveCorrectionPreview(out var archiveInput, out var archiveCalculation, out var archiveMessage))
+            {
+                ProgressCalculationSummaryTextBlock.Text = "KONTROL GEREKLİ";
+                SetArchiveCorrectionStatus(
+                    $"DEĞİŞİKLİK ALGILANDI — {archiveMessage} Net ödeme önizlemesi için alanı düzeltin.",
+                    warning: true);
+                return;
+            }
+
+            UpdateProgressCalculationDisplay(archiveCalculation, archiveInput.WorkDays);
+            ProgressCalculationSummaryTextBlock.Text = "ÖNİZLEME • KAYDEDİLMEDİ";
+            SetArchiveCorrectionStatus(
+                $"DEĞİŞİKLİK ALGILANDI — Net ödeme: {FormatMoney(archive.ProgressPayment.Calculation.NetPayable)} → " +
+                $"{FormatMoney(archiveCalculation.NetPayable)}. DÜZENLE düğmesine basıp onayladığınızda mevcut arşiv kaydı güncellenir.",
+                warning: true);
+            return;
+        }
+
+        if (_historyCorrectionTargetId.HasValue && _historyCorrectionSection != HistoryCorrectionSection.None)
+            RefreshHistoryCorrectionStatus();
     }
 
     private static bool TryParseDecimalOrZero(string? text, out decimal value)
