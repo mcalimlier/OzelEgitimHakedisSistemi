@@ -29,13 +29,12 @@ public sealed class ProgressPaymentWorkbookFormulaTests
 
         var totals = ProgressPaymentReportService.Calculate(current, new[] { previous, current });
 
-        // K+T includes I+R, but A reports contract-price work only. The report's
-        // B line adds the raw I+R separately, so the monthly A amount excludes I/R.
-        // One period's contract-price amount is (100-10) + (50-5) = 135.
+        // A is cumulative contract-price work: (100-10) + (50-5) per period = 270.
+        // B is cumulative raw I+R: 40 per period = 80; C=350 and D=175.
         Assert.Equal(270m, totals.CumulativeServiceAmount);
-        Assert.Equal(40m, totals.CurrentPriceDifference);
-        Assert.Equal(310m, totals.CumulativeTotal);
-        Assert.Equal(135m, totals.PreviousTotal);
+        Assert.Equal(80m, totals.CumulativePriceDifference);
+        Assert.Equal(350m, totals.CumulativeTotal);
+        Assert.Equal(175m, totals.PreviousTotal);
         Assert.Equal(175m, totals.CurrentTotal);
     }
 
@@ -58,7 +57,7 @@ public sealed class ProgressPaymentWorkbookFormulaTests
 
         var totals = new ProgressPaymentReportTotals(
             CumulativeServiceAmount: 0m,
-            CurrentPriceDifference: 0m,
+            CumulativePriceDifference: 0m,
             CumulativeTotal: 0m,
             PreviousTotal: 0m,
             CurrentTotal: 200.005m);
