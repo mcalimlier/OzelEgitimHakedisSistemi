@@ -4100,6 +4100,7 @@ public partial class MainWindow : Window
         try
         {
             var archive = ProgressPaymentArchiveStore.Load(row.FullPath);
+            ClearLiveHistoryCorrectionContext();
             _editingArchiveSourcePath = row.FullPath;
             _editingArchiveSnapshot = archive;
             _archiveCorrectionSection = ArchiveCorrectionSection.None;
@@ -4213,6 +4214,7 @@ public partial class MainWindow : Window
 
     private void BeginHistoryOrArchiveCorrection(ProgressPaymentHistoryData item)
     {
+        ClearLiveHistoryCorrectionContext();
         ArchiveRow? matchingArchiveRow = null;
         var matchingRevision = 0;
 
@@ -4360,6 +4362,7 @@ public partial class MainWindow : Window
         SetContractEditorMode(true);
         NavigationButton_Click(NavContract, new RoutedEventArgs(Button.ClickEvent, NavContract));
         ContractStatusTextBlock.Text = "Hakedişten gelen düzenleme: yalnızca İhale Bilgileri alanlarını düzeltin ve DÜZENLE'e basın.";
+        SetLiveHistoryCorrectionContext(item.Id, HistoryCorrectionSection.Contract);
     }
 
     private void BeginContractorHistoryEdit(ProgressPaymentHistoryData item)
@@ -4405,6 +4408,7 @@ public partial class MainWindow : Window
         ContractorContactTextBox.Text = contractor.ContactPerson;
         NavigationButton_Click(NavContractors, new RoutedEventArgs(Button.ClickEvent, NavContractors));
         ContractorStatusTextBlock.Text = "Hakedişten gelen düzenleme: Firma bilgilerini değiştirin ve DÜZENLE'e basın.";
+        SetLiveHistoryCorrectionContext(item.Id, HistoryCorrectionSection.Contractor);
     }
 
     private void BeginRouteHistoryEdit(ProgressPaymentHistoryData item)
@@ -4487,6 +4491,7 @@ public partial class MainWindow : Window
         SetRouteEditorMode(true);
         NavigationButton_Click(NavLines, new RoutedEventArgs(Button.ClickEvent, NavLines));
         RouteStatusTextBlock.Text = "Hakedişten gelen düzenleme: Hat bilgilerini değiştirin ve DÜZENLE'e basın.";
+        SetLiveHistoryCorrectionContext(item.Id, HistoryCorrectionSection.Route);
     }
 
     private void BeginProgressHistoryEdit(ProgressPaymentHistoryData item)
@@ -4592,6 +4597,7 @@ public partial class MainWindow : Window
         SetProgressEditorMode(true);
         NavigationButton_Click(NavProgress, new RoutedEventArgs(Button.ClickEvent, NavProgress));
         CalculationStatusTextBlock.Text = "Düzenleme modu: hakediş girdilerini değiştirin ve DÜZENLE'e basın.";
+        SetLiveHistoryCorrectionContext(item.Id, HistoryCorrectionSection.ProgressPayment);
     }
 
     private void CancelProgressEditButton_Click(object sender, RoutedEventArgs e)
