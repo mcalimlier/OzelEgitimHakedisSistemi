@@ -63,7 +63,7 @@ public sealed class ProgressPaymentIcmalServiceTests
     }
 
     [Fact]
-    public void FindPreviousDeduction_ShouldMirrorMissingNovemberHeaderFallbackToZero()
+    public void FindPreviousDeduction_ShouldUseNovemberDespiteMissingSourceHeader()
     {
         var november = History(1, new DateOnly(2026, 11, 30), 180m);
         var december = History(2, new DateOnly(2026, 12, 31), 250m);
@@ -71,7 +71,7 @@ public sealed class ProgressPaymentIcmalServiceTests
         var result = ProgressPaymentIcmalService.FindPreviousDeduction(
             new[] { november, december }, december);
 
-        Assert.Equal(0m, result);
+        Assert.Equal(180m, result);
     }
 
     [Fact]
