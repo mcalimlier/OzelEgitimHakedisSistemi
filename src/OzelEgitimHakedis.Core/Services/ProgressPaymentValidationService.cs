@@ -91,12 +91,35 @@ public static class ProgressPaymentValidationService
                 candidate.ProgressPaymentNumber.Value,
                 candidate.PeriodDate.Value);
 
-            var duplicate = data.ProgressPayments?
+            var existingPayments = data.ProgressPayments?
                 .Where(x => !editingExisting || x.Id != candidate.Id)
-                .Any(x => string.Equals(BuildHistoryKey(x), candidateKey, StringComparison.Ordinal));
+                .ToArray() ?? Array.Empty<ProgressPaymentHistoryData>();
 
-            if (duplicate == true)
+            var duplicate = existingPayments.Any(x =>
+                string.Equals(BuildHistoryKey(x), candidateKey, StringComparison.Ordinal));
+
+            if (duplicate)
                 errors.Add("Mükerrer hakediş: aynı ihale/hat/yüklenici/hakediş no/dönem zaten kayıtlı.");
+
+            // The reference XLSM has one monthly cell per route for K+T, transport
+            // price difference, guide price difference and deductions. Saving a
+            // second claim in the same route/month would overwrite that month's
+            // workbook value and make the official monthly/icmal totals irreproducible.
+            var routeKey = OehsIdentityService.BuildRouteKey(tenderNumber, routeNumber, identity);
+            var sameMonthClaim = existingPayments.Any(x =>
+                x.PeriodDate.HasValue &&
+                x.PeriodDate.Value.Year == candidate.PeriodDate.Value.Year &&
+                x.PeriodDate.Value.Month == candidate.PeriodDate.Value.Month &&
+                string.Equals(
+                    OehsIdentityService.BuildRouteKey(
+                        x.TenderNumber ?? string.Empty,
+                        x.RouteNumber ?? string.Empty,
+                        x.ContractorTaxOrIdentityNumber ?? string.Empty),
+                    routeKey,
+                    StringComparison.Ordinal));
+
+            if (sameMonthClaim)
+                errors.Add("Aynı ihale/hat/yüklenici için aynı ayda birden fazla hakediş kaydedilemez; Excel kaynak yapısında hat başına ayda tek kayıt bulunur.");
         }
 
         if (candidate.PeriodDate is not null)
