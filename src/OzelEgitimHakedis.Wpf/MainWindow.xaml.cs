@@ -721,11 +721,16 @@ public partial class MainWindow : Window
         !string.Equals(textBox.Text.Trim(), expected?.Trim() ?? string.Empty, StringComparison.Ordinal);
 
     private static bool DecimalDiffers(TextBox textBox, decimal expected) =>
-        !TryParseDecimal(textBox.Text, out var actual) || actual != expected;
+        !TryParseDecimalOrZero(textBox.Text, out var actual) || actual != expected;
 
-    private static bool IntDiffers(TextBox textBox, int expected) =>
-        !int.TryParse(textBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var actual) ||
-        actual != expected;
+    private static bool IntDiffers(TextBox textBox, int expected)
+    {
+        if (string.IsNullOrWhiteSpace(textBox.Text))
+            return expected != 0;
+
+        return !int.TryParse(textBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var actual) ||
+               actual != expected;
+    }
 
     private static bool NullableIntDiffers(TextBox textBox, int? expected)
     {
