@@ -1088,6 +1088,7 @@ public partial class MainWindow : Window
                 throw new ProgressPaymentArchiveException("Güncellenecek arşiv dosyası belirlenemedi.");
 
             var finalPath = _archiveStore.Replace(_editingArchiveSourcePath, updatedArchive);
+            var historyMirrorUpdated = false;
             var historyMirrorSaved = true;
             var matchingHistoryIndex = _progressHistory
                 .Select((item, index) => (item, index))
@@ -1100,6 +1101,7 @@ public partial class MainWindow : Window
             {
                 // Keep the editable history row synchronized with its authoritative archive snapshot.
                 _progressHistory[matchingHistoryIndex] = recalculatedPayment;
+                historyMirrorUpdated = true;
                 SavePersistedData();
                 historyMirrorSaved = !string.Equals(
                     HeaderSaveStatusTextBlock.Text,
@@ -1114,9 +1116,11 @@ public partial class MainWindow : Window
 
             ArchiveStatusTextBlock.Text = $"ARŞİV v{updatedArchive.Revision:00} GÜNCELLENDİ";
             CalculationStatusTextBlock.Text =
-                historyMirrorSaved
-                    ? $"{sectionName} değişiklikleri yeniden hesaplandı ve mevcut arşiv v{updatedArchive.Revision:00} üzerine kaydedildi."
-                    : $"{sectionName} arşive kaydedildi; ancak ana hakediş geçmişi diske yazılamadı. Kayıt durumunu kontrol edin.";
+                !historyMirrorSaved
+                    ? $"{sectionName} arşive kaydedildi; ancak ana hakediş geçmişi diske yazılamadı. Kayıt durumunu kontrol edin."
+                    : historyMirrorUpdated
+                        ? $"{sectionName} değişiklikleri yeniden hesaplandı ve arşiv ile ana hakediş geçmişine kaydedildi."
+                        : $"{sectionName} değişiklikleri yeniden hesaplandı ve arşiv v{updatedArchive.Revision:00} üzerine kaydedildi.";
 
             _suppressArchiveDirtyTracking = true;
             try
@@ -1135,9 +1139,11 @@ public partial class MainWindow : Window
                 $"{sectionName} değişiklikleri başarıyla uygulandı.\n\n" +
                 $"Yeni hesaplanan net tutar: {FormatMoney(newNetPayable)}\n" +
                 $"Mevcut arşiv revision'ı v{updatedArchive.Revision:00} korundu; yeni revision oluşturulmadı.\n" +
-                (historyMirrorSaved
-                    ? "Ana hakediş geçmişi de güncellendi.\n\n"
-                    : "DİKKAT: Arşiv güncellendi ancak ana hakediş geçmişi diske yazılamadı. Üstteki kayıt durumunu kontrol edin.\n\n") +
+                (!historyMirrorSaved
+                    ? "DİKKAT: Arşiv güncellendi ancak ana hakediş geçmişi diske yazılamadı. Üstteki kayıt durumunu kontrol edin.\n\n"
+                    : historyMirrorUpdated
+                        ? "Ana hakediş geçmişi de güncellendi.\n\n"
+                        : "Bu arşiv için ana hakediş geçmişinde eşleşen satır yoktu; arşiv dosyası güncellendi.\n\n") +
                 $"Dosya: {Path.GetFileName(finalPath)}",
                 "OEHS — Arşiv Güncellendi",
                 MessageBoxButton.OK,
@@ -3416,7 +3422,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        EditProgressWithTarget(item);
+        BeginHistoryOrArchiveCorrection(item);
     }
 
     private void EditProgressWithTarget(ProgressPaymentHistoryData item)
