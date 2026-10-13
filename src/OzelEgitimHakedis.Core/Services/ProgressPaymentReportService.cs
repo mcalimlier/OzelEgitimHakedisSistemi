@@ -4,7 +4,7 @@ namespace OzelEgitimHakedis.Core.Services;
 
 public sealed record ProgressPaymentReportTotals(
     decimal CumulativeServiceAmount,
-    decimal CurrentPriceDifference,
+    decimal CumulativePriceDifference,
     decimal CumulativeTotal,
     decimal PreviousTotal,
     decimal CurrentTotal);
@@ -71,31 +71,28 @@ public static class ProgressPaymentReportService
             .Where(x => IsWithinCurrentFiscalYear(x, current))
             .ToArray();
 
-        // Hakediş Raporu!D6: sum of monthly K+T values transferred by VBA.
-        // Despite the row caption, each monthly K+T value already includes
-        // the I/R price-difference inputs and J/S discounts.
+        // Official report A is cumulative contract-price work; B is cumulative
+        // price difference through the current claim. The source workbook currently
+        // transfers K+T (which already contains I/R) into A and then adds I+R again
+        // in B. Keep its input formulas as the baseline, but separate their meaning
+        // here so every month's price difference is included exactly once.
         var previousServiceAmount = previous.Sum(CalculateWorkbookMonthlyPaymentAmount);
         var currentServiceAmount = CalculateWorkbookMonthlyPaymentAmount(current);
-        var currentPriceDifference = CalculateWorkbookPriceDifference(current);
         var cumulativeServiceAmount = previousServiceAmount + currentServiceAmount;
 
-        // Hakediş Raporu!D8 = D6 + D7.
-        var cumulativeTotal = cumulativeServiceAmount + currentPriceDifference;
+        var previousPriceDifference = previous.Sum(CalculateWorkbookPriceDifference);
+        var currentPriceDifference = CalculateWorkbookPriceDifference(current);
+        var cumulativePriceDifference = previousPriceDifference + currentPriceDifference;
 
-        // Hakediş Raporu!D10 reads the prior-month cumulative K+T total from
-        // İcmal Verileri!O. The current raw I+R value is then added separately
-        // by D7, matching the original workbook's transfer and validation logic.
-        var previousTotal = previousServiceAmount;
-
-        // The workbook's "Hesaplamayı Kontrol Et" macro is the authoritative
-        // validation rule: D11 must equal D8 - D10. The visible E-row label also
-        // states C - D. Calculation.TotalAmount is the current K+T monthly value;
-        // D7 adds raw I+R separately as the source workbook does.
+        // C = A + B; D = all prior claims' contract-price work plus prior price differences;
+        // E = C - D, therefore the current period's work + its signed price difference.
+        var cumulativeTotal = cumulativeServiceAmount + cumulativePriceDifference;
+        var previousTotal = previousServiceAmount + previousPriceDifference;
         var currentTotal = cumulativeTotal - previousTotal;
 
         return new ProgressPaymentReportTotals(
             cumulativeServiceAmount,
-            currentPriceDifference,
+            cumulativePriceDifference,
             cumulativeTotal,
             previousTotal,
             currentTotal);
