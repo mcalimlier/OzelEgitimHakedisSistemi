@@ -92,6 +92,11 @@ jobs:
           foreach ($step in @('Tag="Contract"', 'Tag="Contractors"', 'Tag="Lines"', 'Tag="Progress"', 'Tag="Archives"', 'Tag="Reports"')) {
             if (-not $xaml.Contains($step)) { throw "Workflow roadmap navigation target is missing: $step" }
           }
+          if ($code -notmatch 'private void ConfigureArchiveCorrectionChangeTracking\(\)') { throw "Archive edit field change tracking is missing." }
+          if (-not $code.Contains("DEĞİŞİKLİK ALGILANDI") -or $code -notmatch 'UpdateProgressCalculationDisplay\(calculation, input\.WorkDays\)') { throw "Live archive correction status and net payment preview are missing." }
+          if ($code -notmatch 'private void LoadPersistedData\(\)[\s\S]{0,5000}ClearContractFormOnly\(\);') { throw "Persisted tender data must not remain in the editable contract form on startup." }
+          if ($code -notmatch 'private void UpdateProgressContractorAndRoutes\(ContractDraftData\? contract, bool preserveSelection = true\)') { throw "Progress route selection must be explicit instead of defaulting to the first route." }
+          if ($code -notmatch 'if \(clearTenderSelection\)[\s\S]{0,220}ProgressRouteComboBox\.ItemsSource = Array\.Empty<RouteDraft>\(\);') { throw "Clearing a fresh payment form must also clear stale route choices when the tender is cleared." }
           if (-not $archiveTests.Contains("Replace_ShouldOverwriteSameArchiveFileWithRecalculatedPaymentAndKeepRevision")) { throw "Same-file, same-revision recalculated archive replacement is not covered by a test." }
 
       - name: Build Tests
