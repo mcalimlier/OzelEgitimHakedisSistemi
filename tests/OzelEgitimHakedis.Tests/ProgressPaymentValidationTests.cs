@@ -50,6 +50,38 @@ public sealed class ProgressPaymentValidationTests
     }
 
     [Fact]
+    public void SameRouteMonth_ShouldRejectDifferentProgressPaymentNumber()
+    {
+        var existing = History(1, new DateOnly(2026, 10, 5));
+        var candidate = History(2, new DateOnly(2026, 10, 31));
+
+        var errors = ProgressPaymentValidationService.ValidateCreation(
+            Data(existing),
+            Contract(),
+            Route(),
+            candidate,
+            editingExisting: false);
+
+        Assert.Contains(errors, x => x.Contains("aynı ayda birden fazla", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void SameRouteMonth_ShouldAllowEditingOnlyExistingMonthlyClaim()
+    {
+        var existing = History(1, new DateOnly(2026, 10, 31));
+        var candidate = existing with { };
+
+        var errors = ProgressPaymentValidationService.ValidateCreation(
+            Data(existing),
+            Contract(),
+            Route(),
+            candidate,
+            editingExisting: true);
+
+        Assert.DoesNotContain(errors, x => x.Contains("aynı ayda birden fazla", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public void MissingContractSource_ShouldBeRejected()
     {
         var data = new OehsApplicationData(
