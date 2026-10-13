@@ -5270,7 +5270,13 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         try
         {
             if (clearTenderSelection)
+            {
                 ProgressTenderListBox.SelectedItem = null;
+                ProgressRouteComboBox.ItemsSource = Array.Empty<RouteDraft>();
+                ProgressContractorTextBlock.Text = "Seçilmedi";
+                ProgressRouteRelationTextBlock.Text = "İhale ve hat seçiniz.";
+            }
+
             ProgressRouteComboBox.SelectedItem = null;
         }
         finally
