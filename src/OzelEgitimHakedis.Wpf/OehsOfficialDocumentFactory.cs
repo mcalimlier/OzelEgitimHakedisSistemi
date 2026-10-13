@@ -150,7 +150,7 @@ internal static class OehsOfficialDocumentFactory
         var amountRows = new (string Key, string Label, decimal Value)[]
         {
             ("A", "Sözleşme Fiyatları İle Yapılan İş", c.ReportTotals.CumulativeServiceAmount),
-            ("B", "Fiyat Farkı Tutarı", c.ReportTotals.CumulativePriceDifference),
+            ("B", "Fiyat Farkı Tutarı", c.ReportTotals.CurrentPriceDifference),
             ("C", "Toplam Tutar  ( A + B )", c.ReportTotals.CumulativeTotal)
         };
         var y = 172d;
