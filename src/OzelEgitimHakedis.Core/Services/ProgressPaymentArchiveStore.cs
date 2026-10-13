@@ -81,66 +81,96 @@ public sealed class ProgressPaymentArchiveStore
         }
     }
 
-    public string Replace(string filePath, ProgressPaymentArchive archive)
+    public string SaveRevision(string sourcePath, ProgressPaymentArchive archive)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourcePath);
         ArgumentNullException.ThrowIfNull(archive);
 
-        if (archive.Revision < 1)
-            throw new ArgumentOutOfRangeException(nameof(archive), "Revision 1 veya daha büyük olmalıdır.");
+        var fullSourcePath = Path.GetFullPath(sourcePath);
+        if (!File.Exists(fullSourcePath))
+            throw new ProgressPaymentArchiveException("Düzeltilecek mevcut arşiv bulunamadı; yeni revision oluşturulmadı.");
 
-        var fullPath = Path.GetFullPath(filePath);
-        if (!File.Exists(fullPath))
-            throw new ProgressPaymentArchiveException("Mevcut arşiv dosyası bulunamadı; yeni arşiv oluşturulmadı.");
+        var sourceArchive = Load(fullSourcePath);
+        if (sourceArchive.ProgressPayment.Id != archive.ProgressPayment.Id)
+        {
+            throw new ProgressPaymentArchiveException(
+                "Düzeltme aynı hakediş kimliğini korumalıdır. Kaynak arşiv değiştirilmedi.");
+        }
 
-        var folder = Path.GetDirectoryName(fullPath);
+        var folder = Path.GetDirectoryName(fullSourcePath);
         if (string.IsNullOrWhiteSpace(folder))
             throw new ProgressPaymentArchiveException("Arşiv dosya klasörü çözümlenemedi.");
 
         Directory.CreateDirectory(folder);
+        var targetBaseStem = BuildBaseStem(archive);
+        var archiveFiles = Directory
+            .EnumerateFiles(folder, "*.json", SearchOption.TopDirectoryOnly)
+            .Where(IsArchiveFile)
+            .ToArray();
 
-        // Düzeltme aynı revision'a aittir. Kimlik alanları (özellikle Hat No)
-        // değiştiğinde dosya adı da aynı revision korunarak yeni kimliğe taşınır;
-        // v02/v03 gibi yeni revision oluşturulmaz.
-        var targetPath = Path.Combine(folder, BuildFileStem(archive) + ".json");
-        var samePath = string.Equals(fullPath, targetPath, StringComparison.OrdinalIgnoreCase);
-
-        if (!samePath && File.Exists(targetPath))
+        // A changed route/tender/period must not collide with a different payment
+        // that already uses the target archive identity. The same logical payment
+        // can keep a revision chain while its identity fields are corrected.
+        foreach (var existingPath in archiveFiles.Where(file =>
+                     Path.GetFileNameWithoutExtension(file).StartsWith(
+                         targetBaseStem + "_v",
+                         StringComparison.OrdinalIgnoreCase)))
         {
-            throw new ProgressPaymentArchiveException(
-                "Düzeltme sonucu oluşacak arşiv dosyası zaten mevcut. Mevcut arşiv değiştirilmedi ve yeni revision oluşturulmadı.");
+            ProgressPaymentArchive existing;
+            try
+            {
+                existing = Load(existingPath);
+            }
+            catch (ProgressPaymentArchiveException ex)
+            {
+                throw new ProgressPaymentArchiveException(
+                    "Hedef arşiv kimliğinde okunamayan bir dosya var. Veri kaybını önlemek için yeni revision oluşturulmadı.",
+                    ex);
+            }
+
+            if (existing.ProgressPayment.Id != archive.ProgressPayment.Id)
+            {
+                throw new ProgressPaymentArchiveException(
+                    "Bu ihale/hat/hakediş/dönem kimliği başka bir arşiv kaydında kullanılıyor. Mevcut revisionlar korunuyor.");
+            }
         }
 
-        var json = JsonSerializer.Serialize(archive, JsonOptions);
-        var tempPath = Path.Combine(
-            folder,
-            Path.GetFileName(targetPath) + "." + Guid.NewGuid().ToString("N") + ".tmp");
+        var maxRevision = sourceArchive.Revision;
+        foreach (var existingPath in archiveFiles)
+        {
+            try
+            {
+                var existing = Load(existingPath);
+                if (existing.ProgressPayment.Id == archive.ProgressPayment.Id)
+                    maxRevision = Math.Max(maxRevision, existing.Revision);
+            }
+            catch (ProgressPaymentArchiveException)
+            {
+                // Unrelated malformed archives do not get overwritten. Target-identity
+                // malformed files have already been rejected by the check above.
+            }
+        }
 
+        var nextRevision = checked(maxRevision + 1);
+        string targetPath;
+        ProgressPaymentArchive revised;
+        do
+        {
+            revised = archive with { Revision = nextRevision };
+            targetPath = Path.Combine(folder, BuildFileStem(revised) + ".json");
+            if (!File.Exists(targetPath))
+                break;
+
+            nextRevision = checked(nextRevision + 1);
+        }
+        while (true);
+
+        var json = JsonSerializer.Serialize(revised, JsonOptions);
+        var tempPath = targetPath + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {
             File.WriteAllText(tempPath, json);
-
-            if (samePath)
-            {
-                File.Move(tempPath, fullPath, overwrite: true);
-                return fullPath;
-            }
-
             File.Move(tempPath, targetPath, overwrite: false);
-
-            try
-            {
-                File.Delete(fullPath);
-            }
-            catch
-            {
-                // Eski dosya silinemiyorsa yeni hedefi geri al; böylece düzeltme
-                // tamamlanmış görünmeden önce eski kayıt korunur.
-                if (File.Exists(targetPath))
-                    File.Delete(targetPath);
-                throw;
-            }
-
             return targetPath;
         }
         catch (ProgressPaymentArchiveException)
@@ -149,11 +179,15 @@ public sealed class ProgressPaymentArchiveStore
         }
         catch (IOException ex)
         {
-            throw new ProgressPaymentArchiveException("Mevcut arşiv dosyası güncellenemedi.", ex);
+            throw new ProgressPaymentArchiveException(
+                "Yeni arşiv revision'ı kaydedilemedi; önceki revision korunuyor.",
+                ex);
         }
         catch (UnauthorizedAccessException ex)
         {
-            throw new ProgressPaymentArchiveException("Mevcut arşiv dosyasına yazma izni yok.", ex);
+            throw new ProgressPaymentArchiveException(
+                "Yeni arşiv revision'ı için yazma izni yok; önceki revision korunuyor.",
+                ex);
         }
         finally
         {
