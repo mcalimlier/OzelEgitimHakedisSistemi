@@ -1940,6 +1940,9 @@ public partial class MainWindow : Window
             ContractorBankTextBox.Text.Trim(),
             ContractorContactTextBox.Text.Trim());
 
+        if (!ConfirmLiveHistoryCorrection("Yüklenici bilgileri"))
+            return;
+
         if (_editingContractorKey is null)
         {
             _contractors.Add(updated);
@@ -1976,6 +1979,8 @@ public partial class MainWindow : Window
         SavePersistedData();
         UpdateContractSelectors();
         UpdateHomeSummaryView();
+        if (_historyCorrectionSection == HistoryCorrectionSection.Contractor)
+            RefreshViewsAfterHistoryCorrection();
         ClearContractorButton_Click(sender, e);
         ContractorStatusTextBlock.Text = $"Firma kaydedildi: {name}.";
     }
@@ -2430,6 +2435,12 @@ public partial class MainWindow : Window
                 try
                 {
                     var propagated = BuildRoutePropagation(old, proposed);
+                    var proposedTargetPayment = _historyCorrectionTargetId is Guid targetId
+                        ? propagated.FirstOrDefault(x => x.Id == targetId)
+                        : null;
+                    if (!ConfirmLiveHistoryCorrection("Hat bilgileri", proposedTargetPayment))
+                        return;
+
                     _routes[index] = proposed;
                     _progressHistory.Clear();
                     foreach (var item in propagated)
@@ -2451,6 +2462,8 @@ public partial class MainWindow : Window
         UpdateOutputRoutesForContract(contract);
         UpdateContractSummaryView();
         UpdateHomeSummaryView();
+        if (_historyCorrectionSection == HistoryCorrectionSection.Route)
+            RefreshViewsAfterHistoryCorrection();
         ClearRouteButton_Click(sender, e);
         RouteStatusTextBlock.Text = $"Hat kaydedildi: {routeNumber} — {routeName}.";
     }
@@ -2887,6 +2900,12 @@ public partial class MainWindow : Window
                         oldContract,
                         proposedContract);
 
+                    var proposedTargetPayment = _historyCorrectionTargetId is Guid targetId
+                        ? proposedHistories.FirstOrDefault(x => x.Id == targetId)
+                        : null;
+                    if (!ConfirmLiveHistoryCorrection("İhale bilgileri", proposedTargetPayment))
+                        return;
+
                     var routeData = _routes.Select(x => new RouteData(
                         x.RouteNumber,
                         x.Name,
@@ -2941,6 +2960,8 @@ public partial class MainWindow : Window
         UpdateContractSummaryView();
         UpdateHomeSummaryView();
         UpdateAcceptanceView();
+        if (_historyCorrectionSection == HistoryCorrectionSection.Contract)
+            RefreshViewsAfterHistoryCorrection();
         ClearContractFormOnly();
         ClearContractValidationVisuals();
 
@@ -3679,6 +3700,13 @@ public partial class MainWindow : Window
                 return;
             }
 
+            if (_editingHistoryId.HasValue &&
+                !ConfirmLiveHistoryCorrection("Hakediş girdileri", historyItem))
+            {
+                SetProgressEditorMode(true);
+                return;
+            }
+
             if (_editingHistoryId.HasValue)
             {
                 var editIndex = _progressHistory.IndexOf(
@@ -3699,6 +3727,8 @@ public partial class MainWindow : Window
             UpdateReportView();
             UpdateHomeSummaryView();
             UpdateAcceptanceView();
+            if (_historyCorrectionSection == HistoryCorrectionSection.ProgressPayment)
+                RefreshViewsAfterHistoryCorrection();
 
             CalculationStatusTextBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(36, 104, 216));
             CalculationStatusTextBlock.FontWeight = FontWeights.SemiBold;
