@@ -29,13 +29,14 @@ public sealed class ProgressPaymentWorkbookFormulaTests
 
         var totals = ProgressPaymentReportService.Calculate(current, new[] { previous, current });
 
-        // K+T = 175, the value the workbook macro transfers to the selected month.
-        // D7 = I+R = 40; validation macro requires D11 = D8 - D10 = 215.
-        Assert.Equal(350m, totals.CumulativeServiceAmount);
+        // K+T includes I+R, but A reports contract-price work only. The report's
+        // B line adds the raw I+R separately, so the monthly A amount excludes I/R.
+        // One period's contract-price amount is (100-10) + (50-5) = 135.
+        Assert.Equal(270m, totals.CumulativeServiceAmount);
         Assert.Equal(40m, totals.CurrentPriceDifference);
-        Assert.Equal(390m, totals.CumulativeTotal);
-        Assert.Equal(175m, totals.PreviousTotal);
-        Assert.Equal(215m, totals.CurrentTotal);
+        Assert.Equal(310m, totals.CumulativeTotal);
+        Assert.Equal(135m, totals.PreviousTotal);
+        Assert.Equal(175m, totals.CurrentTotal);
     }
 
     [Fact]
