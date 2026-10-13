@@ -82,7 +82,7 @@ jobs:
           if (-not $code.Contains("değişiklikleri uygulansın mı?")) { throw "Archive edit confirmation prompt is missing." }
           if (-not $code.Contains("Calculation = ProgressPaymentCalculator.Calculate(updatedArchive.ProgressPayment.Input)")) { throw "Archive edits must recalculate the payment from saved inputs before replacement." }
           if (-not $code.Contains("_archiveStore.Replace(_editingArchiveSourcePath, updatedArchive)")) { throw "Archive edits must replace the selected file rather than creating a new revision." }
-          if (-not $code.Contains("private void ClearProgressEntryFields()")) { throw "Archive progress-edit inputs must be cleared after successful save." }
+          if (-not $code.Contains("private void ClearProgressEntryFields(bool clearTenderSelection = true)")) { throw "Archive and new-payment entry forms must clear after save/reset." }
           if ($code -notmatch 'UpdateAcceptanceView\(\);\s*ClearContractFormOnly\(\);') { throw "The contract input form must clear after a successful save and view refresh." }
           if ($code -notmatch 'SetContractorEditorMode\(false\);\s*ContractorStatusTextBlock.Text = "Yeni firma kaydı için alanlar temizlendi\."') { throw "The contractor form must return to create mode after save." }
           if (-not $code.Contains("Keep the chosen tender/contractor filters")) { throw "Clearing the route form must preserve context for its right-hand saved-record list." }
