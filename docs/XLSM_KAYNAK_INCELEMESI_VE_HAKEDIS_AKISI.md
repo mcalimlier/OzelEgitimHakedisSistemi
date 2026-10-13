@@ -125,3 +125,12 @@ flowchart TD
 Ana ekrana altı tıklanabilir adımlı bir iş akışı eklendi: Sözleşme → Yüklenici → Hat → Hakediş → Arşiv → Çıktılar.
 
 Arşivden açılan bir hakediş düzeltildiğinde OEHS güncel girdilerden yeniden hesaplama yapar ve eski/yeni net tutarı göstererek onay ister. Onay verilirse seçilen arşiv dosyası aynı revision numarasıyla güncellenir. Onay reddedilirse kayıt korunur. Sözleşme, firma ve hat kayıtlarında da kaydetme başarılı olduğunda form alanları temizlenir; kayıtlı öğe listede kalır.
+
+### Son kullanıcı giriş akışı
+
+- Uygulama açıldığında kayıtlı ihale/firma/hat/hakediş bilgileri özet ve listelerde kalır; yeni kayıt giriş alanları boş başlar.
+- Hakediş ekranında önce kullanıcı ihale/dosya numarasını, ardından o ihaleye bağlı hattı kendisi seçer. İhale seçilince hat listesi doldurulur ancak ilk hat otomatik seçilmez. Hat seçilmeden hesaplama yapılamaz.
+- İskonto, fiyat farkı ve borç/kesinti gibi isteğe bağlı tutar alanları boş bırakılabilir; boş değer hesaplamada sıfır kabul edilir. Zorunlu gün/tarih ve bağlı ihale/hat bilgilerinin doğrulaması devam eder.
+- Arşivde veya hakediş geçmişinde kayıtlı bir hakediş düzenlenirken bir alan değiştiği anda üstte “DEĞİŞİKLİK ALGILANDI” uyarısı ve net ödeme önizlemesi güncellenir. Bu önizleme kaydedilmemiştir; son kayıt öncesi eski/yeni tutarları gösteren ayrı onay gerekir.
+- Onay verilirse seçilen arşiv dosyası aynı revision numarasıyla güncellenir ve eşleşen ana hakediş geçmişi satırı da senkronize edilir. Onay reddedilirse dosya değiştirilmez ve düzeltme ekranı kullanıcının tekrar gözden geçirebilmesi için açık kalır. Arşivi bulunmayan geçmiş satırları normal kayıt düzenleme akışında kalır.
+- İhale, yüklenici, hat ve hakediş panellerinde alan aralıkları daraltıldı; yazı boyutu korunarak gereksiz dikey boşluk azaltıldı. Uzun kayıt listelerinde kayıtlara erişimi kaybetmemek için kaydırma yalnızca gerekli olduğu yerlerde tutulur.
