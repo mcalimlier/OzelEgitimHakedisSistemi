@@ -97,7 +97,10 @@ jobs:
           if ($code -notmatch 'private void LoadPersistedData\(\)[\s\S]{0,5000}ClearContractFormOnly\(\);') { throw "Persisted tender data must not remain in the editable contract form on startup." }
           if ($code -notmatch 'private void UpdateProgressContractorAndRoutes\(ContractDraftData\? contract, bool preserveSelection = true\)') { throw "Progress route selection must be explicit instead of defaulting to the first route." }
           if ($code -match 'ProgressRouteComboBox\.SelectedIndex\s*=\s*0') { throw "The payment form must not automatically select the first route." }
-          if ($code -notmatch 'ResetEditorUiToCreateMode\(\)[\s\S]{0,1400}ProgressRouteComboBox\.IsEnabled = true;') { throw "Payment route selection must be re-enabled after leaving archive correction mode." }
+          if ($code -notmatch 'private void ResetEditorUiToCreateMode\(\)[\s\S]{0,1600}ProgressRouteComboBox\.IsEnabled = true;') { throw "Payment route selection must be re-enabled after leaving archive correction mode." }
+          if (-not $code.Contains("ProgressTenderListBox.SelectedItem = progressTender;")) { throw "The payment tender selector must stay blank on launch unless the user had explicitly selected a tender." }
+          if (-not $code.Contains("private void BeginHistoryOrArchiveCorrection(ProgressPaymentHistoryData item)")) { throw "History edits must resolve archived payments to their authoritative archive record." }
+          if (-not $code.Contains("_progressHistory[matchingHistoryIndex] = recalculatedPayment;")) { throw "Approved archive corrections must update the matching primary history row." }
           if ($code -notmatch 'if \(clearTenderSelection\)[\s\S]{0,220}ProgressRouteComboBox\.ItemsSource = Array\.Empty<RouteDraft>\(\);') { throw "Clearing a fresh payment form must also clear stale route choices when the tender is cleared." }
           if (-not $archiveTests.Contains("Replace_ShouldOverwriteSameArchiveFileWithRecalculatedPaymentAndKeepRevision")) { throw "Same-file, same-revision recalculated archive replacement is not covered by a test." }
 
