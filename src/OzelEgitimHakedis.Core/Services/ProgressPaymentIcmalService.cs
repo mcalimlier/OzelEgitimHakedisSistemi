@@ -27,12 +27,9 @@ public static class ProgressPaymentIcmalService
         month.Month >= 9 || month.Month <= 6;
 
     /// <summary>
-    /// Mirrors the source formula in Hakediş İcmali!E21:
-    /// current month is matched in Anasayfa!I6:I15; the previous month's name
-    /// is then matched in İcmal Verileri!AN3:AX3. That header range currently
-    /// omits November and contains December twice, so a December payment's
-    /// previous-November lookup falls through IFERROR to zero. Do not silently
-    /// return a different amount until the reference workbook is corrected.
+    /// Returns the prior calendar month's deduction from payment dates.
+    /// The source workbook's AN3:AX3 header range currently omits November and
+    /// duplicates December; using dates avoids losing a valid November carry-forward.
     /// </summary>
     public static decimal FindPreviousDeduction(
         IEnumerable<ProgressPaymentHistoryData> payments,
@@ -51,11 +48,6 @@ public static class ProgressPaymentIcmalService
             return 0m;
 
         var previousMonth = current.PeriodDate.Value.AddMonths(-1);
-
-        // Source workbook header defect: "Kasım" is missing from AN3:AX3,
-        // so MATCH("Kasım", ...) errors and outer IFERROR(...,0) returns zero.
-        if (previousMonth.Month == 11)
-            return 0m;
 
         return payments
             .Where(x => x.Id != current.Id)
