@@ -35,7 +35,8 @@ public sealed record RouteData(
     decimal GuideDailyPrice = 0m,
     int TransportWorkDays = 0,
     string TenderNumber = "",
-    string ContractorTaxOrIdentityNumber = "");
+    string ContractorTaxOrIdentityNumber = "",
+    string ContractNumber = "");
 
 public sealed record ProgressPaymentHistoryData(
     Guid Id,

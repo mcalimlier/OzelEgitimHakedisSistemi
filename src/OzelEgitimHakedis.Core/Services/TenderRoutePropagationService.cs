@@ -20,4 +20,34 @@ public static class TenderRoutePropagationService
                     : route)
             .ToArray();
     }
+
+    public static IReadOnlyList<RouteData> UpdateContractIdentity(
+        IReadOnlyList<RouteData> routes,
+        ContractDraftData oldContract,
+        ContractDraftData newContract)
+    {
+        ArgumentNullException.ThrowIfNull(routes);
+        ArgumentNullException.ThrowIfNull(oldContract);
+        ArgumentNullException.ThrowIfNull(newContract);
+
+        return routes
+            .Select(route =>
+            {
+                var sameTender = string.Equals(
+                    route.TenderNumber?.Trim(),
+                    oldContract.TenderNumber.Trim(),
+                    StringComparison.OrdinalIgnoreCase);
+                var sameContract = string.IsNullOrWhiteSpace(route.ContractNumber)
+                    || string.Equals(route.ContractNumber.Trim(), oldContract.ContractNumber.Trim(), StringComparison.OrdinalIgnoreCase);
+
+                return sameTender && sameContract
+                    ? route with
+                    {
+                        TenderNumber = newContract.TenderNumber.Trim(),
+                        ContractNumber = newContract.ContractNumber.Trim()
+                    }
+                    : route;
+            })
+            .ToArray();
+    }
 }

@@ -24,10 +24,7 @@ public static class ProgressPaymentPropagationService
         ArgumentNullException.ThrowIfNull(newContract);
 
         var updated = history
-            .Select(item => string.Equals(
-                    item.TenderNumber?.Trim(),
-                    oldContract.TenderNumber.Trim(),
-                    StringComparison.OrdinalIgnoreCase)
+            .Select(item => IsHistoryForContract(item, oldContract)
                 ? RebuildForContract(item, newContract)
                 : item)
             .ToArray();
@@ -79,7 +76,8 @@ public static class ProgressPaymentPropagationService
         var oldKey = OehsIdentityService.BuildRouteKey(
             oldRoute.TenderNumber,
             oldRoute.RouteNumber,
-            oldRoute.ContractorTaxOrIdentityNumber);
+            oldRoute.ContractorTaxOrIdentityNumber,
+            oldRoute.ContractNumber);
 
         var newIdentity = OehsIdentityService.NormalizeIdentity(newRoute.ContractorTaxOrIdentityNumber);
         var updated = history
@@ -88,7 +86,8 @@ public static class ProgressPaymentPropagationService
                     OehsIdentityService.BuildRouteKey(
                         item.TenderNumber ?? string.Empty,
                         item.RouteNumber ?? string.Empty,
-                        item.ContractorTaxOrIdentityNumber ?? string.Empty),
+                        item.ContractorTaxOrIdentityNumber ?? string.Empty,
+                        item.ContractNumber ?? string.Empty),
                     oldKey,
                     StringComparison.Ordinal)
                     ? RebuildForRoute(item, newRoute, contractor, newIdentity)
@@ -146,10 +145,30 @@ public static class ProgressPaymentPropagationService
             RouteNumber = route.RouteNumber,
             RouteName = route.Name,
             TenderNumber = route.TenderNumber,
+            ContractNumber = route.ContractNumber,
             ContractorName = contractor.Name,
             BankAccountNumber = contractor.BankAccountNumber,
             ContractorTaxOrIdentityNumber = normalizedIdentity
         };
+    }
+
+    private static bool IsHistoryForContract(
+        ProgressPaymentHistoryData item,
+        ContractDraftData contract)
+    {
+        if (!string.Equals(
+                item.TenderNumber?.Trim(),
+                contract.TenderNumber.Trim(),
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        // Legacy history written before contract-part identity was introduced
+        // may not have a contract number. The old application permitted only one
+        // contract per tender, so that legacy row belongs to that original contract.
+        return string.IsNullOrWhiteSpace(item.ContractNumber)
+            || string.Equals(item.ContractNumber.Trim(), contract.ContractNumber.Trim(), StringComparison.OrdinalIgnoreCase);
     }
 
     private static void EnsureNoDuplicateProgressPaymentKeys(
@@ -162,7 +181,8 @@ public static class ProgressPaymentPropagationService
                 item.RouteNumber ?? string.Empty,
                 item.ContractorTaxOrIdentityNumber ?? string.Empty,
                 item.ProgressPaymentNumber!.Value,
-                item.PeriodDate!.Value))
+                item.PeriodDate!.Value,
+                item.ContractNumber ?? string.Empty))
             .GroupBy(key => key, StringComparer.Ordinal)
             .Where(group => group.Count() > 1)
             .Select(group => group.Key)

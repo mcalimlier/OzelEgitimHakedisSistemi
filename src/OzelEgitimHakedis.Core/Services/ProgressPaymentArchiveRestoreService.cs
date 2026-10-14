@@ -22,7 +22,10 @@ public static class ProgressPaymentArchiveRestoreService
         var payments = (current.ProgressPayments ?? Array.Empty<ProgressPaymentHistoryData>()).ToList();
 
         var addedContract = contracts.All(x =>
-            !string.Equals(x.TenderNumber, archive.Contract.TenderNumber, StringComparison.OrdinalIgnoreCase));
+            !string.Equals(
+                OehsIdentityService.BuildContractKey(x.TenderNumber, x.ContractNumber),
+                OehsIdentityService.BuildContractKey(archive.Contract.TenderNumber, archive.Contract.ContractNumber),
+                StringComparison.Ordinal));
 
         if (addedContract)
             contracts.Add(archive.Contract);
@@ -39,37 +42,47 @@ public static class ProgressPaymentArchiveRestoreService
         if (addedContractor)
             contractors.Add(archive.Contractor);
 
+        var archiveRoute = string.IsNullOrWhiteSpace(archive.Route.ContractNumber)
+            ? archive.Route with { ContractNumber = archive.Contract.ContractNumber }
+            : archive.Route;
+
         var archiveRouteKey = OehsIdentityService.BuildRouteKey(
-            archive.Route.TenderNumber,
-            archive.Route.RouteNumber,
-            archive.Route.ContractorTaxOrIdentityNumber);
+            archiveRoute.TenderNumber,
+            archiveRoute.RouteNumber,
+            archiveRoute.ContractorTaxOrIdentityNumber,
+            archiveRoute.ContractNumber);
 
         var addedRoute = routes.All(x =>
             !string.Equals(
                 OehsIdentityService.BuildRouteKey(
                     x.TenderNumber,
                     x.RouteNumber,
-                    x.ContractorTaxOrIdentityNumber),
+                    x.ContractorTaxOrIdentityNumber,
+                    x.ContractNumber),
                 archiveRouteKey,
                 StringComparison.Ordinal));
 
         if (addedRoute)
-            routes.Add(archive.Route);
+            routes.Add(archiveRoute);
 
-        var duplicatePaymentById = payments.Any(x => x.Id == archive.ProgressPayment.Id);
+        var archivePayment = string.IsNullOrWhiteSpace(archive.ProgressPayment.ContractNumber)
+            ? archive.ProgressPayment with { ContractNumber = archive.Contract.ContractNumber }
+            : archive.ProgressPayment;
+
+        var duplicatePaymentById = payments.Any(x => x.Id == archivePayment.Id);
         var duplicatePaymentByBusinessKey = payments.Any(x =>
-            HasSamePaymentBusinessKey(x, archive.ProgressPayment));
+            HasSamePaymentBusinessKey(x, archivePayment));
 
         var addedPayment = !duplicatePaymentById && !duplicatePaymentByBusinessKey;
         if (addedPayment)
-            payments.Add(archive.ProgressPayment);
+            payments.Add(archivePayment);
 
         var merged = new OehsApplicationData(
             contracts.FirstOrDefault(x =>
                 string.Equals(
-                    x.TenderNumber,
-                    archive.Contract.TenderNumber,
-                    StringComparison.OrdinalIgnoreCase)),
+                    OehsIdentityService.BuildContractKey(x.TenderNumber, x.ContractNumber),
+                    OehsIdentityService.BuildContractKey(archive.Contract.TenderNumber, archive.Contract.ContractNumber),
+                    StringComparison.Ordinal)),
             routes,
             contractors,
             payments,
@@ -122,6 +135,9 @@ public static class ProgressPaymentArchiveRestoreService
                 OehsIdentityService.NormalizeIdentity(existing.ContractorTaxOrIdentityNumber),
                 OehsIdentityService.NormalizeIdentity(candidate.ContractorTaxOrIdentityNumber),
                 StringComparison.Ordinal)
+            && (string.IsNullOrWhiteSpace(existing.ContractNumber)
+                || string.IsNullOrWhiteSpace(candidate.ContractNumber)
+                || string.Equals(existing.ContractNumber.Trim(), candidate.ContractNumber.Trim(), StringComparison.OrdinalIgnoreCase))
             && existing.ProgressPaymentNumber.Value == candidate.ProgressPaymentNumber.Value
             && existing.PeriodDate.Value == candidate.PeriodDate.Value;
     }
