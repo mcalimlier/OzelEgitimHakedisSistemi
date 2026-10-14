@@ -2304,8 +2304,11 @@ public partial class MainWindow : Window
 
     private void UpdateContractSummaryView()
     {
-        var contract = _contracts.FirstOrDefault(x => string.Equals(x.TenderNumber, TenderNumberTextBox.Text.Trim(), StringComparison.OrdinalIgnoreCase));
+        var lookupTender = _editingContractTender ?? TenderNumberTextBox.Text.Trim();
+        var lookupContractNumber = _editingContractNumber ?? ContractNumberTextBox.Text.Trim();
+        var contract = FindContract(lookupTender, lookupContractNumber);
         var hasContract = contract is not null || !string.IsNullOrWhiteSpace(WorkNameTextBox.Text);
+
         ContractStatusSummaryTextBlock.Text = hasContract ? "KAYITLI" : "TASLAK";
         ContractAmountSummaryTextBlock.Text =
             TryParseDecimal(ContractAmountTextBox.Text, out var amount) ? FormatMoney(amount) : FormatMoney(0);
@@ -2331,8 +2334,9 @@ public partial class MainWindow : Window
             ? FormatMoney(transportPrice) : FormatMoney(0);
 
         ContractSummaryWorkDaysTextBlock.Text = $"{workDaysText} gün • {transportPriceText}/gün";
+        var routeCount = contract is null ? 0 : _routes.Count(x => IsRouteForContract(x, contract));
         ContractSummaryVatTextBlock.Text =
-            $"{(VatExemptCheckBox.IsChecked == true ? "KDV İstisnası" : "KDV Uygulanır")} • {_routes.Count(x => string.Equals(x.TenderNumber, TenderNumberTextBox.Text.Trim(), StringComparison.OrdinalIgnoreCase))} hat";
+            $"{(VatExemptCheckBox.IsChecked == true ? "KDV İstisnası" : "KDV Uygulanır")} • {routeCount} hat";
     }
 
     private void HomeTenderListBox_RefreshSelection()
@@ -2696,10 +2700,7 @@ public partial class MainWindow : Window
         var contract = RouteTenderListBox.SelectedItem as ContractDraftData;
         var count = contract is null
             ? 0
-            : _routes.Count(x => string.Equals(
-                x.TenderNumber,
-                contract.TenderNumber,
-                StringComparison.OrdinalIgnoreCase));
+            : _routes.Count(x => IsRouteForContract(x, contract));
 
         RouteCountTextBlock.Text = count.ToString(CultureInfo.CurrentCulture);
     }
