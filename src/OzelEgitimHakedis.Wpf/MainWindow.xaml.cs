@@ -2748,10 +2748,25 @@ public partial class MainWindow : Window
 
         var routeCount = _routes.Count(x => IsRouteForContract(x, contract));
         var historyCount = _progressHistory.Count(x => IsHistoryForContract(x, contract));
-        if (routeCount > 0 || historyCount > 0)
+
+        // Do not orphan legacy data that couldn't be assigned safely during migration.
+        // If a tender has multiple contract parts and a legacy row lacks ContractNumber,
+        // the UI cannot determine which part owns it, so deletion must be blocked.
+        var ambiguousRouteCount = _routes.Count(x =>
+            string.IsNullOrWhiteSpace(x.ContractNumber) &&
+            string.Equals(x.TenderNumber.Trim(), contract.TenderNumber.Trim(), StringComparison.OrdinalIgnoreCase));
+        var ambiguousHistoryCount = _progressHistory.Count(x =>
+            string.IsNullOrWhiteSpace(x.ContractNumber) &&
+            string.Equals(x.TenderNumber?.Trim(), contract.TenderNumber.Trim(), StringComparison.OrdinalIgnoreCase));
+
+        if (routeCount > 0 || historyCount > 0 || ambiguousRouteCount > 0 || ambiguousHistoryCount > 0)
         {
+            var ambiguous = ambiguousRouteCount + ambiguousHistoryCount;
+            var ambiguityNote = ambiguous > 0
+                ? $" Ayrıca {ambiguous} eski hat/hakediş kaydının sözleşme bağı belirsiz; önce bu kayıtların bağı netleştirilmelidir."
+                : string.Empty;
             MessageBox.Show(
-                $"'{contract.TenderNumber}' / sözleşme '{contract.ContractNumber}' kaydı {routeCount} hat ve {historyCount} hakedişle ilişkili. Önce ilişkili kayıtları düzeltin; kayıt silinmedi.",
+                $"'{contract.TenderNumber}' / sözleşme '{contract.ContractNumber}' kaydı {routeCount} bağlı hat ve {historyCount} bağlı hakedişle ilişkili. Önce ilişkili kayıtları düzeltin; kayıt silinmedi.{ambiguityNote}",
                 "OEHS", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
