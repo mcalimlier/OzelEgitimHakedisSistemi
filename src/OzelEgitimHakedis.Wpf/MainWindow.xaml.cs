@@ -2863,8 +2863,9 @@ public partial class MainWindow : Window
             TenderNumberTextBox.Text.Trim(),
             ContractNumberTextBox.Text.Trim(),
             WorkNameTextBox.Text.Trim(),
-            oldContract?.ContractorName ?? _contracts.FirstOrDefault(x =>
-                string.Equals(x.TenderNumber, TenderNumberTextBox.Text.Trim(), StringComparison.OrdinalIgnoreCase))?.ContractorName ?? string.Empty,
+            // A new contract/part must not silently inherit a sibling contract's contractor.
+            // Contractor identity is associated with the route and is entered/selected there.
+            oldContract?.ContractorName ?? string.Empty,
             contractAmount,
             DateOnly.FromDateTime(StartDatePicker.SelectedDate ?? DateTime.Today),
             DateOnly.FromDateTime(EndDatePicker.SelectedDate ?? DateTime.Today),
