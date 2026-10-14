@@ -351,6 +351,7 @@ public partial class MainWindow : Window
         var latest = _progressHistory
             .Where(x => selectedRoute is null ||
                         (string.Equals(x.TenderNumber, selectedRoute.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+                         string.Equals(x.ContractNumber, selectedRoute.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
                          string.Equals(x.RouteNumber, selectedRoute.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
                          string.Equals(
                         OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
@@ -1146,11 +1147,12 @@ public partial class MainWindow : Window
             HistoryCorrectionSection.Route =>
                 _routes.FirstOrDefault(x =>
                     string.Equals(
-                        OehsIdentityService.BuildRouteKey(x.TenderNumber, x.RouteNumber, x.ContractorTaxOrIdentityNumber),
+                        OehsIdentityService.BuildRouteKey(x.TenderNumber, x.RouteNumber, x.ContractorTaxOrIdentityNumber, x.ContractNumber),
                         OehsIdentityService.BuildRouteKey(
                             item.TenderNumber ?? string.Empty,
                             item.RouteNumber ?? string.Empty,
-                            item.ContractorTaxOrIdentityNumber ?? string.Empty),
+                            item.ContractorTaxOrIdentityNumber ?? string.Empty,
+                            item.ContractNumber ?? string.Empty),
                         StringComparison.Ordinal)) is not RouteDraft route ||
                 TextDiffers(RouteNumberTextBox, route.RouteNumber) ||
                 TextDiffers(RouteNameTextBox, route.Name) ||
@@ -1418,8 +1420,7 @@ public partial class MainWindow : Window
         {
             _lastCalculatedHistoryId = id;
 
-            var contract = _contracts.FirstOrDefault(x =>
-                string.Equals(x.TenderNumber, item.TenderNumber, StringComparison.OrdinalIgnoreCase));
+            var contract = FindContract(item.TenderNumber, item.ContractNumber);
             _suppressSelectionEvents = true;
             try
             {
@@ -2566,6 +2567,7 @@ public partial class MainWindow : Window
 
         var historyCount = _progressHistory.Count(x =>
             string.Equals(x.TenderNumber, route.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(x.ContractNumber, route.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
             string.Equals(x.RouteNumber, route.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
             string.Equals(
                         OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
@@ -3479,7 +3481,8 @@ public partial class MainWindow : Window
                     archivedRoute.TransportWorkDays,
                     archivedRoute.TenderNumber,
                     archivedRoute.ContractorTaxOrIdentityNumber,
-                    _editingArchiveSnapshot.Contractor.Name);
+                    _editingArchiveSnapshot.Contractor.Name,
+                    archivedRoute.ContractNumber);
             }
             else
             {
@@ -3613,7 +3616,8 @@ public partial class MainWindow : Window
                     x.GuideDailyPrice,
                     x.TransportWorkDays,
                     x.TenderNumber,
-                    x.ContractorTaxOrIdentityNumber)).ToArray(),
+                    x.ContractorTaxOrIdentityNumber,
+                    x.ContractNumber)).ToArray(),
                 _contractors.Select(x => new Contractor(
                     x.Name,
                     OehsIdentityService.NormalizeIdentity(x.TaxOrIdentityNumber),
@@ -3638,7 +3642,8 @@ public partial class MainWindow : Window
                         selectedRoute.GuideDailyPrice,
                         selectedRoute.TransportWorkDays,
                         selectedRoute.TenderNumber,
-                        normalizedContractorIdentity),
+                        normalizedContractorIdentity,
+                        selectedContract.ContractNumber),
                     historyItem,
                     _editingHistoryId.HasValue);
 
@@ -3784,12 +3789,11 @@ public partial class MainWindow : Window
             return;
         }
 
-        var contract = _contracts.FirstOrDefault(x =>
-            string.Equals(x.TenderNumber, item.TenderNumber, StringComparison.OrdinalIgnoreCase));
+        var contract = FindContract(item.TenderNumber, item.ContractNumber);
         var route = _routes.FirstOrDefault(x =>
             string.Equals(
-                OehsIdentityService.BuildRouteKey(x.TenderNumber, x.RouteNumber, x.ContractorTaxOrIdentityNumber),
-                OehsIdentityService.BuildRouteKey(item.TenderNumber ?? string.Empty, item.RouteNumber ?? string.Empty, item.ContractorTaxOrIdentityNumber ?? string.Empty),
+                OehsIdentityService.BuildRouteKey(x.TenderNumber, x.RouteNumber, x.ContractorTaxOrIdentityNumber, x.ContractNumber),
+                OehsIdentityService.BuildRouteKey(item.TenderNumber ?? string.Empty, item.RouteNumber ?? string.Empty, item.ContractorTaxOrIdentityNumber ?? string.Empty, item.ContractNumber ?? string.Empty),
                 StringComparison.Ordinal));
 
         var contractor = route is null ? FindContractor(item.ContractorTaxOrIdentityNumber ?? string.Empty) : FindContractor(route.ContractorTaxOrIdentityNumber);
@@ -3808,15 +3812,17 @@ public partial class MainWindow : Window
             route.GuideDailyPrice,
             route.TransportWorkDays,
             route.TenderNumber,
-            route.ContractorTaxOrIdentityNumber);
+            route.ContractorTaxOrIdentityNumber,
+            route.ContractNumber);
 
         var prior = _progressHistory
             .Where(x => string.Equals(
                 OehsIdentityService.BuildRouteKey(
                     x.TenderNumber ?? string.Empty,
                     x.RouteNumber ?? string.Empty,
-                    x.ContractorTaxOrIdentityNumber ?? string.Empty),
-                OehsIdentityService.BuildRouteKey(route.TenderNumber, route.RouteNumber, route.ContractorTaxOrIdentityNumber),
+                    x.ContractorTaxOrIdentityNumber ?? string.Empty,
+                    x.ContractNumber ?? string.Empty),
+                OehsIdentityService.BuildRouteKey(route.TenderNumber, route.RouteNumber, route.ContractorTaxOrIdentityNumber, route.ContractNumber),
                 StringComparison.Ordinal))
             .Where(x => !x.Id.Equals(item.Id))
             .Where(x => x.PeriodDate.HasValue && (!item.PeriodDate.HasValue || x.PeriodDate.Value < item.PeriodDate.Value))
@@ -4003,7 +4009,8 @@ public partial class MainWindow : Window
                     x.GuideDailyPrice,
                     x.TransportWorkDays,
                     x.TenderNumber,
-                    x.ContractorTaxOrIdentityNumber)).ToArray(),
+                    x.ContractorTaxOrIdentityNumber,
+                    x.ContractNumber)).ToArray(),
                 _contractors.Select(x => new Contractor(
                     x.Name,
                     OehsIdentityService.NormalizeIdentity(x.TaxOrIdentityNumber),
@@ -4045,7 +4052,8 @@ public partial class MainWindow : Window
                     route.TransportWorkDays,
                     route.TenderNumber,
                     OehsIdentityService.NormalizeIdentity(route.ContractorTaxOrIdentityNumber),
-                    contractor?.Name ?? archive.Contractor.Name));
+                    contractor?.Name ?? archive.Contractor.Name,
+                    route.ContractNumber));
             }
 
             _progressHistory.Clear();
@@ -4054,8 +4062,7 @@ public partial class MainWindow : Window
 
             SavePersistedData();
 
-            var liveContract = _contracts.FirstOrDefault(x =>
-                string.Equals(x.TenderNumber, archive.Contract.TenderNumber, StringComparison.OrdinalIgnoreCase))
+            var liveContract = FindContract(archive.Contract.TenderNumber, archive.Contract.ContractNumber)
                 ?? archive.Contract;
 
             var liveRoute = _routes.FirstOrDefault(x =>
@@ -4063,11 +4070,13 @@ public partial class MainWindow : Window
                     OehsIdentityService.BuildRouteKey(
                         x.TenderNumber,
                         x.RouteNumber,
-                        x.ContractorTaxOrIdentityNumber),
+                        x.ContractorTaxOrIdentityNumber,
+                        x.ContractNumber),
                     OehsIdentityService.BuildRouteKey(
                         archive.Route.TenderNumber,
                         archive.Route.RouteNumber,
-                        archive.Route.ContractorTaxOrIdentityNumber),
+                        archive.Route.ContractorTaxOrIdentityNumber,
+                        archive.Route.ContractNumber),
                     StringComparison.Ordinal))
                 ?? new RouteDraft(
                     archive.Route.RouteNumber,
@@ -4078,7 +4087,8 @@ public partial class MainWindow : Window
                     archive.Route.TransportWorkDays,
                     archive.Route.TenderNumber,
                     OehsIdentityService.NormalizeIdentity(archive.Route.ContractorTaxOrIdentityNumber),
-                    archive.Contractor.Name);
+                    archive.Contractor.Name,
+                    archive.Route.ContractNumber);
 
             var existing = _progressHistory.FirstOrDefault(x => x.Id == archive.ProgressPayment.Id);
             _editingHistoryId = existing?.Id;
@@ -4393,8 +4403,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        var contract = _contracts.FirstOrDefault(x =>
-            string.Equals(x.TenderNumber, item.TenderNumber, StringComparison.OrdinalIgnoreCase));
+        var contract = FindContract(item.TenderNumber, item.ContractNumber);
         if (contract is null)
         {
             ShowAlreadyRegistered("Bu hakedişin bağlı olduğu ihale kaydı bulunamadı.");
@@ -4489,14 +4498,16 @@ public partial class MainWindow : Window
         var historyRouteKey = OehsIdentityService.BuildRouteKey(
             item.TenderNumber ?? string.Empty,
             item.RouteNumber ?? string.Empty,
-            item.ContractorTaxOrIdentityNumber ?? string.Empty);
+            item.ContractorTaxOrIdentityNumber ?? string.Empty,
+            item.ContractNumber ?? string.Empty);
 
         var route = _routes.FirstOrDefault(x =>
             string.Equals(
                 OehsIdentityService.BuildRouteKey(
                     x.TenderNumber,
                     x.RouteNumber,
-                    x.ContractorTaxOrIdentityNumber),
+                    x.ContractorTaxOrIdentityNumber,
+                    x.ContractNumber),
                 historyRouteKey,
                 StringComparison.Ordinal));
 
@@ -4508,8 +4519,7 @@ public partial class MainWindow : Window
 
         _editingRoute = route;
 
-        var contract = _contracts.FirstOrDefault(x =>
-            string.Equals(x.TenderNumber, route.TenderNumber, StringComparison.OrdinalIgnoreCase));
+        var contract = FindContract(route.TenderNumber, route.ContractNumber);
         var contractor = FindContractor(route.ContractorTaxOrIdentityNumber);
 
         _suppressSelectionEvents = true;
@@ -4550,8 +4560,7 @@ public partial class MainWindow : Window
             _suppressSelectionEvents = true;
             try
             {
-                var liveContract = _contracts.FirstOrDefault(x =>
-                    string.Equals(x.TenderNumber, payment.TenderNumber, StringComparison.OrdinalIgnoreCase));
+                var liveContract = FindContract(payment.TenderNumber, payment.ContractNumber);
                 ProgressTenderListBox.SelectedItem = liveContract;
                 if (liveContract is not null)
                 {
@@ -4598,8 +4607,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        var contract = _contracts.FirstOrDefault(x =>
-            string.Equals(x.TenderNumber, item.TenderNumber, StringComparison.OrdinalIgnoreCase));
+        var contract = FindContract(item.TenderNumber, item.ContractNumber);
         if (contract is not null)
         {
             _suppressSelectionEvents = true;
@@ -4612,14 +4620,16 @@ public partial class MainWindow : Window
         var historyRouteKey = OehsIdentityService.BuildRouteKey(
             item.TenderNumber ?? string.Empty,
             item.RouteNumber ?? string.Empty,
-            item.ContractorTaxOrIdentityNumber ?? string.Empty);
+            item.ContractorTaxOrIdentityNumber ?? string.Empty,
+            item.ContractNumber ?? string.Empty);
 
         ProgressRouteComboBox.SelectedItem = _routes.FirstOrDefault(x =>
             string.Equals(
                 OehsIdentityService.BuildRouteKey(
                     x.TenderNumber,
                     x.RouteNumber,
-                    x.ContractorTaxOrIdentityNumber),
+                    x.ContractorTaxOrIdentityNumber,
+                    x.ContractNumber),
                 historyRouteKey,
                 StringComparison.Ordinal));
 
@@ -4778,6 +4788,7 @@ public partial class MainWindow : Window
             : _progressHistory
                 .Where(x =>
                     string.Equals(x.TenderNumber, selectedRoute.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(x.ContractNumber, selectedRoute.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
                     string.Equals(x.RouteNumber, selectedRoute.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
                     string.Equals(
                         OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
@@ -4893,7 +4904,8 @@ public partial class MainWindow : Window
                 _progressHistory,
                 route.TenderNumber,
                 route.RouteNumber,
-                route.ContractorTaxOrIdentityNumber);
+                route.ContractorTaxOrIdentityNumber,
+                route.ContractNumber);
 
             ProgressNumberTextBox.Text = suggested.ToString(CultureInfo.CurrentCulture);
         }
@@ -4953,6 +4965,7 @@ public partial class MainWindow : Window
         return _progressHistory
             .Where(x =>
                 string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(x.ContractNumber, contract.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(x.RouteNumber, route.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(
                         OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
@@ -4971,6 +4984,7 @@ public partial class MainWindow : Window
         if (route is not null)
             query = query.Where(x =>
                 string.Equals(x.TenderNumber, route.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(x.ContractNumber, route.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(x.RouteNumber, route.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(
                         OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
@@ -4991,6 +5005,7 @@ public partial class MainWindow : Window
         if (route is not null)
             query = query.Where(x =>
                 string.Equals(x.TenderNumber, route.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(x.ContractNumber, route.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(x.RouteNumber, route.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(
                         OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
