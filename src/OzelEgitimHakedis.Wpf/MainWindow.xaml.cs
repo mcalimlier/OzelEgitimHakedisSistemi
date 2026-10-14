@@ -1427,10 +1427,10 @@ public partial class MainWindow : Window
                 ProgressTenderListBox.SelectedItem = contract;
                 ProgressRouteComboBox.ItemsSource = contract is null
                     ? Array.Empty<RouteDraft>()
-                    : _routes.Where(x =>
-                        string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase)).ToArray();
+                    : _routes.Where(x => IsRouteForContract(x, contract)).ToArray();
                 ProgressRouteComboBox.SelectedItem = _routes.FirstOrDefault(x =>
                     string.Equals(x.TenderNumber, item.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(x.ContractNumber, item.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
                     string.Equals(x.RouteNumber, item.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
                     string.Equals(
                         OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
@@ -2237,8 +2237,8 @@ public partial class MainWindow : Window
         if (HomeTenderListBox.SelectedItem is ContractDraftData contract)
         {
             UpdateHomeTenderSummary(contract);
-            var latest = _progressHistory
-                .Where(x => string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase))
+            var history = _progressHistory.Where(x => IsHistoryForContract(x, contract)).ToArray();
+            var latest = history
                 .OrderByDescending(x => x.PeriodDate ?? DateOnly.MinValue)
                 .ThenByDescending(x => x.CreatedAt)
                 .FirstOrDefault();
@@ -2249,9 +2249,7 @@ public partial class MainWindow : Window
                 ? $"Hakediş No {latest.ProgressPaymentNumber.Value}"
                 : latest is null ? "Henüz hakediş yok" : "Son hesaplama";
             HomePeriodTextBlock.Text = latest?.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "—";
-            HomeNetPayableTextBlock.Text = FormatMoney(_progressHistory
-                .Where(x => string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase))
-                .Sum(x => x.Calculation.NetPayable));
+            HomeNetPayableTextBlock.Text = FormatMoney(history.Sum(x => x.Calculation.NetPayable));
             UpdateHomeSummaryView();
         }
     }
@@ -3158,9 +3156,10 @@ public partial class MainWindow : Window
     {
         ClearArchiveCorrectionState();
         _editingContractTender = null;
+        _editingContractNumber = null;
         ClearContractFormOnly();
         UpdateContractSummaryView();
-        ContractStatusTextBlock.Text = "Yeni ihale/dosya kaydı için alanlar temizlendi.";
+        ContractStatusTextBlock.Text = "Yeni ihale/sözleşme kaydı için alanlar temizlendi.";
     }
 
     private static string OehsDesktopRoot => OehsOutputPathService.DesktopRoot;
@@ -3179,9 +3178,10 @@ public partial class MainWindow : Window
     {
         var tender = SafeFileName(string.IsNullOrWhiteSpace(item.TenderNumber) ? "Ihale" : item.TenderNumber);
         var route = SafeFileName(string.IsNullOrWhiteSpace(item.RouteNumber) ? "Hat" : item.RouteNumber);
+        var contractNumber = SafeFileName(string.IsNullOrWhiteSpace(item.ContractNumber) ? "Sozlesme" : item.ContractNumber);
         var progress = item.ProgressPaymentNumber?.ToString(CultureInfo.InvariantCulture) ?? "Yeni";
         var period = item.PeriodDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "Donemsiz";
-        return $"{tender}_{route}_Hakedis-{progress}_{period}_{item.Id:N}";
+        return $"{tender}_{contractNumber}_{route}_Hakedis-{progress}_{period}_{item.Id:N}";
     }
 
     private static string SaveRouteDocumentsArchiveMetadata(
@@ -3380,7 +3380,8 @@ public partial class MainWindow : Window
                 x.GuideDailyPrice,
                 x.TransportWorkDays,
                 x.TenderNumber,
-                x.ContractorTaxOrIdentityNumber)).ToArray(),
+                x.ContractorTaxOrIdentityNumber,
+                x.ContractNumber)).ToArray(),
             oldContract,
             updatedContract);
 
