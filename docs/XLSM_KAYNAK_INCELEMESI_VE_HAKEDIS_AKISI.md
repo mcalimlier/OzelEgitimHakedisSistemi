@@ -35,6 +35,19 @@ Sorunlu PDF'de C=210 TL görünürken E=120 TL gösteriliyordu. Kaynağa göre C
 
 Orijinal D11 formülü IF(D7<0,H2-ABS(D7),H2+D7), H2 ise Hesaplama K+T toplamıdır. Formülün iki dalı da matematiksel olarak H2+D7 sonucunu verir. Aylık aktarım doğru yapıldığında bu, D8−D10 eşitliğini karşılamalıdır; HesapKontrol makrosu tam da bu ilişkiyi doğrular.
 
+### 1.1 Mevzuat kaynaklı istisna — negatif fiyat farkı ve ek kesin teminat
+
+Kaynak Hesaplama!AC formülü =(I*6/100)+R*6/100 olduğundan negatif I/R için matematiksel olarak negatif ek kesin teminat kesintisi üretir. Bu formül kayıtta aynen belgelenmiştir; ancak 4735 sayılı Kamu İhale Sözleşmeleri Kanunu'nun 12. maddesi, ek kesin teminatı **fiyat farkı nedeniyle sözleşme bedelinde artış meydana gelmesi halinde** artış tutarının %6'sı olarak tanımlar. Bu nedenle OEHS'de:
+
+- I/R fiyat farkları negatif olabilir ve K/T, KDV, tevkifat ve damga hesabında işaretli kalır.
+- Taşıma ve rehberin işaretli fiyat farkları ek kesin teminat için netlenir; yalnızca net toplam pozitifse %6 teminat hesaplanır. Net negatif tutar yükleniciye eksi kesinti/kredi oluşturmaz.
+- Kaynak Excel'deki gibi J/S iskontoları AC tabanından düşülmez.
+
+Kaynak ile mevzuatın farklılaştığı bu istisna, hesaplama servisinde ve negatif/karma işaretli fiyat farkı testlerinde açıkça belirtilmelidir.
+
+Kaynak kontrol referansı: 4735 sayılı Kanun m. 12; Kamu İhale Kurulu kararı içindeki 4735 m. 12 / Hizmet Alımları İhaleleri Uygulama Yönetmeliği m. 55 alıntısı:
+https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx?KararId=5a55fc2e4d77a80d4646eb11537c79a3f55aca0b0f11934f4313f5be1b4ea587
+
 ## 2. Sekiz çalışma sayfası — tek tek görevleri
 
 | Sayfa | Girdi/çıktı görevi | Kod eşlemesi ve dikkat noktası |

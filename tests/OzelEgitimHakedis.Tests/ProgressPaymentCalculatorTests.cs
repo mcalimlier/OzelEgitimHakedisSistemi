@@ -182,7 +182,7 @@ public sealed class ProgressPaymentCalculatorTests
     }
 
     [Fact]
-    public void NegativePriceDifference_ShouldApplySignedWorkbookGuaranteeFormula()
+    public void NegativePriceDifference_ShouldRemainSignedWithoutNegativeGuaranteeCredit()
     {
         var input = new ProgressPaymentInput(
             WorkDays: 10, DailyPrice: 1000m, DiscountAmount: 0m, PriceDifference: -500m,
@@ -193,12 +193,30 @@ public sealed class ProgressPaymentCalculatorTests
 
         Assert.Equal(9500m, result.TotalAmount);
         Assert.Equal(950m, result.Vat);
-        Assert.Equal(-30m, result.AdditionalGuarantee);
+        Assert.Equal(0m, result.AdditionalGuarantee);
         Assert.Equal(90.06m, result.StampTax);
         Assert.Equal(475m, result.Withholding);
         Assert.Equal(10450m, result.GrossAmount);
-        Assert.Equal(535.06m, result.TotalDeductions);
-        Assert.Equal(9914.94m, result.NetPayable);
+        Assert.Equal(565.06m, result.TotalDeductions);
+        Assert.Equal(9884.94m, result.NetPayable);
+    }
+
+    [Fact]
+    public void MixedSignedPriceDifferences_ShouldCalculateGuaranteeOnNetPositiveIncreaseOnly()
+    {
+        var input = new ProgressPaymentInput(
+            WorkDays: 10, DailyPrice: 1000m, DiscountAmount: 0m, PriceDifference: -500m,
+            ContractAmount: 10000m, IsVatExempt: false, TaxDebt: 0m,
+            SocialSecurityDebt: 0m, MinimumWageSupport: 0m,
+            GuideWorkDays: 5, GuideDailyPrice: 500m, GuideDiscountAmount: 0m,
+            GuidePriceDifference: 1000m);
+
+        var result = ProgressPaymentCalculator.Calculate(input);
+
+        Assert.Equal(-500m, result.PriceDifferenceExcludingVat);
+        Assert.Equal(1000m, result.GuidePriceDifferenceExcludingVat);
+        Assert.Equal(30m, result.AdditionalGuarantee);
+        Assert.Equal(13000m, result.TotalAmount);
     }
 
     [Fact]

@@ -96,13 +96,18 @@ public sealed class ProgressPaymentCalculator
         var guideStampTax = guideNetAmount * StampTaxRate;
         var stampTax = transportStampTax + guideStampTax;
 
-        // Kaynak XLSM Hesaplama!AC formülü:
-        // AC = (I*6/100) + (R*6/100).
-        // Formül ham ve işaretli fiyat farklarını kullanır. Negatif değerler
-        // sıfırlanmaz; iskonto J/S de bu teminat tabanından düşülmez.
+        // Kaynak XLSM Hesaplama!AC formülü: AC = I*6% + R*6%.
+        // Mevzuat denetimi: 4735 sayılı Kanun'un 12. maddesi ek kesin teminatı,
+        // fiyat farkı nedeniyle sözleşme bedelinde artış meydana gelmesi halinde
+        // bu artışın %6'sı olarak tanımlar. Negatif/pozitif bileşenler önce netlenir:
+        // pozitif toplam artışta Excel ile aynı sonuç çıkar, negatif toplam ek teminat
+        // kredisi doğurmaz. I/R'nin işaretli değerleri hizmet tutarında aynen korunur;
+        // J/S iskontoları kaynak Excel'de olduğu gibi bu tabandan düşülmez.
         var additionalGuarantee =
-            (input.PriceDifference * AdditionalGuaranteeRate)
-            + (input.GuidePriceDifference * AdditionalGuaranteeRate);
+            Math.Max(
+                0m,
+                input.PriceDifference + input.GuidePriceDifference)
+            * AdditionalGuaranteeRate;
 
         // Excel AE = M+V+Y+Z+AA+AB+AC+AD.
         var totalDeductions =
