@@ -60,6 +60,32 @@ public sealed class OehsApplicationDataStoreTests
     }
 
     [Fact]
+    public void Save_ShouldPreserveKnownGoodBackupWhenPrimaryBecomesCorrupt()
+    {
+        using var temp = new TempDirectory();
+        var file = Path.Combine(temp.Path, "oehs-data.json");
+        var store = new OehsApplicationDataStore(file);
+
+        store.Save(CreateData("FIRST"));
+        store.Save(CreateData("SECOND"));
+        var goodBackup = File.ReadAllText(file + ".bak");
+
+        File.WriteAllText(file, "{broken");
+
+        var exception = Assert.Throws<OehsApplicationDataStoreException>(
+            () => store.Save(CreateData("THIRD")));
+
+        Assert.Contains("yedek korunarak", exception.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(goodBackup, File.ReadAllText(file + ".bak"));
+        Assert.Equal("{broken", File.ReadAllText(file));
+
+        // Recovery still selects the preserved FIRST backup and restores the primary.
+        var recovered = store.Load();
+        Assert.Equal("FIRST", recovered.Contracts?[0].TenderNumber);
+        Assert.Contains("FIRST", File.ReadAllText(file), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Load_ShouldThrowControlledExceptionWhenPrimaryAndBackupAreCorrupt()
     {
         using var temp = new TempDirectory();

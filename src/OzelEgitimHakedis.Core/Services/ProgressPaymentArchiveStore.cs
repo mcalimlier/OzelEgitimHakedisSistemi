@@ -86,6 +86,8 @@ public sealed class ProgressPaymentArchiveStore
         ArgumentException.ThrowIfNullOrWhiteSpace(sourcePath);
         ArgumentNullException.ThrowIfNull(archive);
         ValidateArchiveIdentity(archive);
+        archive = CompleteMissingArchiveIdentity(archive);
+        ValidateArchiveIdentity(archive);
 
         var fullSourcePath = Path.GetFullPath(sourcePath);
         if (!File.Exists(fullSourcePath))
@@ -209,6 +211,8 @@ public sealed class ProgressPaymentArchiveStore
         if (archive.Revision < 1)
             throw new ArgumentOutOfRangeException(nameof(archive), "Revision 1 veya daha büyük olmalıdır.");
         ValidateArchiveIdentity(archive);
+        archive = CompleteMissingArchiveIdentity(archive);
+        ValidateArchiveIdentity(archive);
 
         Directory.CreateDirectory(_folderPath);
 
@@ -310,6 +314,84 @@ public sealed class ProgressPaymentArchiveStore
             out var revision)
             ? revision
             : null;
+    }
+
+    private static ProgressPaymentArchive CompleteMissingArchiveIdentity(ProgressPaymentArchive archive)
+    {
+        static string FirstPopulated(params string?[] values) =>
+            values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value))?.Trim() ?? string.Empty;
+
+        var tenderNumber = FirstPopulated(
+            archive.ProgressPayment.TenderNumber,
+            archive.Route.TenderNumber,
+            archive.Contract.TenderNumber);
+        var contractNumber = FirstPopulated(
+            archive.ProgressPayment.ContractNumber,
+            archive.Route.ContractNumber,
+            archive.Contract.ContractNumber);
+        var routeNumber = FirstPopulated(
+            archive.ProgressPayment.RouteNumber,
+            archive.Route.RouteNumber);
+        var contractorIdentity = FirstPopulated(
+            archive.ProgressPayment.ContractorTaxOrIdentityNumber,
+            archive.Route.ContractorTaxOrIdentityNumber,
+            archive.Contractor.TaxOrIdentityNumber);
+        var routeName = FirstPopulated(archive.Route.Name, archive.ProgressPayment.RouteName);
+
+        var contract = archive.Contract with
+        {
+            TenderNumber = FirstPopulated(archive.Contract.TenderNumber, tenderNumber),
+            ContractNumber = FirstPopulated(archive.Contract.ContractNumber, contractNumber)
+        };
+        var contractor = archive.Contractor with
+        {
+            Name = FirstPopulated(
+                archive.Contractor.Name,
+                archive.ProgressPayment.ContractorName,
+                contract.ContractorName),
+            TaxOrIdentityNumber = FirstPopulated(archive.Contractor.TaxOrIdentityNumber, contractorIdentity)
+        };
+        var route = archive.Route with
+        {
+            Name = routeName,
+            TenderNumber = FirstPopulated(archive.Route.TenderNumber, tenderNumber),
+            ContractNumber = FirstPopulated(archive.Route.ContractNumber, contractNumber),
+            RouteNumber = FirstPopulated(archive.Route.RouteNumber, routeNumber),
+            ContractorTaxOrIdentityNumber = FirstPopulated(
+                archive.Route.ContractorTaxOrIdentityNumber,
+                contractorIdentity)
+        };
+        var payment = archive.ProgressPayment with
+        {
+            TenderNumber = FirstPopulated(archive.ProgressPayment.TenderNumber, tenderNumber),
+            ContractNumber = FirstPopulated(archive.ProgressPayment.ContractNumber, contractNumber),
+            RouteNumber = FirstPopulated(archive.ProgressPayment.RouteNumber, routeNumber),
+            RouteName = FirstPopulated(archive.ProgressPayment.RouteName, routeName),
+            ContractorName = FirstPopulated(archive.ProgressPayment.ContractorName, contractor.Name),
+            ContractorTaxOrIdentityNumber = FirstPopulated(
+                archive.ProgressPayment.ContractorTaxOrIdentityNumber,
+                contractorIdentity)
+        };
+        var previousPayments = (archive.PreviousPayments ?? Array.Empty<ProgressPaymentHistoryData>())
+            .Select(previous => previous with
+            {
+                TenderNumber = FirstPopulated(previous.TenderNumber, tenderNumber),
+                ContractNumber = FirstPopulated(previous.ContractNumber, contractNumber),
+                RouteNumber = FirstPopulated(previous.RouteNumber, routeNumber),
+                ContractorTaxOrIdentityNumber = FirstPopulated(
+                    previous.ContractorTaxOrIdentityNumber,
+                    contractorIdentity)
+            })
+            .ToArray();
+
+        return archive with
+        {
+            Contract = contract,
+            Contractor = contractor,
+            Route = route,
+            ProgressPayment = payment,
+            PreviousPayments = previousPayments
+        };
     }
 
     private static void ValidateArchiveIdentity(ProgressPaymentArchive archive)

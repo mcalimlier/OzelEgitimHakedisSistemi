@@ -99,6 +99,51 @@ public sealed class ProgressPaymentArchiveStoreTests
     }
 
     [Fact]
+    public void Save_ShouldCompleteMissingLegacyIdentityFromArchiveSnapshot()
+    {
+        using var temp = new TempDirectory();
+        var store = new ProgressPaymentArchiveStore(temp.Path);
+        var source = CreateArchive(1);
+        var archive = source with
+        {
+            Route = source.Route with { ContractNumber = string.Empty },
+            ProgressPayment = source.ProgressPayment with
+            {
+                TenderNumber = string.Empty,
+                ContractNumber = string.Empty,
+                RouteNumber = string.Empty,
+                RouteName = string.Empty,
+                ContractorName = string.Empty,
+                ContractorTaxOrIdentityNumber = string.Empty
+            },
+            PreviousPayments = new[]
+            {
+                CreateHistory(1) with
+                {
+                    TenderNumber = string.Empty,
+                    ContractNumber = string.Empty,
+                    RouteNumber = string.Empty,
+                    ContractorTaxOrIdentityNumber = string.Empty
+                }
+            }
+        };
+
+        var path = store.Save(archive);
+        var saved = ProgressPaymentArchiveStore.Load(path);
+
+        Assert.Equal("IHALE-01", saved.Contract.TenderNumber);
+        Assert.Equal("SOZ-01", saved.Contract.ContractNumber);
+        Assert.Equal("SOZ-01", saved.Route.ContractNumber);
+        Assert.Equal("IHALE-01", saved.ProgressPayment.TenderNumber);
+        Assert.Equal("SOZ-01", saved.ProgressPayment.ContractNumber);
+        Assert.Equal("01", saved.ProgressPayment.RouteNumber);
+        Assert.Equal("Hat 01", saved.ProgressPayment.RouteName);
+        Assert.Equal("Firma", saved.ProgressPayment.ContractorName);
+        Assert.Equal("12345678901", saved.ProgressPayment.ContractorTaxOrIdentityNumber);
+        Assert.Equal("SOZ-01", Assert.Single(saved.PreviousPayments!).ContractNumber);
+    }
+
+    [Fact]
     public void Load_ShouldRejectMalformedJsonWithControlledException()
     {
         using var temp = new TempDirectory();
@@ -139,7 +184,7 @@ public sealed class ProgressPaymentArchiveStoreTests
                 new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 31), false,
                 ContractorTaxOrIdentityNumber: "12345678901"),
             new Contractor("Firma", "12345678901", BankAccountNumber: "TR0001"),
-            new RouteData("01", "Hat 01", 1000m, TransportWorkDays: 20, TenderNumber: "IHALE-01", ContractorTaxOrIdentityNumber: "12345678901"),
+            new RouteData("01", "Hat 01", 1000m, TransportWorkDays: 20, TenderNumber: "IHALE-01", ContractorTaxOrIdentityNumber: "12345678901", ContractNumber: "SOZ-01"),
             CreateHistory(1),
             Array.Empty<ProgressPaymentHistoryData>(),
             "OEHS_IHALE-01_Hat-01_Hakedis-1_2026-10-31.pdf",
