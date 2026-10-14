@@ -1585,13 +1585,18 @@ public partial class MainWindow : Window
             if (matchingHistoryIndex >= 0)
             {
                 // Keep the editable history row synchronized with its authoritative archive snapshot.
+                // If the secondary JSON save fails, roll the in-memory mirror back instead of
+                // displaying unsaved data as though it were persisted. The archive revision remains
+                // authoritative and the warning below reports that the mirror could not be saved.
+                var previousHistoryItem = _progressHistory[matchingHistoryIndex];
                 _progressHistory[matchingHistoryIndex] = recalculatedPayment;
                 historyMirrorUpdated = true;
-                SavePersistedData();
-                historyMirrorSaved = !string.Equals(
-                    HeaderSaveStatusTextBlock.Text,
-                    "Kaydetme hatası",
-                    StringComparison.Ordinal);
+                historyMirrorSaved = SavePersistedData();
+                if (!historyMirrorSaved)
+                {
+                    _progressHistory[matchingHistoryIndex] = previousHistoryItem;
+                    historyMirrorUpdated = false;
+                }
                 UpdateHistoryView();
                 UpdateSummaryView();
                 UpdateReportView();
@@ -3134,7 +3139,7 @@ public partial class MainWindow : Window
         HeaderSaveStatusDot.Fill = new System.Windows.Media.SolidColorBrush(indicator);
     }
 
-    private void SavePersistedData()
+    private bool SavePersistedData()
     {
         if (_dataLoadFailed)
         {
@@ -3142,7 +3147,7 @@ public partial class MainWindow : Window
             MessageBox.Show(
                 "OEHS veri dosyası güvenli olarak yüklenemedi. Veri kaybını önlemek için kaydetme durduruldu.",
                 "OEHS — Kaydetme Durduruldu", MessageBoxButton.OK, MessageBoxImage.Error);
-            return;
+            return false;
         }
 
         var activeContract = GetSelectedContract() ?? _contracts.FirstOrDefault();
@@ -3161,6 +3166,7 @@ public partial class MainWindow : Window
         {
             _dataStore.Save(data);
             SetHeaderSaveStatus("Kaydedildi", isError: false);
+            return true;
         }
         catch (OehsApplicationDataStoreException ex)
         {
@@ -3168,6 +3174,7 @@ public partial class MainWindow : Window
             MessageBox.Show(
                 $"{ex.Message}\n\nMevcut veri dosyası korunmuştur. OEHS değişikliklerinizi kaydetmedi.",
                 "OEHS — Veri Kaydetme Hatası", MessageBoxButton.OK, MessageBoxImage.Error);
+            return false;
         }
     }
 
@@ -3746,10 +3753,20 @@ public partial class MainWindow : Window
                 return;
             }
 
-            if (_editingHistoryId.HasValue)
+            var editingHistoryId = _editingHistoryId;
+            var editIndex = -1;
+            ProgressPaymentHistoryData? previousHistoryItem = null;
+
+            if (editingHistoryId.HasValue)
             {
-                var editIndex = _progressHistory.IndexOf(
-                    _progressHistory.First(x => x.Id == _editingHistoryId.Value));
+                editIndex = _progressHistory.FindIndex(x => x.Id == editingHistoryId.Value);
+                if (editIndex < 0)
+                {
+                    ShowAlreadyRegistered("Düzenlenecek hakediş kaydı artık bulunamıyor; değişiklik kaydedilmedi.");
+                    return;
+                }
+
+                previousHistoryItem = _progressHistory[editIndex];
                 _progressHistory[editIndex] = historyItem;
                 _editingHistoryId = null;
             }
@@ -3758,8 +3775,32 @@ public partial class MainWindow : Window
                 _progressHistory.Add(historyItem);
             }
 
+            if (!SavePersistedData())
+            {
+                if (editingHistoryId.HasValue && editIndex >= 0 && previousHistoryItem is not null)
+                {
+                    _progressHistory[editIndex] = previousHistoryItem;
+                    _editingHistoryId = editingHistoryId;
+                    SetProgressEditorMode(true);
+                }
+                else
+                {
+                    _progressHistory.RemoveAll(x => x.Id == historyItem.Id);
+                    SetProgressEditorMode(false);
+                }
+
+                UpdateHistoryView();
+                UpdateSummaryView();
+                UpdateReportView();
+                UpdateHomeSummaryView();
+                UpdateAcceptanceView();
+                CalculationStatusTextBlock.Text =
+                    "Veri diske kaydedilemedi. Bellekteki değişiklik geri alındı; başarıyla kaydedilmiş sayılmıyor.";
+                ProgressCalculationSummaryTextBlock.Text = "KAYIT BAŞARISIZ";
+                return;
+            }
+
             SetProgressEditorMode(false);
-            SavePersistedData();
             _lastCalculatedHistoryId = historyItem.Id;
             UpdateHistoryView();
             UpdateSummaryView();
