@@ -1,3 +1,4 @@
+using System.Text.Json;
 using OzelEgitimHakedis.Core.Models;
 using OzelEgitimHakedis.Core.Services;
 using Xunit;
@@ -141,6 +142,38 @@ public sealed class ProgressPaymentArchiveStoreTests
         Assert.Equal("Firma", saved.ProgressPayment.ContractorName);
         Assert.Equal("12345678901", saved.ProgressPayment.ContractorTaxOrIdentityNumber);
         Assert.Equal("SOZ-01", Assert.Single(saved.PreviousPayments!).ContractNumber);
+    }
+
+    [Fact]
+    public void Load_ShouldCompleteMissingLegacyIdentityWithoutChangingArchiveFile()
+    {
+        using var temp = new TempDirectory();
+        var source = CreateArchive(1);
+        var legacy = source with
+        {
+            Route = source.Route with { ContractNumber = string.Empty },
+            ProgressPayment = source.ProgressPayment with
+            {
+                TenderNumber = string.Empty,
+                ContractNumber = string.Empty,
+                RouteNumber = string.Empty,
+                RouteName = string.Empty,
+                ContractorTaxOrIdentityNumber = string.Empty
+            }
+        };
+        var path = Path.Combine(temp.Path, "OEHS_Legacy_v01.json");
+        var originalJson = JsonSerializer.Serialize(legacy);
+        File.WriteAllText(path, originalJson);
+
+        var loaded = ProgressPaymentArchiveStore.Load(path);
+
+        Assert.Equal("IHALE-01", loaded.ProgressPayment.TenderNumber);
+        Assert.Equal("SOZ-01", loaded.ProgressPayment.ContractNumber);
+        Assert.Equal("01", loaded.ProgressPayment.RouteNumber);
+        Assert.Equal("Hat 01", loaded.ProgressPayment.RouteName);
+        Assert.Equal("12345678901", loaded.ProgressPayment.ContractorTaxOrIdentityNumber);
+        Assert.Equal("SOZ-01", loaded.Route.ContractNumber);
+        Assert.Equal(originalJson, File.ReadAllText(path));
     }
 
     [Fact]

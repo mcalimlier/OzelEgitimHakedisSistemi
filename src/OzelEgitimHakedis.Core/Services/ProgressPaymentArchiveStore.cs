@@ -61,6 +61,10 @@ public sealed class ProgressPaymentArchiveStore
             if (archive.Contract is null || archive.Contractor is null || archive.Route is null || archive.ProgressPayment is null)
                 throw new ProgressPaymentArchiveException("Arşiv gerekli snapshot alanlarını içermiyor.");
 
+            ValidateArchiveIdentity(archive);
+            archive = CompleteMissingArchiveIdentity(archive);
+            ValidateArchiveIdentity(archive);
+
             return archive;
         }
         catch (ProgressPaymentArchiveException)
