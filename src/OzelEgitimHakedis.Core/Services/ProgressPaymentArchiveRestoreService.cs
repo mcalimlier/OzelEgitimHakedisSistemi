@@ -17,6 +17,17 @@ public static class ProgressPaymentArchiveRestoreService
         ArgumentNullException.ThrowIfNull(archive);
 
         var contracts = (current.Contracts ?? Array.Empty<ContractDraftData>()).ToList();
+        if (current.Contract is not null && contracts.All(x =>
+                !string.Equals(
+                    OehsIdentityService.BuildContractKey(x.TenderNumber, x.ContractNumber),
+                    OehsIdentityService.BuildContractKey(current.Contract.TenderNumber, current.Contract.ContractNumber),
+                    StringComparison.Ordinal)))
+        {
+            // Older JSON stored only the selected Contract property. Promote it
+            // into the list before checking whether an archive adds a duplicate.
+            contracts.Add(current.Contract);
+        }
+
         var contractors = (current.Contractors ?? Array.Empty<Contractor>()).ToList();
         var routes = (current.Routes ?? Array.Empty<RouteData>()).ToList();
         var payments = (current.ProgressPayments ?? Array.Empty<ProgressPaymentHistoryData>()).ToList();
@@ -84,9 +95,28 @@ public static class ProgressPaymentArchiveRestoreService
             ? archive.ProgressPayment with { ContractNumber = archive.Contract.ContractNumber }
             : archive.ProgressPayment;
 
-        var duplicatePaymentById = payments.Any(x => x.Id == archivePayment.Id);
+        var existingPaymentIndex = payments.FindIndex(x => x.Id == archivePayment.Id);
+        var duplicatePaymentById = existingPaymentIndex >= 0;
+        var reconciledPaymentContractIdentity = false;
+
+        if (duplicatePaymentById)
+        {
+            var existingPayment = payments[existingPaymentIndex];
+            if (string.IsNullOrWhiteSpace(existingPayment.ContractNumber)
+                && !string.IsNullOrWhiteSpace(archivePayment.ContractNumber))
+            {
+                // The archive and live row share a stable payment GUID, so this is
+                // a safe way to resolve the missing part identity without guessing.
+                payments[existingPaymentIndex] = existingPayment with
+                {
+                    ContractNumber = archivePayment.ContractNumber
+                };
+                reconciledPaymentContractIdentity = true;
+            }
+        }
+
         var duplicatePaymentByBusinessKey = payments.Any(x =>
-            HasSamePaymentBusinessKey(x, archivePayment));
+            x.Id != archivePayment.Id && HasSamePaymentBusinessKey(x, archivePayment));
 
         var addedPayment = !duplicatePaymentById && !duplicatePaymentByBusinessKey;
         if (addedPayment)
@@ -108,6 +138,7 @@ public static class ProgressPaymentArchiveRestoreService
         if (addedContractor) addedItems.Add("Yüklenici");
         if (addedRoute) addedItems.Add("Hat");
         if (addedPayment) addedItems.Add("Hakediş");
+        if (reconciledPaymentContractIdentity) addedItems.Add("Hakediş sözleşme bağlantısı");
 
         var message = addedItems.Count == 0
             ? "Arşiv kaydı zaten aktif veride mevcut veya aynı iş anahtarına sahip hakediş bulundu; yeni kayıt eklenmedi."

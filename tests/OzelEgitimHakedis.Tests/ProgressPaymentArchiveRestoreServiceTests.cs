@@ -57,6 +57,45 @@ public sealed class ProgressPaymentArchiveRestoreServiceTests
     }
 
     [Fact]
+    public void Restore_ShouldPromoteLegacyContractPropertyInsteadOfAddingArchiveDuplicate()
+    {
+        var archive = Archive();
+        var current = new OehsApplicationData(
+            archive.Contract,
+            new[] { archive.Route },
+            new[] { archive.Contractor },
+            new[] { archive.ProgressPayment },
+            Contracts: null);
+
+        var result = ProgressPaymentArchiveRestoreService.Restore(current, archive);
+
+        Assert.Single(result.Data.Contracts ?? Array.Empty<ContractDraftData>());
+        Assert.Single(result.Data.Routes);
+        Assert.Single(result.Data.ProgressPayments ?? Array.Empty<ProgressPaymentHistoryData>());
+        Assert.False(result.AddedAnything);
+    }
+
+    [Fact]
+    public void Restore_ShouldFillMissingContractNumberWhenPaymentGuidMatchesArchive()
+    {
+        var archive = Archive();
+        var ambiguousExistingPayment = archive.ProgressPayment with { ContractNumber = string.Empty };
+        var current = new OehsApplicationData(
+            archive.Contract,
+            new[] { archive.Route with { ContractNumber = archive.Contract.ContractNumber } },
+            new[] { archive.Contractor },
+            new[] { ambiguousExistingPayment },
+            new[] { archive.Contract });
+
+        var result = ProgressPaymentArchiveRestoreService.Restore(current, archive);
+        var restored = Assert.Single(result.Data.ProgressPayments ?? Array.Empty<ProgressPaymentHistoryData>());
+
+        Assert.Equal(archive.ProgressPayment.ContractNumber, restored.ContractNumber);
+        Assert.True(result.AddedAnything);
+        Assert.Contains("Hakediş sözleşme bağlantısı", result.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Restore_ShouldNotAddPaymentWithDuplicateBusinessKeyAndDifferentId()
     {
         var archive = Archive();
