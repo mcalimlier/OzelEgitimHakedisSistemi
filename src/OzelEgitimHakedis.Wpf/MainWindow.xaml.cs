@@ -1843,6 +1843,7 @@ public partial class MainWindow : Window
         var route = archive.Route with
         {
             TenderNumber = updatedContract.TenderNumber,
+            ContractNumber = updatedContract.ContractNumber,
             DailyPrice = updatedContract.TransportDailyPrice
         };
 

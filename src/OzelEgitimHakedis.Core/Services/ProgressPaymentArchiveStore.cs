@@ -85,6 +85,7 @@ public sealed class ProgressPaymentArchiveStore
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(sourcePath);
         ArgumentNullException.ThrowIfNull(archive);
+        ValidateArchiveIdentity(archive);
 
         var fullSourcePath = Path.GetFullPath(sourcePath);
         if (!File.Exists(fullSourcePath))
@@ -207,6 +208,7 @@ public sealed class ProgressPaymentArchiveStore
         ArgumentNullException.ThrowIfNull(archive);
         if (archive.Revision < 1)
             throw new ArgumentOutOfRangeException(nameof(archive), "Revision 1 veya daha büyük olmalıdır.");
+        ValidateArchiveIdentity(archive);
 
         Directory.CreateDirectory(_folderPath);
 
@@ -308,6 +310,83 @@ public sealed class ProgressPaymentArchiveStore
             out var revision)
             ? revision
             : null;
+    }
+
+    private static void ValidateArchiveIdentity(ProgressPaymentArchive archive)
+    {
+        ArgumentNullException.ThrowIfNull(archive);
+
+        EnsureIdentityMatches(
+            "İhale numarası",
+            archive.Contract.TenderNumber,
+            archive.Route.TenderNumber,
+            archive.ProgressPayment.TenderNumber);
+
+        EnsureIdentityMatches(
+            "Sözleşme numarası",
+            archive.Contract.ContractNumber,
+            archive.Route.ContractNumber,
+            archive.ProgressPayment.ContractNumber);
+
+        EnsureIdentityMatches(
+            "Hat numarası",
+            archive.Route.RouteNumber,
+            archive.ProgressPayment.RouteNumber);
+
+        EnsureIdentityMatches(
+            "Yüklenici VKN/TCKN",
+            archive.Contractor.TaxOrIdentityNumber,
+            archive.Route.ContractorTaxOrIdentityNumber,
+            archive.ProgressPayment.ContractorTaxOrIdentityNumber);
+
+        foreach (var previous in archive.PreviousPayments ?? Array.Empty<ProgressPaymentHistoryData>())
+        {
+            EnsureIdentityMatches(
+                "Önceki hakediş ihale numarası",
+                archive.ProgressPayment.TenderNumber,
+                previous.TenderNumber);
+            EnsureIdentityMatches(
+                "Önceki hakediş sözleşme numarası",
+                archive.ProgressPayment.ContractNumber,
+                previous.ContractNumber);
+            EnsureIdentityMatches(
+                "Önceki hakediş hat numarası",
+                archive.ProgressPayment.RouteNumber,
+                previous.RouteNumber);
+            EnsureIdentityMatches(
+                "Önceki hakediş yüklenici VKN/TCKN",
+                archive.ProgressPayment.ContractorTaxOrIdentityNumber,
+                previous.ContractorTaxOrIdentityNumber);
+        }
+    }
+
+    private static void EnsureIdentityMatches(string label, params string?[] values)
+    {
+        var populated = values
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Select(value => value!.Trim())
+            .ToArray();
+
+        if (populated.Length <= 1)
+            return;
+
+        if (label.Contains("VKN/TCKN", StringComparison.Ordinal))
+        {
+            var normalized = populated
+                .Select(OehsIdentityService.NormalizeIdentity)
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
+            if (normalized.Length <= 1)
+                return;
+        }
+        else
+        {
+            if (populated.Distinct(StringComparer.OrdinalIgnoreCase).Count() <= 1)
+                return;
+        }
+
+        throw new ProgressPaymentArchiveException(
+            $"Arşiv kaydı tutarsız: {label} alanları birbiriyle uyuşmuyor. Yeni revision kaydedilmedi.");
     }
 
     private static bool IsArchiveFile(string path)

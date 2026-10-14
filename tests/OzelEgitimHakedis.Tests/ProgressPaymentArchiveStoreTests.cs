@@ -176,6 +176,51 @@ public sealed class ProgressPaymentArchiveStoreTests
     }
 
     [Fact]
+    public void Save_ShouldRejectMismatchedRouteAndPaymentIdentity()
+    {
+        using var temp = new TempDirectory();
+        var store = new ProgressPaymentArchiveStore(temp.Path);
+        var archive = CreateArchive(1) with
+        {
+            ProgressPayment = CreateArchive(1).ProgressPayment with
+            {
+                RouteNumber = "02",
+                RouteName = "Hat 02"
+            }
+        };
+
+        var exception = Assert.Throws<ProgressPaymentArchiveException>(() => store.Save(archive));
+
+        Assert.Contains("Hat numarası", exception.Message, StringComparison.Ordinal);
+        Assert.Empty(store.List());
+    }
+
+    [Fact]
+    public void SaveRevision_ShouldRejectMismatchedContractIdentityAndPreserveExistingRevision()
+    {
+        using var temp = new TempDirectory();
+        var store = new ProgressPaymentArchiveStore(temp.Path);
+        var firstPath = store.Save(CreateArchive(1) with
+        {
+            Route = CreateArchive(1).Route with { ContractNumber = "SOZ-01" }
+        });
+        var original = ProgressPaymentArchiveStore.Load(firstPath);
+        var inconsistent = original with
+        {
+            Contract = original.Contract with { ContractNumber = "SOZ-02" },
+            ProgressPayment = original.ProgressPayment with { ContractNumber = "SOZ-02" }
+            // Route still says SOZ-01: don't allow a split identity snapshot.
+        };
+
+        var exception = Assert.Throws<ProgressPaymentArchiveException>(
+            () => store.SaveRevision(firstPath, inconsistent));
+
+        Assert.Contains("Sözleşme numarası", exception.Message, StringComparison.Ordinal);
+        Assert.Single(store.List());
+        Assert.Equal("SOZ-01", ProgressPaymentArchiveStore.Load(firstPath).Contract.ContractNumber);
+    }
+
+    [Fact]
     public void SaveRevision_ShouldCreateNewRevisionAndPreserveOriginalWhenRouteChanges()
     {
         using var temp = new TempDirectory();
