@@ -732,6 +732,7 @@ public partial class MainWindow : Window
         {
             return OehsFileNameService.BuildProgressPdfFileName(
                 payment.TenderNumber ?? string.Empty,
+                payment.ContractNumber ?? string.Empty,
                 payment.RouteNumber ?? string.Empty,
                 payment.ProgressPaymentNumber.Value,
                 payment.PeriodDate.Value);
@@ -3195,7 +3196,7 @@ public partial class MainWindow : Window
 
         var tender = latest.TenderNumber ?? string.Empty;
         var route = latest.RouteNumber ?? string.Empty;
-        var documentFolder = OehsOutputPathService.BuildPdfDirectory(tender, route);
+        var documentFolder = OehsOutputPathService.BuildPdfDirectory(tender, latest.ContractNumber ?? string.Empty, route);
         Directory.CreateDirectory(documentFolder);
 
         var fileNames = pdfPaths.Select(Path.GetFileName).ToArray();
@@ -3850,6 +3851,7 @@ public partial class MainWindow : Window
             prior,
             OehsFileNameService.BuildProgressPdfFileName(
                 item.TenderNumber ?? string.Empty,
+                item.ContractNumber ?? string.Empty,
                 route.RouteNumber,
                 item.ProgressPaymentNumber ?? 1,
                 item.PeriodDate ?? DateOnly.FromDateTime(DateTime.Today)),
@@ -4226,6 +4228,7 @@ public partial class MainWindow : Window
     private static string GetHistoryArchiveFolder(ProgressPaymentHistoryData item) =>
         OehsOutputPathService.BuildPdfDirectory(
             item.TenderNumber ?? string.Empty,
+            item.ContractNumber ?? string.Empty,
             item.RouteNumber ?? string.Empty);
 
     private void OpenHistoryFolderButton_Click(object sender, RoutedEventArgs e)
@@ -4828,6 +4831,7 @@ public partial class MainWindow : Window
         {
             var targetFolder = OehsOutputPathService.BuildPdfDirectory(
                 selectedRoute.TenderNumber,
+                selectedRoute.ContractNumber,
                 selectedRoute.RouteNumber);
             ReportPdfTargetTextBlock.Text = $"PDF hedefi: {targetFolder}";
         }
@@ -5491,8 +5495,9 @@ public partial class MainWindow : Window
         var previousDeduction = ProgressPaymentIcmalService.FindPreviousDeduction(payments, latest);
         var signatories = OehsOfficialDocumentSettingsStore.Load();
 
-        var contract = _contracts.FirstOrDefault(x =>
-            string.Equals(x.TenderNumber, latest.TenderNumber ?? route.TenderNumber, StringComparison.OrdinalIgnoreCase));
+        var contract = FindContract(
+            latest.TenderNumber ?? route.TenderNumber,
+            latest.ContractNumber ?? route.ContractNumber);
 
         DateOnly? contractStartDate = latest.ContractStartDate ?? contract?.StartDate;
         DateOnly? contractEndDate = latest.ContractEndDate ?? contract?.EndDate;
@@ -5627,11 +5632,13 @@ public partial class MainWindow : Window
         {
             var targetFolder = OehsOutputPathService.BuildPdfDirectory(
                 latest.TenderNumber ?? string.Empty,
+                latest.ContractNumber ?? string.Empty,
                 latest.RouteNumber ?? string.Empty);
 
             var baseTargetPath = latest.ProgressPaymentNumber.HasValue && latest.PeriodDate.HasValue
                 ? OehsOutputPathService.BuildPdfFilePath(
                     latest.TenderNumber ?? string.Empty,
+                    latest.ContractNumber ?? string.Empty,
                     latest.RouteNumber ?? string.Empty,
                     latest.ProgressPaymentNumber.Value,
                     latest.PeriodDate.Value)
@@ -6010,6 +6017,7 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         return Path.GetFileNameWithoutExtension(
             OehsFileNameService.BuildProgressPdfFileName(
                 latest.TenderNumber ?? string.Empty,
+                latest.ContractNumber ?? string.Empty,
                 route.RouteNumber,
                 latest.ProgressPaymentNumber.Value,
                 latest.PeriodDate.Value));

@@ -18,11 +18,25 @@ public static class OehsFileNameService
         string tenderNumber,
         string routeNumber,
         int progressPaymentNumber,
+        DateOnly periodDate) =>
+        BuildProgressPdfFileName(tenderNumber, string.Empty, routeNumber, progressPaymentNumber, periodDate);
+
+    public static string BuildProgressPdfFileName(
+        string tenderNumber,
+        string contractNumber,
+        string routeNumber,
+        int progressPaymentNumber,
         DateOnly periodDate)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(progressPaymentNumber);
 
-        return $"OEHS_{Safe(tenderNumber, "Ihale")}_Hat-{Safe(routeNumber, "Hat")}_Hakediş-{progressPaymentNumber.ToString("00", CultureInfo.InvariantCulture)}_{periodDate:yyyy-MM-dd}.pdf";
+        var tender = Safe(tenderNumber, "Ihale");
+        var contract = string.IsNullOrWhiteSpace(contractNumber)
+            ? string.Empty
+            : $"_Sozlesme-{Safe(contractNumber, "Sozlesme")}";
+        var route = Safe(routeNumber, "Hat");
+
+        return $"OEHS_{tender}{contract}_Hat-{route}_Hakediş-{progressPaymentNumber.ToString("00", CultureInfo.InvariantCulture)}_{periodDate:yyyy-MM-dd}.pdf";
     }
 
     public static string SanitizeFileName(string? value, string fallback = "Kayitsiz") =>

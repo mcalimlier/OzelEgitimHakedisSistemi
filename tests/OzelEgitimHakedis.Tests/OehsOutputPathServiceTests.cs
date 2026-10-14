@@ -21,6 +21,34 @@ public sealed class OehsOutputPathServiceTests
     }
 
     [Fact]
+    public void BuildPdfDirectory_ShouldSeparateContractPartsWithSameTenderAndRoute()
+    {
+        var root = Path.Combine(@"C:\Users\Test\Desktop", "OzelEgitimHakedisSistemi");
+
+        var first = OehsOutputPathService.BuildPdfDirectory(root, "2026/01", "SOZ-01", "01");
+        var second = OehsOutputPathService.BuildPdfDirectory(root, "2026/01", "SOZ-02", "01");
+
+        Assert.NotEqual(first, second);
+        Assert.EndsWith(Path.Combine("2026_01", "Sozlesme-SOZ-01", "Hat-01"), first, StringComparison.OrdinalIgnoreCase);
+        Assert.EndsWith(Path.Combine("2026_01", "Sozlesme-SOZ-02", "Hat-01"), second, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void BuildPdfFilePath_ShouldIncludeContractPart()
+    {
+        var root = Path.Combine(@"C:\Users\Test\Desktop", "OzelEgitimHakedisSistemi");
+
+        var path = OehsOutputPathService.BuildPdfFilePath(
+            root, "2026/01", "SOZ-02", "01", 3, new DateOnly(2026, 11, 30));
+
+        Assert.EndsWith(
+            Path.Combine("2026_01", "Sozlesme-SOZ-02", "Hat-01",
+                "OEHS_2026_01_Sozlesme-SOZ-02_Hat-01_Hakediş-03_2026-11-30.pdf"),
+            path,
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void BuildPdfFilePath_ShouldUseDescriptiveName()
     {
         var root = Path.Combine(@"C:\Users\Test\Desktop", "OzelEgitimHakedisSistemi");
