@@ -144,15 +144,23 @@ public static class ProgressPaymentArchiveRestoreService
             return false;
         }
 
+        // A blank contract number is an unresolved legacy identity, not a wildcard.
+        // Treat it as a duplicate only when both rows are legacy/blank, or when both
+        // rows have the same explicit contract part. Otherwise a sibling part's archive
+        // must not be blocked by an ambiguous historical row.
+        var contractIdentityMatches =
+            (string.IsNullOrWhiteSpace(existing.ContractNumber) && string.IsNullOrWhiteSpace(candidate.ContractNumber))
+            || (!string.IsNullOrWhiteSpace(existing.ContractNumber)
+                && !string.IsNullOrWhiteSpace(candidate.ContractNumber)
+                && string.Equals(existing.ContractNumber.Trim(), candidate.ContractNumber.Trim(), StringComparison.OrdinalIgnoreCase));
+
         return string.Equals(existing.TenderNumber.Trim(), candidate.TenderNumber.Trim(), StringComparison.OrdinalIgnoreCase)
             && string.Equals(existing.RouteNumber.Trim(), candidate.RouteNumber.Trim(), StringComparison.OrdinalIgnoreCase)
             && string.Equals(
                 OehsIdentityService.NormalizeIdentity(existing.ContractorTaxOrIdentityNumber),
                 OehsIdentityService.NormalizeIdentity(candidate.ContractorTaxOrIdentityNumber),
                 StringComparison.Ordinal)
-            && (string.IsNullOrWhiteSpace(existing.ContractNumber)
-                || string.IsNullOrWhiteSpace(candidate.ContractNumber)
-                || string.Equals(existing.ContractNumber.Trim(), candidate.ContractNumber.Trim(), StringComparison.OrdinalIgnoreCase))
+            && contractIdentityMatches
             && existing.ProgressPaymentNumber.Value == candidate.ProgressPaymentNumber.Value
             && existing.PeriodDate.Value == candidate.PeriodDate.Value;
     }

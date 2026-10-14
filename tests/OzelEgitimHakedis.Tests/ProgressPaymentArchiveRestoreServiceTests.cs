@@ -77,6 +77,34 @@ public sealed class ProgressPaymentArchiveRestoreServiceTests
     }
 
     [Fact]
+    public void Restore_ShouldAllowSpecificContractPaymentWhenLegacyPaymentContractIsUnknown()
+    {
+        var archive = Archive();
+        var ambiguousExistingPayment = archive.ProgressPayment with
+        {
+            Id = Guid.NewGuid(),
+            ContractNumber = string.Empty
+        };
+        var siblingContract = archive.Contract with
+        {
+            ContractNumber = "SOZ-02",
+            WorkName = "İkinci Kısım"
+        };
+        var current = new OehsApplicationData(
+            archive.Contract,
+            new[] { archive.Route with { ContractNumber = string.Empty } },
+            new[] { archive.Contractor },
+            new[] { ambiguousExistingPayment },
+            new[] { archive.Contract, siblingContract });
+
+        var result = ProgressPaymentArchiveRestoreService.Restore(current, archive);
+
+        Assert.Equal(2, result.Data.ProgressPayments?.Count);
+        Assert.Contains(result.Data.ProgressPayments!, x => x.Id == archive.ProgressPayment.Id);
+        Assert.True(result.AddedAnything);
+    }
+
+    [Fact]
     public void Restore_ShouldReportExistingAndAddedItems()
     {
         var archive = Archive();
