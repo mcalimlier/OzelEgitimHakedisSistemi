@@ -4166,6 +4166,11 @@ public partial class MainWindow : Window
 
         try
         {
+            var contractsBeforeRestore = _contracts.ToArray();
+            var contractorsBeforeRestore = _contractors.ToArray();
+            var routesBeforeRestore = _routes.ToArray();
+            var historyBeforeRestore = _progressHistory.ToArray();
+
             var currentData = new OehsApplicationData(
                 _contracts.FirstOrDefault(),
                 _routes.Select(x => new RouteData(
@@ -4227,7 +4232,21 @@ public partial class MainWindow : Window
             foreach (var item in restored.Data.ProgressPayments ?? Array.Empty<ProgressPaymentHistoryData>())
                 _progressHistory.Add(item);
 
-            SavePersistedData();
+            if (!SavePersistedData())
+            {
+                RestoreLiveDataCollections(
+                    contractsBeforeRestore,
+                    contractorsBeforeRestore,
+                    routesBeforeRestore,
+                    historyBeforeRestore);
+                RefreshViewsAfterPersistenceRollback();
+                MessageBox.Show(
+                    "Arşiv dosyası okundu ancak aktif OEHS verisi diske kaydedilemedi. Birleştirme geri alındı; mevcut aktif kayıtlar korundu.",
+                    "OEHS — Arşiv Geri Yükleme Tamamlanamadı",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
 
             var liveContract = FindContract(archive.Contract.TenderNumber, archive.Contract.ContractNumber)
                 ?? archive.Contract;
