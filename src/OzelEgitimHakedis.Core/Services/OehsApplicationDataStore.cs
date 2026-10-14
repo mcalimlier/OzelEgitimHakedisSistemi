@@ -125,8 +125,16 @@ public sealed class OehsApplicationDataStore
         }
         finally
         {
-            if (File.Exists(temporaryPath))
-                File.Delete(temporaryPath);
+            try
+            {
+                if (File.Exists(temporaryPath))
+                    File.Delete(temporaryPath);
+            }
+            catch (Exception cleanupException) when (
+                cleanupException is IOException or UnauthorizedAccessException)
+            {
+                // A leftover .tmp file is recoverable; it must not mask the real save result.
+            }
         }
     }
 

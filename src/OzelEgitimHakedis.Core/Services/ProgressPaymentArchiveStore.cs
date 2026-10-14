@@ -204,8 +204,16 @@ public sealed class ProgressPaymentArchiveStore
         }
         finally
         {
-            if (File.Exists(tempPath))
-                File.Delete(tempPath);
+            try
+            {
+                if (File.Exists(tempPath))
+                    File.Delete(tempPath);
+            }
+            catch (Exception cleanupException) when (
+                cleanupException is IOException or UnauthorizedAccessException)
+            {
+                // Preserve the primary write result even if an orphan temp file cannot be removed.
+            }
         }
     }
 
@@ -251,8 +259,16 @@ public sealed class ProgressPaymentArchiveStore
         }
         finally
         {
-            if (File.Exists(tempPath))
-                File.Delete(tempPath);
+            try
+            {
+                if (File.Exists(tempPath))
+                    File.Delete(tempPath);
+            }
+            catch (Exception cleanupException) when (
+                cleanupException is IOException or UnauthorizedAccessException)
+            {
+                // Preserve the primary write result even if an orphan temp file cannot be removed.
+            }
         }
     }
 
