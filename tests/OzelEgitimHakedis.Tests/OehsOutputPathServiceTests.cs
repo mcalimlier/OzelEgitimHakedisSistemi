@@ -25,8 +25,8 @@ public sealed class OehsOutputPathServiceTests
     {
         var root = Path.Combine(@"C:\Users\Test\Desktop", "OzelEgitimHakedisSistemi");
 
-        var first = OehsOutputPathService.BuildPdfDirectory(root, "2026/01", "SOZ-01", "01");
-        var second = OehsOutputPathService.BuildPdfDirectory(root, "2026/01", "SOZ-02", "01");
+        var first = OehsOutputPathService.BuildPdfDirectoryForContract(root, "2026/01", "SOZ-01", "01");
+        var second = OehsOutputPathService.BuildPdfDirectoryForContract(root, "2026/01", "SOZ-02", "01");
 
         Assert.NotEqual(first, second);
         Assert.EndsWith(Path.Combine("2026_01", "Sozlesme-SOZ-01", "Hat-01"), first, StringComparison.OrdinalIgnoreCase);
@@ -38,7 +38,7 @@ public sealed class OehsOutputPathServiceTests
     {
         var root = Path.Combine(@"C:\Users\Test\Desktop", "OzelEgitimHakedisSistemi");
 
-        var path = OehsOutputPathService.BuildPdfFilePath(
+        var path = OehsOutputPathService.BuildContractPdfFilePath(
             root, "2026/01", "SOZ-02", "01", 3, new DateOnly(2026, 11, 30));
 
         Assert.EndsWith(

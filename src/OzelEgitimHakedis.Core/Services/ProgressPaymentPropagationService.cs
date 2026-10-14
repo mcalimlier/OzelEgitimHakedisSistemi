@@ -160,7 +160,7 @@ public static class ProgressPaymentPropagationService
             RouteNumber = route.RouteNumber,
             RouteName = route.Name,
             TenderNumber = route.TenderNumber,
-            ContractNumber = route.ContractNumber,
+            ContractNumber = string.IsNullOrWhiteSpace(route.ContractNumber) ? item.ContractNumber : route.ContractNumber,
             ContractorName = contractor.Name,
             BankAccountNumber = contractor.BankAccountNumber,
             ContractorTaxOrIdentityNumber = normalizedIdentity

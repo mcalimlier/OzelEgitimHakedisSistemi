@@ -3196,7 +3196,7 @@ public partial class MainWindow : Window
 
         var tender = latest.TenderNumber ?? string.Empty;
         var route = latest.RouteNumber ?? string.Empty;
-        var documentFolder = OehsOutputPathService.BuildPdfDirectory(tender, latest.ContractNumber ?? string.Empty, route);
+        var documentFolder = OehsOutputPathService.BuildPdfDirectoryForContract(tender, latest.ContractNumber ?? string.Empty, route);
         Directory.CreateDirectory(documentFolder);
 
         var fileNames = pdfPaths.Select(Path.GetFileName).ToArray();
@@ -4226,7 +4226,7 @@ public partial class MainWindow : Window
     }
 
     private static string GetHistoryArchiveFolder(ProgressPaymentHistoryData item) =>
-        OehsOutputPathService.BuildPdfDirectory(
+        OehsOutputPathService.BuildPdfDirectoryForContract(
             item.TenderNumber ?? string.Empty,
             item.ContractNumber ?? string.Empty,
             item.RouteNumber ?? string.Empty);
@@ -4829,7 +4829,7 @@ public partial class MainWindow : Window
         }
         else
         {
-            var targetFolder = OehsOutputPathService.BuildPdfDirectory(
+            var targetFolder = OehsOutputPathService.BuildPdfDirectoryForContract(
                 selectedRoute.TenderNumber,
                 selectedRoute.ContractNumber,
                 selectedRoute.RouteNumber);
@@ -5630,13 +5630,13 @@ public partial class MainWindow : Window
         var preserveStagingFolderForRecovery = false;
         try
         {
-            var targetFolder = OehsOutputPathService.BuildPdfDirectory(
+            var targetFolder = OehsOutputPathService.BuildPdfDirectoryForContract(
                 latest.TenderNumber ?? string.Empty,
                 latest.ContractNumber ?? string.Empty,
                 latest.RouteNumber ?? string.Empty);
 
             var baseTargetPath = latest.ProgressPaymentNumber.HasValue && latest.PeriodDate.HasValue
-                ? OehsOutputPathService.BuildPdfFilePath(
+                ? OehsOutputPathService.BuildContractPdfFilePath(
                     latest.TenderNumber ?? string.Empty,
                     latest.ContractNumber ?? string.Empty,
                     latest.RouteNumber ?? string.Empty,
