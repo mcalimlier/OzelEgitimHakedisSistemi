@@ -2972,13 +2972,11 @@ public partial class MainWindow : Window
         try
         {
             var data = _dataStore.Load();
-
             _contracts.Clear();
             var persistedContracts = data.Contracts ?? Array.Empty<ContractDraftData>();
             if (persistedContracts.Count > 0)
             {
-                foreach (var contract in persistedContracts)
-                    _contracts.Add(contract);
+                foreach (var contract in persistedContracts) _contracts.Add(contract);
             }
             else if (data.Contract is not null)
             {
@@ -2991,63 +2989,89 @@ public partial class MainWindow : Window
                 _contractors.Add(new ContractorDraft(
                     contractor.Name,
                     OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber),
-                    contractor.Address,
-                    contractor.Phone,
-                    contractor.Email,
-                    contractor.BankAccountNumber,
-                    contractor.ContactPerson));
+                    contractor.Address, contractor.Phone, contractor.Email,
+                    contractor.BankAccountNumber, contractor.ContactPerson));
             }
 
             _routes.Clear();
             foreach (var route in data.Routes ?? Array.Empty<RouteData>())
             {
-                var tender = route.TenderNumber;
-                if (string.IsNullOrWhiteSpace(tender))
-                    tender = _contracts.FirstOrDefault()?.TenderNumber ?? string.Empty;
+                var tender = string.IsNullOrWhiteSpace(route.TenderNumber)
+                    ? _contracts.FirstOrDefault()?.TenderNumber ?? string.Empty
+                    : route.TenderNumber;
+                var tenderContracts = _contracts.Where(x =>
+                    string.Equals(x.TenderNumber, tender, StringComparison.OrdinalIgnoreCase)).ToArray();
 
                 var contractorTax = OehsIdentityService.NormalizeIdentity(route.ContractorTaxOrIdentityNumber);
-                if (string.IsNullOrWhiteSpace(contractorTax))
+                var routeContract = !string.IsNullOrWhiteSpace(route.ContractNumber)
+                    ? FindContract(tender, route.ContractNumber)
+                    : tenderContracts.Length == 1 ? tenderContracts[0] : null;
+
+                if (routeContract is null && string.IsNullOrWhiteSpace(route.ContractNumber) && !string.IsNullOrWhiteSpace(contractorTax))
                 {
-                    contractorTax = _contracts
-                        .FirstOrDefault(x => string.Equals(x.TenderNumber, tender, StringComparison.OrdinalIgnoreCase))
-                        ?.ContractorTaxOrIdentityNumber ?? string.Empty;
+                    var contractorMatches = tenderContracts.Where(x =>
+                        string.Equals(
+                            OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
+                            contractorTax,
+                            StringComparison.Ordinal)).ToArray();
+                    if (contractorMatches.Length == 1)
+                        routeContract = contractorMatches[0];
                 }
 
-                var contractorName = FindContractor(contractorTax)?.Name
-                                     ?? _contracts.FirstOrDefault(x => string.Equals(x.TenderNumber, tender, StringComparison.OrdinalIgnoreCase))?.ContractorName
-                                     ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(contractorTax))
+                    contractorTax = OehsIdentityService.NormalizeIdentity(routeContract?.ContractorTaxOrIdentityNumber ?? string.Empty);
+
+                var contractorName = FindContractor(contractorTax)?.Name ?? routeContract?.ContractorName ?? string.Empty;
+                var contractNumber = !string.IsNullOrWhiteSpace(route.ContractNumber)
+                    ? route.ContractNumber
+                    : routeContract?.ContractNumber ?? string.Empty;
 
                 _routes.Add(new RouteDraft(
-                    route.RouteNumber,
-                    route.Name,
-                    route.DailyPrice,
-                    route.GuideWorkDays,
-                    route.GuideDailyPrice,
-                    route.TransportWorkDays,
-                    tender,
-                    contractorTax,
-                    contractorName));
+                    route.RouteNumber, route.Name, route.DailyPrice,
+                    route.GuideWorkDays, route.GuideDailyPrice, route.TransportWorkDays,
+                    tender, contractorTax, contractorName, contractNumber));
             }
 
             _progressHistory.Clear();
             foreach (var history in data.ProgressPayments ?? Array.Empty<ProgressPaymentHistoryData>())
             {
-                var contract = _contracts.FirstOrDefault(x =>
-                    string.Equals(x.TenderNumber, history.TenderNumber, StringComparison.OrdinalIgnoreCase));
+                var contract = FindContract(history.TenderNumber, history.ContractNumber);
+                if (contract is null && string.IsNullOrWhiteSpace(history.ContractNumber))
+                {
+                    var tenderContracts = _contracts.Where(x =>
+                        string.Equals(x.TenderNumber, history.TenderNumber, StringComparison.OrdinalIgnoreCase)).ToArray();
+                    if (tenderContracts.Length == 1)
+                        contract = tenderContracts[0];
+                    else if (!string.IsNullOrWhiteSpace(history.ContractorTaxOrIdentityNumber))
+                    {
+                        var identity = OehsIdentityService.NormalizeIdentity(history.ContractorTaxOrIdentityNumber);
+                        var contractorMatches = tenderContracts.Where(x =>
+                            string.Equals(OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber), identity, StringComparison.Ordinal))
+                            .ToArray();
+                        if (contractorMatches.Length == 1)
+                            contract = contractorMatches[0];
+                    }
+                }
+
                 var contractorTax = OehsIdentityService.NormalizeIdentity(
                     history.ContractorTaxOrIdentityNumber ?? contract?.ContractorTaxOrIdentityNumber ?? string.Empty);
                 var contractor = FindContractor(contractorTax);
+                var contractNumber = !string.IsNullOrWhiteSpace(history.ContractNumber)
+                    ? history.ContractNumber
+                    : contract?.ContractNumber ?? string.Empty;
 
                 _progressHistory.Add(history with
                 {
-                    ContractorTaxOrIdentityNumber = string.IsNullOrWhiteSpace(contractorTax) ? history.ContractorTaxOrIdentityNumber : contractorTax,
+                    ContractNumber = contractNumber,
+                    ContractorTaxOrIdentityNumber = string.IsNullOrWhiteSpace(contractorTax)
+                        ? history.ContractorTaxOrIdentityNumber
+                        : contractorTax,
                     ContractorName = contractor?.Name ?? history.ContractorName ?? contract?.ContractorName,
                     BankAccountNumber = contractor?.BankAccountNumber ?? history.BankAccountNumber ?? contract?.BankAccountNumber
                 });
             }
 
             ClearContractFormOnly();
-
             _dataLoadFailed = false;
             SetHeaderSaveStatus("Veri yüklendi", isError: false);
             UpdateContractSelectors();
@@ -3066,10 +3090,7 @@ public partial class MainWindow : Window
 
             MessageBox.Show(
                 $"{ex.Message}\n\nOEHS güvenlik nedeniyle mevcut bozuk/veri dosyasının üzerine yazmayacak.",
-                "OEHS — Veri Güvenliği",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
-
+                "OEHS — Veri Güvenliği", MessageBoxButton.OK, MessageBoxImage.Error);
             UpdateContractSelectors();
             UpdateRouteListView();
             UpdateContractSummaryView();
@@ -3101,19 +3122,16 @@ public partial class MainWindow : Window
             SetHeaderSaveStatus("Kaydetme durduruldu", isError: true);
             MessageBox.Show(
                 "OEHS veri dosyası güvenli olarak yüklenemedi. Veri kaybını önlemek için kaydetme durduruldu.",
-                "OEHS — Kaydetme Durduruldu",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+                "OEHS — Kaydetme Durduruldu", MessageBoxButton.OK, MessageBoxImage.Error);
             return;
         }
 
         var activeContract = GetSelectedContract() ?? _contracts.FirstOrDefault();
-
         var data = new OehsApplicationData(
             activeContract,
             _routes.Select(x => new RouteData(
                 x.RouteNumber, x.Name, x.DailyPrice, x.GuideWorkDays, x.GuideDailyPrice,
-                x.TransportWorkDays, x.TenderNumber, x.ContractorTaxOrIdentityNumber)).ToArray(),
+                x.TransportWorkDays, x.TenderNumber, x.ContractorTaxOrIdentityNumber, x.ContractNumber)).ToArray(),
             _contractors.Select(x => new Contractor(
                 x.Name, x.TaxOrIdentityNumber, x.Address, x.Phone, x.Email,
                 x.BankAccountNumber, x.ContactPerson)).ToArray(),
@@ -3130,9 +3148,7 @@ public partial class MainWindow : Window
             SetHeaderSaveStatus("Kaydetme hatası", isError: true);
             MessageBox.Show(
                 $"{ex.Message}\n\nMevcut veri dosyası korunmuştur. OEHS değişikliklerinizi kaydetmedi.",
-                "OEHS — Veri Kaydetme Hatası",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+                "OEHS — Veri Kaydetme Hatası", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
