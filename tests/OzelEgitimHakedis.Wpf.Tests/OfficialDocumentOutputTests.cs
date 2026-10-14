@@ -99,7 +99,7 @@ public sealed class OfficialDocumentOutputTests
                 WorkDays: 1,
                 DailyPrice: 100m,
                 DiscountAmount: 0m,
-                PriceDifference: 0m,
+                PriceDifference: 20m,
                 ContractAmount: 100000m,
                 IsVatExempt: true,
                 TaxDebt: 0m,
@@ -110,15 +110,15 @@ public sealed class OfficialDocumentOutputTests
             var noDeductions = new DeductionBreakdown(0m, 0m, 0m, 0m, 0m, 0m, 0m);
             var previousCalculation = new ProgressPaymentCalculation(
                 ServiceAmount: 100m,
-                PriceDifferenceExcludingVat: 0m,
-                TotalAmount: 100m,
+                PriceDifferenceExcludingVat: 20m,
+                TotalAmount: 120m,
                 Vat: 0m,
                 Withholding: 0m,
-                InvoiceAmountAfterWithholding: 100m,
+                InvoiceAmountAfterWithholding: 120m,
                 StampTax: 0m,
-                GrossAmount: 100m,
+                GrossAmount: 120m,
                 TotalDeductions: 0m,
-                NetPayable: 100m,
+                NetPayable: 120m,
                 AdditionalGuarantee: 0m,
                 Deductions: noDeductions);
 
@@ -231,13 +231,13 @@ public sealed class OfficialDocumentOutputTests
             var paymentPage = Assert.IsType<FixedPage>(paymentOutput.Document.Pages[0].Child);
             var paymentText = GetPageText(paymentPage);
 
-            // A is cumulative contract-price work excluding the separate B price-difference line.
-            // With two 100 TL base periods and a current 10 TL price difference:
-            // A=200, B=10, C=210, D=100, E=110.
+            // A is cumulative contract-price work; B is cumulative signed price difference.
+            // With two 100 TL base periods, 20 TL previous F and 10 TL current F:
+            // A=200, B=30, C=230, D=120, E=110.
             Assert.Equal("200,00 TL", GetCellTextAt(paymentPage, 476d, 172d)); // A
-            Assert.Equal("10,00 TL", GetCellTextAt(paymentPage, 476d, 201d));  // B
-            Assert.Equal("210,00 TL", GetCellTextAt(paymentPage, 476d, 230d)); // C = A + B
-            Assert.Equal("100,00 TL", GetCellTextAt(paymentPage, 476d, 293d)); // D
+            Assert.Equal("30,00 TL", GetCellTextAt(paymentPage, 476d, 201d));  // B
+            Assert.Equal("230,00 TL", GetCellTextAt(paymentPage, 476d, 230d)); // C = A + B
+            Assert.Equal("120,00 TL", GetCellTextAt(paymentPage, 476d, 293d)); // D
             Assert.Equal("110,00 TL", GetCellTextAt(paymentPage, 476d, 322d)); // E = C - D
             Assert.Equal("0,00 TL", GetCellTextAt(paymentPage, 476d, 351d));   // F
             Assert.Equal("110,00 TL", GetCellTextAt(paymentPage, 476d, 380d)); // G
@@ -292,8 +292,10 @@ public sealed class OfficialDocumentOutputTests
             Assert.Contains("₺100,00", icmalText); // September contract-price work
             Assert.Contains("₺100,00", icmalText); // October contract-price work, excluding I/R
             Assert.Contains("₺10,00", icmalText);  // raw current-period I+R
+            Assert.Contains("₺20,00", icmalText);  // raw prior-period I+R
+            Assert.Contains("₺30,00", icmalText);  // cumulative raw I+R
             Assert.Contains("₺200,00", icmalText); // cumulative contract-price work
-            Assert.Contains("₺210,00", icmalText); // summary total after current raw I+R
+            Assert.Contains("₺230,00", icmalText); // summary total after cumulative raw I+R
 
             // The source Excel Hakediş Raporu contains signature drawings; all four
             // PDF templates therefore use the configured signatories.
