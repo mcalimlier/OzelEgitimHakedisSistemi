@@ -3861,7 +3861,8 @@ public partial class MainWindow : Window
 
             if (editingHistoryId.HasValue)
             {
-                editIndex = _progressHistory.FindIndex(x => x.Id == editingHistoryId.Value);
+                var existingHistoryForEdit = _progressHistory.FirstOrDefault(x => x.Id == editingHistoryId.Value);
+                editIndex = existingHistoryForEdit is null ? -1 : _progressHistory.IndexOf(existingHistoryForEdit);
                 if (editIndex < 0)
                 {
                     ShowAlreadyRegistered("Düzenlenecek hakediş kaydı artık bulunamıyor; değişiklik kaydedilmedi.");
@@ -3887,7 +3888,9 @@ public partial class MainWindow : Window
                 }
                 else
                 {
-                    _progressHistory.RemoveAll(x => x.Id == historyItem.Id);
+                    var failedNewItem = _progressHistory.FirstOrDefault(x => x.Id == historyItem.Id);
+                    if (failedNewItem is not null)
+                        _progressHistory.Remove(failedNewItem);
                     SetProgressEditorMode(false);
                 }
 
