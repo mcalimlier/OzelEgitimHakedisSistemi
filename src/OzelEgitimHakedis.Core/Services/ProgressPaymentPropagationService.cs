@@ -179,11 +179,10 @@ public static class ProgressPaymentPropagationService
             return false;
         }
 
-        // Legacy history written before contract-part identity was introduced
-        // may not have a contract number. The old application permitted only one
-        // contract per tender, so that legacy row belongs to that original contract.
-        return string.IsNullOrWhiteSpace(item.ContractNumber)
-            || string.Equals(item.ContractNumber.Trim(), contract.ContractNumber.Trim(), StringComparison.OrdinalIgnoreCase);
+        // Legacy rows are mapped by the WPF load migration when the association is unique.
+        // A remaining blank identifier is ambiguous and must not be propagated across parts.
+        return !string.IsNullOrWhiteSpace(item.ContractNumber)
+            && string.Equals(item.ContractNumber.Trim(), contract.ContractNumber.Trim(), StringComparison.OrdinalIgnoreCase);
     }
 
     private static void EnsureNoDuplicateProgressPaymentKeys(

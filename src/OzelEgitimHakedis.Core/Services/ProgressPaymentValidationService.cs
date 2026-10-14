@@ -52,19 +52,34 @@ public static class ProgressPaymentValidationService
         if (!contractExists)
             errors.Add("Seçilen ihale / dosya kaydı bulunamadı.");
 
+        var tenderContractKeys = (data.Contracts ?? Array.Empty<ContractDraftData>())
+            .Append(data.Contract)
+            .Where(x => x is not null)
+            .Cast<ContractDraftData>()
+            .Where(x => string.Equals(x.TenderNumber.Trim(), tenderNumber, StringComparison.OrdinalIgnoreCase))
+            .Select(x => OehsIdentityService.BuildContractKey(x.TenderNumber, x.ContractNumber))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
         var routeExists = (data.Routes ?? Array.Empty<RouteData>())
-            .Any(x => string.Equals(
-                OehsIdentityService.BuildRouteKey(
-                    x.TenderNumber,
-                    x.RouteNumber,
-                    x.ContractorTaxOrIdentityNumber,
-                    x.ContractNumber),
-                OehsIdentityService.BuildRouteKey(
-                    route.TenderNumber,
-                    route.RouteNumber,
-                    route.ContractorTaxOrIdentityNumber,
-                    string.IsNullOrWhiteSpace(route.ContractNumber) ? contractNumber : route.ContractNumber),
-                StringComparison.Ordinal));
+            .Any(x =>
+            {
+                var existingContractNumber = string.IsNullOrWhiteSpace(x.ContractNumber) && tenderContractKeys.Length == 1
+                    ? contractNumber
+                    : x.ContractNumber;
+                return string.Equals(
+                    OehsIdentityService.BuildRouteKey(
+                        x.TenderNumber,
+                        x.RouteNumber,
+                        x.ContractorTaxOrIdentityNumber,
+                        existingContractNumber),
+                    OehsIdentityService.BuildRouteKey(
+                        route.TenderNumber,
+                        route.RouteNumber,
+                        route.ContractorTaxOrIdentityNumber,
+                        string.IsNullOrWhiteSpace(route.ContractNumber) ? contractNumber : route.ContractNumber),
+                    StringComparison.Ordinal);
+            });
 
         if (!routeExists)
             errors.Add("Seçilen hat kaydı bulunamadı.");
@@ -137,6 +152,7 @@ public static class ProgressPaymentValidationService
             var latestExistingPeriod = data.ProgressPayments?
                 .Where(x => !editingExisting || x.Id != candidate.Id)
                 .Where(x => string.Equals(x.TenderNumber?.Trim(), tenderNumber, StringComparison.OrdinalIgnoreCase))
+                .Where(x => string.Equals(x.ContractNumber?.Trim(), contractNumber, StringComparison.OrdinalIgnoreCase))
                 .Where(x => string.Equals(x.RouteNumber?.Trim(), routeNumber, StringComparison.OrdinalIgnoreCase))
                 .Where(x => string.Equals(
                     OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber ?? string.Empty),

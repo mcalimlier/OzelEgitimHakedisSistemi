@@ -37,8 +37,8 @@ public static class TenderRoutePropagationService
                     route.TenderNumber?.Trim(),
                     oldContract.TenderNumber.Trim(),
                     StringComparison.OrdinalIgnoreCase);
-                var sameContract = string.IsNullOrWhiteSpace(route.ContractNumber)
-                    || string.Equals(route.ContractNumber.Trim(), oldContract.ContractNumber.Trim(), StringComparison.OrdinalIgnoreCase);
+                var sameContract = !string.IsNullOrWhiteSpace(route.ContractNumber)
+                    && string.Equals(route.ContractNumber.Trim(), oldContract.ContractNumber.Trim(), StringComparison.OrdinalIgnoreCase);
 
                 return sameTender && sameContract
                     ? route with

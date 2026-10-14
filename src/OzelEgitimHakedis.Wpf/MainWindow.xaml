@@ -246,7 +246,14 @@
                                                       ToolTip="İhale / dosya numarasını seçin">
                                                 <ComboBox.ItemTemplate>
                                                     <DataTemplate>
-                                                        <TextBlock Text="{Binding TenderNumber}" FontSize="11.5" FontWeight="SemiBold"/>
+                                                        <StackPanel>
+                                                            <StackPanel>
+                                                                <TextBlock Text="{Binding TenderNumber}" FontSize="11.5" FontWeight="SemiBold"/>
+                                                                <TextBlock Text="{Binding ContractNumber, StringFormat='Sözleşme: {0}'}" FontSize="10" Foreground="{StaticResource Text600Brush}"/>
+                                                            </StackPanel>
+                                                            <TextBlock Text="{Binding ContractNumber, StringFormat='Sözleşme: {0}'}" FontSize="10" Foreground="{StaticResource Text600Brush}"/>
+                                                            <TextBlock Text="{Binding WorkName}" FontSize="10.5" Foreground="{StaticResource Text600Brush}" TextTrimming="CharacterEllipsis"/>
+                                                        </StackPanel>
                                                     </DataTemplate>
                                                 </ComboBox.ItemTemplate>
                                             </ComboBox>
@@ -539,7 +546,7 @@
                                                                         <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="108"/><ColumnDefinition Width="70"/></Grid.ColumnDefinitions>
                                                                         <StackPanel>
                                                                             <TextBlock Text="{Binding TenderNumber}" Foreground="White" FontSize="11.5" FontWeight="Bold"/>
-
+                                                                            <TextBlock Text="{Binding ContractNumber, StringFormat='Sözleşme: {0}'}" Foreground="#F2C66D" FontSize="10.5" FontWeight="SemiBold"/>
                                                                             <TextBlock Text="{Binding WorkName}" Foreground="#C5D7E7" FontSize="11.5" TextWrapping="Wrap"/>
                                                                         </StackPanel>
                                                                         <Button Grid.Column="1" Content="DÜZENLE" Tag="{Binding}" Click="EditContractButton_Click" Style="{StaticResource SecondaryButton}" Height="28" FontSize="10.5" Width="96" Margin="3,0"/>
@@ -780,7 +787,10 @@
                                                           ToolTip="İhale / dosya numarasını seçin">
                                                     <ComboBox.ItemTemplate>
                                                         <DataTemplate>
-                                                            <TextBlock Text="{Binding TenderNumber}" FontSize="11.5" FontWeight="SemiBold" TextWrapping="NoWrap"/>
+                                                            <StackPanel>
+                                                                <TextBlock Text="{Binding TenderNumber}" FontSize="11.5" FontWeight="SemiBold" TextWrapping="NoWrap"/>
+                                                                <TextBlock Text="{Binding ContractNumber, StringFormat='Sözleşme: {0}'}" FontSize="10" Foreground="{StaticResource Text600Brush}"/>
+                                                            </StackPanel>
                                                         </DataTemplate>
                                                     </ComboBox.ItemTemplate>
                                                 </ComboBox>
@@ -1239,7 +1249,10 @@
                               ToolTip="İhale / dosya numarasını seçin">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding TenderNumber}" FontSize="11" FontWeight="SemiBold"/>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding TenderNumber}" FontSize="11" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding ContractNumber, StringFormat='Sözleşme: {0}'}" FontSize="10" Foreground="{StaticResource Text600Brush}"/>
+                                </StackPanel>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>

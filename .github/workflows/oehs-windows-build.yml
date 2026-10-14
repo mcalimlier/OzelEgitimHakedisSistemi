@@ -94,7 +94,8 @@ jobs:
           }
           if ($code -notmatch 'private void ConfigureArchiveCorrectionChangeTracking\(\)') { throw "Archive edit field change tracking is missing." }
           if (-not $code.Contains("DEĞİŞİKLİK ALGILANDI") -or $code -notmatch 'UpdateProgressCalculationDisplay\(calculation, input\.WorkDays\)') { throw "Live archive correction status and net payment preview are missing." }
-          if ($code -notmatch 'private void LoadPersistedData\(\)[\s\S]{0,5000}ClearContractFormOnly\(\);') { throw "Persisted tender data must not remain in the editable contract form on startup." }
+          $loadMethod = [regex]::Match($code, 'private void LoadPersistedData\(\)[\s\S]*?(?=\n    private )').Value
+          if (-not $loadMethod.Contains("ClearContractFormOnly();")) { throw "Persisted tender data must not remain in the editable contract form on startup." }
           if ($code -notmatch 'private void UpdateProgressContractorAndRoutes\(ContractDraftData\? contract, bool preserveSelection = true\)') { throw "Progress route selection must be explicit instead of defaulting to the first route." }
           if ($code -match 'ProgressRouteComboBox\.SelectedIndex\s*=\s*0') { throw "The payment form must not automatically select the first route." }
           if ($code -notmatch 'private void ResetEditorUiToCreateMode\(\)[\s\S]{0,1600}ProgressRouteComboBox\.IsEnabled = true;') { throw "Payment route selection must be re-enabled after leaving archive correction mode." }

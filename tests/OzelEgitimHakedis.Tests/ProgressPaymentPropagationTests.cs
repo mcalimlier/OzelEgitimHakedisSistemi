@@ -110,6 +110,35 @@ public sealed class ProgressPaymentPropagationTests
     }
 
     [Fact]
+    public void ContractChange_ShouldNotRecalculateSiblingOrAmbiguousHistory()
+    {
+        var oldContract = Contract(vatExempt: false);
+        var newContract = oldContract with { TransportDailyPrice = 1500m };
+        var linked = History(new ProgressPaymentInput(10, 1000m, 0m, 0m, 100000m, false, 0m, 0m, 0m));
+        var siblingInput = linked.Input with { DailyPrice = 2500m };
+        var sibling = linked with
+        {
+            Id = Guid.NewGuid(),
+            ContractNumber = "SOZ-02",
+            WorkName = "İkinci Kısım",
+            Input = siblingInput,
+            Calculation = ProgressPaymentCalculator.Calculate(siblingInput)
+        };
+        var ambiguousLegacy = linked with { Id = Guid.NewGuid(), ContractNumber = "" };
+
+        var updated = ProgressPaymentPropagationService.RecalculateForContractChange(
+            new[] { linked, sibling, ambiguousLegacy },
+            Array.Empty<RouteData>(),
+            oldContract,
+            newContract);
+
+        Assert.Equal(1500m, updated[0].Input.DailyPrice);
+        Assert.Equal(2500m, updated[1].Input.DailyPrice);
+        Assert.Equal("İkinci Kısım", updated[1].WorkName);
+        Assert.Equal(1000m, updated[2].Input.DailyPrice);
+    }
+
+    [Fact]
     public void SourceChangeCreatingDuplicateKey_ShouldBeRejected()
     {
         var oldRoute = Route(1000m);
