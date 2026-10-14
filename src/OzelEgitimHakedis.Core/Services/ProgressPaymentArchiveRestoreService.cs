@@ -52,15 +52,30 @@ public static class ProgressPaymentArchiveRestoreService
             archiveRoute.ContractorTaxOrIdentityNumber,
             archiveRoute.ContractNumber);
 
+        var sameTenderContractCount = contracts.Count(x =>
+            string.Equals(x.TenderNumber, archiveRoute.TenderNumber, StringComparison.OrdinalIgnoreCase));
         var addedRoute = routes.All(x =>
-            !string.Equals(
+        {
+            // Existing JSON written before contract-part identity has no
+            // ContractNumber. It can only be assigned automatically when the
+            // tender currently has exactly one contract.
+            var existingContractNumber = x.ContractNumber;
+            if (string.IsNullOrWhiteSpace(existingContractNumber)
+                && sameTenderContractCount == 1
+                && string.Equals(x.TenderNumber, archiveRoute.TenderNumber, StringComparison.OrdinalIgnoreCase))
+            {
+                existingContractNumber = archiveRoute.ContractNumber;
+            }
+
+            return !string.Equals(
                 OehsIdentityService.BuildRouteKey(
                     x.TenderNumber,
                     x.RouteNumber,
                     x.ContractorTaxOrIdentityNumber,
-                    x.ContractNumber),
+                    existingContractNumber),
                 archiveRouteKey,
-                StringComparison.Ordinal));
+                StringComparison.Ordinal);
+        });
 
         if (addedRoute)
             routes.Add(archiveRoute);
