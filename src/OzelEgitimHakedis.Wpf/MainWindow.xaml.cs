@@ -30,6 +30,7 @@ public partial class MainWindow : Window
     private readonly ObservableCollection<ReportRow> _reportRows = new();
     private Guid? _editingHistoryId;
     private string? _editingContractTender;
+    private string? _editingContractNumber;
     private string? _editingContractorKey;
     private RouteDraft? _editingRoute;
     private bool _suppressSelectionEvents;
@@ -493,7 +494,45 @@ public partial class MainWindow : Window
         return HomeTenderListBox.SelectedItem as ContractDraftData
             ?? RouteTenderListBox.SelectedItem as ContractDraftData
             ?? ProgressTenderListBox.SelectedItem as ContractDraftData
-            ?? _contracts.FirstOrDefault(x => string.Equals(x.TenderNumber, TenderNumberTextBox.Text.Trim(), StringComparison.OrdinalIgnoreCase));
+            ?? FindContract(TenderNumberTextBox.Text, ContractNumberTextBox.Text)
+            ?? _contracts.FirstOrDefault();
+    }
+
+    private ContractDraftData? FindContract(string? tenderNumber, string? contractNumber)
+    {
+        if (string.IsNullOrWhiteSpace(tenderNumber))
+            return null;
+
+        var tenderContracts = _contracts.Where(x =>
+            string.Equals(x.TenderNumber.Trim(), tenderNumber.Trim(), StringComparison.OrdinalIgnoreCase)).ToArray();
+        if (!string.IsNullOrWhiteSpace(contractNumber))
+            return tenderContracts.FirstOrDefault(x =>
+                string.Equals(x.ContractNumber.Trim(), contractNumber.Trim(), StringComparison.OrdinalIgnoreCase));
+
+        // Legacy records can only be assigned automatically while tender identity is unique.
+        return tenderContracts.Length == 1 ? tenderContracts[0] : null;
+    }
+
+    private bool IsHistoryForContract(ProgressPaymentHistoryData item, ContractDraftData contract)
+    {
+        if (!string.Equals(item.TenderNumber?.Trim(), contract.TenderNumber.Trim(), StringComparison.OrdinalIgnoreCase))
+            return false;
+        if (!string.IsNullOrWhiteSpace(item.ContractNumber))
+            return string.Equals(item.ContractNumber.Trim(), contract.ContractNumber.Trim(), StringComparison.OrdinalIgnoreCase);
+
+        return _contracts.Count(x => string.Equals(
+            x.TenderNumber.Trim(), contract.TenderNumber.Trim(), StringComparison.OrdinalIgnoreCase)) == 1;
+    }
+
+    private bool IsRouteForContract(RouteDraft route, ContractDraftData contract)
+    {
+        if (!string.Equals(route.TenderNumber.Trim(), contract.TenderNumber.Trim(), StringComparison.OrdinalIgnoreCase))
+            return false;
+        if (!string.IsNullOrWhiteSpace(route.ContractNumber))
+            return string.Equals(route.ContractNumber.Trim(), contract.ContractNumber.Trim(), StringComparison.OrdinalIgnoreCase);
+
+        return _contracts.Count(x => string.Equals(
+            x.TenderNumber.Trim(), contract.TenderNumber.Trim(), StringComparison.OrdinalIgnoreCase)) == 1;
     }
 
     private void ApplyContractToForm(ContractDraftData contract)
@@ -540,29 +579,36 @@ public partial class MainWindow : Window
     private void UpdateContractSelectors()
     {
         var selectedTender = TenderNumberTextBox.Text.Trim();
-        var previouslySelectedProgressTender = ProgressTenderListBox.SelectedItem as ContractDraftData;
+        var selectedContractNumber = ContractNumberTextBox.Text.Trim();
+        var previousHome = HomeTenderListBox.SelectedItem as ContractDraftData;
+        var previousRoute = RouteTenderListBox.SelectedItem as ContractDraftData;
+        var previousProgress = ProgressTenderListBox.SelectedItem as ContractDraftData;
+        var previousOutput = OutputTenderListBox.SelectedItem as ContractDraftData;
 
-        HomeTenderListBox.ItemsSource = _contracts.ToArray();
-        RouteTenderListBox.ItemsSource = _contracts.ToArray();
-        ProgressTenderListBox.ItemsSource = _contracts.ToArray();
-        OutputTenderListBox.ItemsSource = _contracts.ToArray();
-        ContractsListBox.ItemsSource = _contracts.ToArray();
-
-        var contract = _contracts.FirstOrDefault(x => string.Equals(x.TenderNumber, selectedTender, StringComparison.OrdinalIgnoreCase))
+        var contract = FindContract(selectedTender, selectedContractNumber)
+                       ?? (previousHome is null ? null : FindContract(previousHome.TenderNumber, previousHome.ContractNumber))
+                       ?? (previousRoute is null ? null : FindContract(previousRoute.TenderNumber, previousRoute.ContractNumber))
                        ?? _contracts.FirstOrDefault();
-        var progressTender = previouslySelectedProgressTender is null
+        var progressContract = previousProgress is null
             ? null
-            : _contracts.FirstOrDefault(x =>
-                string.Equals(x.TenderNumber, previouslySelectedProgressTender.TenderNumber, StringComparison.OrdinalIgnoreCase));
+            : FindContract(previousProgress.TenderNumber, previousProgress.ContractNumber);
+        var outputContract = previousOutput is null
+            ? contract
+            : FindContract(previousOutput.TenderNumber, previousOutput.ContractNumber) ?? contract;
 
         _suppressSelectionEvents = true;
         try
         {
+            HomeTenderListBox.ItemsSource = _contracts.ToArray();
+            RouteTenderListBox.ItemsSource = _contracts.ToArray();
+            ProgressTenderListBox.ItemsSource = _contracts.ToArray();
+            OutputTenderListBox.ItemsSource = _contracts.ToArray();
+            ContractsListBox.ItemsSource = _contracts.ToArray();
+
             HomeTenderListBox.SelectedItem = contract;
             RouteTenderListBox.SelectedItem = contract;
-            // Keep the payment tender empty on first launch. Preserve a prior user choice only if it still exists.
-            ProgressTenderListBox.SelectedItem = progressTender;
-            OutputTenderListBox.SelectedItem = contract;
+            ProgressTenderListBox.SelectedItem = progressContract;
+            OutputTenderListBox.SelectedItem = outputContract;
         }
         finally
         {
@@ -572,7 +618,7 @@ public partial class MainWindow : Window
         if (contract is not null)
         {
             UpdateRouteContractorSelector(contract);
-            UpdateOutputRoutesForContract(contract);
+            UpdateOutputRoutesForContract(outputContract);
             UpdateHomeTenderSummary(contract);
         }
         else
@@ -580,7 +626,7 @@ public partial class MainWindow : Window
             RouteContractorListBox.ItemsSource = Array.Empty<ContractorDraft>();
         }
 
-        UpdateProgressContractorAndRoutes(progressTender, preserveSelection: false);
+        UpdateProgressContractorAndRoutes(progressContract, preserveSelection: false);
     }
 
     private void UpdateRouteContractorSelector(ContractDraftData? contract)
@@ -608,12 +654,12 @@ public partial class MainWindow : Window
 
         RoutesListBox.ItemsSource = _routes.Where(x =>
             contract is not null &&
-            string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+            IsRouteForContract(x, contract) &&
             contractor is not null &&
             string.Equals(
-                    OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
-                    OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber),
-                    StringComparison.Ordinal))
+                OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
+                OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber),
+                StringComparison.Ordinal))
             .ToArray();
     }
 
@@ -627,20 +673,17 @@ public partial class MainWindow : Window
                 ProgressContractorTextBlock.Text = "Seçilmedi";
                 ProgressRouteComboBox.ItemsSource = Array.Empty<RouteDraft>();
                 ProgressRouteComboBox.SelectedItem = null;
-                ProgressRouteRelationTextBlock.Text = "İhale ve hat seçiniz.";
+                ProgressRouteRelationTextBlock.Text = "İhale, sözleşme ve hat seçiniz.";
             }
             finally
             {
                 _suppressSelectionEvents = false;
             }
-
             UpdateProgressRouteDefaults();
             return;
         }
 
-        var routes = _routes.Where(x =>
-            string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase))
-            .ToArray();
+        var routes = _routes.Where(x => IsRouteForContract(x, contract)).ToArray();
         var previous = preserveSelection ? ProgressRouteComboBox.SelectedItem as RouteDraft : null;
 
         _suppressSelectionEvents = true;
@@ -650,7 +693,8 @@ public partial class MainWindow : Window
             ProgressRouteComboBox.SelectedItem = previous is null
                 ? null
                 : routes.FirstOrDefault(x =>
-                    x.RouteNumber == previous.RouteNumber &&
+                    string.Equals(x.RouteNumber, previous.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(x.ContractNumber, previous.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
                     string.Equals(
                         OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
                         OehsIdentityService.NormalizeIdentity(previous.ContractorTaxOrIdentityNumber),
@@ -660,7 +704,6 @@ public partial class MainWindow : Window
         {
             _suppressSelectionEvents = false;
         }
-
         UpdateProgressRouteDefaults();
     }
 
@@ -668,15 +711,13 @@ public partial class MainWindow : Window
     {
         if (contract is null)
         {
-            HomeSelectedTenderSummaryTextBlock.Text = "İhale seçiniz.";
+            HomeSelectedTenderSummaryTextBlock.Text = "İhale/sözleşme seçiniz.";
             return;
         }
-
         HomeSelectedTenderSummaryTextBlock.Text =
-            $"{contract.TenderNumber} • {contract.WorkName} • " +
-            $"Sözleşme {FormatMoney(contract.ContractAmount)} • " +
-            $"{contract.StartDate:dd.MM.yyyy}–{contract.EndDate:dd.MM.yyyy} • " +
-            $"{(_routes.Count(x => string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase)))} hat";
+            $"{contract.TenderNumber} • Sözleşme {contract.ContractNumber} • {contract.WorkName} • " +
+            $"{FormatMoney(contract.ContractAmount)} • {contract.StartDate:dd.MM.yyyy}–{contract.EndDate:dd.MM.yyyy} • " +
+            $"{_routes.Count(x => IsRouteForContract(x, contract))} hat";
     }
 
     private void ShowAlreadyRegistered(string message)
@@ -2217,21 +2258,18 @@ public partial class MainWindow : Window
     private void UpdateHomeSummaryView()
     {
         var contract = HomeTenderListBox.SelectedItem as ContractDraftData
-                       ?? _contracts.FirstOrDefault(x => string.Equals(x.TenderNumber, TenderNumberTextBox.Text.Trim(), StringComparison.OrdinalIgnoreCase))
+                       ?? FindContract(TenderNumberTextBox.Text, ContractNumberTextBox.Text)
                        ?? _contracts.FirstOrDefault();
 
         UpdateHomeTenderSummary(contract);
-
-        var tender = contract?.TenderNumber;
-        var history = string.IsNullOrWhiteSpace(tender)
+        var history = contract is null
             ? _progressHistory.ToList()
-            : _progressHistory.Where(x => string.Equals(x.TenderNumber, tender, StringComparison.OrdinalIgnoreCase)).ToList();
+            : _progressHistory.Where(x => IsHistoryForContract(x, contract)).ToList();
 
         HomeContractStatusTextBlock.Text = contract is null ? "İhale seçilmedi" : "KAYITLI";
         HomeRouteCountTextBlock.Text = contract is null
             ? "0"
-            : _routes.Count(x => string.Equals(x.TenderNumber, tender, StringComparison.OrdinalIgnoreCase)).ToString(CultureInfo.CurrentCulture);
-
+            : _routes.Count(x => IsRouteForContract(x, contract)).ToString(CultureInfo.CurrentCulture);
         HomeWorkNameTextBlock.Text = contract?.WorkName ?? "—";
         HomeContractorTextBlock.Text = contract is null ? "—" : "Hat üzerinden seçilir";
         HomeNetPayableTextBlock.Text = FormatMoney(history.Sum(x => x.Calculation.NetPayable));
@@ -2251,7 +2289,6 @@ public partial class MainWindow : Window
         HomeVatWithholdingTextBlock.Text = latest is null
             ? "0,00 / 0,00 ₺"
             : $"{FormatMoney(latest.Calculation.Vat)} / {FormatMoney(latest.Calculation.Withholding)}";
-
         HomeTransportServiceTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.ServiceAmount);
         HomeTransportPriceDifferenceTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.PriceDifferenceExcludingVat);
         HomeTransportNetTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.TransportNetAmount);
@@ -4918,16 +4955,18 @@ public partial class MainWindow : Window
     {
         var routes = contract is null
             ? Array.Empty<RouteDraft>()
-            : _routes.Where(x =>
-                string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase))
-              .ToArray();
+            : _routes.Where(x => IsRouteForContract(x, contract)).ToArray();
 
         var previous = ReportRouteComboBox.SelectedItem as RouteDraft;
         ReportRouteComboBox.ItemsSource = routes;
         if (previous is not null)
             ReportRouteComboBox.SelectedItem = routes.FirstOrDefault(x =>
-                x.RouteNumber == previous.RouteNumber &&
-                string.Equals(x.ContractorTaxOrIdentityNumber, previous.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase));
+                string.Equals(x.RouteNumber, previous.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(x.ContractNumber, previous.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(
+                    OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
+                    OehsIdentityService.NormalizeIdentity(previous.ContractorTaxOrIdentityNumber),
+                    StringComparison.Ordinal));
         if (ReportRouteComboBox.SelectedItem is null && routes.Length > 0)
             ReportRouteComboBox.SelectedIndex = 0;
     }
@@ -6012,7 +6051,8 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         int TransportWorkDays = 0,
         string TenderNumber = "",
         string ContractorTaxOrIdentityNumber = "",
-        string ContractorName = "")
+        string ContractorName = "",
+        string ContractNumber = "")
     {
         public string TransportWorkDaysText => $"Taşıma İş Günü: {TransportWorkDays}";
         public decimal TransportAnnualPrice => TransportWorkDays * DailyPrice;
@@ -6022,7 +6062,7 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         public string TransportSummaryText => $"Taşıma: {TransportWorkDays} gün × {DailyPrice:N2} ₺";
         public string GuideSummaryText => $"Rehber: {GuideWorkDays} gün × {GuideDailyPrice:N2} ₺";
         public string ServiceSummaryText => $"Taşıma {TransportWorkDays} gün • Rehber {GuideWorkDays} gün";
-        public string RelationshipText => $"İhale/Dosya: {TenderNumber} • Yüklenici: {ContractorName}";
+        public string RelationshipText => $"İhale/Dosya: {TenderNumber} • Sözleşme: {ContractNumber} • Yüklenici: {ContractorName}";
         public string DisplayText => string.IsNullOrWhiteSpace(ContractorName)
             ? $"Hat {RouteNumber} — {Name}"
             : $"Hat {RouteNumber} — {Name} • {ContractorName}";
