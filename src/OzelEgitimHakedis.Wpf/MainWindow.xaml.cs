@@ -2008,6 +2008,12 @@ public partial class MainWindow : Window
         if (!ConfirmLiveHistoryCorrection("Yüklenici bilgileri"))
             return;
 
+        var contractsBeforeSave = _contracts.ToArray();
+        var contractorsBeforeSave = _contractors.ToArray();
+        var routesBeforeSave = _routes.ToArray();
+        var historyBeforeSave = _progressHistory.ToArray();
+        var editingContractorKeyBeforeSave = _editingContractorKey;
+
         if (_editingContractorKey is null)
         {
             _contractors.Add(updated);
@@ -2039,9 +2045,20 @@ public partial class MainWindow : Window
             }
         }
 
+        if (!SavePersistedData())
+        {
+            RestoreLiveDataCollections(
+                contractsBeforeSave, contractorsBeforeSave, routesBeforeSave, historyBeforeSave);
+            _editingContractorKey = editingContractorKeyBeforeSave;
+            RefreshViewsAfterPersistenceRollback();
+            SetContractorEditorMode(!string.IsNullOrWhiteSpace(editingContractorKeyBeforeSave));
+            ContractorStatusTextBlock.Text =
+                "Firma kaydı diske yazılamadı. Bellekteki değişiklik geri alındı; form bilgileri yeniden deneyebilmeniz için korundu.";
+            return;
+        }
+
         _editingContractorKey = null;
         UpdateContractorSummary();
-        SavePersistedData();
         UpdateContractSelectors();
         UpdateHomeSummaryView();
         if (_historyCorrectionSection == HistoryCorrectionSection.Contractor)
@@ -2111,21 +2128,15 @@ public partial class MainWindow : Window
             return;
 
         var normalizedContractorIdentity = OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber);
-        var usedByContract = _contracts.Any(x =>
-            string.Equals(
-                OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
-                normalizedContractorIdentity,
-                StringComparison.Ordinal));
-        var usedByRoute = _routes.Any(x =>
-            string.Equals(
-                OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
-                normalizedContractorIdentity,
-                StringComparison.Ordinal));
-        var usedByHistory = _progressHistory.Any(x =>
-            string.Equals(
-                OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
-                normalizedContractorIdentity,
-                StringComparison.Ordinal));
+        var usedByContract = _contracts.Any(x => string.Equals(
+            OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
+            normalizedContractorIdentity, StringComparison.Ordinal));
+        var usedByRoute = _routes.Any(x => string.Equals(
+            OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
+            normalizedContractorIdentity, StringComparison.Ordinal));
+        var usedByHistory = _progressHistory.Any(x => string.Equals(
+            OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
+            normalizedContractorIdentity, StringComparison.Ordinal));
 
         if (usedByContract || usedByRoute || usedByHistory)
         {
@@ -2135,15 +2146,23 @@ public partial class MainWindow : Window
 
         var result = MessageBox.Show(
             $"'{contractor.Name}' firması silinsin mi? Bu işlem geri alınamaz.",
-            "Yüklenici Firmayı Sil",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
-
+            "Yüklenici Firmayı Sil", MessageBoxButton.YesNo, MessageBoxImage.Warning);
         if (result != MessageBoxResult.Yes)
             return;
 
-        _contractors.Remove(contractor);
-        SavePersistedData();
+        var index = _contractors.IndexOf(contractor);
+        if (index < 0) return;
+        _contractors.RemoveAt(index);
+
+        if (!SavePersistedData())
+        {
+            _contractors.Insert(index, contractor);
+            RefreshViewsAfterPersistenceRollback();
+            ContractorStatusTextBlock.Text =
+                "Firma silinemedi: disk kaydı başarısız oldu; firma tekrar listeye alındı.";
+            return;
+        }
+
         UpdateContractorSummary();
         UpdateContractSelectors();
         UpdateHomeSummaryView();
@@ -2472,6 +2491,10 @@ public partial class MainWindow : Window
             return;
         }
 
+        var routesBeforeSave = _routes.ToArray();
+        var historyBeforeSave = _progressHistory.ToArray();
+        var editingRouteBeforeSave = _editingRoute;
+
         if (_editingRoute is null)
         {
             _routes.Add(proposed);
@@ -2505,7 +2528,20 @@ public partial class MainWindow : Window
             _editingRoute = null;
         }
 
-        SavePersistedData();
+        if (!SavePersistedData())
+        {
+            _routes.Clear();
+            foreach (var item in routesBeforeSave) _routes.Add(item);
+            _progressHistory.Clear();
+            foreach (var item in historyBeforeSave) _progressHistory.Add(item);
+            _editingRoute = editingRouteBeforeSave;
+            RefreshViewsAfterPersistenceRollback();
+            SetRouteEditorMode(editingRouteBeforeSave is not null);
+            RouteStatusTextBlock.Text =
+                "Hat kaydı diske yazılamadı. Bellekteki değişiklik geri alındı; form bilgileri korundu.";
+            return;
+        }
+
         UpdateRouteSummary();
         UpdateRouteListView();
         UpdateProgressContractorAndRoutes(ProgressTenderListBox.SelectedItem as ContractDraftData, preserveSelection: false);
@@ -2571,7 +2607,7 @@ public partial class MainWindow : Window
 
     private void RemoveRouteButton_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not System.Windows.Controls.Button { Tag: RouteDraft route })
+        if (sender is not Button { Tag: RouteDraft route })
             return;
 
         var historyCount = _progressHistory.Count(x =>
@@ -2579,9 +2615,9 @@ public partial class MainWindow : Window
             string.Equals(x.ContractNumber, route.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
             string.Equals(x.RouteNumber, route.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
             string.Equals(
-                        OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
-                        OehsIdentityService.NormalizeIdentity(route.ContractorTaxOrIdentityNumber),
-                        StringComparison.Ordinal));
+                OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
+                OehsIdentityService.NormalizeIdentity(route.ContractorTaxOrIdentityNumber),
+                StringComparison.Ordinal));
 
         if (historyCount > 0)
         {
@@ -2591,15 +2627,21 @@ public partial class MainWindow : Window
 
         var result = MessageBox.Show(
             $"'{route.RouteNumber} — {route.Name}' hattı silinsin mi? Bu işlem geri alınamaz.",
-            "Hat Kaydını Sil",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
+            "Hat Kaydını Sil", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+        if (result != MessageBoxResult.Yes) return;
 
-        if (result != MessageBoxResult.Yes)
+        var index = _routes.IndexOf(route);
+        if (index < 0) return;
+        _routes.RemoveAt(index);
+
+        if (!SavePersistedData())
+        {
+            _routes.Insert(index, route);
+            RefreshViewsAfterPersistenceRollback();
+            RouteStatusTextBlock.Text = $"Hat silinemedi: {route.RouteNumber}; disk kaydı başarısız, hat geri alındı.";
             return;
+        }
 
-        _routes.Remove(route);
-        SavePersistedData();
         UpdateRouteSummary();
         UpdateRouteListView();
         UpdateHomeSummaryView();
@@ -2784,8 +2826,17 @@ public partial class MainWindow : Window
         if (result != MessageBoxResult.Yes)
             return;
 
-        _contracts.Remove(contract);
-        SavePersistedData();
+        var index = _contracts.IndexOf(contract);
+        if (index < 0) return;
+        _contracts.RemoveAt(index);
+        if (!SavePersistedData())
+        {
+            _contracts.Insert(index, contract);
+            RefreshViewsAfterPersistenceRollback();
+            ContractStatusTextBlock.Text =
+                "Sözleşme silinemedi: disk kaydı başarısız oldu; sözleşme tekrar listeye alındı.";
+            return;
+        }
         UpdateContractSelectors();
         UpdateHomeSummaryView();
         UpdateContractSummaryView();
@@ -2899,6 +2950,12 @@ public partial class MainWindow : Window
             return;
         }
 
+        var contractsBeforeSave = _contracts.ToArray();
+        var routesBeforeSave = _routes.ToArray();
+        var historyBeforeSave = _progressHistory.ToArray();
+        var editingContractTenderBeforeSave = _editingContractTender;
+        var editingContractNumberBeforeSave = _editingContractNumber;
+
         if (oldContract is null)
         {
             _contracts.Add(proposedContract);
@@ -2972,10 +3029,22 @@ public partial class MainWindow : Window
                 _progressHistory.Add(item);
         }
 
+        if (!SavePersistedData())
+        {
+            RestoreLiveDataCollections(
+                contractsBeforeSave, _contractors.ToArray(), routesBeforeSave, historyBeforeSave);
+            _editingContractTender = editingContractTenderBeforeSave;
+            _editingContractNumber = editingContractNumberBeforeSave;
+            SetContractEditorMode(!string.IsNullOrWhiteSpace(editingContractTenderBeforeSave));
+            RefreshViewsAfterPersistenceRollback();
+            ContractStatusTextBlock.Text =
+                "Sözleşme kaydı diske yazılamadı. Bellekteki değişiklik geri alındı; form bilgileri korundu.";
+            return;
+        }
+
         _editingContractTender = null;
         _editingContractNumber = null;
         SetContractEditorMode(false);
-        SavePersistedData();
         UpdateContractSelectors();
         UpdateRouteListView();
         UpdateRouteSummary();
@@ -3176,6 +3245,39 @@ public partial class MainWindow : Window
                 "OEHS — Veri Kaydetme Hatası", MessageBoxButton.OK, MessageBoxImage.Error);
             return false;
         }
+    }
+
+    private void RestoreLiveDataCollections(
+        IReadOnlyList<ContractDraftData> contracts,
+        IReadOnlyList<ContractorDraft> contractors,
+        IReadOnlyList<RouteDraft> routes,
+        IReadOnlyList<ProgressPaymentHistoryData> history)
+    {
+        _contracts.Clear();
+        foreach (var item in contracts) _contracts.Add(item);
+
+        _contractors.Clear();
+        foreach (var item in contractors) _contractors.Add(item);
+
+        _routes.Clear();
+        foreach (var item in routes) _routes.Add(item);
+
+        _progressHistory.Clear();
+        foreach (var item in history) _progressHistory.Add(item);
+    }
+
+    private void RefreshViewsAfterPersistenceRollback()
+    {
+        UpdateContractSelectors();
+        UpdateContractorSummary();
+        UpdateRouteSummary();
+        UpdateRouteListView();
+        UpdateContractSummaryView();
+        UpdateHistoryView();
+        UpdateSummaryView();
+        UpdateReportView();
+        UpdateHomeSummaryView();
+        UpdateAcceptanceView();
     }
 
     private void ClearContractButton_Click(object sender, RoutedEventArgs e)
@@ -4758,31 +4860,35 @@ public partial class MainWindow : Window
 
     private void DeleteHistoryButton_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not Button { Tag: HistoryRow row })
-            return;
-
+        if (sender is not Button { Tag: HistoryRow row }) return;
         var item = _progressHistory.FirstOrDefault(x => x.Id == row.Id);
-        if (item is null)
-            return;
+        if (item is null) return;
 
         var title = item.ProgressPaymentNumber.HasValue
             ? $"Hakediş No {item.ProgressPaymentNumber.Value}"
             : "Hakediş Hesaplama";
-
         var result = MessageBox.Show(
             $"{title} kaydı silinsin mi? Bu işlem geri alınamaz.",
-            "Hakediş Kaydını Sil",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
+            "Hakediş Kaydını Sil", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+        if (result != MessageBoxResult.Yes) return;
 
-        if (result != MessageBoxResult.Yes)
+        var index = _progressHistory.IndexOf(item);
+        var previousEditingHistoryId = _editingHistoryId;
+        if (index < 0) return;
+
+        _progressHistory.RemoveAt(index);
+        if (_editingHistoryId == item.Id) _editingHistoryId = null;
+
+        if (!SavePersistedData())
+        {
+            _progressHistory.Insert(index, item);
+            _editingHistoryId = previousEditingHistoryId;
+            RefreshViewsAfterPersistenceRollback();
+            CalculationStatusTextBlock.Text =
+                "Hakediş silinmedi: disk kaydı başarısız oldu; kayıt tekrar listeye alındı.";
             return;
+        }
 
-        _progressHistory.Remove(item);
-        if (_editingHistoryId == item.Id)
-            _editingHistoryId = null;
-
-        SavePersistedData();
         UpdateHistoryView();
         UpdateSummaryView();
         UpdateReportView();
