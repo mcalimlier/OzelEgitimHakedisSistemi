@@ -21,6 +21,18 @@ public sealed class OehsOutputPathServiceTests
     }
 
     [Fact]
+    public void BuildPdfDirectoryForContract_ShouldKeepLegacyFolderWhenContractNumberIsUnknown()
+    {
+        var root = Path.Combine(@"C:\Users\Test\Desktop", "OzelEgitimHakedisSistemi");
+
+        var path = OehsOutputPathService.BuildPdfDirectoryForContract(root, "2026/01", "", "01");
+
+        Assert.Equal(
+            Path.Combine(root, "Ciktilar", "Hakedisler", "2026_01", "Hat-01"),
+            path);
+    }
+
+    [Fact]
     public void BuildPdfDirectory_ShouldSeparateContractPartsWithSameTenderAndRoute()
     {
         var root = Path.Combine(@"C:\Users\Test\Desktop", "OzelEgitimHakedisSistemi");

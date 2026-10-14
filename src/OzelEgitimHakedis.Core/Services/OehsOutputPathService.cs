@@ -29,6 +29,11 @@ public static class OehsOutputPathService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(root);
 
+        // Preserve the pre-contract-part directory convention for old/ambiguous records
+        // whose contract number could not be resolved safely during migration.
+        if (string.IsNullOrWhiteSpace(contractNumber))
+            return BuildPdfDirectory(root, tenderNumber, routeNumber);
+
         var tender = OehsFileNameService.SanitizeFileName(tenderNumber, "Ihale");
         var route = OehsFileNameService.SanitizeFileName(routeNumber, "Hat");
         var contract = OehsFileNameService.SanitizeFileName(contractNumber, "Sozlesme");

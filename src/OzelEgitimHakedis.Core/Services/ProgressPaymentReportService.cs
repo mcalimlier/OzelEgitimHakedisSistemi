@@ -88,8 +88,13 @@ public static class ProgressPaymentReportService
         // A is cumulative contract-price service after discounts; B is cumulative
         // signed price difference (raw I+R). Summing historical K+T into A would
         // classify prior months' price differences as contract-price work.
-        // The source XLSM's D6/D7 mapping and supplied 4/10 example can disagree
-        // internally, so do not reproduce that A/B classification error.
+        //
+        // Source-workbook caution: Hakediş Raporu!D6 sums monthly K+T (which already
+        // includes I+R), D7 adds the current raw I+R again, and D11 uses
+        // IF(D7<0,H2-ABS(D7),H2+D7). H2 is the current K+T value too, so D11 can
+        // re-add the current price difference instead of following the printed
+        // 4/10 form's E=C-D definition. We preserve the official form's A/B/C/D/E
+        // meanings and calculate E as C-D; regression tests cover this equation.
         var previousServiceAmount = previous.Sum(CalculateWorkbookMonthlyPaymentAmount);
         var previousPriceDifference = previous.Sum(CalculateWorkbookPriceDifference);
         var currentServiceAmount = CalculateWorkbookMonthlyPaymentAmount(current);
