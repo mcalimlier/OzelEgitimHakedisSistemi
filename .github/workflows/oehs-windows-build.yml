@@ -99,7 +99,7 @@ jobs:
           if ($code -notmatch 'private void UpdateProgressContractorAndRoutes\(ContractDraftData\? contract, bool preserveSelection = true\)') { throw "Progress route selection must be explicit instead of defaulting to the first route." }
           if ($code -match 'ProgressRouteComboBox\.SelectedIndex\s*=\s*0') { throw "The payment form must not automatically select the first route." }
           if ($code -notmatch 'private void ResetEditorUiToCreateMode\(\)[\s\S]{0,1600}ProgressRouteComboBox\.IsEnabled = true;') { throw "Payment route selection must be re-enabled after leaving archive correction mode." }
-          if (-not $code.Contains("ProgressTenderListBox.SelectedItem = progressTender;")) { throw "The payment tender selector must stay blank on launch unless the user had explicitly selected a tender." }
+          if (-not $code.Contains("ProgressTenderListBox.SelectedItem = progressContract;")) { throw "The payment tender selector must preserve only an explicitly selected contract and remain blank on launch." }
           if (-not $code.Contains("private void BeginHistoryOrArchiveCorrection(ProgressPaymentHistoryData item)")) { throw "History edits must resolve archived payments to their authoritative archive record." }
           if (-not $code.Contains("_progressHistory[matchingHistoryIndex] = recalculatedPayment;")) { throw "Approved archive corrections must update the matching primary history row." }
           if (-not $code.Contains("private void RefreshHistoryCorrectionStatus()")) { throw "Non-archived history corrections must refresh the live status and calculation preview." }
