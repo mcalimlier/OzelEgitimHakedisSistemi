@@ -123,12 +123,18 @@ public static class ProgressPaymentPropagationService
         ContractDraftData contract,
         ProgressPaymentCalculationConstants constants)
     {
+        var hasGuide = contract.ProgramType == TransportationProgramType.SpecialEducation;
         var input = item.Input with
         {
             ContractAmount = contract.ContractAmount,
             IsVatExempt = contract.VatExempt,
             DailyPrice = contract.TransportDailyPrice,
-            ProgramType = contract.ProgramType
+            ProgramType = contract.ProgramType,
+            GuideWorkDays = hasGuide ? item.Input.GuideWorkDays : 0,
+            GuideDailyPrice = hasGuide ? item.Input.GuideDailyPrice : 0m,
+            GuideDiscountAmount = hasGuide ? item.Input.GuideDiscountAmount : 0m,
+            GuidePriceDifference = hasGuide ? item.Input.GuidePriceDifference : 0m,
+            MinimumWageSupport = hasGuide ? item.Input.MinimumWageSupport : 0m
         };
 
         var calculation = ProgressPaymentCalculator.Calculate(input, constants);
@@ -157,12 +163,11 @@ public static class ProgressPaymentPropagationService
         {
             WorkDays = route.TransportWorkDays,
             DailyPrice = route.DailyPrice,
-            GuideWorkDays = route.GuideWorkDays,
+            GuideWorkDays = route.ProgramType == TransportationProgramType.BasicOrSecondary ? 0 : route.GuideWorkDays,
             GuideDailyPrice = route.ProgramType == TransportationProgramType.BasicOrSecondary
                 ? 0m
                 : route.GuideDailyPrice,
             ProgramType = route.ProgramType,
-            GuideWorkDays = route.ProgramType == TransportationProgramType.BasicOrSecondary ? 0 : route.GuideWorkDays,
             GuideDiscountAmount = route.ProgramType == TransportationProgramType.BasicOrSecondary ? 0m : item.Input.GuideDiscountAmount,
             GuidePriceDifference = route.ProgramType == TransportationProgramType.BasicOrSecondary ? 0m : item.Input.GuidePriceDifference,
             MinimumWageSupport = route.ProgramType == TransportationProgramType.BasicOrSecondary ? 0m : item.Input.MinimumWageSupport
