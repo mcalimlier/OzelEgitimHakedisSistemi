@@ -17,9 +17,17 @@ public sealed class ProgressPaymentCalculator
     public const decimal VatRate = TransportVatRate;
     public const decimal WithholdingRate = TransportWithholdingRate;
 
-    public static ProgressPaymentCalculation Calculate(ProgressPaymentInput input)
+    public static ProgressPaymentCalculation Calculate(ProgressPaymentInput input) =>
+        Calculate(input, ProgressPaymentCalculationConstants.Defaults);
+
+    public static ProgressPaymentCalculation Calculate(
+        ProgressPaymentInput input,
+        ProgressPaymentCalculationConstants constants)
     {
         ArgumentNullException.ThrowIfNull(input);
+        ArgumentNullException.ThrowIfNull(constants);
+        if (!constants.TryValidate(out var constantsError))
+            throw new ArgumentOutOfRangeException(nameof(constants), constantsError);
 
         if (input.WorkDays < 0 || input.GuideWorkDays < 0)
             throw new ArgumentOutOfRangeException(nameof(input), "İş günü negatif olamaz.");
@@ -67,17 +75,17 @@ public sealed class ProgressPaymentCalculator
         var totalAmount = transportNetAmount + guideNetAmount;
 
         var transportVat = input.IncludeVat
-            ? transportNetAmount * TransportVatRate
+            ? transportNetAmount * constants.TransportVatRate
             : 0m;
         var guideVat = input.IncludeVat
-            ? guideNetAmount * GuideVatRate
+            ? guideNetAmount * constants.GuideVatRate
             : 0m;
 
         var transportWithholding = input.IncludeVat
-            ? transportVat * TransportWithholdingShare
+            ? transportVat * constants.TransportWithholdingShare
             : 0m;
         var guideWithholding = input.IncludeVat
-            ? guideVat * GuideWithholdingShare
+            ? guideVat * constants.GuideWithholdingShare
             : 0m;
 
         var vat = transportVat + guideVat;
@@ -107,7 +115,7 @@ public sealed class ProgressPaymentCalculator
             Math.Max(
                 0m,
                 input.PriceDifference + input.GuidePriceDifference)
-            * AdditionalGuaranteeRate;
+            * constants.AdditionalGuaranteeRate;
 
         // Excel AE = M+V+Y+Z+AA+AB+AC+AD.
         var totalDeductions =
@@ -155,6 +163,7 @@ public sealed class ProgressPaymentCalculator
             transportVat,
             guideVat,
             transportWithholding,
-            guideWithholding);
+            guideWithholding,
+            AppliedConstants: constants);
     }
 }

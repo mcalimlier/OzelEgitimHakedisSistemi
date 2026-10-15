@@ -246,6 +246,8 @@ public sealed class OfficialDocumentOutputTests
             Assert.Equal("Bu Hakedişin Tutarı ( C - D )", GetCellTextAt(paymentPage, 120d, 322d));
             Assert.Contains("Hakediş No : 2", paymentText);
             Assert.Contains("KESİNTİLER VE MAHSUPLAR", paymentText);
+            Assert.Contains("KDV (taşıma %10 + rehber %20)", paymentText);
+            Assert.Contains("KDV Tevkifatı (taşıma %50; rehber %90)", paymentText);
 
             var serviceReport = Assert.Single(
                 outputs.Where(output => output.Kind == OehsOfficialDocumentKind.HizmetIsleriHakedisRaporu));
@@ -258,6 +260,8 @@ public sealed class OfficialDocumentOutputTests
             Assert.Contains("Tescile Dahil Değil", serviceReportText);
             Assert.Contains("Avans verilmeyecektir.", serviceReportText);
             Assert.Contains("Yoktur.", serviceReportText);
+            Assert.Contains("M.Y.H.B.Y. Örnek No: 5", serviceReportText);
+            Assert.DoesNotContain("M.Y.H.B.Y. Örnek No: 4", serviceReportText);
 
             var acceptanceOutputForMapping = Assert.Single(
                 outputs.Where(output => output.Kind == OehsOfficialDocumentKind.KabulTutanagi));

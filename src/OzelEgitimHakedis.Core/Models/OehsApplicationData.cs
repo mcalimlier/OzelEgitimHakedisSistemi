@@ -5,7 +5,9 @@ public sealed record OehsApplicationData(
     IReadOnlyList<RouteData> Routes,
     IReadOnlyList<Contractor> Contractors,
     IReadOnlyList<ProgressPaymentHistoryData>? ProgressPayments = null,
-    IReadOnlyList<ContractDraftData>? Contracts = null)
+    IReadOnlyList<ContractDraftData>? Contracts = null,
+    ProgressPaymentCalculationConstants? CalculationConstants = null,
+    IReadOnlyList<ProgressPaymentCalculationConstantsChange>? CalculationConstantsHistory = null)
 {
     public static OehsApplicationData Empty =>
         new(null, Array.Empty<RouteData>(), Array.Empty<Contractor>(), null, Array.Empty<ContractDraftData>());

@@ -38,6 +38,9 @@ public partial class MainWindow : Window
     private Guid? _historyCorrectionTargetId;
     private HistoryCorrectionSection _historyCorrectionSection;
     private readonly OehsApplicationDataStore _dataStore = new();
+    private ProgressPaymentCalculationConstants _calculationConstants =
+        ProgressPaymentCalculationConstants.Defaults;
+    private List<ProgressPaymentCalculationConstantsChange> _calculationConstantsHistory = new();
     private readonly ProgressPaymentArchiveStore _archiveStore = new();
     private readonly ObservableCollection<ArchiveRow> _archiveRows = new();
     private Guid? _lastCalculatedHistoryId;
@@ -95,6 +98,7 @@ public partial class MainWindow : Window
         OutputTenderListBox.ItemsSource = _contracts;
         OehsFreshStartService.EnsureFreshStart();
         LoadPersistedData();
+        PopulateCalculationConstantsPanel();
 
         UpdateContractSelectors();
         if (_routes.Count > 0)
@@ -392,6 +396,137 @@ public partial class MainWindow : Window
             $"Toplam kesinti: {FormatMoney(latest.Calculation.TotalDeductions)}";
     }
 
+    private void PopulateCalculationConstantsPanel()
+    {
+        if (TransportVatRateTextBox is null)
+            return;
+        TransportVatRateTextBox.Text = FormatPercentageInput(_calculationConstants.TransportVatRate);
+        GuideVatRateTextBox.Text = FormatPercentageInput(_calculationConstants.GuideVatRate);
+        TransportWithholdingShareTextBox.Text = FormatPercentageInput(_calculationConstants.TransportWithholdingShare);
+        GuideWithholdingShareTextBox.Text = FormatPercentageInput(_calculationConstants.GuideWithholdingShare);
+        StampTaxRateTextBox.Text = FormatPercentageInput(_calculationConstants.StampTaxRate);
+        AdditionalGuaranteeRateTextBox.Text = FormatPercentageInput(_calculationConstants.AdditionalGuaranteeRate);
+        UpdateCalculationConstantsAuditDisplay();
+    }
+
+    private static string FormatPercentageInput(decimal fraction) =>
+        (fraction * 100m).ToString("0.###", CultureInfo.CurrentCulture);
+
+    private static bool TryParsePercentageInput(string? text, out decimal fraction)
+    {
+        fraction = 0m;
+        if (!TryParseDecimal(text, out var percent) || percent < 0m || percent > 100m)
+            return false;
+        fraction = percent / 100m;
+        return true;
+    }
+
+    private void UpdateCalculationConstantsAuditDisplay()
+    {
+        if (CalculationConstantsAuditTextBlock is null)
+            return;
+        if (_calculationConstantsHistory.Count == 0)
+        {
+            CalculationConstantsAuditTextBlock.Text =
+                "Henüz sabit değişikliği kaydedilmedi. Başlangıç değerleri kaynak Excel'deki oranlardır; mevzuat uygunluğu teyidi değildir.";
+            return;
+        }
+
+        CalculationConstantsAuditTextBlock.Text = string.Join(
+            Environment.NewLine + Environment.NewLine,
+            _calculationConstantsHistory.OrderByDescending(x => x.ChangedAtUtc).Take(5).Select(x =>
+                $"{x.ChangedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm", CultureInfo.CurrentCulture)} • {x.ChangedBy}" +
+                $"{Environment.NewLine}Gerekçe: {x.Reason}" +
+                $"{Environment.NewLine}Taşıma KDV: %{FormatPercentageInput(x.Previous.TransportVatRate)} → %{FormatPercentageInput(x.Current.TransportVatRate)}" +
+                $"; Rehber KDV: %{FormatPercentageInput(x.Previous.GuideVatRate)} → %{FormatPercentageInput(x.Current.GuideVatRate)}" +
+                $"{Environment.NewLine}Taşıma tevkifat payı: %{FormatPercentageInput(x.Previous.TransportWithholdingShare)} → %{FormatPercentageInput(x.Current.TransportWithholdingShare)}" +
+                $"; Rehber tevkifat payı: %{FormatPercentageInput(x.Previous.GuideWithholdingShare)} → %{FormatPercentageInput(x.Current.GuideWithholdingShare)}" +
+                $"{Environment.NewLine}Damga vergisi: %{FormatPercentageInput(x.Previous.StampTaxRate)} → %{FormatPercentageInput(x.Current.StampTaxRate)}" +
+                $"; Ek kesin teminat: %{FormatPercentageInput(x.Previous.AdditionalGuaranteeRate)} → %{FormatPercentageInput(x.Current.AdditionalGuaranteeRate)}"));
+    }
+
+    private void SaveCalculationConstantsButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (!TryParsePercentageInput(TransportVatRateTextBox.Text, out var transportVat) ||
+            !TryParsePercentageInput(GuideVatRateTextBox.Text, out var guideVat) ||
+            !TryParsePercentageInput(TransportWithholdingShareTextBox.Text, out var transportWithholding) ||
+            !TryParsePercentageInput(GuideWithholdingShareTextBox.Text, out var guideWithholding) ||
+            !TryParsePercentageInput(StampTaxRateTextBox.Text, out var stampTax) ||
+            !TryParsePercentageInput(AdditionalGuaranteeRateTextBox.Text, out var additionalGuarantee))
+        {
+            MessageBox.Show("Bütün oranları yüzde olarak girin. Her alan %0 ile %100 arasında olmalıdır (ör. 10 veya 0,948).",
+                "OEHS — Sabit Doğrulama", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        var changedBy = CalculationConstantsChangedByTextBox.Text.Trim();
+        var reason = CalculationConstantsReasonTextBox.Text.Trim();
+        if (changedBy.Length == 0 || reason.Length < 5)
+        {
+            MessageBox.Show("Sabit değişikliğini kaydetmek için işlemi yapan kişinin adını ve en az 5 karakterlik gerekçeyi girin.",
+                "OEHS — Değişiklik Kaydı", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        var proposed = new ProgressPaymentCalculationConstants(
+            transportVat, guideVat, transportWithholding, guideWithholding, stampTax, additionalGuarantee);
+        if (!proposed.TryValidate(out var validationError))
+        {
+            MessageBox.Show(validationError, "OEHS — Sabit Doğrulama", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+        if (proposed == _calculationConstants)
+        {
+            MessageBox.Show("Girilen sabitlerde değişiklik yok. Yeni kayıt oluşturulmadı.", "OEHS",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var previous = _calculationConstants;
+        var confirmation = MessageBox.Show(
+            "Hesaplama sabitleri değiştirilecek:" + Environment.NewLine + Environment.NewLine +
+            $"Taşıma KDV: %{FormatPercentageInput(previous.TransportVatRate)} → %{FormatPercentageInput(proposed.TransportVatRate)}" + Environment.NewLine +
+            $"Rehber KDV: %{FormatPercentageInput(previous.GuideVatRate)} → %{FormatPercentageInput(proposed.GuideVatRate)}" + Environment.NewLine +
+            $"Taşıma tevkifat payı: %{FormatPercentageInput(previous.TransportWithholdingShare)} → %{FormatPercentageInput(proposed.TransportWithholdingShare)}" + Environment.NewLine +
+            $"Rehber tevkifat payı: %{FormatPercentageInput(previous.GuideWithholdingShare)} → %{FormatPercentageInput(proposed.GuideWithholdingShare)}" + Environment.NewLine +
+            $"Damga vergisi: %{FormatPercentageInput(previous.StampTaxRate)} → %{FormatPercentageInput(proposed.StampTaxRate)}" + Environment.NewLine +
+            $"Ek kesin teminat: %{FormatPercentageInput(previous.AdditionalGuaranteeRate)} → %{FormatPercentageInput(proposed.AdditionalGuaranteeRate)}" + Environment.NewLine + Environment.NewLine +
+            $"İşlemi yapan: {changedBy}" + Environment.NewLine + $"Gerekçe: {reason}" + Environment.NewLine + Environment.NewLine +
+            "Onaylanırsa yeni sabitler kalıcı kaydedilecek ve yeni hesaplamalarda kullanılacak. Mevcut geçmiş/arşiv tutarları denetim izi korunarak otomatik değiştirilmeyecek.",
+            "OEHS — Hesaplama Sabitleri Onayı", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+        if (confirmation != MessageBoxResult.Yes)
+            return;
+
+        _calculationConstants = proposed;
+        _calculationConstantsHistory.Add(new ProgressPaymentCalculationConstantsChange(
+            DateTime.UtcNow, changedBy, reason, previous, proposed));
+        if (!SavePersistedData())
+        {
+            _calculationConstants = previous;
+            _calculationConstantsHistory.RemoveAt(_calculationConstantsHistory.Count - 1);
+            PopulateCalculationConstantsPanel();
+            return;
+        }
+
+        PopulateCalculationConstantsPanel();
+        CalculationConstantsReasonTextBox.Clear();
+        MessageBox.Show("Sabitler kaydedildi. Yeni hesaplamalar güncel sabitleri kullanacak; geçmiş hakedişler yalnızca açık düzeltme/yeniden hesaplama işleminde değişir.",
+            "OEHS — Sabitler Kaydedildi", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    private void ResetCalculationConstantsFieldsButton_Click(object sender, RoutedEventArgs e)
+    {
+        var defaults = ProgressPaymentCalculationConstants.Defaults;
+        TransportVatRateTextBox.Text = FormatPercentageInput(defaults.TransportVatRate);
+        GuideVatRateTextBox.Text = FormatPercentageInput(defaults.GuideVatRate);
+        TransportWithholdingShareTextBox.Text = FormatPercentageInput(defaults.TransportWithholdingShare);
+        GuideWithholdingShareTextBox.Text = FormatPercentageInput(defaults.GuideWithholdingShare);
+        StampTaxRateTextBox.Text = FormatPercentageInput(defaults.StampTaxRate);
+        AdditionalGuaranteeRateTextBox.Text = FormatPercentageInput(defaults.AdditionalGuaranteeRate);
+        MessageBox.Show("Kaynak Excel başlangıç değerleri forma yüklendi; kaydetmek için yine gerekçeli onay gerekir.",
+            "OEHS — Başlangıç Değerleri", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
     private void NavigationButton_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not System.Windows.Controls.Button button)
@@ -432,8 +567,9 @@ public partial class MainWindow : Window
         ReportsPanel.Visibility = page == "Reports" ? Visibility.Visible : Visibility.Collapsed;
         AcceptancePanel.Visibility = page == "Acceptance" ? Visibility.Visible : Visibility.Collapsed;
         SettingsPanel.Visibility = page == "Settings" ? Visibility.Visible : Visibility.Collapsed;
+        CalculationConstantsPanel.Visibility = page == "Constants" ? Visibility.Visible : Visibility.Collapsed;
         PlaceholderPanel.Visibility = page is "Home" or "Contract" or "Progress" or "Lines" or "Contractors"
-            or "History" or "Archives" or "Summary" or "Reports" or "Acceptance" or "Settings"
+            or "History" or "Archives" or "Summary" or "Reports" or "Acceptance" or "Settings" or "Constants"
             ? Visibility.Collapsed
             : Visibility.Visible;
 
@@ -449,6 +585,7 @@ public partial class MainWindow : Window
             "Reports" => "Çıktılar",
             "Acceptance" => "Kabul Tutanağı",
             "Settings" => "Ayarlar",
+            "Constants" => "Hesaplama Sabitleri",
             _ => "Ana Ekran"
         };
 
@@ -473,7 +610,10 @@ public partial class MainWindow : Window
             NavProgress, NavReports, NavHistory, NavArchives, NavAcceptance, NavSettings
         })
         {
-            button.Uid = button.Tag?.ToString() == page ? "Active" : string.Empty;
+            var buttonPage = button.Tag?.ToString();
+            button.Uid = buttonPage == page || (page == "Constants" && buttonPage == "Settings")
+                ? "Active"
+                : string.Empty;
         }
     }
 
@@ -993,7 +1133,7 @@ public partial class MainWindow : Window
 
         try
         {
-            calculation = ProgressPaymentCalculator.Calculate(input);
+            calculation = ProgressPaymentCalculator.Calculate(input, _calculationConstants);
             return true;
         }
         catch (Exception ex) when (ex is ArgumentException or OverflowException)
@@ -1319,7 +1459,7 @@ public partial class MainWindow : Window
 
         try
         {
-            calculation = ProgressPaymentCalculator.Calculate(input);
+            calculation = ProgressPaymentCalculator.Calculate(input, _calculationConstants);
             return true;
         }
         catch (Exception ex) when (ex is ArgumentException or OverflowException)
@@ -1531,7 +1671,7 @@ public partial class MainWindow : Window
             // Recalculate from saved inputs before asking permission to replace the archive.
             var recalculatedPayment = updatedArchive.ProgressPayment with
             {
-                Calculation = ProgressPaymentCalculator.Calculate(updatedArchive.ProgressPayment.Input)
+                Calculation = ProgressPaymentCalculator.Calculate(updatedArchive.ProgressPayment.Input, _calculationConstants)
             };
             updatedArchive = updatedArchive with
             {
@@ -1835,7 +1975,7 @@ public partial class MainWindow : Window
         var payment = archive.ProgressPayment with
         {
             Input = input,
-            Calculation = ProgressPaymentCalculator.Calculate(input),
+            Calculation = ProgressPaymentCalculator.Calculate(input, _calculationConstants),
             WorkName = updatedContract.WorkName,
             TenderNumber = updatedContract.TenderNumber,
             ContractNumber = updatedContract.ContractNumber,
@@ -1865,7 +2005,7 @@ public partial class MainWindow : Window
                 return previous with
                 {
                     Input = previousInput,
-                    Calculation = ProgressPaymentCalculator.Calculate(previousInput),
+                    Calculation = ProgressPaymentCalculator.Calculate(previousInput, _calculationConstants),
                     WorkName = updatedContract.WorkName,
                     TenderNumber = updatedContract.TenderNumber,
                     ContractNumber = updatedContract.ContractNumber,
@@ -1932,7 +2072,7 @@ public partial class MainWindow : Window
         var payment = archive.ProgressPayment with
         {
             Input = input,
-            Calculation = ProgressPaymentCalculator.Calculate(input),
+            Calculation = ProgressPaymentCalculator.Calculate(input, _calculationConstants),
             RouteNumber = routeNumber,
             RouteName = routeName
         };
@@ -3065,6 +3205,18 @@ public partial class MainWindow : Window
         try
         {
             var data = _dataStore.Load();
+            var loadedConstants = data.CalculationConstants ?? ProgressPaymentCalculationConstants.Defaults;
+            if (!loadedConstants.TryValidate(out var constantsError))
+            {
+                throw new OehsApplicationDataStoreException(
+                    "Kaydedilmiş hesaplama sabitleri geçersiz. Güvenlik nedeniyle kayıt ve hesaplama durduruldu: " + constantsError,
+                    new InvalidDataException(constantsError));
+            }
+
+            _calculationConstants = loadedConstants;
+            _calculationConstantsHistory =
+                (data.CalculationConstantsHistory ?? Array.Empty<ProgressPaymentCalculationConstantsChange>()).ToList();
+
             _contracts.Clear();
             var persistedContracts = data.Contracts ?? Array.Empty<ContractDraftData>();
             if (persistedContracts.Count > 0)
@@ -3229,7 +3381,9 @@ public partial class MainWindow : Window
                 x.Name, x.TaxOrIdentityNumber, x.Address, x.Phone, x.Email,
                 x.BankAccountNumber, x.ContactPerson)).ToArray(),
             _progressHistory.ToArray(),
-            _contracts.ToArray());
+            _contracts.ToArray(),
+            _calculationConstants,
+            _calculationConstantsHistory.ToArray());
 
         try
         {
@@ -3488,7 +3642,7 @@ public partial class MainWindow : Window
 
     private void RecalculateHistoryItem(int index, ProgressPaymentInput input, ProgressPaymentHistoryData metadataSource)
     {
-        var result = ProgressPaymentCalculator.Calculate(input);
+        var result = ProgressPaymentCalculator.Calculate(input, _calculationConstants);
         _progressHistory[index] = metadataSource with
         {
             Input = input,
@@ -3799,7 +3953,7 @@ public partial class MainWindow : Window
             CalculationStatusTextBlock.FontWeight = FontWeights.SemiBold;
             CalculationStatusTextBlock.Text = ProgressValidationMessageTextBlock.Text;
 
-            var result = ProgressPaymentCalculator.Calculate(input);
+            var result = ProgressPaymentCalculator.Calculate(input, _calculationConstants);
 
             historyItem = historyItem with { Calculation = result };
 

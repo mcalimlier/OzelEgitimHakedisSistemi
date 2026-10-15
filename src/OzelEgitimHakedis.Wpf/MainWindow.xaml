@@ -1338,17 +1338,83 @@
 
 </Grid>
 
-<Grid x:Name="SettingsPanel" Visibility="Collapsed">
-                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0"><StackPanel>
-<TextBlock Text="AYARLAR" Style="{StaticResource PageTitle}"/><TextBlock Text="OEHS uygulamasının temel çalışma tercihlerini yönetin." Style="{StaticResource PageSubtitle}"/>
-<Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-<Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,8,0"><StackPanel><TextBlock Text="UYGULAMA" Style="{StaticResource CardTitle}"/><TextBlock Text="Arayüz ve çalışma tercihleri" Style="{StaticResource CardSubtitle}" Margin="0,0,0,10"/><TextBlock Text="TEMA" Style="{StaticResource FieldLabel}"/><Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="8" Margin="0,6,0,8.5"><TextBlock Text="OEHS Lacivert / Altın" Foreground="White" FontWeight="SemiBold"/></Border><TextBlock Text="PARA BİRİMİ" Style="{StaticResource FieldLabel}"/><Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="8" Margin="0,6,0,0"><TextBlock Text="Türk Lirası (₺)" Foreground="White" FontWeight="SemiBold"/></Border></StackPanel></Border>
-<Border Grid.Column="1" Style="{StaticResource Card}" Margin="8,0,0,0"><StackPanel><TextBlock Text="SİSTEM DURUMU" Style="{StaticResource CardTitle}"/><TextBlock Text="Uygulama altyapısı" Style="{StaticResource CardSubtitle}" Margin="0,0,0,10"/><Border Background="#0A2A49" CornerRadius="8" Padding="8.5" Margin="0,0,0,6.5"><StackPanel><TextBlock Text="HESAPLAMA MOTORU" Foreground="#91ABC0" FontSize="10" FontWeight="Bold"/><TextBlock Text="HAZIR" Foreground="{StaticResource Gold500Brush}" FontSize="11.5" FontWeight="Bold" Margin="0,3,0,0"/></StackPanel></Border><Border Background="#0A2A49" CornerRadius="8" Padding="8.5"><StackPanel><TextBlock Text="VERİ KATMANI" Foreground="#91ABC0" FontSize="10" FontWeight="Bold"/><TextBlock Text="HAZIR • YEDEKLİ" Foreground="{StaticResource Gold500Brush}" FontSize="11.5" FontWeight="Bold" Margin="0,3,0,0"/></StackPanel></Border></StackPanel></Border>
-</Grid></StackPanel>
-                            </ScrollViewer>
-</Grid>
+            <Grid x:Name="SettingsPanel" Visibility="Collapsed">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0">
+                    <StackPanel>
+                        <TextBlock Text="AYARLAR" Style="{StaticResource PageTitle}"/>
+                        <TextBlock Text="OEHS uygulama tercihleri ve hesaplama yapılandırması." Style="{StaticResource PageSubtitle}"/>
+                        <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,8,0"><StackPanel>
+                                <TextBlock Text="UYGULAMA" Style="{StaticResource CardTitle}"/>
+                                <TextBlock Text="Arayüz ve çalışma tercihleri" Style="{StaticResource CardSubtitle}" Margin="0,0,0,10"/>
+                                <TextBlock Text="TEMA" Style="{StaticResource FieldLabel}"/>
+                                <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="8" Margin="0,6,0,8.5"><TextBlock Text="OEHS Lacivert / Altın" Foreground="White" FontWeight="SemiBold"/></Border>
+                                <TextBlock Text="PARA BİRİMİ" Style="{StaticResource FieldLabel}"/>
+                                <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="8" Margin="0,6,0,0"><TextBlock Text="Türk Lirası (₺)" Foreground="White" FontWeight="SemiBold"/></Border>
+                                <Button Content="HESAPLAMA SABİTLERİNİ YÖNET" Tag="Constants" Click="NavigationButton_Click" Style="{StaticResource ModernButton}" Height="38" Margin="0,14,0,0"/>
+                                <TextBlock Text="Vergi, tevkifat, damga vergisi ve ek kesin teminat oranları ayrı ekrandan yönetilir." Foreground="#C5D7E7" FontSize="10.5" TextWrapping="Wrap" Margin="0,8,0,0"/>
+                            </StackPanel></Border>
+                            <Border Grid.Column="1" Style="{StaticResource Card}" Margin="8,0,0,0"><StackPanel>
+                                <TextBlock Text="SİSTEM DURUMU" Style="{StaticResource CardTitle}"/>
+                                <TextBlock Text="Uygulama altyapısı" Style="{StaticResource CardSubtitle}" Margin="0,0,0,10"/>
+                                <Border Background="#0A2A49" CornerRadius="8" Padding="8.5" Margin="0,0,0,6.5"><StackPanel>
+                                    <TextBlock Text="HESAPLAMA MOTORU" Foreground="#91ABC0" FontSize="10" FontWeight="Bold"/>
+                                    <TextBlock Text="KAYITLI SABİTLERİ KULLANIYOR" Foreground="{StaticResource Gold500Brush}" FontSize="11.5" FontWeight="Bold" Margin="0,3,0,0"/>
+                                </StackPanel></Border>
+                                <Border Background="#0A2A49" CornerRadius="8" Padding="8.5"><StackPanel>
+                                    <TextBlock Text="VERİ KATMANI" Foreground="#91ABC0" FontSize="10" FontWeight="Bold"/>
+                                    <TextBlock Text="YEDEKLİ • DEĞİŞİKLİK GEÇMİŞLİ" Foreground="{StaticResource Gold500Brush}" FontSize="11.5" FontWeight="Bold" Margin="0,3,0,0"/>
+                                </StackPanel></Border>
+                            </StackPanel></Border>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
 
-                        <Grid x:Name="PlaceholderPanel" Visibility="Collapsed">
+            <Grid x:Name="CalculationConstantsPanel" Visibility="Collapsed">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0">
+                    <StackPanel>
+                        <TextBlock Text="HESAPLAMA SABİTLERİ" Style="{StaticResource PageTitle}"/>
+                        <TextBlock Text="Her oran değişikliği kullanıcı onayı, gerekçe ve denetim kaydıyla saklanır." Style="{StaticResource PageSubtitle}"/>
+                        <Border Style="{StaticResource PremiumPanel}" Padding="12" Margin="0,0,0,10"><StackPanel>
+                            <TextBlock Text="ÖNEMLİ" Foreground="#A86A00" FontSize="11" FontWeight="Bold"/>
+                            <TextBlock Text="İlk değerler kaynak Excel'deki oranlardır; kendiliğinden mevzuata uygunluk teyidi anlamına gelmez. Yeni hesaplamalar en güncel kaydedilmiş sabitleri kullanır. Geçmiş ödemeler denetim izi korunarak otomatik değiştirilmez; açıkça yeniden hesaplanmaları gerekir." Foreground="{StaticResource Text900Brush}" FontSize="11.5" TextWrapping="Wrap" Margin="0,5,0,0"/>
+                        </StackPanel></Border>
+                        <Border Style="{StaticResource Card}" Padding="14" Margin="0,0,0,10">
+                            <TextBlock Text="ORANLAR (YÜZDE OLARAK GİRİN)" Style="{StaticResource CardTitle}"/>
+                            <TextBlock Text="Örnek: 10 = %10, 0,948 = %0,948. Her alan %0–%100 aralığında olmalıdır." Style="{StaticResource CardSubtitle}" Margin="0,4,0,10"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="260"/><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Taşıma KDV oranı (%)" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,8"/><TextBox x:Name="TransportVatRateTextBox" Grid.Row="0" Grid.Column="1" Style="{StaticResource PremiumFieldTextBox}" Margin="4"/><TextBlock Grid.Row="0" Grid.Column="2" Text="Kaynak Excel başlangıcı: %10" Style="{StaticResource CardSubtitle}" VerticalAlignment="Center" Margin="8,0"/>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Rehber KDV oranı (%)" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,8"/><TextBox x:Name="GuideVatRateTextBox" Grid.Row="1" Grid.Column="1" Style="{StaticResource PremiumFieldTextBox}" Margin="4"/><TextBlock Grid.Row="1" Grid.Column="2" Text="Kaynak Excel başlangıcı: %20" Style="{StaticResource CardSubtitle}" VerticalAlignment="Center" Margin="8,0"/>
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Taşıma KDV tevkifat payı (%)" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,8"/><TextBox x:Name="TransportWithholdingShareTextBox" Grid.Row="2" Grid.Column="1" Style="{StaticResource PremiumFieldTextBox}" Margin="4"/><TextBlock Grid.Row="2" Grid.Column="2" Text="Kaynak Excel başlangıcı: %50 (5/10)" Style="{StaticResource CardSubtitle}" VerticalAlignment="Center" Margin="8,0"/>
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Rehber KDV tevkifat payı (%)" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,8"/><TextBox x:Name="GuideWithholdingShareTextBox" Grid.Row="3" Grid.Column="1" Style="{StaticResource PremiumFieldTextBox}" Margin="4"/><TextBlock Grid.Row="3" Grid.Column="2" Text="Kaynak Excel başlangıcı: %90 (9/10)" Style="{StaticResource CardSubtitle}" VerticalAlignment="Center" Margin="8,0"/>
+                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Damga vergisi oranı (%)" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,8"/><TextBox x:Name="StampTaxRateTextBox" Grid.Row="4" Grid.Column="1" Style="{StaticResource PremiumFieldTextBox}" Margin="4"/><TextBlock Grid.Row="4" Grid.Column="2" Text="Kaynak Excel başlangıcı: %0,948 (‰9,48)" Style="{StaticResource CardSubtitle}" VerticalAlignment="Center" Margin="8,0"/>
+                                <TextBlock Grid.Row="5" Grid.Column="0" Text="Ek kesin teminat oranı (%)" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,8"/><TextBox x:Name="AdditionalGuaranteeRateTextBox" Grid.Row="5" Grid.Column="1" Style="{StaticResource PremiumFieldTextBox}" Margin="4"/><TextBlock Grid.Row="5" Grid.Column="2" Text="Kaynak Excel başlangıcı: %6" Style="{StaticResource CardSubtitle}" VerticalAlignment="Center" Margin="8,0"/>
+                            </Grid>
+                        </Border>
+                        <Border Style="{StaticResource Card}" Padding="14" Margin="0,0,0,10">
+                            <TextBlock Text="ONAY VE DEĞİŞİKLİK KAYDI" Style="{StaticResource CardTitle}"/>
+                            <Grid Margin="0,8,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="İşlemi yapan" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,5"/><TextBox x:Name="CalculationConstantsChangedByTextBox" Grid.Row="0" Grid.Column="1" Style="{StaticResource PremiumFieldTextBox}" Margin="4"/>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Değişiklik gerekçesi" Style="{StaticResource FieldLabel}" VerticalAlignment="Top" Margin="0,8"/><TextBox x:Name="CalculationConstantsReasonTextBox" Grid.Row="1" Grid.Column="1" Style="{StaticResource PremiumFieldTextBox}" Margin="4" MinHeight="54" TextWrapping="Wrap" AcceptsReturn="True" VerticalContentAlignment="Top"/>
+                            </Grid>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+                                <Button Content="KAYNAK EXCEL BAŞLANGIÇ DEĞERLERİ" Click="ResetCalculationConstantsFieldsButton_Click" Style="{StaticResource SecondaryButton}" Height="36" Margin="0,0,8,0"/>
+                                <Button Content="DEĞİŞİKLİĞİ ONAYLA VE KAYDET" Click="SaveCalculationConstantsButton_Click" Style="{StaticResource ModernButton}" Height="36"/>
+                                <Button Content="AYARLARA DÖN" Tag="Settings" Click="NavigationButton_Click" Style="{StaticResource SecondaryButton}" Height="36" Margin="8,0,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Card}" Padding="14" Margin="0,0,0,12"><StackPanel>
+                            <TextBlock Text="SON SABİT DEĞİŞİKLİKLERİ" Style="{StaticResource CardTitle}"/>
+                            <TextBlock x:Name="CalculationConstantsAuditTextBlock" Text="Yükleniyor..." Foreground="{StaticResource Text900Brush}" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0"/>
+                        </StackPanel></Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
+<Grid x:Name="PlaceholderPanel" Visibility="Collapsed">
                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0">
                             <StackPanel>
                                 <TextBlock x:Name="PlaceholderTitleTextBlock" Text="Modül" Style="{StaticResource PageTitle}"/>

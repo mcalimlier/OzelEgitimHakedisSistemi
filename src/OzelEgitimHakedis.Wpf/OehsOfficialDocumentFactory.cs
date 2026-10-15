@@ -168,7 +168,7 @@ internal static class OehsOfficialDocumentFactory
         {
             ("D", "Bir Önceki Hakedişlerin Toplam Tutarı", c.ReportTotals.PreviousTotal, White, 29),
             ("E", "Bu Hakedişin Tutarı ( C - D )", c.ReportTotals.CurrentTotal, White, 29),
-            ("F", "KDV  %10 + %20", c.Calculation.Vat, White, 29),
+            ("F", BuildVatRateLabel(c.Calculation), c.Calculation.Vat, White, 29),
             ("G", "Tahakkuk Tutarı", c.ReportTotals.CurrentTotal + c.Calculation.Vat, TotalGray, 32)
         };
         foreach (var row in summaryRows)
@@ -184,7 +184,7 @@ internal static class OehsOfficialDocumentFactory
         {
             ("a)", "Gelir / Kurumlar Vergisi ( E x % .. )", 0m, 29),
             ("b)", "Damga Vergisi  ( E - g x % 9,48 )", c.Calculation.StampTax, 29),
-            ("c)", "KDV Tevkifatı  ( 5/10 + 9/10 kesilen )", c.Calculation.Withholding, 29),
+            ("c)", BuildWithholdingLabel(c.Calculation), c.Calculation.Withholding, 29),
             ("d)", "Sosyal Sigortalar Kurumu Kesintisi", c.Calculation.Deductions.SocialSecurityDebt, 29),
             ("e)", "İdare Makinesi Kiraları", 0m, 29),
             ("f)", "Gecikme Cezası", 0m, 29),
@@ -326,7 +326,7 @@ internal static class OehsOfficialDocumentFactory
             y += 15;
         }
 
-        AddSignatures(page, 878, c, "M.Y.H.B.Y. Örnek No: 4",
+        AddSignatures(page, 878, c, "M.Y.H.B.Y. Örnek No: 5",
             leftX: 100, leftWidth: 220, rightX: 480, rightWidth: 220,
             nameOffset: 40, roleOffset: 61, dateOffset: 121, directorOffset: 163, titleOffset: 181, footerY: 1080);
         return page;
@@ -525,6 +525,24 @@ internal static class OehsOfficialDocumentFactory
         AddText(page, context.ApproverRole, 270, y + titleOffset, 250, 22, 9.5, false, TextAlignment.Center);
         if (!string.IsNullOrWhiteSpace(footer))
             AddText(page, footer, 22, footerY, 330, 17, 8, false, TextAlignment.Left);
+    }
+
+    private static ProgressPaymentCalculationConstants AppliedConstants(ProgressPaymentCalculation calculation) =>
+        calculation.AppliedConstants ?? ProgressPaymentCalculationConstants.Defaults;
+
+    private static string FormatPercent(decimal fraction) =>
+        (fraction * 100m).ToString("0.###", Turkish);
+
+    private static string BuildVatRateLabel(ProgressPaymentCalculation calculation)
+    {
+        var rates = AppliedConstants(calculation);
+        return $"KDV (taşıma %{FormatPercent(rates.TransportVatRate)} + rehber %{FormatPercent(rates.GuideVatRate)})";
+    }
+
+    private static string BuildWithholdingLabel(ProgressPaymentCalculation calculation)
+    {
+        var rates = AppliedConstants(calculation);
+        return $"KDV Tevkifatı (taşıma %{FormatPercent(rates.TransportWithholdingShare)}; rehber %{FormatPercent(rates.GuideWithholdingShare)})";
     }
 
     private static string BuildWorkTitle(
