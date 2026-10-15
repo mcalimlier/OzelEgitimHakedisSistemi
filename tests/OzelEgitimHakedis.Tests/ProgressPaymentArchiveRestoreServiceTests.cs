@@ -150,6 +150,36 @@ public sealed class ProgressPaymentArchiveRestoreServiceTests
     }
 
     [Fact]
+    public void Restore_ShouldWarnWhenSameIdArchiveHasDifferentInputsWithoutOverwritingActivePayment()
+    {
+        var archive = Archive();
+        var active = archive.ProgressPayment;
+        var archiveInput = active.Input with { DailyPrice = active.Input.DailyPrice + 100m };
+        var changedSnapshot = active with
+        {
+            Input = archiveInput,
+            Calculation = ProgressPaymentCalculator.Calculate(archiveInput)
+        };
+        var changedArchive = archive with { ProgressPayment = changedSnapshot };
+        var current = new OehsApplicationData(
+            archive.Contract,
+            new[] { archive.Route },
+            new[] { archive.Contractor },
+            new[] { active },
+            new[] { archive.Contract });
+
+        var result = ProgressPaymentArchiveRestoreService.Restore(current, changedArchive);
+        var restored = Assert.Single(result.Data.ProgressPayments!);
+
+        Assert.Equal(active.Id, restored.Id);
+        Assert.Equal(active.Input, restored.Input);
+        Assert.False(result.AddedAnything);
+        Assert.Contains("UYARI:", result.Message, StringComparison.Ordinal);
+        Assert.Contains("aynı hakediş kimliğindeki", result.Message, StringComparison.Ordinal);
+        Assert.Contains("otomatik değiştirilmedi", result.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Restore_ShouldAllowSpecificContractPaymentWhenLegacyPaymentContractIsUnknown()
     {
         var archive = Archive();

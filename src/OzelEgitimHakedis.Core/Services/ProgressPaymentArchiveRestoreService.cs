@@ -118,8 +118,11 @@ public static class ProgressPaymentArchiveRestoreService
         var duplicateBusinessKeyPayment = payments.FirstOrDefault(x =>
             x.Id != archivePayment.Id && HasSamePaymentBusinessKey(x, archivePayment));
         var duplicatePaymentByBusinessKey = duplicateBusinessKeyPayment is not null;
-        var hasMaterialBusinessKeyConflict = duplicateBusinessKeyPayment is not null
-            && HasMaterialPaymentDifferences(duplicateBusinessKeyPayment, archivePayment);
+        var existingPaymentForConflict = duplicatePaymentById
+            ? payments[existingPaymentIndex]
+            : duplicateBusinessKeyPayment;
+        var hasMaterialBusinessKeyConflict = existingPaymentForConflict is not null
+            && HasMaterialPaymentDifferences(existingPaymentForConflict, archivePayment);
 
         var addedPayment = !duplicatePaymentById && !duplicatePaymentByBusinessKey;
         if (addedPayment)
@@ -152,10 +155,10 @@ public static class ProgressPaymentArchiveRestoreService
             message += " Hakediş kopyası eklenmedi: aynı ihale, hat, yüklenici, hakediş numarası ve dönem anahtarında kayıt zaten var.";
         }
 
-        if (hasMaterialBusinessKeyConflict && duplicateBusinessKeyPayment is not null)
+        if (hasMaterialBusinessKeyConflict && existingPaymentForConflict is not null)
         {
-            message += " UYARI: Aynı iş anahtarındaki aktif kayıt ile arşiv kaydının girdileri veya hesap sonuçları farklı. "
-                + $"Aktif net ödeme: {FormatMoney(duplicateBusinessKeyPayment.Calculation.NetPayable)}; "
+            message += " UYARI: Aynı hakediş kimliğindeki veya aynı iş anahtarındaki aktif kayıt ile arşiv kaydının girdileri ya da hesap sonuçları farklı. "
+                + $"Aktif net ödeme: {FormatMoney(existingPaymentForConflict.Calculation.NetPayable)}; "
                 + $"arşiv net ödeme: {FormatMoney(archivePayment.Calculation.NetPayable)}. "
                 + "Aktif kayıt otomatik değiştirilmedi; kayıtları karşılaştırmadan bu farkı onaylanmış kabul etmeyin.";
         }
