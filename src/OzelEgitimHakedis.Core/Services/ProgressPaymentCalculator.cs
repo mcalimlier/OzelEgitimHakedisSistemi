@@ -100,8 +100,8 @@ public sealed class ProgressPaymentCalculator
 
         // Excel AD:
         // AD = (K*9.48/1000) + (T*9.48/1000)
-        var transportStampTax = transportNetAmount * StampTaxRate;
-        var guideStampTax = guideNetAmount * StampTaxRate;
+        var transportStampTax = transportNetAmount * constants.StampTaxRate;
+        var guideStampTax = guideNetAmount * constants.StampTaxRate;
         var stampTax = transportStampTax + guideStampTax;
 
         // Kaynak XLSM Hesaplama!AC formülü: AC = I*6% + R*6%.
