@@ -80,7 +80,7 @@ jobs:
           $xaml = Get-Content ".\src\OzelEgitimHakedis.Wpf\MainWindow.xaml" -Raw
           $archiveTests = Get-Content ".\tests\OzelEgitimHakedis.Tests\ProgressPaymentArchiveStoreTests.cs" -Raw
           if (-not $code.Contains("değişiklikleri uygulansın mı?")) { throw "Archive edit confirmation prompt is missing." }
-          if (-not $code.Contains("Calculation = ProgressPaymentCalculator.Calculate(updatedArchive.ProgressPayment.Input)")) { throw "Archive edits must recalculate the payment from saved inputs before replacement." }
+          if (-not $code.Contains("Calculation = ProgressPaymentCalculator.Calculate(updatedArchive.ProgressPayment.Input, _calculationConstants)")) { throw "Archive edits must recalculate the payment from saved inputs using the current persisted calculation constants before replacement." }
           if (-not $code.Contains("_archiveStore.SaveRevision(_editingArchiveSourcePath, updatedArchive)")) { throw "Archive edits must create an immutable new revision and preserve prior revisions." }
           if (-not $code.Contains("private void ClearProgressEntryFields(bool clearTenderSelection = true)")) { throw "Archive and new-payment entry forms must clear after save/reset." }
           if ($code -notmatch 'UpdateAcceptanceView\(\);[\s\S]{0,320}ClearContractFormOnly\(\);') { throw "The contract input form must clear after a successful save and view refresh." }
