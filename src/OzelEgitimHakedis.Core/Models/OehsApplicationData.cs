@@ -27,7 +27,13 @@ public sealed record ContractDraftData(
     string ContractorTaxOrIdentityNumber = "",
     string BankAccountNumber = "",
     int ContractWorkDays = 0,
-    decimal TransportDailyPrice = 0m);
+    decimal TransportDailyPrice = 0m,
+    TransportationProgramType ProgramType = TransportationProgramType.SpecialEducation)
+{
+    public string DisplayText => string.IsNullOrWhiteSpace(ContractorName)
+        ? $"{TenderNumber} • {WorkName}"
+        : $"{TenderNumber} • {ContractorName} • {WorkName}";
+}
 
 public sealed record RouteData(
     string RouteNumber,
@@ -38,7 +44,8 @@ public sealed record RouteData(
     int TransportWorkDays = 0,
     string TenderNumber = "",
     string ContractorTaxOrIdentityNumber = "",
-    string ContractNumber = "");
+    string ContractNumber = "",
+    TransportationProgramType ProgramType = TransportationProgramType.SpecialEducation);
 
 public sealed record ProgressPaymentHistoryData(
     Guid Id,

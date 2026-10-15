@@ -14,7 +14,8 @@ public sealed record ProgressPaymentInput(
     int GuideWorkDays = 0,
     decimal GuideDailyPrice = 0m,
     decimal GuideDiscountAmount = 0m,
-    decimal GuidePriceDifference = 0m)
+    decimal GuidePriceDifference = 0m,
+    TransportationProgramType ProgramType = TransportationProgramType.SpecialEducation)
 {
     public bool IncludeVat => !IsVatExempt;
 }

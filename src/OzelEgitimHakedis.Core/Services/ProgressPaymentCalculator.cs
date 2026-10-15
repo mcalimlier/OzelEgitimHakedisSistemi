@@ -29,6 +29,25 @@ public sealed class ProgressPaymentCalculator
         if (!constants.TryValidate(out var constantsError))
             throw new ArgumentOutOfRangeException(nameof(constants), constantsError);
 
+        // Temel/ortaöğretim taşımasında rehber personel ve asgari ücret desteği
+        // hesaplama girdisi değildir. Eski arşivden gelse bile hesap sonucu kullanmaz.
+        if (input.ProgramType == TransportationProgramType.BasicOrSecondary)
+        {
+            input = input with
+            {
+                GuideWorkDays = 0,
+                GuideDailyPrice = 0m,
+                GuideDiscountAmount = 0m,
+                GuidePriceDifference = 0m,
+                MinimumWageSupport = 0m
+            };
+            constants = constants with
+            {
+                GuideVatRate = 0m,
+                GuideWithholdingShare = 0m
+            };
+        }
+
         if (input.WorkDays < 0 || input.GuideWorkDays < 0)
             throw new ArgumentOutOfRangeException(nameof(input), "İş günü negatif olamaz.");
 

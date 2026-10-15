@@ -127,7 +127,8 @@ public static class ProgressPaymentPropagationService
         {
             ContractAmount = contract.ContractAmount,
             IsVatExempt = contract.VatExempt,
-            DailyPrice = contract.TransportDailyPrice
+            DailyPrice = contract.TransportDailyPrice,
+            ProgramType = contract.ProgramType
         };
 
         var calculation = ProgressPaymentCalculator.Calculate(input, constants);
@@ -157,7 +158,14 @@ public static class ProgressPaymentPropagationService
             WorkDays = route.TransportWorkDays,
             DailyPrice = route.DailyPrice,
             GuideWorkDays = route.GuideWorkDays,
-            GuideDailyPrice = route.GuideDailyPrice
+            GuideDailyPrice = route.ProgramType == TransportationProgramType.BasicOrSecondary
+                ? 0m
+                : route.GuideDailyPrice,
+            ProgramType = route.ProgramType,
+            GuideWorkDays = route.ProgramType == TransportationProgramType.BasicOrSecondary ? 0 : route.GuideWorkDays,
+            GuideDiscountAmount = route.ProgramType == TransportationProgramType.BasicOrSecondary ? 0m : item.Input.GuideDiscountAmount,
+            GuidePriceDifference = route.ProgramType == TransportationProgramType.BasicOrSecondary ? 0m : item.Input.GuidePriceDifference,
+            MinimumWageSupport = route.ProgramType == TransportationProgramType.BasicOrSecondary ? 0m : item.Input.MinimumWageSupport
         };
 
         return item with

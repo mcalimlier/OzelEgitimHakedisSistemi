@@ -9,6 +9,69 @@ namespace OzelEgitimHakedis.Tests;
 public sealed class ProgressPaymentCalculatorTests
 {
     [Fact]
+    public void BasicOrSecondaryProgram_ShouldExcludeGuideAndMinimumWageSupportFromEveryCalculation()
+    {
+        var input = new ProgressPaymentInput(
+            WorkDays: 10,
+            DailyPrice: 100m,
+            DiscountAmount: 0m,
+            PriceDifference: 0m,
+            ContractAmount: 100000m,
+            IsVatExempt: false,
+            TaxDebt: 0m,
+            SocialSecurityDebt: 0m,
+            MinimumWageSupport: 250m,
+            GuideWorkDays: 20,
+            GuideDailyPrice: 200m,
+            GuideDiscountAmount: 10m,
+            GuidePriceDifference: 50m,
+            ProgramType: TransportationProgramType.BasicOrSecondary);
+
+        var result = ProgressPaymentCalculator.Calculate(input, ProgressPaymentCalculationConstants.Defaults);
+
+        Assert.Equal(0m, result.GuideServiceAmount);
+        Assert.Equal(0m, result.GuideNetAmount);
+        Assert.Equal(0m, result.GuideVat);
+        Assert.Equal(0m, result.GuideWithholding);
+        Assert.Equal(1000m, result.TransportNetAmount);
+        Assert.Equal(100m, result.TransportVat);
+        Assert.Equal(50m, result.TransportWithholding);
+        Assert.Equal(0m, result.Deductions.MinimumWageSupport);
+        Assert.Equal(0m, result.AppliedConstants!.GuideVatRate);
+        Assert.Equal(0m, result.AppliedConstants.GuideWithholdingShare);
+    }
+
+    [Fact]
+    public void SpecialEducationProgram_ShouldKeepGuideAndMinimumWageSupportInCalculation()
+    {
+        var input = new ProgressPaymentInput(
+            WorkDays: 10,
+            DailyPrice: 100m,
+            DiscountAmount: 0m,
+            PriceDifference: 0m,
+            ContractAmount: 100000m,
+            IsVatExempt: false,
+            TaxDebt: 0m,
+            SocialSecurityDebt: 0m,
+            MinimumWageSupport: 250m,
+            GuideWorkDays: 20,
+            GuideDailyPrice: 200m,
+            GuideDiscountAmount: 10m,
+            GuidePriceDifference: 50m,
+            ProgramType: TransportationProgramType.SpecialEducation);
+
+        var result = ProgressPaymentCalculator.Calculate(input, ProgressPaymentCalculationConstants.Defaults);
+
+        Assert.Equal(4000m, result.GuideServiceAmount);
+        Assert.Equal(4040m, result.GuideNetAmount);
+        Assert.Equal(808m, result.GuideVat);
+        Assert.Equal(727.2m, result.GuideWithholding);
+        Assert.Equal(250m, result.Deductions.MinimumWageSupport);
+        Assert.Equal(0.20m, result.AppliedConstants!.GuideVatRate);
+        Assert.Equal(0.90m, result.AppliedConstants.GuideWithholdingShare);
+    }
+
+    [Fact]
     public void ExcelReferenceTransportOnly_ShouldMatchWorkbook()
     {
         var input = new ProgressPaymentInput(

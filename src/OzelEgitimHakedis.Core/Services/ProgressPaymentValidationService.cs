@@ -97,7 +97,7 @@ public static class ProgressPaymentValidationService
             errors.Add("Hakediş No 1 veya daha büyük olmalıdır.");
 
         if (candidate.PeriodDate is null)
-            errors.Add("Hakediş dönem tarihi girilmelidir.");
+            errors.Add("Hakediş dönemi (ay/yıl) seçilmelidir.");
 
         if (candidate.PeriodDate is not null &&
             (candidate.PeriodDate.Value < contract.StartDate || candidate.PeriodDate.Value > contract.EndDate))
