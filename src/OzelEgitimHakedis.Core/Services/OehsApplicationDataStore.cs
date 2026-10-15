@@ -24,10 +24,7 @@ public sealed class OehsApplicationDataStore
 
     public OehsApplicationDataStore(string? filePath = null)
     {
-        _filePath = filePath ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "OEHS",
-            "oehs-data.json");
+        _filePath = filePath ?? OehsRuntimePaths.ApplicationDataFilePath;
     }
 
     public OehsApplicationData Load()

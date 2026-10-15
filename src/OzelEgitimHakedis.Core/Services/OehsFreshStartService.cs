@@ -8,10 +8,8 @@ public static class OehsFreshStartService
 
     public static bool EnsureFreshStart() =>
         EnsureFreshStart(
-            Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "OEHS"),
-            OehsOutputPathService.DesktopRoot);
+            OehsRuntimePaths.DataRoot,
+            OehsRuntimePaths.DesktopRoot);
 
     public static bool EnsureFreshStart(string localDataRoot, string desktopRoot)
     {

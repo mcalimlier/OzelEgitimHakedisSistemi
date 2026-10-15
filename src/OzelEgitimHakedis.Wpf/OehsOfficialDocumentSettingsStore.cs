@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using OzelEgitimHakedis.Core.Services;
 
 namespace OzelEgitimHakedis.Wpf;
 
@@ -46,10 +47,7 @@ internal sealed record OehsOfficialDocumentSignatories(
 /// </summary>
 internal static class OehsOfficialDocumentSettingsStore
 {
-    public static string DefaultPath => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "OEHS",
-        "official-document-settings.json");
+    public static string DefaultPath => OehsRuntimePaths.OfficialDocumentSettingsFilePath;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {

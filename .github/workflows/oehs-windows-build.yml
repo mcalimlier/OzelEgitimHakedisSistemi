@@ -147,6 +147,37 @@ jobs:
           /p:PublishSingleFile=true
           /p:IncludeNativeLibrariesForSelfExtract=true
 
+      - name: Prepare isolated friend test package
+        shell: pwsh
+        run: |
+          $testOutput = ".\artifacts\OEHS-Arkadas-Deneme-Paketi"
+          if (Test-Path $testOutput) { Remove-Item $testOutput -Recurse -Force }
+          New-Item -ItemType Directory -Path $testOutput -Force | Out-Null
+          Copy-Item ".\artifacts\OEHS\OEHS.exe" (Join-Path $testOutput "OEHS.exe") -Force
+          Copy-Item ".\OEHS_DENEME_PAKETI.flag" (Join-Path $testOutput "OEHS_DENEME_PAKETI.flag") -Force
+          Copy-Item ".\OEHS_DENEME_KULLANIM.txt" (Join-Path $testOutput "KULLANIM.txt") -Force
+          $required = @("OEHS.exe", "OEHS_DENEME_PAKETI.flag", "KULLANIM.txt")
+          foreach ($name in $required) {
+            if (-not (Test-Path (Join-Path $testOutput $name))) { throw "Deneme paketi eksik dosya içeriyor: $name" }
+          }
+          $unexpected = @(Get-ChildItem $testOutput -File | Where-Object { $_.Extension -eq ".pdb" })
+          if ($unexpected.Count -gt 0) { throw "Deneme paketine PDB dosyası eklenmemeli." }
+
+      - name: Upload isolated friend test package
+        id: upload_friend_test_package
+        if: github.event_name != 'pull_request'
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: OEHS-Arkadas-Deneme-Paketi
+          path: artifacts/OEHS-Arkadas-Deneme-Paketi/*
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Report friend package upload limitation
+        if: steps.upload_friend_test_package.outcome == 'failure'
+        run: echo "::warning::Test package preparation succeeded, but GitHub Actions could not store the friend test package artifact."
+
       - name: Upload OEHS EXE
         id: upload_oehs_exe
         if: github.event_name != 'pull_request'

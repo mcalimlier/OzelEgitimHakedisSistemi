@@ -55,7 +55,7 @@ WPF uygulamasını yerel olarak derlemek için:
 dotnet build .\OzelEgitimHakedisSistemi.sln --configuration Release
 ```
 
-Arkadaşa gönderilecek Windows x64 test paketi için `OEHS_TEST_PAKETI_OLUSTUR_GUNCEL.bat` çalıştırılabilir. Paket oluşturucu öncelikle testleri çalıştırır; testler geçmezse yeni paket yayımlamaz ve önceki başarılı ZIP dosyasını korur. Eski `OEHS_TEST_PAKETI_OLUSTUR.bat` adı geriye dönük kullanım için güncel oluşturucuya yönlendirir.
+Arkadaşa gönderilecek Windows x64 test paketi için `OEHS_TEST_PAKETI_OLUSTUR_GUNCEL.bat` çalıştırılabilir. Paket oluşturucu öncelikle testleri çalıştırır; testler geçmezse yeni paket yayımlamaz ve önceki başarılı ZIP dosyasını korur. İşaretli deneme paketi, normal OEHS kullanıcı verisi ve Masaüstü arşivlerinden ayrı olarak EXE'nin yanındaki `DenemeVerisi` klasörüne yazar; ilk kez boş başlar. GitHub Actions da `OEHS-Arkadas-Deneme-Paketi` adlı ayrı paket üretir. Eski `OEHS_TEST_PAKETI_OLUSTUR.bat` adı geriye dönük kullanım için güncel oluşturucuya yönlendirir.
 
 ## Dikkat edilmesi gereken kalite adımı
 

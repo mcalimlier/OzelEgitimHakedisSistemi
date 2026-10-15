@@ -2,10 +2,7 @@ namespace OzelEgitimHakedis.Core.Services;
 
 public static class OehsOutputPathService
 {
-    public static string DesktopRoot =>
-        Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
-            "OzelEgitimHakedisSistemi");
+    public static string DesktopRoot => OehsRuntimePaths.DesktopRoot;
 
     public static string PdfRoot =>
         Path.Combine(DesktopRoot, "Ciktilar", "Hakedisler");

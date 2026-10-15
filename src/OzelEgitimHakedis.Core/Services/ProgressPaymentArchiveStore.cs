@@ -24,11 +24,7 @@ public sealed class ProgressPaymentArchiveStore
 
     public ProgressPaymentArchiveStore(string? folderPath = null)
     {
-        _folderPath = folderPath ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
-            "OzelEgitimHakedisSistemi",
-            "Arsiv",
-            "Hakedisler");
+        _folderPath = folderPath ?? OehsRuntimePaths.ArchiveFolderPath;
     }
 
     public IReadOnlyList<FileInfo> List()
