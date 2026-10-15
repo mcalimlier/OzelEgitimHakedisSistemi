@@ -86,6 +86,36 @@ public sealed class ProgressPaymentIcmalServiceTests
         Assert.Equal(0m, result);
     }
 
+    [Fact]
+    public void BuildPeriods_ShouldKeepSeptemberAsFiscalYearStart()
+    {
+        var periods = ProgressPaymentIcmalService.BuildPeriods(new DateOnly(2026, 9, 30));
+
+        Assert.Equal(new DateOnly(2026, 9, 1), periods[0]);
+        Assert.Equal(new DateOnly(2027, 7, 1), periods[^1]);
+    }
+
+    [Fact]
+    public void BuildPeriods_ShouldTreatAugustAsTheEndOfPreviousFiscalCycle()
+    {
+        var periods = ProgressPaymentIcmalService.BuildPeriods(new DateOnly(2026, 8, 31));
+
+        Assert.Equal(new DateOnly(2025, 9, 1), periods[0]);
+        Assert.Equal(new DateOnly(2026, 7, 1), periods[^1]);
+    }
+
+    [Fact]
+    public void FindPreviousDeduction_ShouldCrossCalendarYearFromJanuaryToDecember()
+    {
+        var previousDecember = History(1, new DateOnly(2026, 12, 31), 420m);
+        var currentJanuary = History(2, new DateOnly(2027, 1, 31), 180m);
+
+        var result = ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { previousDecember, currentJanuary }, currentJanuary);
+
+        Assert.Equal(420m, result);
+    }
+
     private static ProgressPaymentHistoryData History(
         int number,
         DateOnly period,
