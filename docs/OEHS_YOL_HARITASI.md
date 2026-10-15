@@ -126,7 +126,38 @@ Excel'in orijinal Hesaplama sayfasındaki “KDV'den Muafmı?” alanı ile mevc
 
 - ARŞİVLER > DÜZELT, seçilen bitmiş işin snapshot'ını düzenleme moduna alır.
 - HAT BİLGİLERİ seçildiğinde Hat No dahil tüm ilgili hat alanları değiştirilebilir.
-- Düzeltme sonucu yeni aktif hat veya yeni arşiv revision'ı oluşturulmaz; seçilen mevcut JSON snapshot aynı vXX dosyasına yazılır.
+- Onaylanan arşiv düzeltmesi `SaveRevision` ile yeni bir arşiv revizyonu oluşturur; önceki vXX dosyası korunur.
 - PDF OLARAK KAYDET yazıcı sürücüsüne bağlı değildir; OEHS yerleşik PDF üreticisiyle doğrudan PDF dosyası üretir.
 - PDF dosyası Masaüstü\OzelEgitimHakedisSistemi\Ciktilar\Hakedisler\<İhale-Dosya-No>\Hat-<Hat-No> altında descriptive adla tutulur.
 - Önizleme gerçek A4 sayfa rasterı üzerinden, sayfa geçişi ve zoom kontrolleri ile gösterilir.
+
+
+## 15.10.2026 — İzole deneme paketi ve arşiv çakışması kontrolü
+
+- Arkadaş incelemesi için Windows x64 self-contained paket üretimi CI'a bağlandı. Paket yalnızca `OEHS.exe`, `OEHS_DENEME_PAKETI.flag` ve `KULLANIM.txt` içerir; kaynak kullanıcı verisi veya mevcut arşiv pakete kopyalanmaz.
+- İşaret dosyası bulunan pakette ana veri, .bak yedeği, arşivler, imza ayarları ve PDF/çıktılar EXE yanındaki `DenemeVerisi` klasörüne yönlendirilir. İşaret dosyası olmayan normal çalıştırmada standart kullanıcı profili ve Masaüstü dizinleri korunur.
+- Arşiv geri yüklemede aynı GUID veya aynı iş anahtarındaki kayıt mevcutsa ikinci hakediş satırı eklenmez. Aktif kayıt ile arşiv girdileri, brüt/net/kesinti tutarları ya da hesapta kullanılan sabitler farklıysa aktif ve arşiv net tutarlarını gösteren uyarı üretilir; aktif kayıt otomatik değiştirilmez.
+- İzole yol seçimi ve normal yol geri uyumluluğu için testler; farklı GUID'li iş anahtarı çakışması ve aynı GUID'li ama farklı girdili arşiv için regresyon testleri eklendi. CI sonuçları son committe doğrulanacaktır.
+
+### Güncel iş akışı
+
+```mermaid
+flowchart LR
+    A["İhale, yüklenici, hat ve dönem girdileri"] --> B["Hesaplama sabitleri paneli"]
+    B --> C["Taşıma + rehber ayrı hesap"]
+    C --> D["Kontrol ve hesap sabiti snapshot'ı"]
+    D --> E["Geçmiş / revizyonlu arşiv"]
+    E --> F{"Aynı GUID veya iş anahtarı var mı?"}
+    F -->|Yok| G["Arşive ekle"]
+    F -->|Var, fark yok| H["Yeni kopya ekleme"]
+    F -->|Var, tutar/girdi farkı| I["Net fark uyarısı; otomatik ezme yok"]
+    D --> J["4 resmi A4 PDF + önizleme/yazdırma"]
+    K{"Çalışma modu"} -->|Normal| L["%LOCALAPPDATA% + Masaüstü"]
+    K -->|Deneme işaret dosyası| M["EXE yanındaki DenemeVerisi"]
+    B --> N["Eski/yeni oran, kullanıcı, gerekçe ve onay kaydı"]
+```
+
+### Kalan kritik kabul işleri
+
+- Kaynak Excel'in D11 etiketi/formül çelişkisi, AG/D28 farkı ve icmal Temmuz/Kasım/Aralık davranışı için iş sahibi/Excel tabanlı karar alınmalı; kaynak farkları varsayımla değiştirilmemeli.
+- Dört gerçek PDF'nin kaynak örnekleriyle görsel fark karşılaştırması, fiziksel yazıcı ve temiz Windows profili kabul testleri tamamlanmadan uygulama üretime hazır sayılmamalıdır.

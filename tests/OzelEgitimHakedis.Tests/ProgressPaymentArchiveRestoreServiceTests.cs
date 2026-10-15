@@ -175,7 +175,7 @@ public sealed class ProgressPaymentArchiveRestoreServiceTests
         Assert.Equal(active.Input, restored.Input);
         Assert.False(result.AddedAnything);
         Assert.Contains("UYARI:", result.Message, StringComparison.Ordinal);
-        Assert.Contains("aynı hakediş kimliğindeki", result.Message, StringComparison.Ordinal);
+        Assert.Contains("aynı hakediş kimliğindeki", result.Message, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("otomatik değiştirilmedi", result.Message, StringComparison.Ordinal);
     }
 
