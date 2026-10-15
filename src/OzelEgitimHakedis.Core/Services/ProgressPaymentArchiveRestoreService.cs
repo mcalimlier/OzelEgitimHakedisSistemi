@@ -115,8 +115,11 @@ public static class ProgressPaymentArchiveRestoreService
             }
         }
 
-        var duplicatePaymentByBusinessKey = payments.Any(x =>
+        var duplicateBusinessKeyPayment = payments.FirstOrDefault(x =>
             x.Id != archivePayment.Id && HasSamePaymentBusinessKey(x, archivePayment));
+        var duplicatePaymentByBusinessKey = duplicateBusinessKeyPayment is not null;
+        var hasMaterialBusinessKeyConflict = duplicateBusinessKeyPayment is not null
+            && HasMaterialPaymentDifferences(duplicateBusinessKeyPayment, archivePayment);
 
         var addedPayment = !duplicatePaymentById && !duplicatePaymentByBusinessKey;
         if (addedPayment)
@@ -149,11 +152,36 @@ public static class ProgressPaymentArchiveRestoreService
             message += " Hakediş kopyası eklenmedi: aynı ihale, hat, yüklenici, hakediş numarası ve dönem anahtarında kayıt zaten var.";
         }
 
+        if (hasMaterialBusinessKeyConflict && duplicateBusinessKeyPayment is not null)
+        {
+            message += " UYARI: Aynı iş anahtarındaki aktif kayıt ile arşiv kaydının girdileri veya hesap sonuçları farklı. "
+                + $"Aktif net ödeme: {FormatMoney(duplicateBusinessKeyPayment.Calculation.NetPayable)}; "
+                + $"arşiv net ödeme: {FormatMoney(archivePayment.Calculation.NetPayable)}. "
+                + "Aktif kayıt otomatik değiştirilmedi; kayıtları karşılaştırmadan bu farkı onaylanmış kabul etmeyin.";
+        }
+
         return new ProgressPaymentArchiveRestoreResult(
             merged,
             addedItems.Count > 0,
             message);
     }
+
+    private static bool HasMaterialPaymentDifferences(
+        ProgressPaymentHistoryData existing,
+        ProgressPaymentHistoryData candidate)
+    {
+        // Same business key means "do not add another row", not that the snapshots
+        // are equivalent. A changed input, net amount, deductions, or applied rate
+        // set may indicate a stale or manually corrected archive and must be surfaced.
+        return existing.Input != candidate.Input
+            || existing.Calculation.NetPayable != candidate.Calculation.NetPayable
+            || existing.Calculation.GrossAmount != candidate.Calculation.GrossAmount
+            || existing.Calculation.TotalDeductions != candidate.Calculation.TotalDeductions
+            || existing.Calculation.AppliedConstants != candidate.Calculation.AppliedConstants;
+    }
+
+    private static string FormatMoney(decimal value) =>
+        value.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("tr-TR")) + " TL";
 
     private static bool HasSamePaymentBusinessKey(
         ProgressPaymentHistoryData existing,

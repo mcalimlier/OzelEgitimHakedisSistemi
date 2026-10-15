@@ -113,6 +113,40 @@ public sealed class ProgressPaymentArchiveRestoreServiceTests
         Assert.Single(result.Data.ProgressPayments ?? Array.Empty<ProgressPaymentHistoryData>());
         Assert.False(result.AddedAnything);
         Assert.Contains("aynı ihale, hat, yüklenici, hakediş numarası ve dönem anahtarında", result.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("UYARI:", result.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Restore_ShouldWarnWhenSameBusinessKeyHasDifferentInputsOrAmountsWithoutOverwritingActivePayment()
+    {
+        var archive = Archive();
+        var active = archive.ProgressPayment;
+        var archiveInput = active.Input with { DailyPrice = active.Input.DailyPrice + 100m };
+        var conflictingArchivedPayment = active with
+        {
+            Id = Guid.NewGuid(),
+            Input = archiveInput,
+            Calculation = ProgressPaymentCalculator.Calculate(archiveInput)
+        };
+        var conflictingArchive = archive with { ProgressPayment = conflictingArchivedPayment };
+        var current = new OehsApplicationData(
+            archive.Contract,
+            new[] { archive.Route },
+            new[] { archive.Contractor },
+            new[] { active },
+            new[] { archive.Contract });
+
+        var result = ProgressPaymentArchiveRestoreService.Restore(current, conflictingArchive);
+        var restored = Assert.Single(result.Data.ProgressPayments!);
+
+        Assert.Equal(active.Id, restored.Id);
+        Assert.Equal(active.Input, restored.Input);
+        Assert.Equal(active.Calculation.NetPayable, restored.Calculation.NetPayable);
+        Assert.False(result.AddedAnything);
+        Assert.Contains("UYARI:", result.Message, StringComparison.Ordinal);
+        Assert.Contains("Aktif net ödeme:", result.Message, StringComparison.Ordinal);
+        Assert.Contains("arşiv net ödeme:", result.Message, StringComparison.Ordinal);
+        Assert.Contains("otomatik değiştirilmedi", result.Message, StringComparison.Ordinal);
     }
 
     [Fact]
