@@ -248,6 +248,7 @@ public sealed class OfficialDocumentOutputTests
             Assert.Contains("KESİNTİLER VE MAHSUPLAR", paymentText);
             Assert.Contains("KDV (taşıma %10 + rehber %20)", paymentText);
             Assert.Contains("KDV Tevkifatı (taşıma %50; rehber %90)", paymentText);
+            Assert.Contains("Damga Vergisi (oran %0,948)", paymentText);
 
             var serviceReport = Assert.Single(
                 outputs.Where(output => output.Kind == OehsOfficialDocumentKind.HizmetIsleriHakedisRaporu));

@@ -183,7 +183,7 @@ internal static class OehsOfficialDocumentFactory
         var deductions = new (string Key, string Label, decimal Value, double Height)[]
         {
             ("a)", "Gelir / Kurumlar Vergisi ( E x % .. )", 0m, 29),
-            ("b)", "Damga Vergisi  ( E - g x % 9,48 )", c.Calculation.StampTax, 29),
+            ("b)", BuildStampTaxLabel(c.Calculation), c.Calculation.StampTax, 29),
             ("c)", BuildWithholdingLabel(c.Calculation), c.Calculation.Withholding, 29),
             ("d)", "Sosyal Sigortalar Kurumu Kesintisi", c.Calculation.Deductions.SocialSecurityDebt, 29),
             ("e)", "İdare Makinesi Kiraları", 0m, 29),
@@ -532,6 +532,12 @@ internal static class OehsOfficialDocumentFactory
 
     private static string FormatPercent(decimal fraction) =>
         (fraction * 100m).ToString("0.###", Turkish);
+
+    private static string BuildStampTaxLabel(ProgressPaymentCalculation calculation)
+    {
+        var rate = AppliedConstants(calculation).StampTaxRate;
+        return $"Damga Vergisi (oran %{FormatPercent(rate)})";
+    }
 
     private static string BuildVatRateLabel(ProgressPaymentCalculation calculation)
     {
