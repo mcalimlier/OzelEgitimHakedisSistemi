@@ -1381,6 +1381,7 @@
                             <TextBlock Text="İlk değerler kaynak Excel'deki oranlardır; kendiliğinden mevzuata uygunluk teyidi anlamına gelmez. Yeni hesaplamalar en güncel kaydedilmiş sabitleri kullanır. Geçmiş ödemeler denetim izi korunarak otomatik değiştirilmez; açıkça yeniden hesaplanmaları gerekir." Foreground="{StaticResource Text900Brush}" FontSize="11.5" TextWrapping="Wrap" Margin="0,5,0,0"/>
                         </StackPanel></Border>
                         <Border Style="{StaticResource Card}" Padding="14" Margin="0,0,0,10">
+                            <StackPanel>
                             <TextBlock Text="ORANLAR (YÜZDE OLARAK GİRİN)" Style="{StaticResource CardTitle}"/>
                             <TextBlock Text="Örnek: 10 = %10, 0,948 = %0,948. Her alan %0–%100 aralığında olmalıdır." Style="{StaticResource CardSubtitle}" Margin="0,4,0,10"/>
                             <Grid>
@@ -1393,8 +1394,10 @@
                                 <TextBlock Grid.Row="4" Grid.Column="0" Text="Damga vergisi oranı (%)" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,8"/><TextBox x:Name="StampTaxRateTextBox" Grid.Row="4" Grid.Column="1" Style="{StaticResource PremiumFieldTextBox}" Margin="4"/><TextBlock Grid.Row="4" Grid.Column="2" Text="Kaynak Excel başlangıcı: %0,948 (‰9,48)" Style="{StaticResource CardSubtitle}" VerticalAlignment="Center" Margin="8,0"/>
                                 <TextBlock Grid.Row="5" Grid.Column="0" Text="Ek kesin teminat oranı (%)" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,8"/><TextBox x:Name="AdditionalGuaranteeRateTextBox" Grid.Row="5" Grid.Column="1" Style="{StaticResource PremiumFieldTextBox}" Margin="4"/><TextBlock Grid.Row="5" Grid.Column="2" Text="Kaynak Excel başlangıcı: %6" Style="{StaticResource CardSubtitle}" VerticalAlignment="Center" Margin="8,0"/>
                             </Grid>
+                            </StackPanel>
                         </Border>
                         <Border Style="{StaticResource Card}" Padding="14" Margin="0,0,0,10">
+                            <StackPanel>
                             <TextBlock Text="ONAY VE DEĞİŞİKLİK KAYDI" Style="{StaticResource CardTitle}"/>
                             <Grid Margin="0,8,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="180"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="İşlemi yapan" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,5"/><TextBox x:Name="CalculationConstantsChangedByTextBox" Grid.Row="0" Grid.Column="1" Style="{StaticResource PremiumFieldTextBox}" Margin="4"/>
@@ -1404,6 +1407,7 @@
                                 <Button Content="KAYNAK EXCEL BAŞLANGIÇ DEĞERLERİ" Click="ResetCalculationConstantsFieldsButton_Click" Style="{StaticResource SecondaryButton}" Height="36" Margin="0,0,8,0"/>
                                 <Button Content="DEĞİŞİKLİĞİ ONAYLA VE KAYDET" Click="SaveCalculationConstantsButton_Click" Style="{StaticResource ModernButton}" Height="36"/>
                                 <Button Content="AYARLARA DÖN" Tag="Settings" Click="NavigationButton_Click" Style="{StaticResource SecondaryButton}" Height="36" Margin="8,0,0,0"/>
+                            </StackPanel>
                             </StackPanel>
                         </Border>
                         <Border Style="{StaticResource Card}" Padding="14" Margin="0,0,0,12"><StackPanel>
