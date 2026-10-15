@@ -158,6 +158,33 @@ public sealed class ProgressPaymentPropagationTests
                 Contractor()));
     }
 
+
+    [Fact]
+    public void RouteChange_ShouldRecalculateWithCurrentSavedCalculationConstants()
+    {
+        var oldRoute = Route(1000m);
+        var newRoute = oldRoute with { DailyPrice = 1500m };
+        var history = History(new ProgressPaymentInput(
+            10, 1000m, 50m, 100m, 100000m, false, 0m, 0m, 0m, 0m,
+            5, 500m, 25m, 50m));
+        var currentConstants = new ProgressPaymentCalculationConstants(
+            TransportVatRate: 0.12m,
+            GuideVatRate: 0.25m,
+            TransportWithholdingShare: 0.40m,
+            GuideWithholdingShare: 0.80m,
+            StampTaxRate: 0.01m,
+            AdditionalGuaranteeRate: 0.07m);
+
+        var updated = ProgressPaymentPropagationService.RecalculateForRouteChange(
+            new[] { history }, oldRoute, newRoute, Contractor(), currentConstants);
+
+        var result = Assert.Single(updated).Calculation;
+        Assert.Equal(0.12m, result.AppliedConstants!.TransportVatRate);
+        Assert.Equal(0.25m, result.AppliedConstants.GuideVatRate);
+        Assert.Equal(17575m * 0.01m, result.StampTax);
+        Assert.Equal(10.5m, result.AdditionalGuarantee);
+    }
+
     private static ContractDraftData Contract(bool vatExempt) =>
         new("TENDER", "SOZ-01", "İş", "Firma", 100000m,
             new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 31), vatExempt,

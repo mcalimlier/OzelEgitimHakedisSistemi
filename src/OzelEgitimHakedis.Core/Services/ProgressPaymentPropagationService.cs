@@ -16,16 +16,18 @@ public static class ProgressPaymentPropagationService
         IReadOnlyList<ProgressPaymentHistoryData> history,
         IReadOnlyList<RouteData> routes,
         ContractDraftData oldContract,
-        ContractDraftData newContract)
+        ContractDraftData newContract,
+        ProgressPaymentCalculationConstants? constants = null)
     {
         ArgumentNullException.ThrowIfNull(history);
         ArgumentNullException.ThrowIfNull(routes);
         ArgumentNullException.ThrowIfNull(oldContract);
         ArgumentNullException.ThrowIfNull(newContract);
 
+        var appliedConstants = constants ?? ProgressPaymentCalculationConstants.Defaults;
         var updated = history
             .Select(item => IsHistoryForContract(item, oldContract)
-                ? RebuildForContract(item, newContract)
+                ? RebuildForContract(item, newContract, appliedConstants)
                 : item)
             .ToArray();
 
@@ -66,12 +68,15 @@ public static class ProgressPaymentPropagationService
         IReadOnlyList<ProgressPaymentHistoryData> history,
         RouteData oldRoute,
         RouteData newRoute,
-        Contractor contractor)
+        Contractor contractor,
+        ProgressPaymentCalculationConstants? constants = null)
     {
         ArgumentNullException.ThrowIfNull(history);
         ArgumentNullException.ThrowIfNull(oldRoute);
         ArgumentNullException.ThrowIfNull(newRoute);
         ArgumentNullException.ThrowIfNull(contractor);
+
+        var appliedConstants = constants ?? ProgressPaymentCalculationConstants.Defaults;
 
         // Current records carry the contract number as part of the route identity.
         // Old API callers / legacy records may omit it. In that case use the legacy
@@ -104,7 +109,7 @@ public static class ProgressPaymentPropagationService
                         item.ContractNumber ?? string.Empty);
 
                 return string.Equals(itemKey, oldKey, StringComparison.Ordinal)
-                    ? RebuildForRoute(item, newRoute, contractor, newIdentity)
+                    ? RebuildForRoute(item, newRoute, contractor, newIdentity, appliedConstants)
                     : item;
             })
             .ToArray();
@@ -115,7 +120,8 @@ public static class ProgressPaymentPropagationService
 
     private static ProgressPaymentHistoryData RebuildForContract(
         ProgressPaymentHistoryData item,
-        ContractDraftData contract)
+        ContractDraftData contract,
+        ProgressPaymentCalculationConstants constants)
     {
         var input = item.Input with
         {
@@ -124,7 +130,7 @@ public static class ProgressPaymentPropagationService
             DailyPrice = contract.TransportDailyPrice
         };
 
-        var calculation = ProgressPaymentCalculator.Calculate(input);
+        var calculation = ProgressPaymentCalculator.Calculate(input, constants);
         return item with
         {
             Input = input,
@@ -143,7 +149,8 @@ public static class ProgressPaymentPropagationService
         ProgressPaymentHistoryData item,
         RouteData route,
         Contractor contractor,
-        string normalizedIdentity)
+        string normalizedIdentity,
+        ProgressPaymentCalculationConstants constants)
     {
         var input = item.Input with
         {
@@ -156,7 +163,7 @@ public static class ProgressPaymentPropagationService
         return item with
         {
             Input = input,
-            Calculation = ProgressPaymentCalculator.Calculate(input),
+            Calculation = ProgressPaymentCalculator.Calculate(input, constants),
             RouteNumber = route.RouteNumber,
             RouteName = route.Name,
             TenderNumber = route.TenderNumber,

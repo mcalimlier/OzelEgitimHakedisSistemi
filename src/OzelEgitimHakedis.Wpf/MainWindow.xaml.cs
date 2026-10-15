@@ -2718,7 +2718,7 @@ public partial class MainWindow : Window
                 contractor.ContactPerson);
 
         return ProgressPaymentPropagationService.RecalculateForRouteChange(
-            _progressHistory.ToArray(), oldData, newData, contractorSnapshot);
+            _progressHistory.ToArray(), oldData, newData, contractorSnapshot, _calculationConstants);
     }
 
     private void ShowRouteValidation(string message)
@@ -3131,7 +3131,7 @@ public partial class MainWindow : Window
                 x.ContractNumber)).ToArray();
 
             var proposedHistories = ProgressPaymentPropagationService.RecalculateForContractChange(
-                _progressHistory.ToArray(), routeData, oldContract, proposedContract);
+                _progressHistory.ToArray(), routeData, oldContract, proposedContract, _calculationConstants);
             var proposedTargetPayment = _historyCorrectionTargetId is Guid targetId
                 ? proposedHistories.FirstOrDefault(x => x.Id == targetId)
                 : null;
@@ -3665,7 +3665,8 @@ public partial class MainWindow : Window
                 x.ContractorTaxOrIdentityNumber,
                 x.ContractNumber)).ToArray(),
             oldContract,
-            updatedContract);
+            updatedContract,
+            _calculationConstants);
 
         _progressHistory.Clear();
         foreach (var item in propagated)
