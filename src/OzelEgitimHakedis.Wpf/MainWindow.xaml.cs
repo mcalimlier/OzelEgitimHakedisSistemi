@@ -2644,8 +2644,8 @@ public partial class MainWindow : Window
     private void UpdateHomeSummaryView()
     {
         var contract = HomeTenderListBox.SelectedItem as ContractDraftData
-                       ?? FindContract(TenderNumberTextBox.Text, ContractNumberTextBox.Text)
-                       ?? _contracts.FirstOrDefault();
+                       ?? FindContract(TenderNumberTextBox.Text, ContractNumberTextBox.Text, GetSelectedTransportationProgramType())
+                       ?? _contracts.FirstOrDefault(x => x.ProgramType == GetSelectedTransportationProgramType());
 
         UpdateHomeTenderSummary(contract);
         var history = contract is null
@@ -3168,6 +3168,7 @@ public partial class MainWindow : Window
 
         _editingContractTender = contract.TenderNumber;
         _editingContractNumber = contract.ContractNumber;
+        _editingContractProgramType = contract.ProgramType;
         ApplyContractToForm(contract);
         SetContractEditorMode(true);
         NavigationButton_Click(NavContract, new RoutedEventArgs(Button.ClickEvent, NavContract));
@@ -3184,6 +3185,7 @@ public partial class MainWindow : Window
         ClearArchiveCorrectionState();
         _editingContractTender = null;
         _editingContractNumber = null;
+        _editingContractProgramType = null;
 
         if (archiveCorrection)
         {
@@ -3451,6 +3453,7 @@ public partial class MainWindow : Window
 
         _editingContractTender = null;
         _editingContractNumber = null;
+        _editingContractProgramType = null;
         SetContractEditorMode(false);
         UpdateContractSelectors();
         UpdateRouteListView();
@@ -5392,7 +5395,7 @@ public partial class MainWindow : Window
 
         _editingRoute = route;
 
-        var contract = FindContract(route.TenderNumber, route.ContractNumber);
+        var contract = FindContract(route.TenderNumber, route.ContractNumber, route.ProgramType);
         var contractor = FindContractor(route.ContractorTaxOrIdentityNumber, route.ProgramType);
 
         _suppressSelectionEvents = true;
@@ -5480,7 +5483,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        var contract = FindContract(item.TenderNumber, item.ContractNumber);
+        var contract = FindContract(item.TenderNumber, item.ContractNumber, item.Input.ProgramType);
         if (contract is not null)
         {
             _suppressSelectionEvents = true;
