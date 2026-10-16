@@ -231,11 +231,12 @@ public sealed class OfficialDocumentOutputTests
             var paymentPage = Assert.IsType<FixedPage>(paymentOutput.Document.Pages[0].Child);
             var paymentText = GetPageText(paymentPage);
 
-            // A is cumulative contract-price work; B is cumulative signed price difference.
+            // Excel D6 = prior + current monthly K+T, less current I+R.
+            // D7 contains only the current month's raw I+R.
             // With two 100 TL base periods, 20 TL previous F and 10 TL current F:
-            // A=200, B=30, C=230, D=120, E=110.
-            Assert.Equal("200,00 TL", GetCellTextAt(paymentPage, 476d, 172d)); // A
-            Assert.Equal("30,00 TL", GetCellTextAt(paymentPage, 476d, 201d));  // B
+            // A=220, B=10, C=230, D=120, E=110.
+            Assert.Equal("220,00 TL", GetCellTextAt(paymentPage, 476d, 172d)); // A
+            Assert.Equal("10,00 TL", GetCellTextAt(paymentPage, 476d, 201d));  // B
             Assert.Equal("230,00 TL", GetCellTextAt(paymentPage, 476d, 230d)); // C = A + B
             Assert.Equal("120,00 TL", GetCellTextAt(paymentPage, 476d, 293d)); // D
             Assert.Equal("110,00 TL", GetCellTextAt(paymentPage, 476d, 322d)); // E = C - D
