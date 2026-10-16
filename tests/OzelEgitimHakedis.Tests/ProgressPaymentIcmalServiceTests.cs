@@ -90,7 +90,7 @@ public sealed class ProgressPaymentIcmalServiceTests
     }
 
     [Fact]
-    public void FindPreviousDeduction_ShouldCarryMayDeductionIntoJuneDespiteSourceLookupRangeDefect()
+    public void FindPreviousDeduction_ShouldCarryMayDeductionIntoJune()
     {
         var may = History(1, new DateOnly(2027, 5, 31), 185m);
         var june = History(2, new DateOnly(2027, 6, 30), 240m);
