@@ -122,6 +122,24 @@ public sealed class ProgressPaymentIcmalServiceTests
     }
 
     [Fact]
+    public void FindPreviousDeduction_ShouldNotCarryAcrossRoutes()
+    {
+        var otherRoute = History(1, new DateOnly(2026, 10, 31), 200m) with
+        {
+            RouteNumber = "Q2"
+        };
+        var current = History(2, new DateOnly(2026, 11, 30), 300m) with
+        {
+            RouteNumber = "Q1"
+        };
+
+        var result = ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { otherRoute, current }, current);
+
+        Assert.Equal(0m, result);
+    }
+
+    [Fact]
     public void FindPreviousDeduction_ShouldCrossCalendarYearFromJanuaryToDecember()
     {
         var previousDecember = History(1, new DateOnly(2026, 12, 31), 420m);
