@@ -76,6 +76,7 @@ public static class ProgressPaymentArchiveRestoreService
             var existingContractNumber = x.ContractNumber;
             if (string.IsNullOrWhiteSpace(existingContractNumber)
                 && sameTenderContractCount == 1
+                && x.ProgramType == archiveRoute.ProgramType
                 && string.Equals(x.TenderNumber, archiveRoute.TenderNumber, StringComparison.OrdinalIgnoreCase))
             {
                 existingContractNumber = archiveRoute.ContractNumber;
