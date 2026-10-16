@@ -4359,11 +4359,10 @@ public partial class MainWindow : Window
                 !_editingHistoryId.HasValue &&
                 selectedRoutes.Length > 1)
             {
+                MultiRoutePaymentGrid.CommitEdit(DataGridEditingUnit.Cell, true);
+                MultiRoutePaymentGrid.CommitEdit(DataGridEditingUnit.Row, true);
                 SaveMultiRouteProgressPayment(
-                    selectedContract, selectedRoutes, workDays, dailyPrice, discount,
-                    priceDifference, taxDebt, socialSecurityDebt, minimumWageSupport,
-                    inspectionPenalty, guideWorkDays, guideDailyPrice, guideDiscount,
-                    guidePriceDifference, progressNumber, periodDate);
+                    selectedContract, selectedRoutes, _multiRoutePaymentRows.ToArray(), periodDate);
                 return;
             }
 
