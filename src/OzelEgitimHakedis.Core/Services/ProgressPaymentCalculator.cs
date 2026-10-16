@@ -29,8 +29,9 @@ public sealed class ProgressPaymentCalculator
         if (!constants.TryValidate(out var constantsError))
             throw new ArgumentOutOfRangeException(nameof(constants), constantsError);
 
-        // Temel/ortaöğretim taşımasında rehber personel ve asgari ücret desteği
-        // hesaplama girdisi değildir. Eski arşivden gelse bile hesap sonucu kullanmaz.
+        // Temel/ortaöğretim kaynak Excel'inde rehber personel kalemi yoktur,
+        // ancak Asgari Ücret Destek Tutarı kesinti toplamına dahildir.
+        // Bu nedenle yalnızca rehber alanları program kapsamında sıfırlanır.
         if (input.ProgramType == TransportationProgramType.BasicOrSecondary)
         {
             input = input with
@@ -38,8 +39,7 @@ public sealed class ProgressPaymentCalculator
                 GuideWorkDays = 0,
                 GuideDailyPrice = 0m,
                 GuideDiscountAmount = 0m,
-                GuidePriceDifference = 0m,
-                MinimumWageSupport = 0m
+                GuidePriceDifference = 0m
             };
             constants = constants with
             {
@@ -123,18 +123,14 @@ public sealed class ProgressPaymentCalculator
         var guideStampTax = guideNetAmount * constants.StampTaxRate;
         var stampTax = transportStampTax + guideStampTax;
 
-        // Kaynak XLSM Hesaplama!AC formülü: AC = I*6% + R*6%.
-        // Mevzuat denetimi: 4735 sayılı Kanun'un 12. maddesi ek kesin teminatı,
-        // fiyat farkı nedeniyle sözleşme bedelinde artış meydana gelmesi halinde
-        // bu artışın %6'sı olarak tanımlar. Negatif/pozitif bileşenler önce netlenir:
-        // pozitif toplam artışta Excel ile aynı sonuç çıkar, negatif toplam ek teminat
-        // kredisi doğurmaz. I/R'nin işaretli değerleri hizmet tutarında aynen korunur;
-        // J/S iskontoları kaynak Excel'de olduğu gibi bu tabandan düşülmez.
+        // Kaynak XLSM formülü birebir:
+        // Temel/Ortaöğretim T = I*6%.
+        // Özel Eğitim AC = I*6% + R*6%.
+        // İskontolar J/S bu tabana dahil değildir. Kaynak formülde MAX(0, ...) yoktur;
+        // mevzuat yorumu ayrıca uzman onayına sunulmalı, hesap kodu kaynağı sessizce değiştirmemelidir.
         var additionalGuarantee =
-            Math.Max(
-                0m,
-                input.PriceDifference + input.GuidePriceDifference)
-            * constants.AdditionalGuaranteeRate;
+            (input.PriceDifference * constants.AdditionalGuaranteeRate)
+            + (input.GuidePriceDifference * constants.AdditionalGuaranteeRate);
 
         // Excel AE = M+V+Y+Z+AA+AB+AC+AD.
         var totalDeductions =
