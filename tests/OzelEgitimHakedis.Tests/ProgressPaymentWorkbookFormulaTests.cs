@@ -166,4 +166,68 @@ public sealed class ProgressPaymentWorkbookFormulaTests
         Assert.Equal(4.8m, result.AdditionalGuarantee);
     }
 
+
+    [Fact]
+    public void ReportTotals_ShouldExcludePriorFiscalYearPayments()
+    {
+        var input = new ProgressPaymentInput(
+            WorkDays: 1,
+            DailyPrice: 100m,
+            DiscountAmount: 10m,
+            PriceDifference: 25m,
+            ContractAmount: 1000m,
+            IsVatExempt: true,
+            TaxDebt: 0m,
+            SocialSecurityDebt: 0m,
+            MinimumWageSupport: 0m,
+            GuideWorkDays: 1,
+            GuideDailyPrice: 50m,
+            GuideDiscountAmount: 5m,
+            GuidePriceDifference: 15m);
+
+        var previousFiscalYear = History(1, new DateOnly(2025, 9, 30), input);
+        var current = History(2, new DateOnly(2026, 10, 31), input);
+
+        var totals = ProgressPaymentReportService.Calculate(
+            current, new[] { previousFiscalYear, current });
+
+        // October 2026 belongs to the September 2026-July 2027 fiscal cycle.
+        // September 2025 belongs to a different cycle and must not contribute.
+        Assert.Equal(175m, totals.CurrentTotal);
+        Assert.Equal(0m, totals.PreviousTotal);
+        Assert.Equal(175m, totals.CumulativeTotal);
+        Assert.Equal(135m, totals.CumulativeServiceAmount);
+    }
+
+    [Fact]
+    public void ReportTotals_ShouldExcludePaymentsFromDifferentRoutes()
+    {
+        var input = new ProgressPaymentInput(
+            WorkDays: 1,
+            DailyPrice: 100m,
+            DiscountAmount: 10m,
+            PriceDifference: 25m,
+            ContractAmount: 1000m,
+            IsVatExempt: true,
+            TaxDebt: 0m,
+            SocialSecurityDebt: 0m,
+            MinimumWageSupport: 0m,
+            GuideWorkDays: 1,
+            GuideDailyPrice: 50m,
+            GuideDiscountAmount: 5m,
+            GuidePriceDifference: 15m);
+
+        var otherRoute = History(1, new DateOnly(2026, 9, 30), input) with
+        {
+            RouteNumber = "2"
+        };
+        var current = History(2, new DateOnly(2026, 10, 31), input);
+
+        var totals = ProgressPaymentReportService.Calculate(current, new[] { otherRoute, current });
+
+        Assert.Equal(175m, totals.CurrentTotal);
+        Assert.Equal(0m, totals.PreviousTotal);
+        Assert.Equal(175m, totals.CumulativeTotal);
+    }
+
 }
