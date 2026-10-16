@@ -84,30 +84,21 @@ public static class ProgressPaymentReportService
             .Where(x => IsWithinCurrentFiscalYear(x, current))
             .ToArray();
 
-        // Keep the official form's A/B meanings separate across every month.
-        // A is cumulative contract-price service after discounts; B is cumulative
-        // signed price difference (raw I+R). Summing historical K+T into A would
-        // classify prior months' price differences as contract-price work.
-        //
-        // Source-workbook caution: Hakediş Raporu!D6 sums monthly K+T (which already
-        // includes I+R), D7 adds the current raw I+R again, and D11 uses
-        // IF(D7<0,H2-ABS(D7),H2+D7). H2 is the current K+T value too, so D11 can
-        // re-add the current price difference instead of following the printed
-        // 4/10 form's E=C-D definition. We preserve the official form's A/B/C/D/E
-        // meanings and calculate E as C-D; regression tests cover this equation.
-        var previousServiceAmount = previous.Sum(CalculateWorkbookMonthlyPaymentAmount);
-        var previousPriceDifference = previous.Sum(CalculateWorkbookPriceDifference);
-        var currentServiceAmount = CalculateWorkbookMonthlyPaymentAmount(current);
-        var currentPriceDifference = CalculateWorkbookPriceDifference(current);
-
-        var cumulativeServiceAmount = previousServiceAmount + currentServiceAmount;
-        var cumulativePriceDifference = previousPriceDifference + currentPriceDifference;
+        // XLSM Hakediş Raporu formül zinciri:
+        // D6 = toplam aylık K+T tutarı (önceki + mevcut) - mevcut ayın ham I+R fiyat farkı.
+        // D7 = yalnızca mevcut ayın ham I+R fiyat farkı.
+        // D8 = D6 + D7 = önceki toplamlar + mevcut ayın K+T tutarı.
+        // D10 = önceki aylara ait toplam K+T.
+        // D11 = IF(D7<0,H2-ABS(D7),H2+D7)-D7; her iki dal da cebirsel olarak H2'ye,
+        // yani mevcut satırın K+T tutarına sadeleşir.
+        // Gelecek aylardaki olası önceden girilmiş değerleri rapora katmamak için
+        // yalnızca seçili aya kadar olan uygulama geçmişini topluyoruz.
+        var currentMonthlyTotal = CalculateWorkbookMonthlyPaymentTotal(current);
         var previousTotal = previous.Sum(CalculateWorkbookMonthlyPaymentTotal);
-
-        // C = A + B; D = previous cumulative total; E = C - D.
-        // The result remains the current month's service plus its signed F.
-        var cumulativeTotal = cumulativeServiceAmount + cumulativePriceDifference;
-        var currentTotal = cumulativeTotal - previousTotal;
+        var currentPriceDifference = CalculateWorkbookPriceDifference(current);
+        var cumulativeTotal = previousTotal + currentMonthlyTotal;
+        var cumulativeServiceAmount = cumulativeTotal - currentPriceDifference;
+        var currentTotal = currentMonthlyTotal;
 
         return new ProgressPaymentReportTotals(
             cumulativeServiceAmount,
