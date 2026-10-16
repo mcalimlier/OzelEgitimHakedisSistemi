@@ -221,7 +221,8 @@ public static class ProgressPaymentArchiveRestoreService
                 && !string.IsNullOrWhiteSpace(candidate.ContractNumber)
                 && string.Equals(existing.ContractNumber.Trim(), candidate.ContractNumber.Trim(), StringComparison.OrdinalIgnoreCase));
 
-        return string.Equals(existing.TenderNumber.Trim(), candidate.TenderNumber.Trim(), StringComparison.OrdinalIgnoreCase)
+        return existing.Input.ProgramType == candidate.Input.ProgramType
+            && string.Equals(existing.TenderNumber.Trim(), candidate.TenderNumber.Trim(), StringComparison.OrdinalIgnoreCase)
             && string.Equals(existing.RouteNumber.Trim(), candidate.RouteNumber.Trim(), StringComparison.OrdinalIgnoreCase)
             && string.Equals(
                 OehsIdentityService.NormalizeIdentity(existing.ContractorTaxOrIdentityNumber),
