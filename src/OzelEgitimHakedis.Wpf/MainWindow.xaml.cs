@@ -660,6 +660,8 @@ public partial class MainWindow : Window
     {
         if (!string.Equals(item.TenderNumber?.Trim(), contract.TenderNumber.Trim(), StringComparison.OrdinalIgnoreCase))
             return false;
+        if (item.Input.ProgramType != contract.ProgramType)
+            return false;
         if (!string.IsNullOrWhiteSpace(item.ContractNumber))
             return string.Equals(item.ContractNumber.Trim(), contract.ContractNumber.Trim(), StringComparison.OrdinalIgnoreCase);
 
@@ -670,6 +672,8 @@ public partial class MainWindow : Window
     private bool IsRouteForContract(RouteDraft route, ContractDraftData contract)
     {
         if (!string.Equals(route.TenderNumber.Trim(), contract.TenderNumber.Trim(), StringComparison.OrdinalIgnoreCase))
+            return false;
+        if (route.ProgramType != contract.ProgramType)
             return false;
         if (!string.IsNullOrWhiteSpace(route.ContractNumber))
             return string.Equals(route.ContractNumber.Trim(), contract.ContractNumber.Trim(), StringComparison.OrdinalIgnoreCase);
@@ -2788,6 +2792,7 @@ public partial class MainWindow : Window
             contract.ProgramType);
 
         var duplicate = _routes.FirstOrDefault(x =>
+            x.ProgramType == proposed.ProgramType &&
             string.Equals(x.TenderNumber, proposed.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
             string.Equals(x.ContractNumber, proposed.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
             string.Equals(
