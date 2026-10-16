@@ -1450,7 +1450,7 @@ public partial class MainWindow : Window
                 ((VatExemptCheckBox.IsChecked == true) != contract.VatExempt),
 
             HistoryCorrectionSection.Contractor =>
-                FindContractor(item.ContractorTaxOrIdentityNumber ?? string.Empty) is not ContractorDraft contractor ||
+                FindContractor(item.ContractorTaxOrIdentityNumber ?? string.Empty, item.Input.ProgramType) is not ContractorDraft contractor ||
                 TextDiffers(ContractorNameTextBox, contractor.Name) ||
                 !string.Equals(
                     OehsIdentityService.NormalizeIdentity(ContractorTaxTextBox.Text),
@@ -2885,7 +2885,7 @@ public partial class MainWindow : Window
             proposedRouteData);
         if (ownerConflict is not null)
         {
-            var existingOwner = FindContractor(ownerConflict.ContractorTaxOrIdentityNumber)?.Name;
+            var existingOwner = FindContractor(ownerConflict.ContractorTaxOrIdentityNumber, ownerConflict.ProgramType)?.Name;
             var ownerLabel = string.IsNullOrWhiteSpace(existingOwner)
                 ? "başka bir yüklenici"
                 : $"'{existingOwner}'";
@@ -4164,7 +4164,7 @@ public partial class MainWindow : Window
             }
             else
             {
-                var liveContractor = FindContractor(normalizedContractorIdentity);
+                var liveContractor = FindContractor(normalizedContractorIdentity, selectedContract.ProgramType);
                 contractorName = liveContractor?.Name ?? selectedRoute.ContractorName;
                 contractorBankAccount = liveContractor?.BankAccountNumber ?? string.Empty;
             }
@@ -4677,7 +4677,7 @@ public partial class MainWindow : Window
             _routes.Clear();
             foreach (var route in restored.Data.Routes ?? Array.Empty<RouteData>())
             {
-                var contractor = FindContractor(route.ContractorTaxOrIdentityNumber);
+                var contractor = FindContractor(route.ContractorTaxOrIdentityNumber, route.ProgramType);
                 _routes.Add(new RouteDraft(
                     route.RouteNumber,
                     route.Name,
@@ -5095,7 +5095,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        var contractor = FindContractor(item.ContractorTaxOrIdentityNumber ?? string.Empty);
+        var contractor = FindContractor(item.ContractorTaxOrIdentityNumber ?? string.Empty, item.Input.ProgramType);
 
         if (contractor is null)
         {
