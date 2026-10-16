@@ -91,6 +91,42 @@ public sealed class OehsOutputPathServiceTests
     }
 
     [Fact]
+    public void BuildPdfDirectoryForContractor_ShouldSeparateProgramAndMonthlyBatch()
+    {
+        var root = Path.Combine(@"C:\\Users\\Test\\Desktop", "OzelEgitimHakedisSistemi");
+
+        var special = OehsOutputPathService.BuildPdfDirectoryForContractor(
+            root, "2026/01", "Firma A", "11111111111", "01",
+            OzelEgitimHakedis.Core.Models.TransportationProgramType.SpecialEducation,
+            "Q1+Q3", new DateOnly(2026, 10, 31));
+        var basic = OehsOutputPathService.BuildPdfDirectoryForContractor(
+            root, "2026/01", "Firma A", "11111111111", "01",
+            OzelEgitimHakedis.Core.Models.TransportationProgramType.BasicOrSecondary,
+            "Q1+Q3", new DateOnly(2026, 10, 31));
+
+        Assert.NotEqual(special, basic);
+        Assert.Contains(Path.Combine("OzelEgitim", "2026_01"), special, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(Path.Combine("Aylik-Q1+Q3_2026-10", "Hat-01"), special, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(Path.Combine("TemelOrtaogretim", "2026_01"), basic, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void BuildContractorPdfFilePath_ShouldIncludeProgramBatchAndMonth()
+    {
+        var root = Path.Combine(@"C:\\Users\\Test\\Desktop", "OzelEgitimHakedisSistemi");
+
+        var path = OehsOutputPathService.BuildContractorPdfFilePath(
+            root, "2026/01", "Firma A", "11111111111", "01", 3,
+            new DateOnly(2026, 11, 30),
+            OzelEgitimHakedis.Core.Models.TransportationProgramType.SpecialEducation,
+            "Q1+Q3");
+
+        Assert.Contains("OzelEgitim", path, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Hatlar-Q1+Q3", path, StringComparison.OrdinalIgnoreCase);
+        Assert.EndsWith("Hakediş-03_2026-11.pdf", path, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void BuildPdfFilePath_ShouldUseDescriptiveName()
     {
         var root = Path.Combine(@"C:\Users\Test\Desktop", "OzelEgitimHakedisSistemi");
