@@ -49,6 +49,29 @@ public sealed class ProgressPaymentPropagationTests
     }
 
     [Fact]
+    public void ContractorChange_ShouldNotPropagateAcrossTransportationPrograms()
+    {
+        var specialContractor = Contractor();
+        var basicHistoryInput = new ProgressPaymentInput(
+            10, 1000m, 0m, 0m, 100000m, false, 0m, 0m, 0m,
+            ProgramType: TransportationProgramType.BasicOrSecondary);
+        var specialHistory = History(new ProgressPaymentInput(
+            10, 1000m, 0m, 0m, 100000m, false, 0m, 0m, 0m));
+        var basicHistory = History(basicHistoryInput) with
+        {
+            Id = Guid.NewGuid(),
+            ContractorName = "Temel Program Firma"
+        };
+        var updatedContractor = specialContractor with { Name = "Özel Program Firma" };
+
+        var updated = ProgressPaymentPropagationService.RecalculateForContractorChange(
+            new[] { specialHistory, basicHistory }, specialContractor, updatedContractor);
+
+        Assert.Equal("Özel Program Firma", updated[0].ContractorName);
+        Assert.Equal("Temel Program Firma", updated[1].ContractorName);
+    }
+
+    [Fact]
     public void ContractorChange_ShouldUpdateContractReferenceFields()
     {
         var oldContractor = Contractor();
