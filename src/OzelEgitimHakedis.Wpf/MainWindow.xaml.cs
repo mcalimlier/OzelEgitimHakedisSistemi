@@ -47,6 +47,7 @@ public partial class MainWindow : Window
     private readonly ProgressPaymentArchiveStore _archiveStore = new();
     private readonly ObservableCollection<ArchiveRow> _archiveRows = new();
     private Guid? _lastCalculatedHistoryId;
+    private string? _lastSelectedPaymentMonthKey;
     private string? _editingArchiveSourcePath;
     private ProgressPaymentArchive? _editingArchiveSnapshot;
     private ArchiveCorrectionSection _archiveCorrectionSection;
@@ -932,7 +933,74 @@ public partial class MainWindow : Window
         if (!IsInitialized || _suppressSelectionEvents || _editingHistoryId.HasValue || IsArchiveEditing)
             return;
 
+        var selected = ProgressPeriodMonthComboBox.SelectedItem as ProgressPaymentMonthOption;
+        var monthKey = selected?.StartDate.ToString("yyyy-MM", CultureInfo.InvariantCulture);
+        if (_lastSelectedPaymentMonthKey is not null &&
+            monthKey is not null &&
+            !string.Equals(_lastSelectedPaymentMonthKey, monthKey, StringComparison.Ordinal))
+        {
+            ResetMonthlyInputsForNewMonth();
+        }
+
+        _lastSelectedPaymentMonthKey = monthKey;
         UpdateAutomaticProgressNumber();
+    }
+
+    private void ResetMonthlyInputsForNewMonth()
+    {
+        WorkDaysTextBox.Text = "0";
+        GuideWorkDaysTextBox.Text = "0";
+        DiscountTextBox.Text = "0";
+        PriceDifferenceTextBox.Text = "0";
+        GuideDiscountTextBox.Text = "0";
+        GuidePriceDifferenceTextBox.Text = "0";
+        TaxDebtTextBox.Text = "0";
+        SocialSecurityDebtTextBox.Text = "0";
+        MinimumWageSupportTextBox.Text = "0";
+        InspectionPenaltyTextBox.Text = "0";
+
+        foreach (var row in _multiRoutePaymentRows)
+        {
+            row.WorkDays = 0;
+            row.DiscountAmount = 0m;
+            row.PriceDifference = 0m;
+            row.GuideWorkDays = 0;
+            row.GuideDiscountAmount = 0m;
+            row.GuidePriceDifference = 0m;
+            row.TaxDebt = 0m;
+            row.SocialSecurityDebt = 0m;
+            row.MinimumWageSupport = 0m;
+            row.InspectionPenalty = 0m;
+        }
+
+        _lastCalculatedHistoryId = null;
+        ArchiveCurrentProgressButton.Visibility = Visibility.Collapsed;
+        CorrectCurrentProgressButton.Visibility = Visibility.Collapsed;
+        ClearProgressValidationVisuals();
+        ProgressValidationBanner.Visibility = Visibility.Collapsed;
+        ProgressValidationMessageTextBlock.Text = string.Empty;
+        ServiceAmountResultTextBlock.Text = FormatMoney(0m);
+        GuideServiceAmountResultTextBlock.Text = FormatMoney(0m);
+        TransportPriceDifferenceResultTextBlock.Text = FormatMoney(0m);
+        GuidePriceDifferenceResultTextBlock.Text = FormatMoney(0m);
+        CombinedPriceDifferenceResultTextBlock.Text = FormatMoney(0m);
+        TotalAmountResultTextBlock.Text = FormatMoney(0m);
+        VatResultTextBlock.Text = FormatMoney(0m);
+        DeductionsResultTextBlock.Text = FormatMoney(0m);
+        GrossResultTextBlock.Text = FormatMoney(0m);
+        NetResultTextBlock.Text = FormatMoney(0m);
+        NetControlResultTextBlock.Text = FormatMoney(0m);
+        WithholdingResultTextBlock.Text = FormatMoney(0m);
+        StampTaxResultTextBlock.Text = FormatMoney(0m);
+        TaxDebtResultTextBlock.Text = FormatMoney(0m);
+        SocialSecurityDebtResultTextBlock.Text = FormatMoney(0m);
+        MinimumWageSupportResultTextBlock.Text = FormatMoney(0m);
+        InspectionPenaltyResultTextBlock.Text = FormatMoney(0m);
+        AdditionalGuaranteeResultTextBlock.Text = FormatMoney(0m);
+        ProgressWorkDaysSummaryTextBlock.Text = "0";
+        ProgressNetSummaryTextBlock.Text = FormatMoney(0m);
+        ProgressCalculationSummaryTextBlock.Text = "HAZIR";
+        CalculationStatusTextBlock.Text = "Yeni ay seçildi. Bu aya ait iş günlerini, fiyat farklarını, iskontoları ve kesintileri yeniden girin.";
     }
 
     private void UpdateAutomaticProgressNumber()
@@ -6973,6 +7041,7 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         }
 
         ProgressNumberTextBox.Clear();
+        _lastSelectedPaymentMonthKey = null;
         ProgressPeriodMonthComboBox.SelectedItem = null;
         _multiRoutePaymentRows.Clear();
         MultiRouteEntryBorder.Visibility = Visibility.Collapsed;
