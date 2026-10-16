@@ -31,12 +31,10 @@ public sealed class OehsProgramScopedApplicationDataStore
             return Merge(special, basic);
         }
 
-        if (!ExistsOrBackup(_legacyPath))
-            return OehsApplicationData.Empty;
-
-        var legacy = NormalizeLegacyData(new OehsApplicationDataStore(_legacyPath).Load());
-        Save(legacy);
-        return legacy;
+        // The application intentionally starts with an empty current schema.
+        // Legacy data is backed up by OehsFreshStartService and must never be
+        // silently imported into the new live records.
+        return OehsApplicationData.Empty;
     }
 
     public void Save(OehsApplicationData data)
@@ -182,84 +180,6 @@ public sealed class OehsProgramScopedApplicationDataStore
             (special.CalculationConstantsHistory ?? Array.Empty<ProgressPaymentCalculationConstantsChange>()).Count > 0
                 ? special.CalculationConstantsHistory
                 : basic.CalculationConstantsHistory);
-    }
-
-    private static OehsApplicationData NormalizeLegacyData(OehsApplicationData data)
-    {
-        var contracts = (data.Contracts ?? Array.Empty<ContractDraftData>()).ToList();
-        if (data.Contract is not null && contracts.All(x =>
-                !string.Equals(
-                    OehsIdentityService.BuildContractKey(x.TenderNumber, x.ContractNumber, x.ProgramType),
-                    OehsIdentityService.BuildContractKey(data.Contract.TenderNumber, data.Contract.ContractNumber, data.Contract.ProgramType),
-                    StringComparison.Ordinal)))
-            contracts.Add(data.Contract);
-
-        var routes = (data.Routes ?? Array.Empty<RouteData>()).Select(route =>
-        {
-            var identity = OehsIdentityService.NormalizeIdentity(route.ContractorTaxOrIdentityNumber);
-            var candidates = contracts.Where(contract =>
-                string.Equals(contract.TenderNumber, route.TenderNumber, StringComparison.OrdinalIgnoreCase)
-                && (string.IsNullOrWhiteSpace(identity)
-                    || string.Equals(
-                        OehsIdentityService.NormalizeIdentity(contract.ContractorTaxOrIdentityNumber),
-                        identity, StringComparison.Ordinal))
-                && (string.IsNullOrWhiteSpace(route.ContractNumber)
-                    || string.Equals(contract.ContractNumber, route.ContractNumber, StringComparison.OrdinalIgnoreCase)))
-                .ToArray();
-
-            return candidates.Length == 1
-                ? route with { ProgramType = candidates[0].ProgramType, ContractNumber = candidates[0].ContractNumber }
-                : route;
-        }).ToArray();
-
-        var payments = (data.ProgressPayments ?? Array.Empty<ProgressPaymentHistoryData>()).Select(payment =>
-        {
-            var identity = OehsIdentityService.NormalizeIdentity(payment.ContractorTaxOrIdentityNumber);
-            var candidates = routes.Where(route =>
-                string.Equals(route.TenderNumber, payment.TenderNumber, StringComparison.OrdinalIgnoreCase)
-                && string.Equals(route.RouteNumber, payment.RouteNumber, StringComparison.OrdinalIgnoreCase)
-                && (string.IsNullOrWhiteSpace(identity)
-                    || string.Equals(OehsIdentityService.NormalizeIdentity(route.ContractorTaxOrIdentityNumber), identity, StringComparison.Ordinal))
-                && (string.IsNullOrWhiteSpace(payment.ContractNumber)
-                    || string.Equals(route.ContractNumber, payment.ContractNumber, StringComparison.OrdinalIgnoreCase)))
-                .ToArray();
-
-            if (candidates.Length != 1)
-                return payment;
-
-            var route = candidates[0];
-            return payment with
-            {
-                Input = payment.Input with { ProgramType = route.ProgramType },
-                ContractNumber = string.IsNullOrWhiteSpace(payment.ContractNumber) ? route.ContractNumber : payment.ContractNumber
-            };
-        }).ToArray();
-
-        var contractors = (data.Contractors ?? Array.Empty<Contractor>())
-            .SelectMany(contractor =>
-            {
-                var identity = OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber);
-                var linkedPrograms = contracts
-                    .Where(x => string.Equals(OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber), identity, StringComparison.Ordinal))
-                    .Select(x => x.ProgramType)
-                    .Concat(routes.Where(x => string.Equals(OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber), identity, StringComparison.Ordinal))
-                        .Select(x => x.ProgramType))
-                    .Distinct()
-                    .ToArray();
-                return (linkedPrograms.Length == 0 ? new[] { contractor.ProgramType } : linkedPrograms)
-                    .Select(program => contractor with { ProgramType = program });
-            })
-            .DistinctBy(x => $"{x.ProgramType}|{OehsIdentityService.NormalizeIdentity(x.TaxOrIdentityNumber)}")
-            .ToArray();
-
-        return new OehsApplicationData(
-            data.Contract,
-            routes,
-            contractors,
-            payments,
-            contracts,
-            data.CalculationConstants,
-            data.CalculationConstantsHistory);
     }
 
     private static bool ExistsOrBackup(string path) =>
