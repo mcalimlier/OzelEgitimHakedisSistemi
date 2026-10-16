@@ -863,7 +863,7 @@ public partial class MainWindow : Window
     private void RestoreMinimumWageSupportInputState(
         TransportationProgramType programType,
         decimal savedAmount) =>
-        SetMinimumWageSupportInputMode(programType, restoreSavedValue: true, savedAmount);
+        SetMinimumWageSupportInputMode(programType, restoreSavedValue: true, savedAmount: savedAmount);
 
     private void MinimumWageSupportEnabledCheckBox_Changed(object sender, RoutedEventArgs e)
     {
@@ -5759,7 +5759,7 @@ public partial class MainWindow : Window
         TaxDebtTextBox.Text = item.Input.TaxDebt.ToString("N2", CultureInfo.CurrentCulture);
         SocialSecurityDebtTextBox.Text = item.Input.SocialSecurityDebt.ToString("N2", CultureInfo.CurrentCulture);
         MinimumWageSupportTextBox.Text = item.Input.MinimumWageSupport.ToString("N2", CultureInfo.CurrentCulture);
-            RestoreMinimumWageSupportInputState(item.Input.ProgramType, item.Input.MinimumWageSupport);
+        RestoreMinimumWageSupportInputState(item.Input.ProgramType, item.Input.MinimumWageSupport);
         InspectionPenaltyTextBox.Text = item.Input.InspectionPenalty.ToString("N2", CultureInfo.CurrentCulture);
         ProgressNumberTextBox.Text = item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
         SelectProgressPeriod(item.PeriodDate);

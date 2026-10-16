@@ -31,6 +31,48 @@ public sealed class ProgressPaymentPropagationTests
     }
 
     [Fact]
+    public void BasicOrSecondaryContractChange_ShouldPreserveMinimumWageSupport()
+    {
+        var oldContract = Contract(vatExempt: false) with
+        {
+            ProgramType = TransportationProgramType.BasicOrSecondary
+        };
+        var newContract = oldContract with { TransportDailyPrice = 1500m };
+        var input = new ProgressPaymentInput(
+            10, 1000m, 0m, 100m, 100000m, false, 0m, 0m, 250m,
+            ProgramType: TransportationProgramType.BasicOrSecondary);
+        var history = History(input);
+
+        var updated = ProgressPaymentPropagationService.RecalculateForContractChange(
+            new[] { history }, Array.Empty<RouteData>(), oldContract, newContract);
+
+        var result = Assert.Single(updated);
+        Assert.Equal(250m, result.Input.MinimumWageSupport);
+        Assert.Equal(250m, result.Calculation.Deductions.MinimumWageSupport);
+    }
+
+    [Fact]
+    public void BasicOrSecondaryRouteChange_ShouldPreserveMinimumWageSupport()
+    {
+        var oldRoute = Route(1000m) with
+        {
+            ProgramType = TransportationProgramType.BasicOrSecondary
+        };
+        var newRoute = oldRoute with { DailyPrice = 1500m };
+        var input = new ProgressPaymentInput(
+            10, 1000m, 0m, 100m, 100000m, false, 0m, 0m, 250m,
+            ProgramType: TransportationProgramType.BasicOrSecondary);
+        var history = History(input);
+
+        var updated = ProgressPaymentPropagationService.RecalculateForRouteChange(
+            new[] { history }, oldRoute, newRoute, Contractor());
+
+        var result = Assert.Single(updated);
+        Assert.Equal(250m, result.Input.MinimumWageSupport);
+        Assert.Equal(250m, result.Calculation.Deductions.MinimumWageSupport);
+    }
+
+    [Fact]
     public void ContractorRename_ShouldKeepStableIdentityAndUpdateDisplayName()
     {
         var oldContractor = Contractor();

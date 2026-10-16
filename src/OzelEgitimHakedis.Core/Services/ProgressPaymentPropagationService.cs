@@ -122,7 +122,7 @@ public static class ProgressPaymentPropagationService
             GuideDailyPrice = hasGuide ? item.Input.GuideDailyPrice : 0m,
             GuideDiscountAmount = hasGuide ? item.Input.GuideDiscountAmount : 0m,
             GuidePriceDifference = hasGuide ? item.Input.GuidePriceDifference : 0m,
-            MinimumWageSupport = hasGuide ? item.Input.MinimumWageSupport : 0m
+            MinimumWageSupport = item.Input.MinimumWageSupport
         };
 
         var calculation = ProgressPaymentCalculator.Calculate(input, constants);
@@ -158,7 +158,7 @@ public static class ProgressPaymentPropagationService
             ProgramType = route.ProgramType,
             GuideDiscountAmount = route.ProgramType == TransportationProgramType.BasicOrSecondary ? 0m : item.Input.GuideDiscountAmount,
             GuidePriceDifference = route.ProgramType == TransportationProgramType.BasicOrSecondary ? 0m : item.Input.GuidePriceDifference,
-            MinimumWageSupport = route.ProgramType == TransportationProgramType.BasicOrSecondary ? 0m : item.Input.MinimumWageSupport
+            MinimumWageSupport = item.Input.MinimumWageSupport
         };
 
         return item with
