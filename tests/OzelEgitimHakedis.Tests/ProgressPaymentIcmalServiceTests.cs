@@ -30,6 +30,23 @@ public sealed class ProgressPaymentIcmalServiceTests
     }
 
     [Fact]
+    public void FindPreviousDeduction_ShouldNotCarryAcrossTransportationPrograms()
+    {
+        var basicPrevious = History(1, new DateOnly(2026, 10, 31), 200m) with
+        {
+            Input = new ProgressPaymentInput(
+                1, 1000m, 0m, 0m, 100000m, false, 0m, 0m, 0m,
+                ProgramType: TransportationProgramType.BasicOrSecondary)
+        };
+        var current = History(2, new DateOnly(2026, 11, 30), 300m);
+
+        var result = ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { basicPrevious, current }, current);
+
+        Assert.Equal(0m, result);
+    }
+
+    [Fact]
     public void FindPreviousDeduction_ShouldReturnZeroWhenImmediatelyPreviousMonthHasNoPayment()
     {
         var september = History(1, new DateOnly(2026, 9, 30), 100m);
