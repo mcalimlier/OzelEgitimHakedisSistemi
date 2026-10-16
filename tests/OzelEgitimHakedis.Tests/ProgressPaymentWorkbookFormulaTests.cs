@@ -109,4 +109,61 @@ public sealed class ProgressPaymentWorkbookFormulaTests
             "TENDER",
             "SOZ",
             ContractorTaxOrIdentityNumber: "TEST-VKN-01");
+
+    [Theory]
+    [InlineData(-100, 50, -3)]
+    [InlineData(-100, -50, -9)]
+    [InlineData(100, -50, 3)]
+    public void AdditionalGuarantee_ShouldApplySixPercentToEachSignedPriceDifference(
+        decimal transportPriceDifference,
+        decimal guidePriceDifference,
+        decimal expectedGuarantee)
+    {
+        var input = new ProgressPaymentInput(
+            WorkDays: 0,
+            DailyPrice: 0m,
+            DiscountAmount: 0m,
+            PriceDifference: transportPriceDifference,
+            ContractAmount: 1000m,
+            IsVatExempt: true,
+            TaxDebt: 0m,
+            SocialSecurityDebt: 0m,
+            MinimumWageSupport: 0m,
+            GuideWorkDays: 0,
+            GuideDailyPrice: 0m,
+            GuideDiscountAmount: 0m,
+            GuidePriceDifference: guidePriceDifference,
+            ProgramType: TransportationProgramType.SpecialEducation);
+
+        var result = ProgressPaymentCalculator.Calculate(input);
+
+        // Special Education XLSM AC = I*6% + R*6%; negative differences remain signed.
+        Assert.Equal(expectedGuarantee, result.AdditionalGuarantee);
+    }
+
+    [Fact]
+    public void AdditionalGuarantee_ShouldNotIncludeTransportOrGuideDiscounts()
+    {
+        var input = new ProgressPaymentInput(
+            WorkDays: 1,
+            DailyPrice: 100m,
+            DiscountAmount: 40m,
+            PriceDifference: 50m,
+            ContractAmount: 1000m,
+            IsVatExempt: true,
+            TaxDebt: 0m,
+            SocialSecurityDebt: 0m,
+            MinimumWageSupport: 0m,
+            GuideWorkDays: 1,
+            GuideDailyPrice: 100m,
+            GuideDiscountAmount: 20m,
+            GuidePriceDifference: 30m,
+            ProgramType: TransportationProgramType.SpecialEducation);
+
+        var result = ProgressPaymentCalculator.Calculate(input);
+
+        // Excel AC uses I and R only, not the net (I-J) and (R-S) values.
+        Assert.Equal(4.8m, result.AdditionalGuarantee);
+    }
+
 }
