@@ -153,3 +153,32 @@ flowchart TD
 - Geçici mali güvenlik önlemi eklendi: çoklu hat seçiliyken bu ortak parasal alanlardan biri sıfır değilse kayıt durdurulur ve hat bazlı ayrı giriş istenir. İlgili servis: `MultiRouteProgressPaymentValidationService`; testler: `MultiRouteProgressPaymentValidationServiceTests`.
 - **Açık iş / öncelikli:** geçici engelin yerine, seçilen her hat için ayrı iskonto, fiyat farkı ve kesinti girdileri sağlayan hat bazlı çoklu giriş ekranı eklenmeli. Her satırın hesabı ayrı saklanmalı; toplam yalnızca satır sonuçlarının toplamı olmalı. Bu iş bitene kadar çoklu seçimde ortak parasal değerler sıfır değilken işlem bilerek engellenir.
 - Bu yeni güvenlik değişiklikleri `5be27e75` sonrasındaki commit'lerdir; bu nedenle önceki başarılı CI bunları kapsamaz. En yeni HEAD için Actions sonucu ayrıca doğrulanmalıdır.
+
+## 2026-10-16 ek devam kaydı — Excel formülleri ve aylık çoklu-hat akışı
+
+### Kaynak analiz belgesi
+- Ayrıntılı iki-Excel formül/VBA analizi: `docs/EXCEL_KAYNAK_ANALIZI_VE_AYLIK_HAKEDIS_KURALLARI_2026-10-16.md`.
+- Kaynak Excel formüllerine göre Temel/Ortaöğretim Asgari Ücret Desteği kesintilerde korunmalı; yalnızca rehber personel kalemleri bu programda sıfırlanır.
+- Ek kesin teminat kaynak formülü: Temel/Ortaöğretim için `I × %6`; Özel Eğitim için `I × %6 + R × %6`. İskontolar bu tabana dahil değildir. Negatif fiyat farkını sıfırlayan `MAX(0, ...)` kaynakta bulunmadığından hesap motorundan kaldırıldı; hukuki uygulama yorumu uzman kontrolüne açık tutuldu.
+- Hakediş Raporu D6/D7/D8/D10/D11 zinciri kaynak Excel formülüne göre düzenlendi. D7 yalnızca seçili ayın ham I+R fiyat farkını; D6 ise önceki + mevcut aylık K+T toplamından seçili ayın I+R tutarı çıkarılmış değeri gösterir.
+
+### Aylık hakediş / batch davranışı
+- Bir sözleşme 6 ay sürüyorsa tek bir altı aylık hakediş yerine her ay ayrı kayıt oluşturulur.
+- Çoklu hat ekranı her hat için ayrı iş günü, iskonto, fiyat farkı ve kesinti alır; ortak toplam satır sonuçlarının toplamıdır.
+- Her kayıtta ortak `BatchId`, `BatchDisplayName`, `BatchRouteNumbers` bulunur. Görünen ad: program + İKN + sözleşme + firma + seçili hat kümesi + ay/yıl.
+- Her hattın hakediş numarası kendi program/sözleşme/yüklenici/hat geçmişinden türetilir; aynı batch içindeki hatların numaraları farklı olabilir.
+- Aynı hat/program/sözleşme için aynı ayda ikinci kayıt, Excel'in hat başına aylık hücre modelini bozacağı için reddedilir. Örneğin Q1/Eylül ve Q1+Q3/Ekim geçerlidir; aynı Q1/Ekim ikinci kez oluşturulamaz.
+- Dört resmi PDF adı/üretimi ve arşiv yolu program, seçili hat kümesi ve dönemle ilişkilendirilir; çoklu hat arşivlemesinde hatların hesap ayrıntıları ayrı kayıtlarda korunur.
+
+### Bu oturumda bulunan ve düzeltilen ek hatalar
+- **Kritik kapsam hatası:** Hakediş Raporu kümülatif geçmişi farklı hat/program/sözleşme/yüklenici kayıtlarını da toplayabiliyordu. Artık önceki tutarlar tam program + İKN + sözleşme + yüklenici kimliği + hat anahtarıyla filtreleniyor. Farklı kapsamların karışmaması için regresyon testleri eklendi.
+- **Kritik giriş alanı hatası:** Asgari Ücret Desteği alanı, rehber personel alanlarıyla birlikte Temel/Ortaöğretim ekranında gizleniyor ve sıfırlanıyordu. Alan artık her iki programda görünür; rehber alanları Özel Eğitim'e özgü kalır.
+- Son ilgili commit'ler: `fa5ab7bd` (rapor kapsamı), `656d0208` (rapor kapsam testi), `ec5a138a` (asgari ücret desteği alanı), `c38cd0a7` (tam kimlik kapsamı testi), sonrasında belge güncellemesi.
+- Önceki kodda `0fff9556` HEAD'i için CI başarılıydı. Yeni rapor-kapsamı, alan görünürlüğü ve ek regresyon testi commit'lerinin CI çalışmaları başlatıldı; **en yeni HEAD için başarı henüz doğrulanmış kabul edilmemeli**. Güncel kontrol bağlantısı: https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions
+
+### Bir sonraki çalışma sırası
+1. En son HEAD'in GitHub Actions sonucunu kontrol et; başarısız test varsa kodu düzelt, testleri gevşetme.
+2. Testler geçince aylık kayıt kimliğinin tek-hat ve çoklu-hat akışında tutarlı kaldığını gözden geçir; özellikle düzenleme, arşivleme, geri yükleme ve dört PDF üretimini doğrula.
+3. Resmî XLSM ile gerçek örnek aylar üzerinden ara hücreler ve tutarları karşılaştır; yalnızca PDF'nin oluşması yeterli değildir.
+4. Yerel Windows'ta son HEAD'i pull ettikten sonra WPF derlemesi, testler ve gerçek kabul senaryolarını çalıştır.
+5. Son başarılı HEAD'den yeni Windows x64/deneme paketi üret; önceki paketleri güncel diye kullanma.
