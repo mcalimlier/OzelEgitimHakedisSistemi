@@ -5844,6 +5844,7 @@ public partial class MainWindow : Window
             .Where(x =>
                 string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(x.ContractNumber, contract.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
+                x.Input.ProgramType == route.ProgramType &&
                 string.Equals(x.RouteNumber, route.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(
                         OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
