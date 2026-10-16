@@ -467,32 +467,32 @@
                                                     <Grid.RowDefinitions>
                                                         <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
                                                     </Grid.RowDefinitions>
-                                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="İhale Kayıt Numarası (İKN)" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
-                                                    <TextBox x:Name="TenderNumberTextBox" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Margin="4.5" Style="{StaticResource FieldTextBox}"/>
-                                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="" Visibility="Collapsed" Style="{StaticResource FieldLabel}" Margin="8.5,4.5,0,4.5"/>
-                                                    <TextBox x:Name="ContractNumberTextBox" Grid.Row="0" Grid.Column="3" Margin="4.5" Visibility="Collapsed" IsTabStop="False" Style="{StaticResource FieldTextBox}"/>
+                                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="İhale Kayıt Numarası (İKN)" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
+                                                    <TextBox x:Name="TenderNumberTextBox" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="4.5" Style="{StaticResource FieldTextBox}"/>
+                                                    <TextBlock Grid.Row="1" Grid.Column="2" Text="" Visibility="Collapsed" Style="{StaticResource FieldLabel}" Margin="8.5,4.5,0,4.5"/>
+                                                    <TextBox x:Name="ContractNumberTextBox" Grid.Row="1" Grid.Column="3" Margin="4.5" Visibility="Collapsed" IsTabStop="False" Style="{StaticResource FieldTextBox}"/>
 
-                                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="İşin Adı" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
-                                                    <TextBox x:Name="WorkNameTextBox" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="4.5" Style="{StaticResource FieldTextBox}"/>
+                                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="İşin Adı" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
+                                                    <TextBox x:Name="WorkNameTextBox" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Margin="4.5" Style="{StaticResource FieldTextBox}"/>
 
-                                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Sözleşme Bedeli" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
-                                                    <TextBox x:Name="ContractAmountTextBox" Grid.Row="2" Grid.Column="1" Margin="4.5" Style="{StaticResource FieldTextBox}"/>
-                                                    <TextBlock Grid.Row="2" Grid.Column="2" Text="Sözleşme İş Günü" Style="{StaticResource FieldLabel}" Margin="8.5,4.5,0,4.5"/>
-                                                    <TextBox x:Name="ContractWorkDaysTextBox" Grid.Row="2" Grid.Column="3" Margin="4.5" Style="{StaticResource FieldTextBox}"/>
+                                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Sözleşme Bedeli" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
+                                                    <TextBox x:Name="ContractAmountTextBox" Grid.Row="3" Grid.Column="1" Margin="4.5" Style="{StaticResource FieldTextBox}"/>
+                                                    <TextBlock Grid.Row="3" Grid.Column="2" Text="Sözleşme İş Günü" Style="{StaticResource FieldLabel}" Margin="8.5,4.5,0,4.5"/>
+                                                    <TextBox x:Name="ContractWorkDaysTextBox" Grid.Row="3" Grid.Column="3" Margin="4.5" Style="{StaticResource FieldTextBox}"/>
 
-                                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Başlangıç Tarihi" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
-                                                    <DatePicker x:Name="StartDatePicker" Grid.Row="3" Grid.Column="1" Margin="4.5" Style="{StaticResource FieldDatePicker}"/>
-                                                    <TextBlock Grid.Row="3" Grid.Column="2" Text="Bitiş Tarihi" Style="{StaticResource FieldLabel}" Margin="8.5,4.5,0,4.5"/>
-                                                    <DatePicker x:Name="EndDatePicker" Grid.Row="3" Grid.Column="3" Margin="4.5" Style="{StaticResource FieldDatePicker}"/>
-                                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="İhale Tarihi" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
-                                                    <DatePicker x:Name="TenderDatePicker" Grid.Row="4" Grid.Column="1" Margin="4.5" Style="{StaticResource FieldDatePicker}"/>
-                                                    <TextBlock Grid.Row="4" Grid.Column="2" Text="Sözleşme Tarihi" Style="{StaticResource FieldLabel}" Margin="8.5,4.5,0,4.5"/>
-                                                    <DatePicker x:Name="ContractDatePicker" Grid.Row="4" Grid.Column="3" Margin="4.5" Style="{StaticResource FieldDatePicker}"/>
+                                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Başlangıç Tarihi" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
+                                                    <DatePicker x:Name="StartDatePicker" Grid.Row="4" Grid.Column="1" Margin="4.5" Style="{StaticResource FieldDatePicker}"/>
+                                                    <TextBlock Grid.Row="4" Grid.Column="2" Text="Bitiş Tarihi" Style="{StaticResource FieldLabel}" Margin="8.5,4.5,0,4.5"/>
+                                                    <DatePicker x:Name="EndDatePicker" Grid.Row="4" Grid.Column="3" Margin="4.5" Style="{StaticResource FieldDatePicker}"/>
+                                                    <TextBlock Grid.Row="5" Grid.Column="0" Text="İhale Tarihi" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
+                                                    <DatePicker x:Name="TenderDatePicker" Grid.Row="5" Grid.Column="1" Margin="4.5" Style="{StaticResource FieldDatePicker}"/>
+                                                    <TextBlock Grid.Row="5" Grid.Column="2" Text="Sözleşme Tarihi" Style="{StaticResource FieldLabel}" Margin="8.5,4.5,0,4.5"/>
+                                                    <DatePicker x:Name="ContractDatePicker" Grid.Row="5" Grid.Column="3" Margin="4.5" Style="{StaticResource FieldDatePicker}"/>
 
-                                                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Taşıma Günlük Fiyatı" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
-                                                    <TextBox x:Name="ContractTransportDailyPriceTextBox" Grid.Row="5" Grid.Column="1" Margin="4.5" Style="{StaticResource FieldTextBox}" ToolTip="Excel İhale Verileri içindeki Günlük Fiyat. Hat ve hakediş ekranlarında tekrar girilmez."/>
-                                                    <TextBlock Grid.Row="6" Grid.Column="0" Text="Taşıma Programı" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
-                                                    <ComboBox x:Name="TransportProgramTypeComboBox" Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3" Margin="4.5" Style="{StaticResource FieldComboBox}" SelectedIndex="0" ToolTip="Rehber ve asgari ücret desteği kuralları seçilen program türüne göre uygulanır.">
+                                                    <TextBlock Grid.Row="6" Grid.Column="0" Text="Taşıma Günlük Fiyatı" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
+                                                    <TextBox x:Name="ContractTransportDailyPriceTextBox" Grid.Row="6" Grid.Column="1" Margin="4.5" Style="{StaticResource FieldTextBox}" ToolTip="Excel İhale Verileri içindeki Günlük Fiyat. Hat ve hakediş ekranlarında tekrar girilmez."/>
+                                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="TAŞIMA PROGRAMI" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
+                                                    <ComboBox x:Name="TransportProgramTypeComboBox" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Margin="4.5" Style="{StaticResource FieldComboBox}" SelectedIndex="0" ToolTip="Rehber ve asgari ücret desteği kuralları seçilen program türüne göre uygulanır.">
                                                         <ComboBoxItem Content="Özel Eğitim Taşıma" Tag="SpecialEducation"/>
                                                         <ComboBoxItem Content="Temel / Ortaöğretim Taşıma" Tag="BasicOrSecondary"/>
                                                     </ComboBox>
@@ -654,9 +654,9 @@
                                                     <TextBlock x:Name="ProgressGuideDailyPriceLabel" Grid.Row="2" Grid.Column="2" Text="Rehber Günlük Fiyat (otomatik)" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="8,5,0,5" Visibility="Collapsed"/>
                                                     <TextBox x:Name="GuideDailyPriceTextBox" Grid.Row="2" Grid.Column="3" Margin="6" Style="{StaticResource PremiumFieldTextBox}" IsReadOnly="True" ToolTip="Tanımlı hattan otomatik alınır." Visibility="Collapsed"/>
                                                     <TextBlock Grid.Row="3" Grid.Column="0" Text="Hakediş No" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
-                                                    <TextBox x:Name="ProgressNumberTextBox" Grid.Row="3" Grid.Column="1" Margin="4.5" Style="{StaticResource PremiumFieldTextBox}"/>
+                                                    <TextBox x:Name="ProgressNumberTextBox" Grid.Row="3" Grid.Column="1" Margin="4.5" Style="{StaticResource PremiumFieldTextBox}" IsReadOnly="True" ToolTip="Hakediş numarası sözleşme dönem sırasına göre otomatik belirlenir."/>
                                                     <TextBlock Grid.Row="3" Grid.Column="2" Text="Hakediş Dönemi (Ay/Yıl)" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="7,4.5,0,4.5"/>
-                                                    <ComboBox x:Name="ProgressPeriodMonthComboBox" Grid.Row="3" Grid.Column="3" Margin="4.5" Style="{StaticResource FieldComboBox}" DisplayMemberPath="DisplayText" ToolTip="Sözleşme tarihleri içindeki ay/yıl dönemini seçin."/>
+                                                    <ComboBox x:Name="ProgressPeriodMonthComboBox" Grid.Row="3" Grid.Column="3" Margin="4.5" Style="{StaticResource FieldComboBox}" DisplayMemberPath="DisplayText" SelectionChanged="ProgressPeriodMonthComboBox_SelectionChanged" ToolTip="Sözleşme tarihleri içindeki ay/yıl dönemini seçin."/>
                                                     <TextBlock Grid.Row="4" Grid.Column="0" Text="Taşıma İskonto" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
                                                     <TextBox x:Name="DiscountTextBox" Grid.Row="4" Grid.Column="1" Margin="4.5" Style="{StaticResource PremiumFieldTextBox}"/>
                                                     <TextBlock Grid.Row="4" Grid.Column="2" Text="Taşıma Fiyat Farkı" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="8,5,0,5"/>
