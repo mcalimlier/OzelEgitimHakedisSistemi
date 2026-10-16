@@ -93,7 +93,7 @@ public sealed class OehsOutputPathServiceTests
     [Fact]
     public void BuildPdfDirectoryForContractor_ShouldSeparateProgramAndMonthlyBatch()
     {
-        var root = Path.Combine(@"C:\\Users\\Test\\Desktop", "OzelEgitimHakedisSistemi");
+        var root = Path.Combine(@"C:\Users\Test\Desktop", "OzelEgitimHakedisSistemi");
 
         var special = OehsOutputPathService.BuildPdfDirectoryForContractor(
             root, "2026/01", "Firma A", "11111111111", "01",
@@ -113,7 +113,7 @@ public sealed class OehsOutputPathServiceTests
     [Fact]
     public void BuildContractorPdfFilePath_ShouldIncludeProgramBatchAndMonth()
     {
-        var root = Path.Combine(@"C:\\Users\\Test\\Desktop", "OzelEgitimHakedisSistemi");
+        var root = Path.Combine(@"C:\Users\Test\Desktop", "OzelEgitimHakedisSistemi");
 
         var path = OehsOutputPathService.BuildContractorPdfFilePath(
             root, "2026/01", "Firma A", "11111111111", "01", 3,
