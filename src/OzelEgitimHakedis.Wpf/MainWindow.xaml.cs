@@ -3984,19 +3984,7 @@ public partial class MainWindow : Window
     private void SaveMultiRouteProgressPayment(
         ContractDraftData contract,
         IReadOnlyList<RouteDraft> routes,
-        int enteredWorkDays,
-        decimal enteredDailyPrice,
-        decimal discount,
-        decimal priceDifference,
-        decimal taxDebt,
-        decimal socialSecurityDebt,
-        decimal minimumWageSupport,
-        decimal inspectionPenalty,
-        int guideWorkDays,
-        decimal guideDailyPrice,
-        decimal guideDiscount,
-        decimal guidePriceDifference,
-        int? progressNumber,
+        IReadOnlyList<MultiRoutePaymentDraftRow> entries,
         DateOnly? periodDate)
     {
         if (routes.Count < 2)
@@ -4012,31 +4000,12 @@ public partial class MainWindow : Window
             return;
         }
 
-        var sharedMonetaryInputs = MultiRouteProgressPaymentValidationService.FindSharedMonetaryInputs(
-            discount,
-            priceDifference,
-            taxDebt,
-            socialSecurityDebt,
-            minimumWageSupport,
-            inspectionPenalty,
-            guideDiscount,
-            guidePriceDifference);
-        if (sharedMonetaryInputs.Count > 0)
+        MultiRoutePaymentGrid.CommitEdit(DataGridEditingUnit.Cell, true);
+        MultiRoutePaymentGrid.CommitEdit(DataGridEditingUnit.Row, true);
+
+        if (entries.Count != routes.Count)
         {
-            var message =
-                "Çoklu hat seçiminde bu parasal alanlar her hat kaydına ayrı uygulanır ve tutarlar çoğalabilir: "
-                + string.Join(", ", sharedMonetaryInputs)
-                + ". Yanlış hakediş oluşmasını önlemek için bu alanları hat bazında ayrı ayrı girin; "
-                + "hat bazlı giriş ekranı tamamlanana kadar bu alanlar sıfır değilken hatları tek tek hesaplayın.";
-            ProgressValidationBanner.Visibility = Visibility.Visible;
-            ProgressValidationMessageTextBlock.Text = message;
-            CalculationStatusTextBlock.Foreground =
-                new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(198, 40, 40));
-            CalculationStatusTextBlock.FontWeight = FontWeights.Bold;
-            CalculationStatusTextBlock.Text = message;
-            ProgressCalculationSummaryTextBlock.Text = "HAT BAZLI GİRİŞ GEREKLİ";
-            ArchiveCurrentProgressButton.Visibility = Visibility.Collapsed;
-            CorrectCurrentProgressButton.Visibility = Visibility.Collapsed;
+            ShowMultiRouteValidation("Seçili hatların her biri için ayrı hesap satırı oluşturulamadı. Hat seçimlerini yenileyip tekrar deneyin.");
             return;
         }
 
@@ -4070,8 +4039,11 @@ public partial class MainWindow : Window
             sortedRouteNumbers,
             periodDate.Value);
         var batchRouteNumbers = string.Join("+", sortedRouteNumbers);
+        var entriesByKey = entries.ToDictionary(x => x.RouteKey, StringComparer.Ordinal);
         var batch = new List<ProgressPaymentHistoryData>();
         var errors = new List<string>();
+        var hasGuide = HasGuideStaff(contract.ProgramType);
+
         foreach (var route in routes)
         {
             if (route.ProgramType != contract.ProgramType || !IsRouteForContract(route, contract))
@@ -4080,24 +4052,44 @@ public partial class MainWindow : Window
                 continue;
             }
 
+            var routeKey = OehsIdentityService.BuildRouteKey(
+                route.TenderNumber,
+                route.RouteNumber,
+                route.ContractorTaxOrIdentityNumber,
+                route.ContractNumber,
+                route.ProgramType);
+            if (!entriesByKey.TryGetValue(routeKey, out var row))
+            {
+                errors.Add($"Hat {route.RouteNumber}: hat bazlı giriş satırı bulunamadı.");
+                continue;
+            }
+
+            if (row.WorkDays < 0 || row.DailyPrice < 0m || row.DiscountAmount < 0m ||
+                row.TaxDebt < 0m || row.SocialSecurityDebt < 0m ||
+                row.MinimumWageSupport < 0m || row.InspectionPenalty < 0m ||
+                (hasGuide && (row.GuideWorkDays < 0 || row.GuideDailyPrice < 0m || row.GuideDiscountAmount < 0m)))
+            {
+                errors.Add($"Hat {route.RouteNumber}: gün, günlük fiyat, iskonto ve kesinti alanları negatif olamaz. Fiyat farkı işaretli olabilir.");
+                continue;
+            }
+
             var identity = OehsIdentityService.NormalizeIdentity(route.ContractorTaxOrIdentityNumber);
             var contractor = FindContractor(identity, route.ProgramType);
-            var hasGuide = HasGuideStaff(contract.ProgramType);
             var input = new ProgressPaymentInput(
-                route.TransportWorkDays > 0 ? route.TransportWorkDays : enteredWorkDays,
-                route.DailyPrice > 0 ? route.DailyPrice : enteredDailyPrice,
-                discount,
-                priceDifference,
+                row.WorkDays,
+                row.DailyPrice,
+                row.DiscountAmount,
+                row.PriceDifference,
                 contract.ContractAmount,
                 contract.VatExempt,
-                taxDebt,
-                socialSecurityDebt,
-                minimumWageSupport,
-                inspectionPenalty,
-                hasGuide ? (route.GuideWorkDays > 0 ? route.GuideWorkDays : guideWorkDays) : 0,
-                hasGuide ? (route.GuideDailyPrice > 0 ? route.GuideDailyPrice : guideDailyPrice) : 0m,
-                hasGuide ? guideDiscount : 0m,
-                hasGuide ? guidePriceDifference : 0m,
+                row.TaxDebt,
+                row.SocialSecurityDebt,
+                row.MinimumWageSupport,
+                row.InspectionPenalty,
+                hasGuide ? row.GuideWorkDays : 0,
+                hasGuide ? row.GuideDailyPrice : 0m,
+                hasGuide ? row.GuideDiscountAmount : 0m,
+                hasGuide ? row.GuidePriceDifference : 0m,
                 contract.ProgramType);
 
             var calculation = ProgressPaymentCalculator.Calculate(input, _calculationConstants);
@@ -4136,16 +4128,7 @@ public partial class MainWindow : Window
 
         if (errors.Count > 0 || batch.Count != routes.Count)
         {
-            var message = string.Join(Environment.NewLine, errors.Distinct());
-            ProgressValidationBanner.Visibility = Visibility.Visible;
-            ProgressValidationMessageTextBlock.Text = message;
-            ProgressCalculationSummaryTextBlock.Text = "KONTROL GEREKLİ";
-            CalculationStatusTextBlock.Foreground =
-                new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(198, 40, 40));
-            CalculationStatusTextBlock.FontWeight = FontWeights.Bold;
-            CalculationStatusTextBlock.Text = message;
-            ArchiveCurrentProgressButton.Visibility = Visibility.Collapsed;
-            CorrectCurrentProgressButton.Visibility = Visibility.Collapsed;
+            ShowMultiRouteValidation(string.Join(Environment.NewLine, errors.Distinct()));
             return;
         }
 
@@ -4195,7 +4178,7 @@ public partial class MainWindow : Window
         MinimumWageSupportResultTextBlock.Text = FormatMoney(deductions.MinimumWageSupport);
         InspectionPenaltyResultTextBlock.Text = FormatMoney(deductions.InspectionPenalty);
         AdditionalGuaranteeResultTextBlock.Text = FormatMoney(deductions.AdditionalGuarantee);
-        ProgressWorkDaysSummaryTextBlock.Text = routes.Sum(x => x.TransportWorkDays).ToString(CultureInfo.CurrentCulture);
+        ProgressWorkDaysSummaryTextBlock.Text = batch.Sum(x => x.Input.WorkDays).ToString(CultureInfo.CurrentCulture);
         ProgressNetSummaryTextBlock.Text = FormatMoney(Sum(x => x.NetPayable));
         ProgressCalculationSummaryTextBlock.Text = "TAMAM";
 
@@ -4209,7 +4192,7 @@ public partial class MainWindow : Window
         UpdateArchiveView();
 
         var routeLabels = string.Join(", ", routes.Select(x => x.RouteNumber));
-        var aggregateMessage = $"{routes.Count} hat ({routeLabels}) hesaplandı. Birleşik net tutar: {FormatMoney(Sum(x => x.NetPayable))}. Hat bazlı kayıtlar ayrı ayrı saklandı.";
+        var aggregateMessage = $"{batchDisplayName} hesaplandı. {routes.Count} hat ({routeLabels}) için her satır ayrı hesaplandı ve kaydedildi. Birleşik net tutar: {FormatMoney(Sum(x => x.NetPayable))}.";
         ProgressValidationBanner.Visibility = Visibility.Collapsed;
         ProgressValidationMessageTextBlock.Text = aggregateMessage;
         CalculationStatusTextBlock.Foreground =
@@ -4217,6 +4200,19 @@ public partial class MainWindow : Window
         CalculationStatusTextBlock.FontWeight = FontWeights.SemiBold;
         CalculationStatusTextBlock.Text = aggregateMessage;
         ArchiveCurrentProgressButton.Visibility = Visibility.Visible;
+        CorrectCurrentProgressButton.Visibility = Visibility.Collapsed;
+    }
+
+    private void ShowMultiRouteValidation(string message)
+    {
+        ProgressValidationBanner.Visibility = Visibility.Visible;
+        ProgressValidationMessageTextBlock.Text = message;
+        ProgressCalculationSummaryTextBlock.Text = "KONTROL GEREKLİ";
+        CalculationStatusTextBlock.Foreground =
+            new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(198, 40, 40));
+        CalculationStatusTextBlock.FontWeight = FontWeights.Bold;
+        CalculationStatusTextBlock.Text = message;
+        ArchiveCurrentProgressButton.Visibility = Visibility.Collapsed;
         CorrectCurrentProgressButton.Visibility = Visibility.Collapsed;
     }
 
