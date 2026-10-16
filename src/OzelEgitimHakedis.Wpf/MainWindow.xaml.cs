@@ -5143,11 +5143,14 @@ public partial class MainWindow : Window
         for (var index = 0; index < orderedHistory.Count; index++)
         {
             var item = orderedHistory[index];
-            var displayNumber = item.ProgressPaymentNumber.HasValue
-                ? $"Hakediş No {item.ProgressPaymentNumber.Value} • İhale/Dosya: {item.TenderNumber ?? "-"} • Hat: {item.RouteNumber ?? "-"}"
-                : $"Hesaplama {index + 1} • İhale/Dosya: {item.TenderNumber ?? "-"} • Hat: {item.RouteNumber ?? "-"}";
+            var batchTitle = item.BatchDisplayName;
+            var displayNumber = !string.IsNullOrWhiteSpace(batchTitle)
+                ? $"{batchTitle} • Hat {item.RouteNumber ?? "-"} • Hakediş No {item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"}"
+                : item.ProgressPaymentNumber.HasValue
+                    ? $"Hakediş No {item.ProgressPaymentNumber.Value} • İhale/Dosya: {item.TenderNumber ?? "-"} • Hat: {item.RouteNumber ?? "-"}"
+                    : $"Hesaplama {index + 1} • İhale/Dosya: {item.TenderNumber ?? "-"} • Hat: {item.RouteNumber ?? "-"}";
             var periodText = item.PeriodDate.HasValue
-                ? $"Dönem: {item.PeriodDate.Value:dd.MM.yyyy} • Yüklenici: {item.ContractorName ?? "-"} • Kayıt: {item.CreatedAt:dd.MM.yyyy HH:mm}"
+                ? $"Dönem: {CultureInfo.GetCultureInfo("tr-TR").TextInfo.ToTitleCase(item.PeriodDate.Value.ToString("MMMM yyyy", CultureInfo.GetCultureInfo("tr-TR")))} • Yüklenici: {item.ContractorName ?? "-"} • Kayıt: {item.CreatedAt:dd.MM.yyyy HH:mm}"
                 : $"Yüklenici: {item.ContractorName ?? "-"} • Kayıt: {item.CreatedAt:dd.MM.yyyy HH:mm}";
 
             _historyRows.Add(new HistoryRow(
@@ -5701,12 +5704,14 @@ public partial class MainWindow : Window
 
         foreach (var item in ordered)
         {
-            var title = item.ProgressPaymentNumber.HasValue
-                ? $"Hakediş No {item.ProgressPaymentNumber.Value}"
-                : "Hakediş Hesaplama";
+            var title = !string.IsNullOrWhiteSpace(item.BatchDisplayName)
+                ? $"{item.BatchDisplayName} • Hat {item.RouteNumber ?? "-"} • Hakediş No {item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"}"
+                : item.ProgressPaymentNumber.HasValue
+                    ? $"Hakediş No {item.ProgressPaymentNumber.Value}"
+                    : "Hakediş Hesaplama";
 
             var period = item.PeriodDate.HasValue
-                ? $"Dönem: {item.PeriodDate.Value:dd.MM.yyyy}"
+                ? $"Dönem: {CultureInfo.GetCultureInfo("tr-TR").TextInfo.ToTitleCase(item.PeriodDate.Value.ToString("MMMM yyyy", CultureInfo.GetCultureInfo("tr-TR")))}"
                 : $"Kayıt: {item.CreatedAt:dd.MM.yyyy HH:mm}";
 
             _summaryRows.Add(new SummaryRow(
@@ -5761,12 +5766,14 @@ public partial class MainWindow : Window
                      .OrderByDescending(x => x.PeriodDate ?? DateOnly.MinValue)
                      .ThenByDescending(x => x.CreatedAt))
         {
-            var title = item.ProgressPaymentNumber.HasValue
-                ? $"Hakediş No {item.ProgressPaymentNumber.Value}"
-                : "Hakediş Hesaplama";
+            var title = !string.IsNullOrWhiteSpace(item.BatchDisplayName)
+                ? $"{item.BatchDisplayName} • Hat {item.RouteNumber ?? "-"} • Hakediş No {item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"}"
+                : item.ProgressPaymentNumber.HasValue
+                    ? $"Hakediş No {item.ProgressPaymentNumber.Value}"
+                    : "Hakediş Hesaplama";
 
             var period = item.PeriodDate.HasValue
-                ? $"Dönem: {item.PeriodDate.Value:dd.MM.yyyy}"
+                ? $"Dönem: {CultureInfo.GetCultureInfo("tr-TR").TextInfo.ToTitleCase(item.PeriodDate.Value.ToString("MMMM yyyy", CultureInfo.GetCultureInfo("tr-TR")))}"
                 : $"Kayıt: {item.CreatedAt:dd.MM.yyyy HH:mm}";
 
             _reportRows.Add(new ReportRow(
