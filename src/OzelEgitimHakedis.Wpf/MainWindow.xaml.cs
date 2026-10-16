@@ -2039,7 +2039,7 @@ public partial class MainWindow : Window
             ContractorEmailTextBox.Text.Trim(),
             ContractorBankTextBox.Text.Trim(),
             ContractorContactTextBox.Text.Trim(),
-            contractorProgramType);
+            archive.Contract.ProgramType);
 
         var updatedContract = archive.Contract with
         {
