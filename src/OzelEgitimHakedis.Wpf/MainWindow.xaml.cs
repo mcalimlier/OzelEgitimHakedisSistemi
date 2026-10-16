@@ -2631,6 +2631,44 @@ public partial class MainWindow : Window
             return;
         }
 
+        var proposedRouteData = new RouteData(
+            proposed.RouteNumber,
+            proposed.Name,
+            proposed.DailyPrice,
+            proposed.GuideWorkDays,
+            proposed.GuideDailyPrice,
+            proposed.TransportWorkDays,
+            proposed.TenderNumber,
+            proposed.ContractorTaxOrIdentityNumber,
+            proposed.ContractNumber);
+        var existingRouteData = _routes
+            .Where(x => !ReferenceEquals(x, _editingRoute))
+            .Select(x => new RouteData(
+                x.RouteNumber,
+                x.Name,
+                x.DailyPrice,
+                x.GuideWorkDays,
+                x.GuideDailyPrice,
+                x.TransportWorkDays,
+                x.TenderNumber,
+                x.ContractorTaxOrIdentityNumber,
+                x.ContractNumber))
+            .ToArray();
+        var ownerConflict = RouteAssignmentValidationService.FindOwnerConflict(
+            existingRouteData,
+            proposedRouteData);
+        if (ownerConflict is not null)
+        {
+            var existingOwner = FindContractor(ownerConflict.ContractorTaxOrIdentityNumber)?.Name;
+            var ownerLabel = string.IsNullOrWhiteSpace(existingOwner)
+                ? "başka bir yüklenici"
+                : $"'{existingOwner}'";
+            ShowRouteValidation(
+                $"Aynı İKN ve Hat No farklı yüklenicilere atanamaz. İKN: {proposed.TenderNumber}, " +
+                $"Hat No: {proposed.RouteNumber}; mevcut yüklenici: {ownerLabel}.");
+            return;
+        }
+
         var routesBeforeSave = _routes.ToArray();
         var historyBeforeSave = _progressHistory.ToArray();
         var editingRouteBeforeSave = _editingRoute;
