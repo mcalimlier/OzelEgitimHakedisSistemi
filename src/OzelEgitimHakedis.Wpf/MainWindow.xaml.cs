@@ -959,8 +959,8 @@ public partial class MainWindow : Window
             return;
         }
         HomeSelectedTenderSummaryTextBlock.Text =
-            $"{contract.TenderNumber} • Sözleşme {contract.ContractNumber} • {contract.WorkName} • " +
-            $"{FormatMoney(contract.ContractAmount)} • {contract.StartDate:dd.MM.yyyy}–{contract.EndDate:dd.MM.yyyy} • " +
+            $"İKN {contract.TenderNumber} • {contract.WorkName} • {FormatMoney(contract.ContractAmount)} • " +
+            $"{contract.StartDate:dd.MM.yyyy}–{contract.EndDate:dd.MM.yyyy} • " +
             $"{_routes.Count(x => IsRouteForContract(x, contract))} hat";
     }
 
@@ -2764,7 +2764,7 @@ public partial class MainWindow : Window
             !ReferenceEquals(x, _editingRoute));
         if (duplicate is not null)
         {
-            ShowAlreadyRegistered($"Bu hat zaten kayıtlı: {proposed.TenderNumber} / {proposed.ContractNumber} / {proposed.RouteNumber}.");
+            ShowAlreadyRegistered($"Bu hat zaten kayıtlı: İKN {proposed.TenderNumber} / Hat {proposed.RouteNumber}.");
             return;
         }
 
@@ -3079,7 +3079,7 @@ public partial class MainWindow : Window
         ApplyContractToForm(contract);
         SetContractEditorMode(true);
         NavigationButton_Click(NavContract, new RoutedEventArgs(Button.ClickEvent, NavContract));
-        ContractStatusTextBlock.Text = $"Düzenleme modu: {contract.TenderNumber} / {contract.ContractNumber}. Değiştirip DÜZENLE'e basın.";
+        ContractStatusTextBlock.Text = $"Düzenleme modu: İKN {contract.TenderNumber}. Değiştirip DÜZENLE'e basın.";
     }
 
     private void CancelContractEditButton_Click(object sender, RoutedEventArgs e)
@@ -3130,13 +3130,13 @@ public partial class MainWindow : Window
                 ? $" Ayrıca {ambiguous} eski hat/hakediş kaydının sözleşme bağı belirsiz; önce bu kayıtların bağı netleştirilmelidir."
                 : string.Empty;
             MessageBox.Show(
-                $"'{contract.TenderNumber}' / sözleşme '{contract.ContractNumber}' kaydı {routeCount} bağlı hat ve {historyCount} bağlı hakedişle ilişkili. Önce ilişkili kayıtları düzeltin; kayıt silinmedi.{ambiguityNote}",
+                $"İKN '{contract.TenderNumber}' / '{contract.WorkName}' kaydı {routeCount} bağlı hat ve {historyCount} bağlı hakedişle ilişkili. Önce ilişkili kayıtları düzeltin; kayıt silinmedi.{ambiguityNote}",
                 "OEHS", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
         var result = MessageBox.Show(
-            $"'{contract.TenderNumber}' / sözleşme '{contract.ContractNumber}' kaydı silinsin mi?",
+            $"İKN '{contract.TenderNumber}' / '{contract.WorkName}' kaydı silinsin mi?",
             "Sözleşme Kaydını Sil", MessageBoxButton.YesNo, MessageBoxImage.Warning);
         if (result != MessageBoxResult.Yes)
             return;
