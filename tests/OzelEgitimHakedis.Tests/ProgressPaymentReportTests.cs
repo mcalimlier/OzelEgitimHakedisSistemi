@@ -26,15 +26,15 @@ public sealed class ProgressPaymentReportTests
     }
 
     [Fact]
-    public void CumulativePriceDifference_ShouldStaySeparateFromContractWork()
+    public void CurrentPriceDifference_ShouldMatchExcelReportFormula()
     {
         var previous = History(1, new DateOnly(2026, 10, 31), new DateTime(2026, 10, 31), 100m, 5m);
         var current = History(2, new DateOnly(2026, 11, 30), new DateTime(2026, 12, 10), 150m, 10m);
 
         var totals = ProgressPaymentReportService.Calculate(current, new[] { previous, current });
 
-        Assert.Equal(250m, totals.CumulativeServiceAmount);
-        Assert.Equal(15m, totals.CumulativePriceDifference);
+        Assert.Equal(255m, totals.CumulativeServiceAmount);
+        Assert.Equal(10m, totals.CumulativePriceDifference);
         Assert.Equal(265m, totals.CumulativeTotal);
         Assert.Equal(105m, totals.PreviousTotal);
         Assert.Equal(160m, totals.CurrentTotal);
@@ -153,8 +153,8 @@ public sealed class ProgressPaymentReportTests
 
         var totals = ProgressPaymentReportService.Calculate(current, new[] { previous, current });
 
-        Assert.Equal(200m, totals.CumulativeServiceAmount);     // both months' contract-price work
-        Assert.Equal(35m, totals.CumulativePriceDifference);    // both months' signed F
+        Assert.Equal(225m, totals.CumulativeServiceAmount);     // prior K+T plus current base work
+        Assert.Equal(10m, totals.CumulativePriceDifference);    // current month's raw I+R only
         Assert.Equal(235m, totals.CumulativeTotal);             // C = A + B
         Assert.Equal(125m, totals.PreviousTotal);           // D = prior K+T
         Assert.Equal(110m, totals.CurrentTotal);            // E = C - D
