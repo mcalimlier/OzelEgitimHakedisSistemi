@@ -74,6 +74,38 @@ public sealed class ProgressPaymentArchiveStoreTests
     }
 
     [Fact]
+    public void BuildFileStem_ShouldSeparateProgramBatchRoutesAndMonth()
+    {
+        var special = CreateArchive(1) with
+        {
+            ProgressPayment = CreateHistory(1) with
+            {
+                BatchDisplayName = "Özel Eğitim | İKN IHALE-01 | Firma | 01+02 | Ekim 2026",
+                BatchRouteNumbers = "01+02"
+            }
+        };
+        var basic = special with
+        {
+            ProgressPayment = special.ProgressPayment with
+            {
+                Input = special.ProgressPayment.Input with
+                {
+                    ProgramType = TransportationProgramType.BasicOrSecondary
+                }
+            }
+        };
+
+        var specialStem = ProgressPaymentArchiveStore.BuildFileStem(special);
+        var basicStem = ProgressPaymentArchiveStore.BuildFileStem(basic);
+
+        Assert.NotEqual(specialStem, basicStem);
+        Assert.Contains("OzelEgitim", specialStem, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("TemelOrtaogretim", basicStem, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Hatlar-01+02", specialStem, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("2026-10", specialStem, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void BuildFileStem_ShouldSanitizeWindowsInvalidCharacters()
     {
         var archive = CreateArchive(1) with
