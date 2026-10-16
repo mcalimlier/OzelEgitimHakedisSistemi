@@ -802,8 +802,11 @@ public partial class MainWindow : Window
         GuideDiscountTextBox.Visibility = visibility;
         GuidePriceDifferenceLabel.Visibility = visibility;
         GuidePriceDifferenceTextBox.Visibility = visibility;
-        MinimumWageSupportLabel.Visibility = visibility;
-        MinimumWageSupportTextBox.Visibility = visibility;
+        // Asgari ücret desteği her iki programın Excel hesaplamasında da
+        // kesinti kalemidir; yalnızca rehber personel alanları Özel Eğitim'e özgüdür.
+        var supportVisibility = contract is null ? Visibility.Collapsed : Visibility.Visible;
+        MinimumWageSupportLabel.Visibility = supportVisibility;
+        MinimumWageSupportTextBox.Visibility = supportVisibility;
 
         if (!visible)
         {
@@ -811,7 +814,6 @@ public partial class MainWindow : Window
             GuideDailyPriceTextBox.Text = "0";
             GuideDiscountTextBox.Text = "0";
             GuidePriceDifferenceTextBox.Text = "0";
-            MinimumWageSupportTextBox.Text = "0";
         }
     }
 
