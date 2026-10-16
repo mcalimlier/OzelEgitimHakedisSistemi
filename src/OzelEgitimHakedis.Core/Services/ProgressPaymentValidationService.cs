@@ -89,7 +89,7 @@ public static class ProgressPaymentValidationService
             errors.Add("Seçilen hat kaydı bulunamadı.");
 
         var contractorExists = (data.Contractors ?? Array.Empty<Contractor>())
-            .Any(x => string.Equals(
+            .Any(x => x.ProgramType == contract.ProgramType && string.Equals(
                 OehsIdentityService.NormalizeIdentity(x.TaxOrIdentityNumber),
                 identity,
                 StringComparison.Ordinal));
