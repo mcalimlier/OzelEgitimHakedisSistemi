@@ -249,3 +249,14 @@ Bu sapmalar, Excel'in amaçlanan formül tanımı olan `K=(G×H)+I−J` ve `T=(P
 - Temel/Ortaöğretim asgari ücret desteğinin varsayılan 0 TL + kullanıcı onayı davranışı WPF tek-hat ve çoklu-hat girişlerine eklendi.
 - Sözleşme ve hat değişimlerinde destek tutarını sıfırlayan iki yeniden-hesaplama yolu düzeltildi; bu davranış için iki regresyon testi eklendi.
 - En son kod commit'inin CI sonucu tamamlanmadan bu değişiklikler için son doğrulama başarılı sayılmamalıdır. Gerçek Windows Excel ve WPF kabul testleri ayrıca gereklidir.
+
+
+## 14. Kullanıcı tarafından teyit edilen Excel formül niyeti (16.10.2026)
+
+Kullanıcı, Özel Eğitim kitabındaki aşağı kopyalanmamış formüllerle ilgili denetim bulgusunu netleştirdi: **K4 satırındaki formül ve hesaplama mantığı doğrudur; aşağı satırlara formüllerin kopyalanmaması Excel çalışma kitabındaki bir doldurma/aktarımı eksikliğidir.** Bu nedenle önceki bölümde listelenen K7:K103 ve T103 farklılıkları, OEHS'nin hesaplama kuralını değiştirme gerekçesi değildir.
+
+OEHS'nin standart hesaplama kuralı kullanıcı teyidine göre korunur:
+- Taşıma: `K=(G×H)+I−J`
+- Rehber: `T=(P×Q)+R−S`
+
+Bu formüller tüm ilgili hatlarda uygulanır; Excel'de eksik kopyalanmış formüller uygulamaya taşınmaz. Bu bulgu, hesaplama kuralı bakımından artık kullanıcı tarafından teyit edilmiş kabul edilir. Diğer kaynak Excel aralıkları, ay başlıkları, yaklaşık eşleşmeler ve VBA davranışları hakkındaki bulgular ayrı inceleme konuları olmaya devam eder.
