@@ -6,10 +6,11 @@
 
 - Repo: `mcalimlier/OzelEgitimHakedisSistemi`
 - Aktif çalışma dalı: `feature/official-payment-document-templates`
-- Son kayıtlı uzak HEAD (bu not yazılırken): `eb54309fea56e59c871d21f147db2108e191a1ff`
+- Kod düzeltmelerinin HEAD'i: `eb54309fea56e59c871d21f147db2108e191a1ff`.
+- Devam notu eklendikten sonraki HEAD: `aa76195ef0f4364ff9bffe77f3c44c22ae9a2e54` (bu notta veya sonraki dokümantasyon commit'lerinde yeni HEAD oluşursa GitHub'daki en son commit esas alınmalı).
 - PR: [#3 — draft, henüz birleştirilmedi](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/pull/3)
 - PR hedef dalı: `feature/wpf-contract-entry-v0.5`
-- Son önceki CI başarı referansı: [run 38909396149](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/38909396149) (HEAD `b3436c0`). **Bu başarı, bu nottaki son iki düzeltmeyi içeren yeni HEAD'in CI sonucunun yerine geçmez.** Yeni HEAD için Actions sonucu tekrar kontrol edilecek.
+- Son tamamlanmış CI başarı referansı: [run 38909396149](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/38909396149) (HEAD `b3436c0`). **Bu başarı, son legacy-import düzeltmelerini içeren yeni HEAD'in CI sonucunun yerine geçmez.** Son kontrol anında `b123e8f0`, `eb54309f` ve `aa76195e` için Actions çalışmaları devam ediyordu; evde ilk olarak en son HEAD'e ait sonucu kontrol et.
 - Evdeki yerel PC'nin güncel kodu olmadığı biliniyor. Daha önce kaydedilen eski yerel konum/commit: `feature/wpf-contract-entry-v0.5` @ `05ff199f05652876c57379340f10ac8028442094`. Bu eski commit güncel uzak dal değildir.
 
 ## 2. Bugün uygulanan ana değişiklikler
