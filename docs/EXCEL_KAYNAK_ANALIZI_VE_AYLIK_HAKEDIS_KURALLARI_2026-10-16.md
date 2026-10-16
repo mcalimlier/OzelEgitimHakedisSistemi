@@ -1,0 +1,207 @@
+# OEHS — Güncel XLSM Kaynak Analizi ve Aylık Hakediş Kuralları
+
+**Tarih:** 16.10.2026  
+**Durum:** Kaynak incelemesi tamamlandı; uygulama düzeltmeleri aşamalı olarak yapılacak.  
+**Gizlilik:** Kullanıcı tarafından yüklenen çalışma kitapları, kişisel veriler ve giriş bilgileri nedeniyle bu depoya yüklenmemiştir. Bu belge yalnızca şema, formül, makro davranışı ve doğrulama bulgularını içerir.
+
+## 1. İncelenen kaynakların kimliği
+
+- `03-Temel Eğitim Taşıma Ödeme.xlsm` — SHA-256: `9f89be5a8e0315e177b97c02cb8f146be0040ebc1f4be7d7a3d30b5f57040423`
+- `02-Özel Eğitim Hakediş Ödeme.xlsm` — SHA-256: `3c67f22327f9c748208cdcd7f9ed5952e37d514ea75a2043aa2f3d49867f61a4`
+
+Dosyalar ayrı ayrı incelendi: çalışma sayfaları, hücre formülleri ve önbelleğe alınmış değerler, tanımlı adlar, dış bağlantılar, VBA modülleri, olay yordamları ve aktarım/yazdırma makroları.
+
+## 2. İş akışının kaynakta görülen modeli
+
+1. İhale ve hat verileri girilir.
+2. Anasayfa üzerinde ödeme dönemi/ayı seçilir; gün sayıları girilir.
+3. Hesaplama tablosu her hat için ayrı satırda hesap yapar.
+4. Hakediş raporu ve diğer resmi belge sayfaları, seçili hat ve ay verilerine başvurur.
+5. Aktarım makroları ilgili ay sütununa **her hat satırının** tutarlarını yazar. Özel Eğitim kitabında taşıma ve rehber fiyat farkları ile kesintiler ayrıca ayrı aylık bloklarda saklanır.
+6. İcmal, aylık tutarları ve önceki dönem kesintilerini birleştirir.
+7. Yazdırma makrosu dört belgeyi ayrı ayrı basar.
+
+Kaynak Excel tek bir sözleşme dönemini tek bir toplu hakediş olarak hesaplamaz. Hesaplama tablosunda her hat satırı ayrı hesaplanır; seçilen ayın sonuçları hat bazında geçmişe aktarılır.
+
+## 3. Temel/Ortaöğretim formülleri
+
+Excel sayfası: **Hesaplama Bilgileri**. Aşağıdaki harfler bu tablonun sütunlarını gösterir.
+
+| Hücre/sütun | Formül | Anlam |
+|---|---|---|
+| K | `(G × H) + I − J` | Taşıma hakediş tutarı: iş günü × günlük fiyat + KDV hariç fiyat farkı − iskonto |
+| L | `IF(E = "Hayır", K × 10%, 0)` | Muaf değilse taşıma KDV'si |
+| M | `L ÷ 2` | KDV tevkifatı; KDV'nin yarısı (5/10) |
+| N | `K + M` | Tevkifat sonrası fatura tutarı |
+| O | `K + L` | KDV dahil brüt taşıma tutarı |
+| T | `I × 6%` | Fiyat farkı teminatı / ek kesin teminat kesintisi |
+| U | `K × 9,48 ÷ 1000` | Damga vergisi |
+| V | `P + Q + R + S + T + U + M` | Kesintilerin toplamı; vergi borcu + denetim cezası + SGK borcu + asgari ücret desteği + ek kesin teminat + damga vergisi + KDV tevkifatı |
+| W | `O − V` | Yükleniciye ödenecek net tutar |
+
+**Muafiyet koşulu:** Kaynak formüllerde `E = "Hayır"` olduğunda KDV hesaplanır. `E = "Evet"` olduğunda KDV ve buna bağlı tevkifat sıfır/boş olur.
+
+**Önemli kaynak bulgusu:** Temel/Ortaöğretim kitabında rehber personel hesabı yoktur; ancak **Asgari Ücret Destek Tutarı (S sütunu) kesintiler toplamına dahildir**. Uygulama bunu Temel/Ortaöğretim programında sıfırlamamalıdır.
+
+## 4. Özel Eğitim formülleri
+
+Excel sayfası: **Hesaplama**. Taşıma sütunları Temel/Ortaöğretim kitabındaki hesapla aynı mantıktadır; ayrıca rehber personel hesaplanır.
+
+### 4.1 Taşıma
+
+| Sütun | Formül | Anlam |
+|---|---|---|
+| K | `(G × H) + I − J` | Taşıma hizmet tutarı + fiyat farkı − iskonto |
+| L | `IF(E = "Hayır", K × 10%, 0)` | Taşıma KDV'si |
+| M | `L ÷ 2` | Taşıma KDV tevkifatı (5/10) |
+| N | `K + M` | Taşıma fatura tutarı |
+| O | `K + L` | Taşıma brüt tutarı |
+
+### 4.2 Rehber personel
+
+| Sütun | Formül | Anlam |
+|---|---|---|
+| T | `(P × Q) + R − S` | Rehber iş günü × rehber günlük fiyat + rehber fiyat farkı − rehber iskonto |
+| U | `IF(E = "Hayır", T × 20%, 0)` | Rehber KDV'si |
+| V | `IF(E = "Hayır", U × 9/10, 0)` | Rehber KDV tevkifatı (9/10) |
+| W | `T + V` | Tevkifat sonrası rehber fatura tutarı |
+| X | `T + U` | KDV dahil rehber brüt tutarı |
+
+### 4.3 Ortak kesintiler ve net ödeme
+
+| Sütun | Formül | Anlam |
+|---|---|---|
+| AC | `(I × 6%) + (R × 6%)` | Taşıma ve rehber fiyat farkı tutarlarının ayrı ayrı %6'sı |
+| AD | `(K × 9,48 ÷ 1000) + (T × 9,48 ÷ 1000)` | Taşıma ve rehber tutarları üzerinden damga vergisi |
+| AE | `M + V + Y + Z + AA + AB + AC + AD` | Tevkifatlar + vergi borcu + denetim cezası + SGK borcu + asgari ücret desteği + ek kesin teminat + damga vergisi |
+| AF | `O + X` | Taşıma ve rehber brüt tutarlarının toplamı |
+| AG | `AF − AE` | Ele geçen/net ödeme |
+
+**Kritik uyum notu:** Kaynak Excel AC formülü fiyat farkı alanlarını doğrudan kullanır; formülde `MAX(0, ...)` yoktur. Uygulamadaki `Math.Max(0, taşıma farkı + rehber farkı) × %6` ifadesi kaynak formülle birebir aynı değildir. Kodun Excel formülünü yansıtması ile bu formülün mevzuat açısından uzman tarafından onaylanması ayrı konulardır. Formülü sessizce değiştirmek yerine bu fark ayrıca raporlanmalı ve uzman onayına sunulmalıdır.
+
+## 5. Resmî rapor formüllerinden çıkan kurallar
+
+- Hakediş raporunda sözleşme fiyatlarıyla yapılan iş ve fiyat farkı ayrı gösterilir.
+- Tahakkuk tutarı, rapordaki iş tutarı ile KDV toplamından oluşur.
+- Kesinti kalemleri ayrı ayrı listelenir; net ödeme yalnızca tek bir “toplam tutar” değildir.
+- Her iki kitapta net ödeme hücresi `ROUND(D13, 2) − ROUND(D26, 2)` mantığını kullanır: tahakkuk ve kesinti toplamları ayrı ayrı iki ondalığa yuvarlanır, sonra çıkarılır.
+- Özel Eğitim kitabında taşıma ve rehber KDV/tevkifatları ayrı hesaplanır; tek bir ortak KDV oranı kullanmak doğru değildir.
+- Dört çıktı ayrı kalır: Hakediş Raporu, Hizmet İşleri Hakediş Raporu, Hizmet İşleri Kabul Tutanağı ve Hakediş İcmali.
+
+## 6. Aylık tarih ve geçmiş kaydı
+
+- Temel/Ortaöğretim kitabında seçilen ödeme dönemi `Anasayfa!E4`; Özel Eğitim kitabında `Anasayfa!E5` alanıdır.
+- Aylık hizmet günü girdileri hesaplamaya doğrudan girer; Özel Eğitimde taşıma günü ve rehber personel günü ayrı girdilerdir.
+- `İcmal Verileri` sayfası aylık değerleri hat bazında tutar. Temel/Ortaöğretim kitabında aylık hakediş tutarı, fiyat farkı ve kesinti blokları ayrıdır. Özel Eğitim kitabında bunlara ek olarak rehber fiyat farkı bloğu vardır.
+- VBA aktarım yordamları, hesaplama tablosundaki her hat satırını bulup seçilen ayın ilgili sütununa yazar. Özel Eğitim aktarımında aylık hakediş toplamı `K + T` olarak aktarılır; taşıma fiyat farkı `I`, rehber fiyat farkı `R`, kesinti toplamı `AE` kaynak alınır.
+- Kaynakta hat numarası geçmiş satırını bulmak için kullanılır. OEHS ise program + İKN/sözleşme + firma + hat kimliğini kullanmalı; aynı hat numarasının iki programda veya iki sözleşmede çakışmasına izin verilmemelidir.
+
+## 7. Kullanıcı tarafından açıklanan yeni ana iş kuralı
+
+**Bir hakediş, sözleşmenin tüm süresi değildir; seçilmiş bir aya ve seçilmiş hat kümesine aittir.**
+
+Örnek kayıt başlığı:
+
+`Özel Eğitim | İKN 2026-454 | A Firması | Q1+Q3 | Ekim 2026`
+
+İş kuralları:
+
+1. Kullanıcı programı seçer, sonra o programın sözleşmesini/İKN'sini seçer.
+2. Seçilen sözleşmenin firması ve sözleşmeye ait hatları gösterilir.
+3. Kullanıcı hakediş ayını seçer; her ay ayrı kayıt oluşturulur.
+4. Kullanıcı bir veya daha fazla hattı seçebilir. Örneğin Eylül'de Q1; Ekim'de Q1+Q3; başka bir ayda Q1+Q2+Q3.
+5. Hesaplama seçilen her hat için ayrı yapılır; seçilen hatların toplamı ayrı bir toplam olarak gösterilir. PDF ve arşivde satır bazlı ayrıntı kaybolmaz.
+6. Her satırın iş günü, fiyat farkı, iskonto, KDV/tevkifat, kesintiler ve net ödemesi ayrı saklanır. Özel Eğitimde taşıma ve rehber personel kalemleri ayrı tutulur.
+7. Kayıt başlığı ve arama anahtarı en az `Taşıma Türü + İKN/Sözleşme + Firma + sıralı Hat Kimlikleri + Yıl/Ay` bileşiminden oluşur.
+8. Aynı sözleşme, aynı hat ve aynı ay için mükerrer ödeme engellenmeli; mevcut kaydın düzenlenmesi yeni bir ödeme gibi ikinci kez geçmişe yazılmamalıdır.
+9. Arşiv, düzeltme, geri yükleme, aylık geçmiş ve icmal işlemleri bu kimliğin tüm bileşenlerini korumalıdır.
+
+### Hakediş numarası ayrımı
+
+Kaynak Excel'deki `F` sütunu `COUNTIF` ile ilgili hattın aylık geçmişinde pozitif tutar bulunan dönemleri sayar. Bu, sözleşmenin takvimsel dönem sıra numarasıyla aynı kavram değildir. Çoklu hatlı tek bir OEHS kaydında her hattın geçmiş sayısı farklı olabileceğinden:
+- iç kayıt kimliği / kayıt başlığı,
+- kayıt grubunun kullanıcıya görünen aylık numarası,
+- resmî PDF'de hat bazında gösterilen hakediş numarası
+
+kavramları birbirine karıştırılmamalıdır. Kaynak Excel çoklu hatları tek bir resmî belge kaydında birleştirmediği için bu yeni birleşik belge numarasının kuralı ayrı bir tasarım kararı ve kabul testi gerektirir. Kodda bu belirsizlik gizlice varsayılmamalıdır.
+
+## 8. VBA makro incelemesi
+
+### Temel/Ortaöğretim kitabı
+- `Workbook_Open`: Excel görünürlüğünü gizler ve giriş formunu açar.
+- `LoginForm`: kullanıcı adı/parola karşılaştırmasını `Users` sayfasındaki değerlerle yapar; rolüne göre sayfaları görünür/gizli yapar.
+- `Worksheet_Change`: seçilen ayı kontrol eder, son ay hakedişi olup olmadığını sorar ve gerekirse Kabul Tutanağı'ndaki süre bitiş metnini günceller.
+- `HakedisTutarlariniAySutununaAktar`: hesaplama tablosundaki her hattın K sütununu seçili ayın aylık geçmiş sütununa aktarır.
+- `TasimaFiyatFarkiAktar`: her hattın I sütununu fiyat farkı geçmişine aktarır.
+- `KesintiToplamlariniAktar`: her hattın V sütununu kesinti geçmişine aktarır.
+- `HesapKontrol`: Hakediş Raporu D8, D10 ve D11 değerlerinin sayısal olduğunu kontrol eder; `D8 − D10 = D11` olup olmadığını sınar.
+- `SayfaYazdir`: dört resmi belgeyi ayrı ayrı yazdırır.
+- `AyVerileriniSil`: aylık geçmiş bloklarını temizler. **Kontrol edilmesi gereken makro kusuru:** fiyat farkı temizliği `P4:Y103`, kesinti temizliği `AB4:AK103` ile sınırlıdır; Temmuz sütunları Z ve AL kapsam dışında kalır. Bu sütunlarda eski veri varsa temizleme işleminden sonra kalabilir.
+
+### Özel Eğitim kitabı
+- `Worksheet_Change`: seçilen ayı kontrol eder ve son ay hakedişi için kabul tutanağındaki metni günceller.
+- `HakedişToplamlariniAktar`: her hat için `K + T` toplamını ayın D:N sütunlarına aktarır.
+- `FiyatFarkıVerileriniAktar`: taşıma fiyat farkı I sütununu P:Z bloğuna aktarır.
+- `RehberPersonelFiyatFarkıVerileriniAktar`: rehber fiyat farkı R sütununu AB:AL bloğuna aktarır.
+- `KesintiBilgileriniAktarAktar`: kesinti toplamı AE sütununu AN:AX bloğuna aktarır.
+- `SayfaYazdir`: dört resmi belgeyi ayrı ayrı yazdırır.
+- `HesapKontrol`: önceki ve mevcut tutarlar üzerinden rapor kontrolü yapar.
+- `AyVerileriniSil`: hakediş, taşıma fiyat farkı, rehber fiyat farkı ve kesinti aylık bloklarını temizler.
+
+## 9. Kaynak dosyalarda görülen teknik riskler
+
+1. Her iki kitabın `Anasayfa!AA2` hücresinde `#VALUE!` hata değeri var. Bu hücre hesaplama/arayüz açısından incelenmeli.
+2. Özel Eğitim kitabında eski bir OneDrive/yerel Excel dosyasına dış bağlantı kaydı bulunuyor. Güncel uygulama bu dış dosyaya bağlı olmamalı; örnek değerler dış bağlantı önbelleğinden gelmiş olabilir.
+3. Özel Eğitim `İcmal Verileri!AP3` ve `AQ3` başlıklarının ikisi de `Anasayfa!I9` hücresine bağlı. Ay sırasına göre AP Kasım, AQ Aralık olmalı; mevcut formül Kasım başlığını atlayıp Aralık'ı iki kez gösteriyor. VBA hedef sütun eşlemesi ise AP'yi Kasım, AQ'yu Aralık kabul ediyor. Bu, kaynak kitabın başlık formülünde muhtemel bir kopyalama hatasıdır. OEHS ay eşlemesini açık tarih/ay anahtarıyla yapmalı ve bu hatayı taşımamalıdır.
+4. Kaynak geçmişi hat numarasına göre bulur. OEHS geçmiş anahtarı yalnızca hat numarası olamaz; program/sözleşme/firma/hat/ay kimliği kullanılmalıdır.
+5. Excel'deki `Hakediş No` formülü, hat bazında aylık geçmişin pozitif tutarlarını sayar; mevcut uygulamadaki sözleşme dönem sırasına bağlı numaralandırma ile aynı değildir.
+6. Kaynak Excel formüllerinin bir kısmı tutarları hücrelerde değer olarak saklar; bu nedenle VBA aktarım makroları ve geçmiş hücreleri formüller kadar önemlidir.
+7. Kaynak dosyalar örnek/önceden doldurulmuş veriler içeriyor. Bunlar üretim verisi olarak otomatik içe aktarılmamalıdır.
+
+## 10. Mevcut OEHS kodunda doğrulanan uyumsuzluklar
+
+- `ProgressPaymentCalculator`, Temel/Ortaöğretim için `MinimumWageSupport` değerini sıfırlıyor. Kaynak Temel/Ortaöğretim Excel'i S sütunundaki Asgari Ücret Destek Tutarı'nı kesinti toplamına ekler; bu davranış kaldırılmalı.
+- `ProgressPaymentCalculator`, ek kesin teminatı `MAX(0, taşıma fiyat farkı + rehber fiyat farkı) × %6` olarak hesaplıyor. Kaynak formül `taşıma fiyat farkı × %6 + rehber fiyat farkı × %6` biçimindedir. Kaynakla birebir uyum için kod ve testler değiştirilmeli; mevzuat onayı ayrı işaretlenmeli.
+- Önceki çoklu hat güvenlik önlemi, ortak parasal girişlerden biri sıfır değilken çoklu hat kaydını engeller. Bu geçici güvenlik kapısıdır; doğru çözüm her hat için ayrı parasal giriş ve ayrı hesap satırıdır.
+- Kullanıcı tarafından açıklanan aylık ve çoklu hat iş akışı, yalnızca tek bir hat/tek bir seçilmiş kayıt gibi ele alınamaz. Bir aylık kayıt çok sayıda hat satırı taşımalı ve hat ayrıntıları arşiv/PDF/icmal boyunca korunmalıdır.
+
+## 11. Aşamalı geliştirme ve kabul planı
+
+### Aşama 1 — Formül eşitliği
+- Temel/Ortaöğretim Asgari Ücret Desteği davranışını düzelt.
+- Ek kesin teminat formülünü Excel hücre formülüyle eşleştir.
+- Resmî net ödeme yuvarlamasını Excel'in ayrı yuvarlama adımıyla karşılaştır.
+- Her iki Excel için sayısal regresyon testleri ekle.
+
+### Aşama 2 — Aylık hakediş veri modeli
+- Hakediş dönemini seçilen ay/yıl olarak sakla; sözleşme süresini tek hakediş gibi kullanma.
+- Kayıt başlığına program, İKN, firma, seçili hatlar ve ayı ekle.
+- Aynı hat + sözleşme + ay için mükerrer ödeme denetimi yap.
+- Bir kaydın hat satırlarını ve satır bazlı hesaplamalarını sakla.
+
+### Aşama 3 — Çoklu hat giriş ekranı
+- Sözleşme seçimiyle yalnızca o sözleşmenin hatlarını getir.
+- Hat seçimi birden fazla satırı desteklesin.
+- Her hat için iş günü, iskonto, fiyat farkı ve uygulanabilir kesintiler ayrı girilebilsin.
+- Genel toplam, yalnızca satır sonuçlarının toplamı olsun.
+- Özel Eğitimde taşıma ve rehber personel değerleri satır bazında ayrı tutulsun.
+
+### Aşama 4 — Geçmiş, arşiv ve icmal
+- Aylık geçmişi program + sözleşme + firma + hat + yıl/ay anahtarıyla yaz.
+- Düzeltme/geri yükleme aynı kimliği korusun.
+- İcmal aylık tutar, fiyat farkı ve kesintileri doğru ay sütununa aktarabilsin.
+
+### Aşama 5 — Resmî belgeler ve kabul
+- Dört PDF'nin tamamını ayrı üret.
+- Bir ve çok hatlı, iki programlı, KDV muaf/KDV'li, fiyat farkı/iskonto/kesinti içeren örneklerle karşılaştır.
+- PDF toplamlarını Excel formüllerinin ara sonuçlarıyla hücre bazında karşılaştır.
+- CI başarılı olmadan ve gerçek Windows görsel kabulü yapılmadan sürüm/EXE yayımlama.
+
+## 12. Uzmanla onaylanacak açık noktalar
+
+- Çoklu hatlı tek PDF'de resmî hakediş numarası: her hat için ayrı Excel tarzı sıra mı gösterilecek, yoksa birleştirilmiş kayıt için yeni bir sıra mı tanımlanacak?
+- Ek kesin teminatın negatif fiyat farkında Excel formülündeki gibi işaretli hesaplanması ile mevzuat uygulaması arasındaki fark.
+- Resmî rapor toplamlarında her ara kalemde mi, yoksa yalnızca Excel'de açıkça ROUND uygulanan hücrelerde mi yuvarlama yapılacağı.
+- Kaynak Excel'in ay başlığı hataları ve dış bağlantı kayıtlarının uzman tarafından teyidi.
+
+**Güvenlik ilkesi:** Excel'deki kullanıcı/parola bilgileri, kişisel kimlik/banka verileri veya önceden doldurulmuş yüklenici kayıtları Git deposuna kopyalanmayacaktır.
