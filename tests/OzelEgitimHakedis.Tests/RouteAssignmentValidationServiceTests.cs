@@ -35,6 +35,21 @@ public sealed class RouteAssignmentValidationServiceTests
     }
 
     [Fact]
+    public void SameTenderAndRouteNumberAcrossDifferentPrograms_IsNotOwnerConflict()
+    {
+        var existing = new RouteData(
+            "01", "Özel Eğitim hattı", 100m, 0, 0m, 180,
+            "2026/123456", "11111111111", "FIRMA-11111111111",
+            TransportationProgramType.SpecialEducation);
+        var proposed = new RouteData(
+            "01", "Temel Eğitim hattı", 100m, 0, 0m, 180,
+            "2026/123456", "22222222222", "FIRMA-22222222222",
+            TransportationProgramType.BasicOrSecondary);
+
+        Assert.Null(RouteAssignmentValidationService.FindOwnerConflict(new[] { existing }, proposed));
+    }
+
+    [Fact]
     public void SameTenderAndRouteNumber_ForSameContractor_IsNotOwnerConflict()
     {
         var existing = new RouteData(
