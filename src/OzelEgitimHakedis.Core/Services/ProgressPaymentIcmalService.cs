@@ -52,6 +52,13 @@ public static class ProgressPaymentIcmalService
         return payments
             .Where(x => x.Id != current.Id)
             .Where(x => x.Input.ProgramType == current.Input.ProgramType)
+            .Where(x => string.Equals(x.TenderNumber, current.TenderNumber, StringComparison.OrdinalIgnoreCase))
+            .Where(x => string.Equals(x.ContractNumber, current.ContractNumber, StringComparison.OrdinalIgnoreCase))
+            .Where(x => string.Equals(x.RouteNumber, current.RouteNumber, StringComparison.OrdinalIgnoreCase))
+            .Where(x => string.Equals(
+                OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
+                OehsIdentityService.NormalizeIdentity(current.ContractorTaxOrIdentityNumber),
+                StringComparison.Ordinal))
             .Where(x => x.PeriodDate.HasValue)
             .Where(x => x.PeriodDate!.Value.Year == previousMonth.Year
                         && x.PeriodDate.Value.Month == previousMonth.Month)
