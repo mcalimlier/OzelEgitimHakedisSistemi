@@ -38,7 +38,7 @@ public partial class MainWindow : Window
     private bool _suppressArchiveDirtyTracking;
     private Guid? _historyCorrectionTargetId;
     private HistoryCorrectionSection _historyCorrectionSection;
-    private readonly OehsApplicationDataStore _dataStore = new();
+    private readonly OehsProgramScopedApplicationDataStore _dataStore = new();
     private ProgressPaymentCalculationConstants _calculationConstants =
         ProgressPaymentCalculationConstants.Defaults;
     private List<ProgressPaymentCalculationConstantsChange> _calculationConstantsHistory = new();
@@ -3504,33 +3504,13 @@ public partial class MainWindow : Window
             _contractors.Clear();
             foreach (var contractor in data.Contractors ?? Array.Empty<Contractor>())
             {
-                var identity = OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber);
-                var linkedPrograms = _contracts
-                    .Where(x => string.Equals(
-                        OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
-                        identity,
-                        StringComparison.Ordinal))
-                    .Select(x => x.ProgramType)
-                    .Concat((data.Routes ?? Array.Empty<RouteData>())
-                        .Where(x => string.Equals(
-                            OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
-                            identity,
-                            StringComparison.Ordinal))
-                        .Select(x => x.ProgramType))
-                    .Distinct()
-                    .ToArray();
-                var programTypes = linkedPrograms.Length == 0
-                    ? new[] { contractor.ProgramType }
-                    : linkedPrograms;
-
-                foreach (var programType in programTypes)
-                {
-                    _contractors.Add(new ContractorDraft(
-                        contractor.Name,
-                        identity,
-                        contractor.Address, contractor.Phone, contractor.Email,
-                        contractor.BankAccountNumber, contractor.ContactPerson, programType));
-                }
+                // The program-scoped store performs legacy migration once, then
+                // returns each contractor in exactly one program partition.
+                _contractors.Add(new ContractorDraft(
+                    contractor.Name,
+                    OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber),
+                    contractor.Address, contractor.Phone, contractor.Email,
+                    contractor.BankAccountNumber, contractor.ContactPerson, contractor.ProgramType));
             }
 
             _routes.Clear();
