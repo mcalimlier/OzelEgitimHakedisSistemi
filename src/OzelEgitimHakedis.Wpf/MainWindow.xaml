@@ -628,14 +628,14 @@
                                             </StackPanel>
                                             <StackPanel Grid.Column="2" Margin="6.5,0,0,0">
                                                 <TextBlock Text="TANIMLI HATLAR" Style="{StaticResource CardTitle}"/>
-                                                <ListBox x:Name="ProgressRouteComboBox" Height="112" Margin="0,6,0,0" SelectionMode="Extended" SelectionChanged="ProgressRouteComboBox_SelectionChanged" BorderBrush="{StaticResource BorderBrush}" Background="{StaticResource SurfaceBrush}" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                                <ListBox x:Name="ProgressRouteComboBox" Height="112" Margin="0,6,0,0" SelectionMode="Extended" SelectionChanged="ProgressRouteComboBox_SelectionChanged" BorderBrush="#D7E2EC" Background="#FFFFFF" ScrollViewer.VerticalScrollBarVisibility="Auto">
                                                 <ListBox.ItemTemplate>
                                                     <DataTemplate>
                                                         <CheckBox Content="{Binding DisplayText}" IsChecked="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected, Mode=TwoWay}" Padding="3" />
                                                     </DataTemplate>
                                                 </ListBox.ItemTemplate>
                                             </ListBox>
-                                                <TextBlock x:Name="ProgressRouteRelationTextBlock" Text="Hat seçiniz." Foreground="#C5D7E7" FontSize="11.5" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                                <TextBlock x:Name="ProgressRouteRelationTextBlock" Text="Bir veya daha fazla hat seçin." Foreground="#C5D7E7" FontSize="11.5" TextWrapping="Wrap" Margin="0,4,0,0"/>
                                             </StackPanel>
                                         </Grid>
                                     </Border>
