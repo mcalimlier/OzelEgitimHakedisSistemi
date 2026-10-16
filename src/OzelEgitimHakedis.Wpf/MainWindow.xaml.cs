@@ -5863,6 +5863,11 @@ public partial class MainWindow : Window
         ReportGrossTextBlock.Text = FormatMoney(routePayments.Sum(x => x.Calculation.GrossAmount));
         ReportNetTextBlock.Text = FormatMoney(routePayments.Sum(x => x.Calculation.NetPayable));
 
+        var latest = routePayments
+            .OrderByDescending(x => x.PeriodDate ?? DateOnly.MinValue)
+            .ThenByDescending(x => x.CreatedAt)
+            .FirstOrDefault();
+
         if (selectedRoute is null)
         {
             ReportPdfTargetTextBlock.Text = "PDF hedefi: önce bir hat seçin.";
@@ -5873,14 +5878,12 @@ public partial class MainWindow : Window
                 selectedRoute.TenderNumber,
                 selectedRoute.ContractorName,
                 selectedRoute.ContractorTaxOrIdentityNumber,
-                selectedRoute.RouteNumber);
+                selectedRoute.RouteNumber,
+                selectedRoute.ProgramType,
+                latest?.BatchRouteNumbers,
+                latest?.PeriodDate);
             ReportPdfTargetTextBlock.Text = $"PDF hedefi: {targetFolder}";
         }
-
-        var latest = routePayments
-            .OrderByDescending(x => x.PeriodDate ?? DateOnly.MinValue)
-            .ThenByDescending(x => x.CreatedAt)
-            .FirstOrDefault();
 
         if (latest is null)
         {
