@@ -5845,15 +5845,148 @@ public partial class MainWindow : Window
         if (!IsInitialized || _suppressSelectionEvents)
             return;
 
+        // Çoklu seçimde global parasal alanları başka hatta ait değerlerle
+        // ezmeden önce, önceki tek-hat girişini ilgili satıra aktar.
+        UpdateMultiRouteDraftRows();
         UpdateProgressRouteDefaults();
+    }
+
+    private void UpdateMultiRouteDraftRows()
+    {
+        if (!IsInitialized)
+            return;
+
+        var selectedRoutes = ProgressRouteComboBox.SelectedItems.OfType<RouteDraft>().ToArray();
+        var showMultiRouteGrid = selectedRoutes.Length > 1 &&
+                                 !_editingHistoryId.HasValue &&
+                                 !IsArchiveEditing;
+        if (!showMultiRouteGrid)
+        {
+            _multiRoutePaymentRows.Clear();
+            MultiRouteEntryBorder.Visibility = Visibility.Collapsed;
+            SetGlobalMonetaryFieldsVisible(true);
+            return;
+        }
+
+        var existingRows = _multiRoutePaymentRows.ToDictionary(
+            row => row.RouteKey,
+            StringComparer.Ordinal);
+        var seedRouteKey = _lastProgressDefaultsRouteKey;
+        var seedWorkDays = int.TryParse(WorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var parsedWorkDays)
+            ? parsedWorkDays
+            : 0;
+        var seedGuideWorkDays = int.TryParse(GuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var parsedGuideWorkDays)
+            ? parsedGuideWorkDays
+            : 0;
+
+        decimal ReadDecimal(TextBox box) =>
+            TryParseDecimalOrZero(box.Text, out var value) ? value : 0m;
+
+        var nextRows = new List<MultiRoutePaymentDraftRow>();
+        foreach (var route in selectedRoutes.OrderBy(x => x.RouteNumber, StringComparer.OrdinalIgnoreCase))
+        {
+            var routeKey = OehsIdentityService.BuildRouteKey(
+                route.TenderNumber,
+                route.RouteNumber,
+                route.ContractorTaxOrIdentityNumber,
+                route.ContractNumber,
+                route.ProgramType);
+            if (existingRows.TryGetValue(routeKey, out var existing))
+            {
+                nextRows.Add(existing);
+                continue;
+            }
+
+            var hasGuide = HasGuideStaff(route.ProgramType);
+            var row = new MultiRoutePaymentDraftRow
+            {
+                RouteKey = routeKey,
+                RouteNumber = route.RouteNumber,
+                RouteName = route.Name,
+                // These are monthly inputs, not the route's annual workday totals.
+                WorkDays = 0,
+                DailyPrice = route.DailyPrice,
+                GuideWorkDays = 0,
+                GuideDailyPrice = hasGuide ? route.GuideDailyPrice : 0m
+            };
+
+            // If the user typed values for one selected route before adding a
+            // second route, carry those values only to that original route.
+            // New routes start with zero monetary adjustments to avoid multiplying
+            // a single amount across every selected route.
+            if (string.Equals(routeKey, seedRouteKey, StringComparison.Ordinal))
+            {
+                row.WorkDays = Math.Max(0, seedWorkDays);
+                row.GuideWorkDays = hasGuide ? Math.Max(0, seedGuideWorkDays) : 0;
+                row.DiscountAmount = ReadDecimal(DiscountTextBox);
+                row.PriceDifference = ReadDecimal(PriceDifferenceTextBox);
+                row.GuideDiscountAmount = hasGuide ? ReadDecimal(GuideDiscountTextBox) : 0m;
+                row.GuidePriceDifference = hasGuide ? ReadDecimal(GuidePriceDifferenceTextBox) : 0m;
+                row.TaxDebt = ReadDecimal(TaxDebtTextBox);
+                row.SocialSecurityDebt = ReadDecimal(SocialSecurityDebtTextBox);
+                row.MinimumWageSupport = ReadDecimal(MinimumWageSupportTextBox);
+                row.InspectionPenalty = ReadDecimal(InspectionPenaltyTextBox);
+            }
+
+            nextRows.Add(row);
+        }
+
+        _multiRoutePaymentRows.Clear();
+        foreach (var row in nextRows)
+            _multiRoutePaymentRows.Add(row);
+
+        MultiRouteEntryBorder.Visibility = Visibility.Visible;
+        SetGlobalMonetaryFieldsVisible(false);
+    }
+
+    private void SetGlobalMonetaryFieldsVisible(bool visible)
+    {
+        var visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+        DiscountLabel.Visibility = visibility;
+        DiscountTextBox.Visibility = visibility;
+        PriceDifferenceLabel.Visibility = visibility;
+        PriceDifferenceTextBox.Visibility = visibility;
+        GuideDiscountLabel.Visibility = visibility;
+        GuideDiscountTextBox.Visibility = visibility;
+        GuidePriceDifferenceLabel.Visibility = visibility;
+        GuidePriceDifferenceTextBox.Visibility = visibility;
+        TaxDebtLabel.Visibility = visibility;
+        TaxDebtTextBox.Visibility = visibility;
+        SocialSecurityDebtLabel.Visibility = visibility;
+        SocialSecurityDebtTextBox.Visibility = visibility;
+        MinimumWageSupportLabel.Visibility = visibility;
+        MinimumWageSupportTextBox.Visibility = visibility;
+        InspectionPenaltyLabel.Visibility = visibility;
+        InspectionPenaltyTextBox.Visibility = visibility;
     }
 
     private void UpdateProgressRouteDefaults()
     {
-        if (ProgressRouteComboBox.SelectedItem is not RouteDraft route)
+        var selectedRoutes = ProgressRouteComboBox.SelectedItems.OfType<RouteDraft>().ToArray();
+        if (selectedRoutes.Length > 1)
+        {
+            var contract = ProgressTenderListBox.SelectedItem as ContractDraftData;
+            var contractorNames = selectedRoutes
+                .Select(x => x.ContractorName)
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            ProgressContractorTextBlock.Text = contractorNames.Length == 1
+                ? contractorNames[0]
+                : contract?.ContractorName ?? "Yükleniciler";
+            ProgressRouteRelationTextBlock.Text =
+                $"İKN: {contract?.TenderNumber ?? selectedRoutes[0].TenderNumber} • {selectedRoutes.Length} hat seçildi: " +
+                string.Join(", ", selectedRoutes.Select(x => x.RouteNumber).OrderBy(x => x, StringComparer.OrdinalIgnoreCase));
+            UpdateAutomaticProgressNumber();
+            return;
+        }
+
+        if (selectedRoutes.Length == 0 || ProgressRouteComboBox.SelectedItem is not RouteDraft route)
         {
             ProgressContractorTextBlock.Text = "Seçilmedi";
             ProgressRouteRelationTextBlock.Text = "Hat seçiniz.";
+            _lastProgressDefaultsRouteKey = null;
+            ProgressNumberTextBox.Clear();
             return;
         }
 
@@ -5863,13 +5996,16 @@ public partial class MainWindow : Window
         ProgressRouteRelationTextBlock.Text = $"İhale: {route.TenderNumber} • Yüklenici: {route.ContractorName} • Hat: {route.RouteNumber} — {route.Name}";
 
         DailyPriceTextBox.Text = route.DailyPrice.ToString("N2", CultureInfo.CurrentCulture);
-        GuideDailyPriceTextBox.Text = route.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+        GuideDailyPriceTextBox.Text = (HasGuideStaff(route.ProgramType) ? route.GuideDailyPrice : 0m)
+            .ToString("N2", CultureInfo.CurrentCulture);
 
-        WorkDaysTextBox.Text = route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
-
-        // Rehber iş günü de seçilen hattın varsayılanı olmalı.
-        // Aksi halde bir hattan diğerine geçerken önceki hattın rehber günü kalabilir.
-        GuideWorkDaysTextBox.Text = route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
+        // Sözleşme ekranındaki iş günü yıllık/sözleşmesel bilgidir; Excel'de
+        // hakediş hesabına giren gün sayısı seçilen ay için ayrı girilir.
+        WorkDaysTextBox.Text = "0";
+        GuideWorkDaysTextBox.Text = "0";
+        _lastProgressDefaultsRouteKey = OehsIdentityService.BuildRouteKey(
+            route.TenderNumber, route.RouteNumber, route.ContractorTaxOrIdentityNumber,
+            route.ContractNumber, route.ProgramType);
 
         if (!_editingHistoryId.HasValue && !IsArchiveEditing)
             UpdateAutomaticProgressNumber();
