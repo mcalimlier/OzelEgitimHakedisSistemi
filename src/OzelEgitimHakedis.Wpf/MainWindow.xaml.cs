@@ -6070,6 +6070,24 @@ public partial class MainWindow : Window
             : route.ContractorName;
         ProgressRouteRelationTextBlock.Text = $"İhale: {route.TenderNumber} • Yüklenici: {route.ContractorName} • Hat: {route.RouteNumber} — {route.Name}";
 
+        var routeKey = OehsIdentityService.BuildRouteKey(
+            route.TenderNumber, route.RouteNumber, route.ContractorTaxOrIdentityNumber,
+            route.ContractNumber, route.ProgramType);
+        var routeChanged = !string.Equals(_lastProgressDefaultsRouteKey, routeKey, StringComparison.Ordinal);
+        if (routeChanged && !_editingHistoryId.HasValue && !IsArchiveEditing)
+        {
+            // A route change must never carry the previous route's monthly
+            // discounts/debts/price differences into a new route.
+            DiscountTextBox.Text = "0";
+            PriceDifferenceTextBox.Text = "0";
+            GuideDiscountTextBox.Text = "0";
+            GuidePriceDifferenceTextBox.Text = "0";
+            TaxDebtTextBox.Text = "0";
+            SocialSecurityDebtTextBox.Text = "0";
+            MinimumWageSupportTextBox.Text = "0";
+            InspectionPenaltyTextBox.Text = "0";
+        }
+
         DailyPriceTextBox.Text = route.DailyPrice.ToString("N2", CultureInfo.CurrentCulture);
         GuideDailyPriceTextBox.Text = (HasGuideStaff(route.ProgramType) ? route.GuideDailyPrice : 0m)
             .ToString("N2", CultureInfo.CurrentCulture);
@@ -6078,9 +6096,7 @@ public partial class MainWindow : Window
         // hakediş hesabına giren gün sayısı seçilen ay için ayrı girilir.
         WorkDaysTextBox.Text = "0";
         GuideWorkDaysTextBox.Text = "0";
-        _lastProgressDefaultsRouteKey = OehsIdentityService.BuildRouteKey(
-            route.TenderNumber, route.RouteNumber, route.ContractorTaxOrIdentityNumber,
-            route.ContractNumber, route.ProgramType);
+        _lastProgressDefaultsRouteKey = routeKey;
 
         if (!_editingHistoryId.HasValue && !IsArchiveEditing)
             UpdateAutomaticProgressNumber();
