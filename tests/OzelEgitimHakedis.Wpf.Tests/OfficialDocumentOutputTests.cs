@@ -248,7 +248,6 @@ public sealed class OfficialDocumentOutputTests
             Assert.Contains("KESİNTİLER VE MAHSUPLAR", paymentText);
             Assert.Contains("KDV (taşıma %10 + rehber %20)", paymentText);
             Assert.Contains("KDV Tevkifatı (taşıma 5/10; rehber 9/10)", paymentText);
-            Assert.DoesNotContain("TEST-SOZ", serviceReportText);
             Assert.Contains("Damga Vergisi (oran %0,948)", paymentText);
 
             var serviceReport = Assert.Single(
@@ -265,6 +264,25 @@ public sealed class OfficialDocumentOutputTests
             Assert.Contains("Yoktur.", serviceReportText);
             Assert.Contains("M.Y.H.B.Y. Örnek No: 5", serviceReportText);
             Assert.DoesNotContain("M.Y.H.B.Y. Örnek No: 4", serviceReportText);
+
+            var basicCalculation = ProgressPaymentCalculator.Calculate(
+                input with { ProgramType = TransportationProgramType.BasicOrSecondary },
+                ProgressPaymentCalculationConstants.Defaults);
+            var basicContext = context with
+            {
+                ProgramType = TransportationProgramType.BasicOrSecondary,
+                Calculation = basicCalculation
+            };
+            var basicOutputs = OehsOfficialDocumentFactory.BuildSeparate(basicContext);
+            Assert.Equal(4, basicOutputs.Count);
+            var basicPayment = Assert.Single(
+                basicOutputs.Where(output => output.Kind == OehsOfficialDocumentKind.HakedisRaporu));
+            var basicPaymentText = GetPageText(
+                Assert.IsType<FixedPage>(basicPayment.Document.Pages[0].Child));
+            Assert.Contains("KDV (taşıma %10)", basicPaymentText);
+            Assert.DoesNotContain("rehber %0", basicPaymentText);
+            Assert.Contains("KDV Tevkifatı (taşıma 5/10)", basicPaymentText);
+            Assert.DoesNotContain("rehber 0/10", basicPaymentText);
 
             var acceptanceOutputForMapping = Assert.Single(
                 outputs.Where(output => output.Kind == OehsOfficialDocumentKind.KabulTutanagi));
