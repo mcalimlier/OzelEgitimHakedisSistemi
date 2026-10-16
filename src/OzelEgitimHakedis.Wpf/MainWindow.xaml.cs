@@ -4646,8 +4646,6 @@ public partial class MainWindow : Window
         }
 
         _lastCalculatedHistoryId = null;
-        ClearProgressEntryFields();
-        SetProgressEditorMode(false);
         UpdateArchiveView();
         NavigationButton_Click(NavArchives, new RoutedEventArgs(Button.ClickEvent, NavArchives));
 
@@ -4656,6 +4654,8 @@ public partial class MainWindow : Window
             ? $"Hakediş No {item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"} arşive eklendi.\n\n{Path.GetFileName(archivedPaths[0])}"
             : $"{batch.Length} hat için hakediş No {item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"} arşivlendi.\nHatlar: {routeSummary}\n\nHer hat için ayrı arşiv ve dört PDF belgesi oluşturuldu.";
         ArchiveStatusTextBlock.Text = "ARŞİV OLUŞTURULDU";
+        ClearProgressEntryFields();
+        SetProgressEditorMode(false);
         CalculationStatusTextBlock.Text = message;
         MessageBox.Show(message, "OEHS — Arşiv Bilgisi", MessageBoxButton.OK, MessageBoxImage.Information);
         _editingArchiveSourcePath = null;
