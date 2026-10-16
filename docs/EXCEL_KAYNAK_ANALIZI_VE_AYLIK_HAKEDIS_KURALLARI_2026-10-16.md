@@ -205,3 +205,10 @@ Aşağıdaki değişiklikler `feature/official-payment-document-templates` dalı
 - Kaynak Excel'in ay başlığı hataları ve dış bağlantı kayıtlarının uzman tarafından teyidi.
 
 **Güvenlik ilkesi:** Excel'deki kullanıcı/parola bilgileri, kişisel kimlik/banka verileri veya önceden doldurulmuş yüklenici kayıtları Git deposuna kopyalanmayacaktır.
+
+## 12. Son kod incelemesinde bulunan ek uyumsuzluklar (16.10.2026)
+
+- **Rapor geçmişi kapsamı:** Önceki aylık tutarlar toplanırken yalnızca dönem ve mali yıl filtresi vardı. Bu, farklı hat/program/sözleşme/yüklenicinin aynı rapora karışmasına neden olabilirdi. Önceki kayıtlar artık program + İKN + sözleşme + yüklenici kimliği + hat anahtarıyla eşleştiriliyor; buna karşı regresyon testi eklendi.
+- **Asgari Ücret Desteği giriş alanı:** Hesaplama motoru Temel/Ortaöğretim desteğini artık kesinti olarak korusa da WPF ekranı bu alanı rehber personel alanlarıyla birlikte gizliyor ve sıfırlıyordu. Alan her iki programda da görünür kalacak şekilde düzeltildi; rehber personel alanları yalnızca Özel Eğitim için koşullu.
+- **Aylık batch kimliği:** Çoklu hat kaydı ortak BatchId ile gruplanır; görünen isim program, İKN, sözleşme, firma, seçili hat kümesi ve ay/yıl bilgisini içerir. Her hattın Excel uyumlu hakediş numarası ve hesaplama satırı ayrı saklanır.
+- **Son doğrulama durumu:** Bu ek düzeltmeler için GitHub Actions yeniden çalışıyor. En son commit'in test sonucu tamamlanmadan bu düzeltmeler başarılı doğrulandı diye işaretlenmemeli. Resmî Excel dosyalarıyla gerçek örnek değer karşılaştırması ve Windows WPF kabul testi hâlâ zorunlu.
