@@ -650,8 +650,8 @@
                                                     <TextBox x:Name="GuideDailyPriceTextBox" Grid.Row="2" Grid.Column="3" Margin="6" Style="{StaticResource PremiumFieldTextBox}" IsReadOnly="True" ToolTip="Tanımlı hattan otomatik alınır." Visibility="Collapsed"/>
                                                     <TextBlock Grid.Row="3" Grid.Column="0" Text="Hakediş No" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
                                                     <TextBox x:Name="ProgressNumberTextBox" Grid.Row="3" Grid.Column="1" Margin="4.5" Style="{StaticResource PremiumFieldTextBox}"/>
-                                                    <TextBlock Grid.Row="3" Grid.Column="2" Text="Dönem Tarihi" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="7,4.5,0,4.5"/>
-                                                    <DatePicker x:Name="ProgressPeriodDatePicker" Grid.Row="3" Grid.Column="3" Margin="4.5" Style="{StaticResource FieldDatePicker}"/>
+                                                    <TextBlock Grid.Row="3" Grid.Column="2" Text="Hakediş Dönemi (Ay/Yıl)" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="7,4.5,0,4.5"/>
+                                                    <ComboBox x:Name="ProgressPeriodMonthComboBox" Grid.Row="3" Grid.Column="3" Margin="4.5" Style="{StaticResource FieldComboBox}" DisplayMemberPath="DisplayText" ToolTip="Sözleşme tarihleri içindeki ay/yıl dönemini seçin."/>
                                                     <TextBlock Grid.Row="4" Grid.Column="0" Text="Taşıma İskonto" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
                                                     <TextBox x:Name="DiscountTextBox" Grid.Row="4" Grid.Column="1" Margin="4.5" Style="{StaticResource PremiumFieldTextBox}"/>
                                                     <TextBlock Grid.Row="4" Grid.Column="2" Text="Taşıma Fiyat Farkı" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="8,5,0,5"/>

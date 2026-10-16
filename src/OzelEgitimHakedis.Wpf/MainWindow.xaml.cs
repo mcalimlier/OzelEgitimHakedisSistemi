@@ -806,8 +806,48 @@ public partial class MainWindow : Window
             .ToArray();
     }
 
+    private void UpdateProgressPeriodOptions(ContractDraftData? contract, bool preserveSelection)
+    {
+        var previousPeriod = preserveSelection
+            ? (ProgressPeriodMonthComboBox.SelectedItem as ProgressPaymentMonthOption)?.PeriodDate
+            : null;
+
+        var options = contract is null
+            ? Array.Empty<ProgressPaymentMonthOption>()
+            : ProgressPaymentMonthService.BuildOptions(contract.StartDate, contract.EndDate).ToArray();
+
+        ProgressPeriodMonthComboBox.ItemsSource = options;
+        ProgressPeriodMonthComboBox.SelectedItem = previousPeriod.HasValue
+            ? ProgressPaymentMonthService.FindForPeriod(options, previousPeriod.Value)
+            : null;
+    }
+
+    private void SelectProgressPeriod(DateOnly? periodDate)
+    {
+        var options = ProgressPeriodMonthComboBox.ItemsSource as IEnumerable<ProgressPaymentMonthOption>
+                      ?? Array.Empty<ProgressPaymentMonthOption>();
+        ProgressPeriodMonthComboBox.SelectedItem = periodDate.HasValue
+            ? ProgressPaymentMonthService.FindForPeriod(options, periodDate.Value)
+            : null;
+    }
+
+    private static bool ProgressPeriodDiffers(ComboBox comboBox, DateOnly? expected)
+    {
+        if (!expected.HasValue)
+            return comboBox.SelectedItem is not null;
+
+        if (comboBox.SelectedItem is not ProgressPaymentMonthOption actual)
+            return true;
+
+        // Historical records can carry any day in a month. The UI is month-based,
+        // so compare the calendar month rather than the clipped period end date.
+        return actual.StartDate.Year != expected.Value.Year
+               || actual.StartDate.Month != expected.Value.Month;
+    }
+
     private void UpdateProgressContractorAndRoutes(ContractDraftData? contract, bool preserveSelection = true)
     {
+        UpdateProgressPeriodOptions(contract, preserveSelection);
         if (contract is null)
         {
             _suppressSelectionEvents = true;
@@ -904,12 +944,13 @@ public partial class MainWindow : Window
 
         foreach (var datePicker in new DatePicker[]
         {
-            StartDatePicker, EndDatePicker, TenderDatePicker, ContractDatePicker, ProgressPeriodDatePicker
+            StartDatePicker, EndDatePicker, TenderDatePicker, ContractDatePicker
         })
         {
             datePicker.SelectedDateChanged += ArchiveCorrectionInput_DateChanged;
         }
 
+        ProgressPeriodMonthComboBox.SelectionChanged += ArchiveCorrectionInput_DateChanged;
         VatExemptCheckBox.Checked += ArchiveCorrectionInput_Toggled;
         VatExemptCheckBox.Unchecked += ArchiveCorrectionInput_Toggled;
     }
@@ -1008,7 +1049,7 @@ public partial class MainWindow : Window
                 DecimalDiffers(MinimumWageSupportTextBox, archive.ProgressPayment.Input.MinimumWageSupport) ||
                 DecimalDiffers(InspectionPenaltyTextBox, archive.ProgressPayment.Input.InspectionPenalty) ||
                 NullableIntDiffers(ProgressNumberTextBox, archive.ProgressPayment.ProgressPaymentNumber) ||
-                DatePickerDiffers(ProgressPeriodDatePicker, archive.ProgressPayment.PeriodDate),
+                ProgressPeriodDiffers(ProgressPeriodMonthComboBox, archive.ProgressPayment.PeriodDate),
 
             _ => false
         };
@@ -1317,7 +1358,7 @@ public partial class MainWindow : Window
                 DecimalDiffers(MinimumWageSupportTextBox, item.Input.MinimumWageSupport) ||
                 DecimalDiffers(InspectionPenaltyTextBox, item.Input.InspectionPenalty) ||
                 NullableIntDiffers(ProgressNumberTextBox, item.ProgressPaymentNumber) ||
-                DatePickerDiffers(ProgressPeriodDatePicker, item.PeriodDate),
+                ProgressPeriodDiffers(ProgressPeriodMonthComboBox, item.PeriodDate),
 
             _ => false
         };
@@ -1600,7 +1641,7 @@ public partial class MainWindow : Window
             MinimumWageSupportTextBox.Text = item.Input.MinimumWageSupport.ToString("N2", CultureInfo.CurrentCulture);
             InspectionPenaltyTextBox.Text = item.Input.InspectionPenalty.ToString("N2", CultureInfo.CurrentCulture);
             ProgressNumberTextBox.Text = item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
-            ProgressPeriodDatePicker.SelectedDate = item.PeriodDate?.ToDateTime(TimeOnly.MinValue);
+            SelectProgressPeriod(item.PeriodDate);
             UpdateProgressCalculationDisplay(item.Calculation, item.Input.WorkDays);
             ProgressCalculationSummaryTextBlock.Text = "TAMAM";
             SetProgressEditorMode(false);
@@ -3847,9 +3888,7 @@ public partial class MainWindow : Window
                 progressNumber = parsedProgressNumber;
             }
 
-            var periodDate = ProgressPeriodDatePicker.SelectedDate is DateTime selectedPeriodDate
-                ? DateOnly.FromDateTime(selectedPeriodDate)
-                : (DateOnly?)null;
+            var periodDate = (ProgressPeriodMonthComboBox.SelectedItem as ProgressPaymentMonthOption)?.PeriodDate;
 
             if (IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment))
             {
@@ -3858,12 +3897,12 @@ public partial class MainWindow : Window
 
                 if (!periodDate.HasValue)
                 {
-                    invalidFields.Add((ProgressPeriodDatePicker, "Dönem Tarihi"));
+                    invalidFields.Add((ProgressPeriodMonthComboBox, "Dönem Tarihi"));
                 }
                 else if (periodDate.Value < _editingArchiveSnapshot!.Contract.StartDate ||
                          periodDate.Value > _editingArchiveSnapshot.Contract.EndDate)
                 {
-                    invalidFields.Add((ProgressPeriodDatePicker, "Dönem Tarihi"));
+                    invalidFields.Add((ProgressPeriodMonthComboBox, "Dönem Tarihi"));
                 }
             }
 
@@ -4504,7 +4543,7 @@ public partial class MainWindow : Window
             MinimumWageSupportTextBox.Text = input.MinimumWageSupport.ToString("N2", CultureInfo.CurrentCulture);
             InspectionPenaltyTextBox.Text = input.InspectionPenalty.ToString("N2", CultureInfo.CurrentCulture);
             ProgressNumberTextBox.Text = archive.ProgressPayment.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
-            ProgressPeriodDatePicker.SelectedDate = archive.ProgressPayment.PeriodDate?.ToDateTime(TimeOnly.MinValue);
+            SelectProgressPeriod(archive.ProgressPayment.PeriodDate);
 
             UpdateContractSelectors();
             UpdateHistoryView();
@@ -4978,7 +5017,7 @@ public partial class MainWindow : Window
             MinimumWageSupportTextBox.Text = payment.Input.MinimumWageSupport.ToString("N2", CultureInfo.CurrentCulture);
             InspectionPenaltyTextBox.Text = payment.Input.InspectionPenalty.ToString("N2", CultureInfo.CurrentCulture);
             ProgressNumberTextBox.Text = payment.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
-            ProgressPeriodDatePicker.SelectedDate = payment.PeriodDate?.ToDateTime(TimeOnly.MinValue);
+            SelectProgressPeriod(payment.PeriodDate);
 
             NavigationButton_Click(NavProgress, new RoutedEventArgs(Button.ClickEvent, NavProgress));
             // Panel geçişinden sonra editör modunu son kez uygula.
@@ -5028,7 +5067,7 @@ public partial class MainWindow : Window
         MinimumWageSupportTextBox.Text = item.Input.MinimumWageSupport.ToString("N2", CultureInfo.CurrentCulture);
         InspectionPenaltyTextBox.Text = item.Input.InspectionPenalty.ToString("N2", CultureInfo.CurrentCulture);
         ProgressNumberTextBox.Text = item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
-        ProgressPeriodDatePicker.SelectedDate = item.PeriodDate?.ToDateTime(TimeOnly.MinValue);
+        SelectProgressPeriod(item.PeriodDate);
 
         SetProgressEditorMode(true);
         NavigationButton_Click(NavProgress, new RoutedEventArgs(Button.ClickEvent, NavProgress));
@@ -5068,7 +5107,7 @@ public partial class MainWindow : Window
             MinimumWageSupportTextBox.Text = original.Input.MinimumWageSupport.ToString("N2", CultureInfo.CurrentCulture);
             InspectionPenaltyTextBox.Text = original.Input.InspectionPenalty.ToString("N2", CultureInfo.CurrentCulture);
             ProgressNumberTextBox.Text = original.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
-            ProgressPeriodDatePicker.SelectedDate = original.PeriodDate?.ToDateTime(TimeOnly.MinValue);
+            SelectProgressPeriod(original.PeriodDate);
         }
 
         SetProgressEditorMode(false);
@@ -6246,7 +6285,7 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         }
 
         ProgressNumberTextBox.Clear();
-        ProgressPeriodDatePicker.SelectedDate = null;
+        ProgressPeriodMonthComboBox.SelectedItem = null;
         _suppressSelectionEvents = true;
         try
         {
