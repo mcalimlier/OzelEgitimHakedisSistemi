@@ -29,6 +29,7 @@ public static class RouteAssignmentValidationService
             !string.IsNullOrWhiteSpace(existing.TenderNumber)
             && !string.IsNullOrWhiteSpace(existing.RouteNumber)
             && string.Equals(existing.TenderNumber.Trim(), proposedTender, StringComparison.OrdinalIgnoreCase)
+            && existing.ProgramType == proposed.ProgramType
             && string.Equals(existing.RouteNumber.Trim(), proposedRoute, StringComparison.OrdinalIgnoreCase)
             && !string.Equals(
                 OehsIdentityService.NormalizeIdentity(existing.ContractorTaxOrIdentityNumber),
