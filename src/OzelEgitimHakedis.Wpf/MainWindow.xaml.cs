@@ -4420,6 +4420,31 @@ public partial class MainWindow : Window
                 contractorBankAccount = liveContractor?.BankAccountNumber ?? string.Empty;
             }
 
+            var existingPaymentForMetadata = _editingHistoryId.HasValue
+                ? _progressHistory.FirstOrDefault(x => x.Id == _editingHistoryId.Value)
+                : null;
+            var metadataSource = IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment)
+                ? _editingArchiveSnapshot!.ProgressPayment
+                : existingPaymentForMetadata;
+            var selectedRouteNumbersForMetadata = ProgressRouteComboBox.SelectedItems
+                .OfType<RouteDraft>()
+                .Select(x => x.RouteNumber.Trim())
+                .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            if (selectedRouteNumbersForMetadata.Length == 0)
+                selectedRouteNumbersForMetadata = new[] { selectedRoute.RouteNumber.Trim() };
+            var batchIdForMetadata = metadataSource?.BatchId ?? metadataSource?.Id ?? Guid.NewGuid();
+            var batchRouteNumbersForMetadata = metadataSource?.BatchRouteNumbers
+                ?? string.Join("+", selectedRouteNumbersForMetadata);
+            var batchDisplayNameForMetadata = metadataSource?.BatchDisplayName
+                ?? MonthlyProgressPaymentIdentityService.BuildDisplayName(
+                    selectedContract.ProgramType,
+                    selectedContract.TenderNumber,
+                    selectedContract.ContractNumber,
+                    contractorName,
+                    selectedRouteNumbersForMetadata,
+                    periodDate ?? DateOnly.FromDateTime(DateTime.Today));
+
             // Ön kontrol, hesaplama motorundan önce çalışır.
             var historyItem = new ProgressPaymentHistoryData(
                 _editingHistoryId ?? Guid.NewGuid(),
@@ -4443,7 +4468,10 @@ public partial class MainWindow : Window
                 selectedContract.StartDate,
                 selectedContract.EndDate,
                 contractorBankAccount,
-                normalizedContractorIdentity);
+                normalizedContractorIdentity,
+                BatchId: batchIdForMetadata,
+                BatchDisplayName: batchDisplayNameForMetadata,
+                BatchRouteNumbers: batchRouteNumbersForMetadata);
 
             var dataForValidation = new OehsApplicationData(
                 selectedContract,
