@@ -4757,9 +4757,10 @@ public partial class MainWindow : Window
     }
 
     private static string GetHistoryArchiveFolder(ProgressPaymentHistoryData item) =>
-        OehsOutputPathService.BuildPdfDirectoryForContract(
+        OehsOutputPathService.BuildPdfDirectoryForContractor(
             item.TenderNumber ?? string.Empty,
-            item.ContractNumber ?? string.Empty,
+            item.ContractorName ?? string.Empty,
+            item.ContractorTaxOrIdentityNumber ?? string.Empty,
             item.RouteNumber ?? string.Empty);
 
     private void OpenHistoryFolderButton_Click(object sender, RoutedEventArgs e)
