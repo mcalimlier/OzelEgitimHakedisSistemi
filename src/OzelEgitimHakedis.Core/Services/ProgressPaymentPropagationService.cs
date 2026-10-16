@@ -50,7 +50,8 @@ public static class ProgressPaymentPropagationService
                 string.Equals(
                     OehsIdentityService.NormalizeIdentity(item.ContractorTaxOrIdentityNumber ?? string.Empty),
                     oldIdentity,
-                    StringComparison.Ordinal)
+                    StringComparison.Ordinal) &&
+                item.Input.ProgramType == oldContractor.ProgramType
                     ? item with
                     {
                         ContractorName = newContractor.Name,
