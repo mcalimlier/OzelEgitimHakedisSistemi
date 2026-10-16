@@ -2,9 +2,9 @@
 
 ## Ana dönüşüm sırası
 
-1. Excel tersine mühendislik — **TAMAMLANDI**
+1. Excel tersine mühendislik — **YAPISAL TARAMA TAMAMLANDI / SEMANTİK DOĞRULAMA SÜRÜYOR**
 2. İş kurallarının çıkarılması — **TAMAMLANDI / doğrulama sürüyor**
-3. VBA/makro kontrolü — **TAMAMLANDI** (aktif VBA projesi tespit edilmedi)
+3. VBA/makro kontrolü — **KAYNAK KODU ÇIKARILDI / UÇTAN UCA DOĞRULAMA SÜRÜYOR** (iki XLSM'de VBA projesi bulundu; makro aktarım davranışı hesap ve aylık geçmiş kayıtlarıyla çapraz doğrulanıyor)
 4. Domain model — **TAMAMLANDI / genişletme sürüyor**
 5. Hakediş hesaplama motoru — **TAMAMLANDI**
 6. Veri saklama — **TAMAMLANDI / geliştirme sürüyor**
@@ -110,7 +110,7 @@ Kullanıcı ekranında **KDV HESAPLA / DAHİL ET** seçeneği bulunur.
 
 Excel'in orijinal Hesaplama sayfasındaki “KDV'den Muafmı?” alanı ile mevcut formüller ayrıca karşılaştırılmıştır; OEHS kullanıcı arayüzünde seçim davranışı açık ve anlaşılır olacak şekilde sunulmuştur.
 
-### Excel v2 ikinci tarama — tamamlandı / uygulanıyor
+### Excel v2 ikinci tarama — formül ve VBA envanteri tamamlandı / semantik kabul doğrulaması sürüyor
 - `vbaProject.bin` içindeki Module1 VBA kaynak kodu çıkarıldı ve makro aktarım akışları doğrulandı.
 - Rehber personel hakediş hesabı eklendi.
 - Taşıma ve rehber personel fiyat farkları ayrı alanlara ayrıldı.
