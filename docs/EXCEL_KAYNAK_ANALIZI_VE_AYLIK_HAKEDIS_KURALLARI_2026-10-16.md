@@ -370,3 +370,27 @@ Her senaryoda Excel AC, uygulama ek kesin teminatı ve net ödeme ayrı ayrı ra
 ### CI durumu notu
 
 Bu belge güncellemesi için sorgulanan commit üzerinde GitHub birleşik durum API'si herhangi bir durum kontrolü döndürmedi. Bu, testlerin başarılı olduğu anlamına gelmez; doğrulanabilir CI sonucu mevcut değildir. Windows derlemesi ve testler başarıyla tamamlanmadan üretim kabulü verilmemelidir.
+
+
+## 18. Sonraki otomatik kabul testi için ayırt edici senaryo matrisi
+
+Bu matris, kaynak formüllerinin yalnızca olağan pozitif örnekte değil, davranış farkı ortaya çıkaran sınır durumlarında da kontrol edilmesi için hazırlanmıştır. Henüz uygulama test sonucu değildir.
+
+| Senaryo | Girdi/koşul | Beklenen doğrulama |
+|---|---|---|
+| Normal Temel Eğitim | Pozitif gün, fiyat, fiyat farkı; KDV dahil | K, L, M, O, T, U, V, W zinciri Excel formül kurallarıyla uyuşmalı |
+| Temel Eğitim desteği | Rehber alanı yok; asgari ücret desteği pozitif | Destek V toplamına dahil olmalı; rehber alanı olmaması desteği sıfırlamamalı |
+| KDV muaf Temel Eğitim | E = Evet | KDV ve KDV tevkifatı sıfır olmalı |
+| İskontolu Özel Eğitim taşıma | J > 0 | K = G×H + I − J; iskonto net taşıma hesabından düşmeli |
+| İskontolu rehber | S > 0 | T = P×Q + R − S; rehber iskontosu taşıma tutarını etkilememeli |
+| Özel Eğitim KDV dahil | E = Hayır | Taşıma KDV %10, taşıma tevkifatı %50 KDV; rehber KDV %20, rehber tevkifatı %90 KDV |
+| Negatif fiyat farkı | I < 0 ve/veya R < 0 | AC formülü ile uygulamanın ek teminat davranışı ayrı karşılaştırılmalı; varsayımla eşit sayılmamalı |
+| Negatif rapor fiyat farkı | Rapor D11 < 0 | Kaynak rapor damga vergisi kuralı, hesaplama sayfasındaki işaretli tutardan ayrı doğrulanmalı |
+| Önceki dönem kesintisi | Mayıs kesintisi > 0, Haziran hakedişi var | Haziran icmalinde önceki kesinti tarih/ay anahtarıyla taşınmalı; ay indeksiyle yanlış eşleşmemeli |
+| Çok hatlı toplam | Hat sayısı 26'dan fazla | Kaynak Excel'in kısa toplam aralığına bağlı kalmadan seçili tüm hatlar dahil edilmeli |
+| Ay sınırı | Temmuz ve Kasım/Aralık kayıtları | Ay anahtarı benzersiz olmalı; boş başlık/tekrarlı başlık geçmişi yanlış aya yazmamalı |
+| Yuvarlama | Kuruş sınırında tahakkuk ve kesinti | Tahakkuk ve kesinti ayrı ayrı iki haneye yuvarlanıp netleştirilmeli; ham kayan nokta sonucu PDF değeriyle karıştırılmamalı |
+
+### Kabul kriteri
+
+Her testte (1) girişler, (2) kaynak Excel hücre/formülü, (3) OEHS hesaplama servisi sonucu, (4) fark, (5) geçme/kalma durumu kaydedilmelidir. Sonuç yalnızca net tutarla sınırlı kalmamalı; ara değerler de karşılaştırılmalıdır. Testlerin çalıştırıldığı commit SHA ve CI koşusu rapora eklenmeden matris “geçti” olarak işaretlenmemelidir.
