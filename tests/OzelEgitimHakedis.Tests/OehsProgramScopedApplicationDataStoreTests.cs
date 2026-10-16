@@ -54,41 +54,30 @@ public sealed class OehsProgramScopedApplicationDataStoreTests
     }
 
     [Fact]
-    public void Load_ShouldMigrateLegacyFile_AndRetainItAsRecoveryCopy()
+    public void Load_ShouldNotImportLegacyDataIntoTheFreshSchema()
     {
         var root = Directory.CreateTempSubdirectory("oehs-program-migration-");
         try
         {
-            var specialContract = Contract(TransportationProgramType.SpecialEducation, "Q1");
-            var basicContract = Contract(TransportationProgramType.BasicOrSecondary, "Q2");
-            var legacyContractor = Contractor(TransportationProgramType.SpecialEducation);
-            var legacyData = new OehsApplicationData(
-                specialContract,
-                new[]
-                {
-                    Route(TransportationProgramType.SpecialEducation, "Q1"),
-                    Route(TransportationProgramType.BasicOrSecondary, "Q2")
-                },
-                new[] { legacyContractor },
-                new[]
-                {
-                    Payment(TransportationProgramType.SpecialEducation, "Q1"),
-                    Payment(TransportationProgramType.SpecialEducation, "Q2")
-                },
-                new[] { specialContract, basicContract });
+            var legacyContract = Contract(TransportationProgramType.SpecialEducation, "Q1");
             var legacyPath = Path.Combine(root.FullName, "oehs-data.json");
-            new OehsApplicationDataStore(legacyPath).Save(legacyData);
+            new OehsApplicationDataStore(legacyPath).Save(new OehsApplicationData(
+                legacyContract,
+                new[] { Route(TransportationProgramType.SpecialEducation, "Q1") },
+                new[] { Contractor(TransportationProgramType.SpecialEducation) },
+                new[] { Payment(TransportationProgramType.SpecialEducation, "Q1") },
+                new[] { legacyContract }));
 
             var store = new OehsProgramScopedApplicationDataStore(root.FullName);
-            var migrated = store.Load();
+            var loaded = store.Load();
 
             Assert.True(File.Exists(legacyPath));
-            Assert.True(File.Exists(Path.Combine(root.FullName, "oehs-special-education.json")));
-            Assert.True(File.Exists(Path.Combine(root.FullName, "oehs-basic-secondary.json")));
-            Assert.Contains(migrated.Contractors, x => x.ProgramType == TransportationProgramType.SpecialEducation);
-            Assert.Contains(migrated.Contractors, x => x.ProgramType == TransportationProgramType.BasicOrSecondary);
-            Assert.Contains(migrated.Routes, x => x.ProgramType == TransportationProgramType.SpecialEducation);
-            Assert.Contains(migrated.Routes, x => x.ProgramType == TransportationProgramType.BasicOrSecondary);
+            Assert.False(File.Exists(Path.Combine(root.FullName, "oehs-special-education.json")));
+            Assert.False(File.Exists(Path.Combine(root.FullName, "oehs-basic-secondary.json")));
+            Assert.Empty(loaded.Contracts!);
+            Assert.Empty(loaded.Routes);
+            Assert.Empty(loaded.Contractors);
+            Assert.Empty(loaded.ProgressPayments!);
         }
         finally
         {
