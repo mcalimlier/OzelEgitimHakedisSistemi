@@ -45,6 +45,7 @@ public static class ProgressPaymentArchiveRestoreService
             archive.Contractor.TaxOrIdentityNumber);
 
         var addedContractor = contractors.All(x =>
+            x.ProgramType != archive.Contractor.ProgramType ||
             !string.Equals(
                 OehsIdentityService.NormalizeIdentity(x.TaxOrIdentityNumber),
                 archiveIdentity,
@@ -65,6 +66,7 @@ public static class ProgressPaymentArchiveRestoreService
             archiveRoute.ProgramType);
 
         var sameTenderContractCount = contracts.Count(x =>
+            x.ProgramType == archiveRoute.ProgramType &&
             string.Equals(x.TenderNumber, archiveRoute.TenderNumber, StringComparison.OrdinalIgnoreCase));
         var addedRoute = routes.All(x =>
         {
