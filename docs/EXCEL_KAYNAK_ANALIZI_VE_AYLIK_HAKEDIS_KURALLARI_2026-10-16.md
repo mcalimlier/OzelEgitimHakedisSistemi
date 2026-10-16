@@ -350,3 +350,23 @@ Kaynak Excel'in saklanan hücre sonuçları bu aritmetik sonuçlarla uyuşuyor.
 ### Teste geçişte dikkat edilecek konu
 
 Excel dosyasında `ROUND` veya hücre biçimlendirmesiyle ilişkili yuvarlama davranışları olan başka alanlar bulunuyor. Bu iki örnek, ara hesaplamaların ham hassasiyetini doğrular; resmî PDF'de iki ondalığa yuvarlanmış değerlerin karşılaştırması ayrı test edilmelidir. Uygulama servisinden sonuç alınmadan “OEHS ile eşleşti” durumu verilmemelidir.
+
+
+## 17. Kritik hesaplama farkı için karar kaydı — ek kesin teminat tabanı
+
+Kaynak formül ile önceki kod incelemesi arasında önemli bir fark kayıtlıdır:
+- Kaynak Özel Eğitim Excel'i: `AC=(I×6%)+(R×6%)`
+- Önceki kod incelemesinde görülen uygulama yaklaşımı: `Math.Max(0, taşıma fiyat farkı + rehber fiyat farkı)×6%`
+
+Bu iki ifade, fiyat farklarından biri negatif olduğunda aynı sonucu vermeyebilir. Ayrıca kaynak formül, iki kalemin ayrı ayrı yüzde altısını alır; uygulama yaklaşımı ise önce farkları toplar ve toplamı sıfırın altına düşürmez. Bu nedenle konu yalnızca yazım farkı değildir; net hakedişi etkileyebilir.
+
+**Karar:** Kaynak Excel formülünü mevzuat/ihale uzmanı teyidi olmadan uygulamaya sessizce taşımak veya mevcut davranışı sessizce değiştirmek doğru değildir. Test matrisi şu üç senaryoyu ayrı kapsamalıdır:
+1. İki fiyat farkı da pozitif.
+2. Taşıma veya rehber fiyat farkından biri negatif, diğeri pozitif.
+3. İki fiyat farkı da negatif.
+
+Her senaryoda Excel AC, uygulama ek kesin teminatı ve net ödeme ayrı ayrı raporlanmalı; nihai iş kuralı onaylanana kadar fark görünür tutulmalıdır. Pozitif örnekte sonuçlar eşleşebilir; negatif örnekler ayırt edici testlerdir.
+
+### CI durumu notu
+
+Bu belge güncellemesi için sorgulanan commit üzerinde GitHub birleşik durum API'si herhangi bir durum kontrolü döndürmedi. Bu, testlerin başarılı olduğu anlamına gelmez; doğrulanabilir CI sonucu mevcut değildir. Windows derlemesi ve testler başarıyla tamamlanmadan üretim kabulü verilmemelidir.
