@@ -4,7 +4,7 @@ public static class OehsFreshStartService
 {
     // One-time clean-slate migration. Existing files are moved to a recoverable
     // backup, never permanently deleted by an automatic launch-time operation.
-    public const string CurrentResetVersion = "2026-10-01-clean-slate-01";
+    public const string CurrentResetVersion = "2026-10-16-ikn-contractor-transport-model-v2";
 
     public static bool EnsureFreshStart() =>
         EnsureFreshStart(
