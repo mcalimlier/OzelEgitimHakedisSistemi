@@ -1444,10 +1444,9 @@ public partial class MainWindow : Window
         {
             case HistoryCorrectionSection.Contract:
                 if (string.IsNullOrWhiteSpace(TenderNumberTextBox.Text) ||
-                    string.IsNullOrWhiteSpace(ContractNumberTextBox.Text) ||
                     string.IsNullOrWhiteSpace(WorkNameTextBox.Text))
                 {
-                    message = "İhale/Dosya No, sözleşme no ve işin adı zorunludur.";
+                    message = "İhale Kayıt Numarası (İKN) ve işin adı zorunludur.";
                     return false;
                 }
                 if (!TryParseDecimal(ContractAmountTextBox.Text, out var contractAmount) || contractAmount < 0)
@@ -2013,7 +2012,6 @@ public partial class MainWindow : Window
 
         var errors = new List<Control>();
         if (string.IsNullOrWhiteSpace(TenderNumberTextBox.Text)) errors.Add(TenderNumberTextBox);
-        if (string.IsNullOrWhiteSpace(ContractNumberTextBox.Text)) errors.Add(ContractNumberTextBox);
         if (string.IsNullOrWhiteSpace(WorkNameTextBox.Text)) errors.Add(WorkNameTextBox);
         if (!TryParseDecimal(ContractAmountTextBox.Text, out var contractAmount) || contractAmount < 0) errors.Add(ContractAmountTextBox);
         if (!int.TryParse(ContractWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var contractWorkDays) || contractWorkDays < 0) errors.Add(ContractWorkDaysTextBox);
@@ -2057,7 +2055,7 @@ public partial class MainWindow : Window
         var updatedContract = archive.Contract with
         {
             TenderNumber = TenderNumberTextBox.Text.Trim(),
-            ContractNumber = ContractNumberTextBox.Text.Trim(),
+            ContractNumber = archive.Contract.ContractNumber,
             WorkName = WorkNameTextBox.Text.Trim(),
             ContractAmount = contractAmount,
             StartDate = startDate,
@@ -2618,10 +2616,9 @@ public partial class MainWindow : Window
         ContractSummaryTenderTextBlock.Text = string.IsNullOrWhiteSpace(TenderNumberTextBox.Text)
             ? "Bekleniyor" : TenderNumberTextBox.Text.Trim();
 
-        ContractSummaryContractTextBlock.Text = string.IsNullOrWhiteSpace(ContractNumberTextBox.Text)
-            ? "Bekleniyor"
-            : ContractNumberTextBox.Text.Trim() +
-              (ContractDatePicker.SelectedDate.HasValue ? $" • {ContractDatePicker.SelectedDate.Value:dd.MM.yyyy}" : "");
+        ContractSummaryContractTextBlock.Text = GetSelectedTransportationProgramType() == TransportationProgramType.BasicOrSecondary
+            ? "Temel/Ortaöğretim Taşıma"
+            : "Özel Eğitim Taşıma";
 
         ContractSummaryAmountTextBlock.Text = TryParseDecimal(ContractAmountTextBox.Text, out var summaryAmount)
             ? FormatMoney(summaryAmount) : FormatMoney(0);
@@ -2994,7 +2991,7 @@ public partial class MainWindow : Window
         RouteTransportWorkDaysTextBox.Text = route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
         RouteGuideWorkDaysTextBox.Text = route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
         RouteGuideDailyPriceTextBox.Text = route.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
-        RouteStatusTextBlock.Text = $"Düzenleme modu: {route.TenderNumber} / {route.ContractNumber} / {route.RouteNumber}. DÜZENLE ile kaydedin.";
+        RouteStatusTextBlock.Text = $"Düzenleme modu: İKN {route.TenderNumber} / Hat {route.RouteNumber}. DÜZENLE ile kaydedin.";
     }
 
     private void CancelRouteEditButton_Click(object sender, RoutedEventArgs e)
@@ -3183,11 +3180,6 @@ public partial class MainWindow : Window
             errors.Add("İhale / Dosya No");
             MarkInvalid(TenderNumberTextBox);
         }
-        if (string.IsNullOrWhiteSpace(ContractNumberTextBox.Text))
-        {
-            errors.Add("Sözleşme No");
-            MarkInvalid(ContractNumberTextBox);
-        }
         if (string.IsNullOrWhiteSpace(WorkNameTextBox.Text))
         {
             errors.Add("İşin Adı");
@@ -3223,7 +3215,7 @@ public partial class MainWindow : Window
         }
 
         var sourceTenderForEdit = _editingContractTender ?? TenderNumberTextBox.Text.Trim();
-        var sourceContractNumberForEdit = _editingContractNumber ?? ContractNumberTextBox.Text.Trim();
+        var sourceContractNumberForEdit = _editingContractNumber ?? string.Empty;
         var oldContract = _editingContractTender is null
             ? null
             : FindContract(sourceTenderForEdit, sourceContractNumberForEdit);
@@ -3234,9 +3226,12 @@ public partial class MainWindow : Window
             return;
         }
 
+        var internalContractNumber = oldContract?.ContractNumber ?? "INTERNAL-" + Guid.NewGuid().ToString("N");
+        ContractNumberTextBox.Text = internalContractNumber;
+
         var proposedContract = new ContractDraftData(
             TenderNumberTextBox.Text.Trim(),
-            ContractNumberTextBox.Text.Trim(),
+            internalContractNumber,
             WorkNameTextBox.Text.Trim(),
             // A new contract/part must not silently inherit a sibling contract's contractor.
             // Contractor identity is associated with the route and is entered/selected there.
@@ -3253,19 +3248,17 @@ public partial class MainWindow : Window
             transportDailyPrice,
             GetSelectedTransportationProgramType());
 
-        var proposedContractKey = OehsIdentityService.BuildContractKey(
-            proposedContract.TenderNumber,
-            proposedContract.ContractNumber);
         var duplicateTarget = _contracts.FirstOrDefault(x =>
             string.Equals(
-                OehsIdentityService.BuildContractKey(x.TenderNumber, x.ContractNumber),
-                proposedContractKey,
-                StringComparison.Ordinal));
+                OehsIdentityService.NormalizeIdentity(x.TenderNumber),
+                OehsIdentityService.NormalizeIdentity(proposedContract.TenderNumber),
+                StringComparison.Ordinal) &&
+            !ReferenceEquals(x, oldContract));
 
         if (duplicateTarget is not null && !ReferenceEquals(duplicateTarget, oldContract))
         {
             ShowAlreadyRegistered(
-                $"İhale / Dosya No '{proposedContract.TenderNumber}' altında sözleşme no '{proposedContract.ContractNumber}' zaten kayıtlı. Aynı sözleşme numarası ikinci kez eklenmedi.");
+                $"İKN '{proposedContract.TenderNumber}' zaten kayıtlı. Aynı ihale için yeni kayıt açmayın; farklı yüklenicileri Hatlar bölümünde bu İKN'ye bağlayın.");
             return;
         }
 
@@ -3642,11 +3635,13 @@ public partial class MainWindow : Window
     private static string BuildArchiveKey(ProgressPaymentHistoryData item)
     {
         var tender = SafeFileName(string.IsNullOrWhiteSpace(item.TenderNumber) ? "Ihale" : item.TenderNumber);
+        var contractor = OehsFileNameService.BuildContractorFilePart(
+            item.ContractorName,
+            item.ContractorTaxOrIdentityNumber);
         var route = SafeFileName(string.IsNullOrWhiteSpace(item.RouteNumber) ? "Hat" : item.RouteNumber);
-        var contractNumber = SafeFileName(string.IsNullOrWhiteSpace(item.ContractNumber) ? "Sozlesme" : item.ContractNumber);
         var progress = item.ProgressPaymentNumber?.ToString(CultureInfo.InvariantCulture) ?? "Yeni";
         var period = item.PeriodDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "Donemsiz";
-        return $"{tender}_{contractNumber}_{route}_Hakedis-{progress}_{period}_{item.Id:N}";
+        return $"{tender}_Yuklenici-{contractor}_{route}_Hakedis-{progress}_{period}_{item.Id:N}";
     }
 
     private static string SaveRouteDocumentsArchiveMetadata(
