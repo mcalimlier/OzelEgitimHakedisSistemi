@@ -1,3 +1,5 @@
+using OzelEgitimHakedis.Core.Models;
+
 namespace OzelEgitimHakedis.Core.Services;
 
 public static class OehsOutputPathService
@@ -42,23 +44,41 @@ public static class OehsOutputPathService
         string tenderNumber,
         string contractorName,
         string contractorTaxOrIdentityNumber,
-        string routeNumber) =>
+        string routeNumber,
+        TransportationProgramType? programType = null,
+        string? batchRouteNumbers = null,
+        DateOnly? periodDate = null) =>
         BuildPdfDirectoryForContractor(
-            DesktopRoot, tenderNumber, contractorName, contractorTaxOrIdentityNumber, routeNumber);
+            DesktopRoot, tenderNumber, contractorName, contractorTaxOrIdentityNumber, routeNumber,
+            programType, batchRouteNumbers, periodDate);
 
     public static string BuildPdfDirectoryForContractor(
         string root,
         string tenderNumber,
         string contractorName,
         string contractorTaxOrIdentityNumber,
-        string routeNumber)
+        string routeNumber,
+        TransportationProgramType? programType = null,
+        string? batchRouteNumbers = null,
+        DateOnly? periodDate = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(root);
 
         var tender = OehsFileNameService.SanitizeFileName(tenderNumber, "Ihale");
         var contractor = OehsFileNameService.BuildContractorFilePart(contractorName, contractorTaxOrIdentityNumber);
         var route = OehsFileNameService.SanitizeFileName(routeNumber, "Hat");
-        return Path.Combine(root, "Ciktilar", "Hakedisler", tender, $"Yuklenici-{contractor}", $"Hat-{route}");
+        var pathParts = new List<string> { root, "Ciktilar", "Hakedisler" };
+        if (programType.HasValue)
+            pathParts.Add(OehsFileNameService.BuildProgramFilePart(programType.Value));
+        pathParts.Add(tender);
+        pathParts.Add($"Yuklenici-{contractor}");
+        if (!string.IsNullOrWhiteSpace(batchRouteNumbers) && periodDate.HasValue)
+        {
+            var batchRoutes = OehsFileNameService.SanitizeFileName(batchRouteNumbers, "Hatlar");
+            pathParts.Add($"Aylik-{batchRoutes}_{periodDate.Value:yyyy-MM}");
+        }
+        pathParts.Add($"Hat-{route}");
+        return Path.Combine(pathParts.ToArray());
     }
 
     public static string BuildContractorPdfFilePath(
@@ -67,9 +87,12 @@ public static class OehsOutputPathService
         string contractorTaxOrIdentityNumber,
         string routeNumber,
         int progressPaymentNumber,
-        DateOnly periodDate) =>
+        DateOnly periodDate,
+        TransportationProgramType? programType = null,
+        string? batchRouteNumbers = null) =>
         BuildContractorPdfFilePath(
-            DesktopRoot, tenderNumber, contractorName, contractorTaxOrIdentityNumber, routeNumber, progressPaymentNumber, periodDate);
+            DesktopRoot, tenderNumber, contractorName, contractorTaxOrIdentityNumber, routeNumber,
+            progressPaymentNumber, periodDate, programType, batchRouteNumbers);
 
     public static string BuildContractorPdfFilePath(
         string root,
@@ -78,12 +101,16 @@ public static class OehsOutputPathService
         string contractorTaxOrIdentityNumber,
         string routeNumber,
         int progressPaymentNumber,
-        DateOnly periodDate)
+        DateOnly periodDate,
+        TransportationProgramType? programType = null,
+        string? batchRouteNumbers = null)
     {
         var directory = BuildPdfDirectoryForContractor(
-            root, tenderNumber, contractorName, contractorTaxOrIdentityNumber, routeNumber);
+            root, tenderNumber, contractorName, contractorTaxOrIdentityNumber, routeNumber,
+            programType, batchRouteNumbers, periodDate);
         var fileName = OehsFileNameService.BuildProgressPdfFileNameForContractor(
-            tenderNumber, contractorName, contractorTaxOrIdentityNumber, routeNumber, progressPaymentNumber, periodDate);
+            tenderNumber, contractorName, contractorTaxOrIdentityNumber, routeNumber,
+            progressPaymentNumber, periodDate, programType, batchRouteNumbers);
         return Path.Combine(directory, fileName);
     }
 
