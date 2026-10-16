@@ -32,11 +32,10 @@ public static class ProgressPaymentReportService
     }
 
     /// <summary>
-    /// Calculates the contract-price work amount for the report's A line.
-    /// The source workbook's K/T cells include I/R price-difference inputs,
-    /// while the report adds raw I+R separately in B. Therefore this monthly
-    /// amount must subtract I/R from K+T (equivalently: work-day amounts less J/S
-    /// discounts) to prevent the current month's price difference being counted twice.
+    /// Calculates the base service after discounts for one route/month:
+    /// G*H-J plus P*Q-S. The official report's D6 is not simply the sum of this
+    /// value across months; it is cumulative K+T less the current month's raw I+R.
+    /// See Calculate for the exact report-cell mapping.
     /// </summary>
     public static decimal CalculateWorkbookMonthlyPaymentAmount(ProgressPaymentHistoryData payment)
     {
@@ -49,8 +48,9 @@ public static class ProgressPaymentReportService
     }
 
     /// <summary>
-    /// Excel's Hakediş Raporu!D7 and the İcmal Verileri price-difference columns
-    /// use the raw I+R source inputs. They do not use I-J or R-S.
+    /// Excel Hakediş Raporu!D7 uses only the current month's raw I+R inputs.
+    /// Monthly history also stores these raw price differences separately from
+    /// K+T totals; discounts J/S are not subtracted from I/R for this field.
     /// </summary>
     public static decimal CalculateWorkbookPriceDifference(ProgressPaymentHistoryData payment)
     {
