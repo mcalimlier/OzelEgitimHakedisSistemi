@@ -1465,12 +1465,13 @@ public partial class MainWindow : Window
             HistoryCorrectionSection.Route =>
                 _routes.FirstOrDefault(x =>
                     string.Equals(
-                        OehsIdentityService.BuildRouteKey(x.TenderNumber, x.RouteNumber, x.ContractorTaxOrIdentityNumber, x.ContractNumber),
+                        OehsIdentityService.BuildRouteKey(x.TenderNumber, x.RouteNumber, x.ContractorTaxOrIdentityNumber, x.ContractNumber, x.ProgramType),
                         OehsIdentityService.BuildRouteKey(
                             item.TenderNumber ?? string.Empty,
                             item.RouteNumber ?? string.Empty,
                             item.ContractorTaxOrIdentityNumber ?? string.Empty,
-                            item.ContractNumber ?? string.Empty),
+                            item.ContractNumber ?? string.Empty,
+                            item.Input.ProgramType),
                         StringComparison.Ordinal)) is not RouteDraft route ||
                 TextDiffers(RouteNumberTextBox, route.RouteNumber) ||
                 TextDiffers(RouteNameTextBox, route.Name) ||
@@ -4926,7 +4927,7 @@ public partial class MainWindow : Window
                 return;
             }
 
-            var liveContract = FindContract(archive.Contract.TenderNumber, archive.Contract.ContractNumber)
+            var liveContract = FindContract(archive.Contract.TenderNumber, archive.Contract.ContractNumber, archive.Contract.ProgramType)
                 ?? archive.Contract;
 
             var liveRoute = _routes.FirstOrDefault(x =>
@@ -4935,12 +4936,14 @@ public partial class MainWindow : Window
                         x.TenderNumber,
                         x.RouteNumber,
                         x.ContractorTaxOrIdentityNumber,
-                        x.ContractNumber),
+                        x.ContractNumber,
+                        x.ProgramType),
                     OehsIdentityService.BuildRouteKey(
                         archive.Route.TenderNumber,
                         archive.Route.RouteNumber,
                         archive.Route.ContractorTaxOrIdentityNumber,
-                        archive.Route.ContractNumber),
+                        archive.Route.ContractNumber,
+                        archive.Route.ProgramType),
                     StringComparison.Ordinal))
                 ?? new RouteDraft(
                     archive.Route.RouteNumber,
@@ -5366,7 +5369,8 @@ public partial class MainWindow : Window
             item.TenderNumber ?? string.Empty,
             item.RouteNumber ?? string.Empty,
             item.ContractorTaxOrIdentityNumber ?? string.Empty,
-            item.ContractNumber ?? string.Empty);
+            item.ContractNumber ?? string.Empty,
+            item.Input.ProgramType);
 
         var route = _routes.FirstOrDefault(x =>
             string.Equals(
@@ -5374,7 +5378,8 @@ public partial class MainWindow : Window
                     x.TenderNumber,
                     x.RouteNumber,
                     x.ContractorTaxOrIdentityNumber,
-                    x.ContractNumber),
+                    x.ContractNumber,
+                    x.ProgramType),
                 historyRouteKey,
                 StringComparison.Ordinal));
 
