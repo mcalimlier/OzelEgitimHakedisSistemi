@@ -492,7 +492,7 @@
                                                     <TextBlock Grid.Row="6" Grid.Column="0" Text="Taşıma Günlük Fiyatı" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
                                                     <TextBox x:Name="ContractTransportDailyPriceTextBox" Grid.Row="6" Grid.Column="1" Margin="4.5" Style="{StaticResource FieldTextBox}" ToolTip="Excel İhale Verileri içindeki Günlük Fiyat. Hat ve hakediş ekranlarında tekrar girilmez."/>
                                                     <TextBlock Grid.Row="0" Grid.Column="0" Text="TAŞIMA PROGRAMI" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
-                                                    <ComboBox x:Name="TransportProgramTypeComboBox" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Margin="4.5" Style="{StaticResource FieldComboBox}" SelectedIndex="0" ToolTip="Rehber ve asgari ücret desteği kuralları seçilen program türüne göre uygulanır.">
+                                                    <ComboBox x:Name="TransportProgramTypeComboBox" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Margin="4.5" Style="{StaticResource FieldComboBox}" SelectedIndex="0" SelectionChanged="TransportProgramTypeComboBox_SelectionChanged" ToolTip="Rehber ve asgari ücret desteği kuralları seçilen program türüne göre uygulanır.">
                                                         <ComboBoxItem Content="Özel Eğitim Taşıma" Tag="SpecialEducation"/>
                                                         <ComboBoxItem Content="Temel / Ortaöğretim Taşıma" Tag="BasicOrSecondary"/>
                                                     </ComboBox>
@@ -628,7 +628,13 @@
                                             </StackPanel>
                                             <StackPanel Grid.Column="2" Margin="6.5,0,0,0">
                                                 <TextBlock Text="TANIMLI HATLAR" Style="{StaticResource CardTitle}"/>
-                                                <ComboBox x:Name="ProgressRouteComboBox" DisplayMemberPath="DisplayText" Height="34" Margin="0,6,0,0" SelectionChanged="ProgressRouteComboBox_SelectionChanged" Style="{StaticResource FieldComboBox}"/>
+                                                <ListBox x:Name="ProgressRouteComboBox" Height="112" Margin="0,6,0,0" SelectionMode="Extended" SelectionChanged="ProgressRouteComboBox_SelectionChanged" BorderBrush="{StaticResource BorderBrush}" Background="{StaticResource SurfaceBrush}" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                                <ListBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <CheckBox Content="{Binding DisplayText}" IsChecked="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected, Mode=TwoWay}" Padding="3" />
+                                                    </DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                            </ListBox>
                                                 <TextBlock x:Name="ProgressRouteRelationTextBlock" Text="Hat seçiniz." Foreground="#C5D7E7" FontSize="11.5" TextWrapping="Wrap" Margin="0,4,0,0"/>
                                             </StackPanel>
                                         </Grid>
