@@ -37,6 +37,44 @@ public sealed class ProgressPaymentArchiveRestoreServiceTests
     }
 
     [Fact]
+    public void Restore_ShouldKeepSameTenderContractorAndRouteSeparateAcrossPrograms()
+    {
+        var special = Archive();
+        var basicContract = special.Contract with { ProgramType = TransportationProgramType.BasicOrSecondary };
+        var basicRoute = special.Route with { ProgramType = TransportationProgramType.BasicOrSecondary };
+        var basicContractor = special.Contractor with { ProgramType = TransportationProgramType.BasicOrSecondary };
+        var basicInput = special.ProgressPayment.Input with { ProgramType = TransportationProgramType.BasicOrSecondary };
+        var basicPayment = special.ProgressPayment with
+        {
+            Id = Guid.NewGuid(),
+            Input = basicInput,
+            Calculation = ProgressPaymentCalculator.Calculate(basicInput)
+        };
+        var basicArchive = special with
+        {
+            Contract = basicContract,
+            Route = basicRoute,
+            Contractor = basicContractor,
+            ProgressPayment = basicPayment
+        };
+        var current = new OehsApplicationData(
+            special.Contract,
+            new[] { special.Route },
+            new[] { special.Contractor },
+            new[] { special.ProgressPayment },
+            new[] { special.Contract });
+
+        var result = ProgressPaymentArchiveRestoreService.Restore(current, basicArchive);
+
+        Assert.Equal(2, result.Data.Contracts!.Count);
+        Assert.Equal(2, result.Data.Contractors.Count);
+        Assert.Equal(2, result.Data.Routes.Count);
+        Assert.Equal(2, result.Data.ProgressPayments!.Count);
+        Assert.Contains(result.Data.Routes, x => x.ProgramType == TransportationProgramType.SpecialEducation);
+        Assert.Contains(result.Data.Routes, x => x.ProgramType == TransportationProgramType.BasicOrSecondary);
+    }
+
+    [Fact]
     public void Restore_ShouldNotDuplicateExistingSnapshotRecords()
     {
         var archive = Archive();
