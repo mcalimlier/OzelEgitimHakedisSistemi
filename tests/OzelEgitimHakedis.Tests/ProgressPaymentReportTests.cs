@@ -41,7 +41,7 @@ public sealed class ProgressPaymentReportTests
     }
 
     [Fact]
-    public void ReportTotals_ShouldIgnoreOtherRoutesAndOtherPrograms()
+    public void ReportTotals_ShouldIgnoreOtherRoutesProgramsContractsAndContractors()
     {
         var matchingPrevious = History(
             1, new DateOnly(2026, 10, 31), new DateTime(2026, 10, 31), 100m, 5m);
@@ -56,12 +56,25 @@ public sealed class ProgressPaymentReportTests
                     1, 800m, 0m, 80m, 100000m, false, 0m, 0m, 0m,
                     ProgramType: TransportationProgramType.BasicOrSecondary)
             };
+        var otherContract = History(
+            1, new DateOnly(2026, 10, 31), new DateTime(2026, 10, 31), 700m, 70m)
+            with { ContractNumber = "OTHER-CONTRACT" };
+        var otherTender = History(
+            1, new DateOnly(2026, 10, 31), new DateTime(2026, 10, 31), 600m, 60m)
+            with { TenderNumber = "OTHER-TENDER" };
+        var otherContractor = History(
+            1, new DateOnly(2026, 10, 31), new DateTime(2026, 10, 31), 500m, 50m)
+            with { ContractorTaxOrIdentityNumber = "DIFFERENT-VKN" };
         var current = History(
             2, new DateOnly(2026, 11, 30), new DateTime(2026, 12, 10), 150m, 10m);
 
         var totals = ProgressPaymentReportService.Calculate(
             current,
-            new[] { matchingPrevious, otherRoute, otherProgram, current });
+            new[]
+            {
+                matchingPrevious, otherRoute, otherProgram, otherContract,
+                otherTender, otherContractor, current
+            });
 
         Assert.Equal(255m, totals.CumulativeServiceAmount);
         Assert.Equal(10m, totals.CumulativePriceDifference);
