@@ -1010,6 +1010,7 @@ public partial class MainWindow : Window
             {
                 _suppressSelectionEvents = false;
             }
+            UpdateMultiRouteDraftRows();
             UpdateProgressRouteDefaults();
             return;
         }
@@ -1035,6 +1036,7 @@ public partial class MainWindow : Window
         {
             _suppressSelectionEvents = false;
         }
+        UpdateMultiRouteDraftRows();
         UpdateProgressRouteDefaults();
     }
 
@@ -6967,6 +6969,10 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
 
         ProgressNumberTextBox.Clear();
         ProgressPeriodMonthComboBox.SelectedItem = null;
+        _multiRoutePaymentRows.Clear();
+        MultiRouteEntryBorder.Visibility = Visibility.Collapsed;
+        SetGlobalMonetaryFieldsVisible(true);
+        _lastProgressDefaultsRouteKey = null;
         _suppressSelectionEvents = true;
         try
         {
