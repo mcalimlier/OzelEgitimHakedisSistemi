@@ -2979,7 +2979,8 @@ public partial class MainWindow : Window
                 contractor.Phone,
                 contractor.Email,
                 contractor.BankAccountNumber,
-                contractor.ContactPerson);
+                contractor.ContactPerson,
+                contractor.ProgramType);
 
         return ProgressPaymentPropagationService.RecalculateForRouteChange(
             _progressHistory.ToArray(), oldData, newData, contractorSnapshot, _calculationConstants);
