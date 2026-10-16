@@ -3999,6 +3999,34 @@ public partial class MainWindow : Window
             return;
         }
 
+        var sharedMonetaryInputs = MultiRouteProgressPaymentValidationService.FindSharedMonetaryInputs(
+            discount,
+            priceDifference,
+            taxDebt,
+            socialSecurityDebt,
+            minimumWageSupport,
+            inspectionPenalty,
+            guideDiscount,
+            guidePriceDifference);
+        if (sharedMonetaryInputs.Count > 0)
+        {
+            var message =
+                "Çoklu hat seçiminde bu parasal alanlar her hat kaydına ayrı uygulanır ve tutarlar çoğalabilir: "
+                + string.Join(", ", sharedMonetaryInputs)
+                + ". Yanlış hakediş oluşmasını önlemek için bu alanları hat bazında ayrı ayrı girin; "
+                + "hat bazlı giriş ekranı tamamlanana kadar bu alanlar sıfır değilken hatları tek tek hesaplayın.";
+            ProgressValidationBanner.Visibility = Visibility.Visible;
+            ProgressValidationMessageTextBlock.Text = message;
+            CalculationStatusTextBlock.Foreground =
+                new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(198, 40, 40));
+            CalculationStatusTextBlock.FontWeight = FontWeights.Bold;
+            CalculationStatusTextBlock.Text = message;
+            ProgressCalculationSummaryTextBlock.Text = "HAT BAZLI GİRİŞ GEREKLİ";
+            ArchiveCurrentProgressButton.Visibility = Visibility.Collapsed;
+            CorrectCurrentProgressButton.Visibility = Visibility.Collapsed;
+            return;
+        }
+
         var contractors = _contractors.Select(x => new Contractor(
             x.Name, x.TaxOrIdentityNumber, x.Address, x.Phone, x.Email,
             x.BankAccountNumber, x.ContactPerson, x.ProgramType)).ToArray();
