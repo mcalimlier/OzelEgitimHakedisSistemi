@@ -36,7 +36,9 @@ public sealed class ProgressPaymentCalculatorTests
         Assert.Equal(1000m, result.TransportNetAmount);
         Assert.Equal(100m, result.TransportVat);
         Assert.Equal(50m, result.TransportWithholding);
-        Assert.Equal(0m, result.Deductions.MinimumWageSupport);
+        Assert.Equal(250m, result.Deductions.MinimumWageSupport);
+        Assert.Equal(309.48m, result.TotalDeductions);
+        Assert.Equal(790.52m, result.NetPayable);
         Assert.Equal(0m, result.AppliedConstants!.GuideVatRate);
         Assert.Equal(0m, result.AppliedConstants.GuideWithholdingShare);
     }
@@ -245,7 +247,7 @@ public sealed class ProgressPaymentCalculatorTests
     }
 
     [Fact]
-    public void NegativePriceDifference_ShouldRemainSignedWithoutNegativeGuaranteeCredit()
+    public void NegativePriceDifference_ShouldMatchExcelSignedGuaranteeFormula()
     {
         var input = new ProgressPaymentInput(
             WorkDays: 10, DailyPrice: 1000m, DiscountAmount: 0m, PriceDifference: -500m,
@@ -256,16 +258,16 @@ public sealed class ProgressPaymentCalculatorTests
 
         Assert.Equal(9500m, result.TotalAmount);
         Assert.Equal(950m, result.Vat);
-        Assert.Equal(0m, result.AdditionalGuarantee);
+        Assert.Equal(-30m, result.AdditionalGuarantee);
         Assert.Equal(90.06m, result.StampTax);
         Assert.Equal(475m, result.Withholding);
         Assert.Equal(10450m, result.GrossAmount);
-        Assert.Equal(565.06m, result.TotalDeductions);
-        Assert.Equal(9884.94m, result.NetPayable);
+        Assert.Equal(535.06m, result.TotalDeductions);
+        Assert.Equal(9914.94m, result.NetPayable);
     }
 
     [Fact]
-    public void MixedSignedPriceDifferences_ShouldCalculateGuaranteeOnNetPositiveIncreaseOnly()
+    public void MixedSignedPriceDifferences_ShouldCalculateEachExcelPriceDifferenceAtSixPercent()
     {
         var input = new ProgressPaymentInput(
             WorkDays: 10, DailyPrice: 1000m, DiscountAmount: 0m, PriceDifference: -500m,
