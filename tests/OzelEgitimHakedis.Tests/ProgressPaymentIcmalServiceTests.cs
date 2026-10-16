@@ -90,6 +90,18 @@ public sealed class ProgressPaymentIcmalServiceTests
     }
 
     [Fact]
+    public void FindPreviousDeduction_ShouldCarryMayDeductionIntoJuneDespiteSourceLookupRangeDefect()
+    {
+        var may = History(1, new DateOnly(2027, 5, 31), 185m);
+        var june = History(2, new DateOnly(2027, 6, 30), 240m);
+
+        var result = ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { may, june }, june);
+
+        Assert.Equal(185m, result);
+    }
+
+    [Fact]
     public void FindPreviousDeduction_ShouldReturnZeroForFirstSeptemberOfFiscalYear()
     {
         var august = History(1, new DateOnly(2026, 8, 31), 450m);
