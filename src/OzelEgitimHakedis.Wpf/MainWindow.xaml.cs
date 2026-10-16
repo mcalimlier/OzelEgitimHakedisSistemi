@@ -25,6 +25,8 @@ public partial class MainWindow : Window
     private readonly ObservableCollection<RouteDraft> _routes = new();
     private readonly ObservableCollection<ContractorDraft> _contractors = new();
     private readonly ObservableCollection<ProgressPaymentHistoryData> _progressHistory = new();
+    private readonly ObservableCollection<MultiRoutePaymentDraftRow> _multiRoutePaymentRows = new();
+    private string? _lastProgressDefaultsRouteKey;
     private readonly ObservableCollection<HistoryRow> _historyRows = new();
     private readonly ObservableCollection<SummaryRow> _summaryRows = new();
     private readonly ObservableCollection<ReportRow> _reportRows = new();
@@ -95,6 +97,7 @@ public partial class MainWindow : Window
         SummaryItemsControl.ItemsSource = _summaryRows;
         ReportItemsControl.ItemsSource = _reportRows;
         ProgressRouteComboBox.ItemsSource = _routes;
+        MultiRoutePaymentGrid.ItemsSource = _multiRoutePaymentRows;
         ReportRouteComboBox.ItemsSource = _routes;
         OutputTenderListBox.ItemsSource = _contracts;
         OehsFreshStartService.EnsureFreshStart();
