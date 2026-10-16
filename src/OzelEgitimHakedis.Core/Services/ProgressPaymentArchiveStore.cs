@@ -303,15 +303,13 @@ public sealed class ProgressPaymentArchiveStore
     private static string BuildBaseStem(ProgressPaymentArchive archive)
     {
         var tender = SafeFilePart(archive.ProgressPayment.TenderNumber, "Ihale");
-        var contractNumber = SafeFilePart(
-            string.IsNullOrWhiteSpace(archive.ProgressPayment.ContractNumber)
-                ? archive.Contract.ContractNumber
-                : archive.ProgressPayment.ContractNumber,
-            "Sozlesme");
+        var contractor = OehsFileNameService.BuildContractorFilePart(
+            archive.Contractor.Name,
+            archive.Contractor.TaxOrIdentityNumber);
         var route = SafeFilePart(archive.ProgressPayment.RouteNumber, "Hat");
         var progress = archive.ProgressPayment.ProgressPaymentNumber?.ToString("00", System.Globalization.CultureInfo.InvariantCulture) ?? "Yeni";
         var period = archive.ProgressPayment.PeriodDate?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) ?? "Donemsiz";
-        return $"OEHS_{tender}_Soz-{contractNumber}_Hat-{route}_Hakediş-{progress}_{period}";
+        return $"OEHS_{tender}_Yuklenici-{contractor}_Hat-{route}_Hakediş-{progress}_{period}";
     }
 
     private static int? ParseRevision(string fileName, string baseStem)
