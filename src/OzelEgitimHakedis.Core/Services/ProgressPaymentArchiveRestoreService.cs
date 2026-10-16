@@ -34,7 +34,7 @@ public static class ProgressPaymentArchiveRestoreService
 
         var addedContract = contracts.All(x =>
             !string.Equals(
-                OehsIdentityService.BuildContractKey(x.TenderNumber, x.ContractNumber),
+                OehsIdentityService.BuildContractKey(x.TenderNumber, x.ContractNumber, x.ProgramType),
                 OehsIdentityService.BuildContractKey(archive.Contract.TenderNumber, archive.Contract.ContractNumber, archive.Contract.ProgramType),
                 StringComparison.Ordinal));
 
@@ -133,8 +133,8 @@ public static class ProgressPaymentArchiveRestoreService
         var merged = new OehsApplicationData(
             contracts.FirstOrDefault(x =>
                 string.Equals(
-                    OehsIdentityService.BuildContractKey(x.TenderNumber, x.ContractNumber),
-                    OehsIdentityService.BuildContractKey(archive.Contract.TenderNumber, archive.Contract.ContractNumber),
+                    OehsIdentityService.BuildContractKey(x.TenderNumber, x.ContractNumber, x.ProgramType),
+                    OehsIdentityService.BuildContractKey(archive.Contract.TenderNumber, archive.Contract.ContractNumber, archive.Contract.ProgramType),
                     StringComparison.Ordinal)),
             routes,
             contractors,
