@@ -5939,22 +5939,24 @@ public partial class MainWindow : Window
     private void SetGlobalMonetaryFieldsVisible(bool visible)
     {
         var visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+        var selectedProgram = (ProgressTenderListBox.SelectedItem as ContractDraftData)?.ProgramType;
+        var showGuide = visible && selectedProgram.HasValue && HasGuideStaff(selectedProgram.Value);
         WorkDaysLabel.Visibility = visibility;
         WorkDaysTextBox.Visibility = visibility;
         DailyPriceLabel.Visibility = visibility;
         DailyPriceTextBox.Visibility = visibility;
-        ProgressGuideWorkDaysLabel.Visibility = visibility;
-        GuideWorkDaysTextBox.Visibility = visibility;
-        ProgressGuideDailyPriceLabel.Visibility = visibility;
-        GuideDailyPriceTextBox.Visibility = visibility;
+        ProgressGuideWorkDaysLabel.Visibility = showGuide ? Visibility.Visible : Visibility.Collapsed;
+        GuideWorkDaysTextBox.Visibility = showGuide ? Visibility.Visible : Visibility.Collapsed;
+        ProgressGuideDailyPriceLabel.Visibility = showGuide ? Visibility.Visible : Visibility.Collapsed;
+        GuideDailyPriceTextBox.Visibility = showGuide ? Visibility.Visible : Visibility.Collapsed;
         DiscountLabel.Visibility = visibility;
         DiscountTextBox.Visibility = visibility;
         PriceDifferenceLabel.Visibility = visibility;
         PriceDifferenceTextBox.Visibility = visibility;
-        GuideDiscountLabel.Visibility = visibility;
-        GuideDiscountTextBox.Visibility = visibility;
-        GuidePriceDifferenceLabel.Visibility = visibility;
-        GuidePriceDifferenceTextBox.Visibility = visibility;
+        GuideDiscountLabel.Visibility = showGuide ? Visibility.Visible : Visibility.Collapsed;
+        GuideDiscountTextBox.Visibility = showGuide ? Visibility.Visible : Visibility.Collapsed;
+        GuidePriceDifferenceLabel.Visibility = showGuide ? Visibility.Visible : Visibility.Collapsed;
+        GuidePriceDifferenceTextBox.Visibility = showGuide ? Visibility.Visible : Visibility.Collapsed;
         TaxDebtLabel.Visibility = visibility;
         TaxDebtTextBox.Visibility = visibility;
         SocialSecurityDebtLabel.Visibility = visibility;
