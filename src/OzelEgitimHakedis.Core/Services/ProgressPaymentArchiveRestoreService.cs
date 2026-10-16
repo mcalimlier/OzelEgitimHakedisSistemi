@@ -19,8 +19,8 @@ public static class ProgressPaymentArchiveRestoreService
         var contracts = (current.Contracts ?? Array.Empty<ContractDraftData>()).ToList();
         if (current.Contract is not null && contracts.All(x =>
                 !string.Equals(
-                    OehsIdentityService.BuildContractKey(x.TenderNumber, x.ContractNumber),
-                    OehsIdentityService.BuildContractKey(current.Contract.TenderNumber, current.Contract.ContractNumber),
+                    OehsIdentityService.BuildContractKey(x.TenderNumber, x.ContractNumber, x.ProgramType),
+                    OehsIdentityService.BuildContractKey(current.Contract.TenderNumber, current.Contract.ContractNumber, current.Contract.ProgramType),
                     StringComparison.Ordinal)))
         {
             // Older JSON stored only the selected Contract property. Promote it
@@ -35,7 +35,7 @@ public static class ProgressPaymentArchiveRestoreService
         var addedContract = contracts.All(x =>
             !string.Equals(
                 OehsIdentityService.BuildContractKey(x.TenderNumber, x.ContractNumber),
-                OehsIdentityService.BuildContractKey(archive.Contract.TenderNumber, archive.Contract.ContractNumber),
+                OehsIdentityService.BuildContractKey(archive.Contract.TenderNumber, archive.Contract.ContractNumber, archive.Contract.ProgramType),
                 StringComparison.Ordinal));
 
         if (addedContract)
@@ -61,7 +61,8 @@ public static class ProgressPaymentArchiveRestoreService
             archiveRoute.TenderNumber,
             archiveRoute.RouteNumber,
             archiveRoute.ContractorTaxOrIdentityNumber,
-            archiveRoute.ContractNumber);
+            archiveRoute.ContractNumber,
+            archiveRoute.ProgramType);
 
         var sameTenderContractCount = contracts.Count(x =>
             string.Equals(x.TenderNumber, archiveRoute.TenderNumber, StringComparison.OrdinalIgnoreCase));
@@ -83,7 +84,8 @@ public static class ProgressPaymentArchiveRestoreService
                     x.TenderNumber,
                     x.RouteNumber,
                     x.ContractorTaxOrIdentityNumber,
-                    existingContractNumber),
+                    existingContractNumber,
+                    x.ProgramType),
                 archiveRouteKey,
                 StringComparison.Ordinal);
         });
