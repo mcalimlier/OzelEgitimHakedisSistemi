@@ -882,6 +882,40 @@ public partial class MainWindow : Window
             : null;
     }
 
+    private void ProgressPeriodMonthComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!IsInitialized || _suppressSelectionEvents || _editingHistoryId.HasValue || IsArchiveEditing)
+            return;
+
+        UpdateAutomaticProgressNumber();
+    }
+
+    private void UpdateAutomaticProgressNumber()
+    {
+        var selected = ProgressPeriodMonthComboBox.SelectedItem as ProgressPaymentMonthOption;
+        var options = ProgressPeriodMonthComboBox.ItemsSource as IEnumerable<ProgressPaymentMonthOption>
+                      ?? Array.Empty<ProgressPaymentMonthOption>();
+        if (selected is null)
+        {
+            ProgressNumberTextBox.Clear();
+            return;
+        }
+
+        var number = 1;
+        foreach (var option in options)
+        {
+            if (option.StartDate == selected.StartDate && option.EndDate == selected.EndDate)
+            {
+                ProgressNumberTextBox.Text = number.ToString(CultureInfo.CurrentCulture);
+                return;
+            }
+
+            number++;
+        }
+
+        ProgressNumberTextBox.Clear();
+    }
+
     private void SelectProgressPeriod(DateOnly? periodDate)
     {
         var options = ProgressPeriodMonthComboBox.ItemsSource as IEnumerable<ProgressPaymentMonthOption>
@@ -5440,17 +5474,8 @@ public partial class MainWindow : Window
         // Aksi halde bir hattan diğerine geçerken önceki hattın rehber günü kalabilir.
         GuideWorkDaysTextBox.Text = route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
 
-        if (!_editingHistoryId.HasValue)
-        {
-            var suggested = ProgressPaymentValidationService.SuggestNextProgressPaymentNumber(
-                _progressHistory,
-                route.TenderNumber,
-                route.RouteNumber,
-                route.ContractorTaxOrIdentityNumber,
-                route.ContractNumber);
-
-            ProgressNumberTextBox.Text = suggested.ToString(CultureInfo.CurrentCulture);
-        }
+        if (!_editingHistoryId.HasValue && !IsArchiveEditing)
+            UpdateAutomaticProgressNumber();
     }
 
     private void OutputTenderListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
