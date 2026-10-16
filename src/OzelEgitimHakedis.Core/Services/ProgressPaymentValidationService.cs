@@ -31,7 +31,8 @@ public static class ProgressPaymentValidationService
         if (string.IsNullOrWhiteSpace(identity))
             errors.Add("Yüklenici VKN/TCKN girilmelidir.");
 
-        var routeMatches = string.Equals(route.TenderNumber.Trim(), tenderNumber, StringComparison.OrdinalIgnoreCase)
+        var routeMatches = route.ProgramType == contract.ProgramType
+            && string.Equals(route.TenderNumber.Trim(), tenderNumber, StringComparison.OrdinalIgnoreCase)
             && (string.IsNullOrWhiteSpace(route.ContractNumber)
                 || string.Equals(route.ContractNumber.Trim(), contractNumber, StringComparison.OrdinalIgnoreCase))
             && string.Equals(OehsIdentityService.NormalizeIdentity(route.ContractorTaxOrIdentityNumber), identity, StringComparison.Ordinal)
@@ -45,8 +46,8 @@ public static class ProgressPaymentValidationService
             .Where(x => x is not null)
             .Cast<ContractDraftData>()
             .Any(x => string.Equals(
-                OehsIdentityService.BuildContractKey(x.TenderNumber, x.ContractNumber),
-                OehsIdentityService.BuildContractKey(tenderNumber, contractNumber),
+                OehsIdentityService.BuildContractKey(x.TenderNumber, x.ContractNumber, x.ProgramType),
+                OehsIdentityService.BuildContractKey(tenderNumber, contractNumber, contract.ProgramType),
                 StringComparison.Ordinal));
 
         if (!contractExists)
@@ -56,8 +57,9 @@ public static class ProgressPaymentValidationService
             .Append(data.Contract)
             .Where(x => x is not null)
             .Cast<ContractDraftData>()
+            .Where(x => x.ProgramType == contract.ProgramType)
             .Where(x => string.Equals(x.TenderNumber.Trim(), tenderNumber, StringComparison.OrdinalIgnoreCase))
-            .Select(x => OehsIdentityService.BuildContractKey(x.TenderNumber, x.ContractNumber))
+            .Select(x => OehsIdentityService.BuildContractKey(x.TenderNumber, x.ContractNumber, x.ProgramType))
             .Distinct(StringComparer.Ordinal)
             .ToArray();
 
@@ -72,12 +74,14 @@ public static class ProgressPaymentValidationService
                         x.TenderNumber,
                         x.RouteNumber,
                         x.ContractorTaxOrIdentityNumber,
-                        existingContractNumber),
+                        existingContractNumber,
+                        x.ProgramType),
                     OehsIdentityService.BuildRouteKey(
                         route.TenderNumber,
                         route.RouteNumber,
                         route.ContractorTaxOrIdentityNumber,
-                        string.IsNullOrWhiteSpace(route.ContractNumber) ? contractNumber : route.ContractNumber),
+                        string.IsNullOrWhiteSpace(route.ContractNumber) ? contractNumber : route.ContractNumber,
+                        route.ProgramType),
                     StringComparison.Ordinal);
             });
 
@@ -113,7 +117,8 @@ public static class ProgressPaymentValidationService
                 identity,
                 candidate.ProgressPaymentNumber.Value,
                 candidate.PeriodDate.Value,
-                contractNumber);
+                contractNumber,
+                contract.ProgramType);
 
             var existingPayments = data.ProgressPayments?
                 .Where(x => !editingExisting || x.Id != candidate.Id)
@@ -129,7 +134,7 @@ public static class ProgressPaymentValidationService
             // price difference, guide price difference and deductions. Saving a
             // second claim in the same route/month would overwrite that month's
             // workbook value and make the official monthly/icmal totals irreproducible.
-            var routeKey = OehsIdentityService.BuildRouteKey(tenderNumber, routeNumber, identity, contractNumber);
+            var routeKey = OehsIdentityService.BuildRouteKey(tenderNumber, routeNumber, identity, contractNumber, contract.ProgramType);
             var sameMonthClaim = existingPayments.Any(x =>
                 x.PeriodDate.HasValue &&
                 x.PeriodDate.Value.Year == candidate.PeriodDate.Value.Year &&
@@ -139,7 +144,8 @@ public static class ProgressPaymentValidationService
                         x.TenderNumber ?? string.Empty,
                         x.RouteNumber ?? string.Empty,
                         x.ContractorTaxOrIdentityNumber ?? string.Empty,
-                        x.ContractNumber ?? string.Empty),
+                        x.ContractNumber ?? string.Empty,
+                        x.Input.ProgramType),
                     routeKey,
                     StringComparison.Ordinal));
 
@@ -153,6 +159,7 @@ public static class ProgressPaymentValidationService
                 .Where(x => !editingExisting || x.Id != candidate.Id)
                 .Where(x => string.Equals(x.TenderNumber?.Trim(), tenderNumber, StringComparison.OrdinalIgnoreCase))
                 .Where(x => string.Equals(x.ContractNumber?.Trim(), contractNumber, StringComparison.OrdinalIgnoreCase))
+                .Where(x => x.Input.ProgramType == contract.ProgramType)
                 .Where(x => string.Equals(x.RouteNumber?.Trim(), routeNumber, StringComparison.OrdinalIgnoreCase))
                 .Where(x => string.Equals(
                     OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber ?? string.Empty),
@@ -210,6 +217,7 @@ public static class ProgressPaymentValidationService
             item.ContractorTaxOrIdentityNumber ?? string.Empty,
             item.ProgressPaymentNumber.Value,
             item.PeriodDate.Value,
-            item.ContractNumber ?? string.Empty);
+            item.ContractNumber ?? string.Empty,
+            item.Input.ProgramType);
     }
 }
