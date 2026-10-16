@@ -641,16 +641,23 @@ public partial class MainWindow : Window
             ?? _contracts.FirstOrDefault();
     }
 
-    private ContractDraftData? FindContract(string? tenderNumber, string? contractNumber)
+    private ContractDraftData? FindContract(
+        string? tenderNumber,
+        string? contractNumber,
+        TransportationProgramType? programType = null)
     {
         if (string.IsNullOrWhiteSpace(tenderNumber))
             return null;
 
         var tenderContracts = _contracts.Where(x =>
-            string.Equals(x.TenderNumber.Trim(), tenderNumber.Trim(), StringComparison.OrdinalIgnoreCase)).ToArray();
+            string.Equals(x.TenderNumber.Trim(), tenderNumber.Trim(), StringComparison.OrdinalIgnoreCase) &&
+            (!programType.HasValue || x.ProgramType == programType.Value)).ToArray();
         if (!string.IsNullOrWhiteSpace(contractNumber))
-            return tenderContracts.FirstOrDefault(x =>
-                string.Equals(x.ContractNumber.Trim(), contractNumber.Trim(), StringComparison.OrdinalIgnoreCase));
+        {
+            var matches = tenderContracts.Where(x =>
+                string.Equals(x.ContractNumber.Trim(), contractNumber.Trim(), StringComparison.OrdinalIgnoreCase)).ToArray();
+            return matches.Length == 1 ? matches[0] : null;
+        }
 
         // Legacy records can only be assigned automatically while tender identity is unique.
         return tenderContracts.Length == 1 ? tenderContracts[0] : null;
@@ -665,8 +672,9 @@ public partial class MainWindow : Window
         if (!string.IsNullOrWhiteSpace(item.ContractNumber))
             return string.Equals(item.ContractNumber.Trim(), contract.ContractNumber.Trim(), StringComparison.OrdinalIgnoreCase);
 
-        return _contracts.Count(x => string.Equals(
-            x.TenderNumber.Trim(), contract.TenderNumber.Trim(), StringComparison.OrdinalIgnoreCase)) == 1;
+        return _contracts.Count(x =>
+            x.ProgramType == contract.ProgramType &&
+            string.Equals(x.TenderNumber.Trim(), contract.TenderNumber.Trim(), StringComparison.OrdinalIgnoreCase)) == 1;
     }
 
     private bool IsRouteForContract(RouteDraft route, ContractDraftData contract)
@@ -3463,7 +3471,7 @@ public partial class MainWindow : Window
 
                 var contractorTax = OehsIdentityService.NormalizeIdentity(route.ContractorTaxOrIdentityNumber);
                 var routeContract = !string.IsNullOrWhiteSpace(route.ContractNumber)
-                    ? FindContract(tender, route.ContractNumber)
+                    ? FindContract(tender, route.ContractNumber, route.ProgramType)
                     : tenderContracts.Length == 1 ? tenderContracts[0] : null;
 
                 if (routeContract is null && string.IsNullOrWhiteSpace(route.ContractNumber) && !string.IsNullOrWhiteSpace(contractorTax))
@@ -3495,7 +3503,7 @@ public partial class MainWindow : Window
             _progressHistory.Clear();
             foreach (var history in data.ProgressPayments ?? Array.Empty<ProgressPaymentHistoryData>())
             {
-                var contract = FindContract(history.TenderNumber, history.ContractNumber);
+                var contract = FindContract(history.TenderNumber, history.ContractNumber, history.Input.ProgramType);
                 if (contract is null && string.IsNullOrWhiteSpace(history.ContractNumber))
                 {
                     var tenderContracts = _contracts.Where(x =>
