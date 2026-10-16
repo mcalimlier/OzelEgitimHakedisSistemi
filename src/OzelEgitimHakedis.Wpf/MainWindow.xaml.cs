@@ -619,17 +619,37 @@ public partial class MainWindow : Window
         }
     }
 
-    private ContractorDraft? FindContractor(string taxOrIdentityNumber)
+    private ContractorDraft? FindContractor(
+        string taxOrIdentityNumber,
+        TransportationProgramType? programType = null)
     {
         if (string.IsNullOrWhiteSpace(taxOrIdentityNumber))
             return null;
 
         var identity = OehsIdentityService.NormalizeIdentity(taxOrIdentityNumber);
-        return _contractors.FirstOrDefault(x =>
+        var matches = _contractors.Where(x =>
             string.Equals(
                 OehsIdentityService.NormalizeIdentity(x.TaxOrIdentityNumber),
                 identity,
                 StringComparison.Ordinal));
+        return programType.HasValue
+            ? matches.FirstOrDefault(x => x.ProgramType == programType.Value)
+            : matches.FirstOrDefault();
+    }
+
+    private static string BuildContractorKey(ContractorDraft contractor) =>
+        $"{contractor.ProgramType}|{OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber)}";
+
+    private ContractorDraft? FindContractorByKey(string? key)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+            return null;
+
+        var separator = key.IndexOf('|');
+        if (separator < 0 || !Enum.TryParse<TransportationProgramType>(key[..separator], out var programType))
+            return FindContractor(key);
+
+        return FindContractor(key[(separator + 1)..], programType);
     }
 
     private ContractDraftData? GetSelectedContract()
@@ -792,6 +812,8 @@ public partial class MainWindow : Window
 
     private void UpdateContractSelectors()
     {
+        var selectedProgram = GetSelectedTransportationProgramType();
+        var scopedContracts = _contracts.Where(x => x.ProgramType == selectedProgram).ToArray();
         var selectedTender = TenderNumberTextBox.Text.Trim();
         var selectedContractNumber = ContractNumberTextBox.Text.Trim();
         var previousHome = HomeTenderListBox.SelectedItem as ContractDraftData;
@@ -799,27 +821,28 @@ public partial class MainWindow : Window
         var previousProgress = ProgressTenderListBox.SelectedItem as ContractDraftData;
         var previousOutput = OutputTenderListBox.SelectedItem as ContractDraftData;
 
-        var contract = FindContract(selectedTender, selectedContractNumber)
-                       ?? (previousHome is null ? null : FindContract(previousHome.TenderNumber, previousHome.ContractNumber))
-                       ?? (previousRoute is null ? null : FindContract(previousRoute.TenderNumber, previousRoute.ContractNumber))
-                       ?? _contracts.FirstOrDefault();
+        var contract = FindContract(selectedTender, selectedContractNumber, selectedProgram)
+                       ?? (previousRoute is null ? null : FindContract(previousRoute.TenderNumber, previousRoute.ContractNumber, selectedProgram))
+                       ?? scopedContracts.FirstOrDefault();
+        var homeContract = previousHome is null ? contract : FindContract(previousHome.TenderNumber, previousHome.ContractNumber) ?? contract;
         var progressContract = previousProgress is null
             ? null
-            : FindContract(previousProgress.TenderNumber, previousProgress.ContractNumber);
+            : FindContract(previousProgress.TenderNumber, previousProgress.ContractNumber, previousProgress.ProgramType);
         var outputContract = previousOutput is null
             ? contract
-            : FindContract(previousOutput.TenderNumber, previousOutput.ContractNumber) ?? contract;
+            : FindContract(previousOutput.TenderNumber, previousOutput.ContractNumber, previousOutput.ProgramType) ?? contract;
 
         _suppressSelectionEvents = true;
         try
         {
             HomeTenderListBox.ItemsSource = _contracts.ToArray();
-            RouteTenderListBox.ItemsSource = _contracts.ToArray();
+            RouteTenderListBox.ItemsSource = scopedContracts;
             ProgressTenderListBox.ItemsSource = _contracts.ToArray();
             OutputTenderListBox.ItemsSource = _contracts.ToArray();
-            ContractsListBox.ItemsSource = _contracts.ToArray();
+            ContractsListBox.ItemsSource = scopedContracts;
+            ContractorsListBox.ItemsSource = _contractors.Where(x => x.ProgramType == selectedProgram).ToArray();
 
-            HomeTenderListBox.SelectedItem = contract;
+            HomeTenderListBox.SelectedItem = homeContract;
             RouteTenderListBox.SelectedItem = contract;
             ProgressTenderListBox.SelectedItem = progressContract;
             OutputTenderListBox.SelectedItem = outputContract;
@@ -829,15 +852,17 @@ public partial class MainWindow : Window
             _suppressSelectionEvents = false;
         }
 
+        UpdateContractorSummary();
         if (contract is not null)
         {
             UpdateRouteContractorSelector(contract);
             UpdateOutputRoutesForContract(outputContract);
-            UpdateHomeTenderSummary(contract);
+            UpdateHomeTenderSummary(homeContract);
         }
         else
         {
             RouteContractorListBox.ItemsSource = Array.Empty<ContractorDraft>();
+            RoutesListBox.ItemsSource = Array.Empty<RouteDraft>();
         }
 
         UpdateProgressContractorAndRoutes(progressContract, preserveSelection: false);
@@ -848,7 +873,9 @@ public partial class MainWindow : Window
         _suppressSelectionEvents = true;
         try
         {
-            RouteContractorListBox.ItemsSource = _contractors.ToArray();
+            RouteContractorListBox.ItemsSource = contract is null
+                ? Array.Empty<ContractorDraft>()
+                : _contractors.Where(x => x.ProgramType == contract.ProgramType).ToArray();
             RouteContractorListBox.SelectedIndex = -1;
         }
         finally
@@ -2503,7 +2530,22 @@ public partial class MainWindow : Window
 
     private void UpdateContractorSummary()
     {
-        ContractorCountTextBlock.Text = _contractors.Count.ToString(CultureInfo.CurrentCulture);
+        var programType = GetSelectedTransportationProgramType();
+        ContractorCountTextBlock.Text = _contractors.Count(x => x.ProgramType == programType)
+            .ToString(CultureInfo.CurrentCulture);
+    }
+
+    private void TransportProgramTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!IsInitialized || _suppressSelectionEvents || IsArchiveEditing)
+            return;
+
+        UpdateContractSelectors();
+        UpdateRouteListView();
+        UpdateContractSummaryView();
+        UpdateHomeSummaryView();
+        UpdateContractorSummary();
+        UpdateRouteSummary();
     }
 
     private void UpdateReferencesForContractorEdit(ContractorDraft oldContractor, ContractorDraft updated)
