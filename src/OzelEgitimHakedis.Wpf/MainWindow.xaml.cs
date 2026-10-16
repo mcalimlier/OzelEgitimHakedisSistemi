@@ -4699,12 +4699,14 @@ public partial class MainWindow : Window
         // Multi-route calculations share an exact CreatedAt, contract, period and
         // payment number. Archive every route snapshot in one click, independently.
         var batch = _progressHistory
-            .Where(x => x.CreatedAt == item.CreatedAt &&
-                        string.Equals(x.TenderNumber, item.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
-                        string.Equals(x.ContractNumber, item.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
-                        x.ProgressPaymentNumber == item.ProgressPaymentNumber &&
-                        x.PeriodDate == item.PeriodDate &&
-                        x.Input.ProgramType == item.Input.ProgramType)
+            .Where(x => item.BatchId.HasValue
+                ? x.BatchId == item.BatchId
+                : x.CreatedAt == item.CreatedAt &&
+                  string.Equals(x.TenderNumber, item.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+                  string.Equals(x.ContractNumber, item.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
+                  x.ProgressPaymentNumber == item.ProgressPaymentNumber &&
+                  x.PeriodDate == item.PeriodDate &&
+                  x.Input.ProgramType == item.Input.ProgramType)
             .OrderBy(x => x.RouteNumber, StringComparer.OrdinalIgnoreCase)
             .ToArray();
         if (batch.Length == 0)
@@ -4723,9 +4725,10 @@ public partial class MainWindow : Window
         NavigationButton_Click(NavArchives, new RoutedEventArgs(Button.ClickEvent, NavArchives));
 
         var routeSummary = string.Join(", ", batch.Select(x => x.RouteNumber).Where(x => !string.IsNullOrWhiteSpace(x)));
+        var batchTitle = item.BatchDisplayName ?? $"Hakediş No {item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"}";
         var message = batch.Length == 1
-            ? $"Hakediş No {item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"} arşive eklendi.\n\n{Path.GetFileName(archivedPaths[0])}"
-            : $"{batch.Length} hat için hakediş No {item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"} arşivlendi.\nHatlar: {routeSummary}\n\nHer hat için ayrı arşiv ve dört PDF belgesi oluşturuldu.";
+            ? $"{batchTitle} arşive eklendi.\n\n{Path.GetFileName(archivedPaths[0])}"
+            : $"{batch.Length} hatlık aylık kayıt arşivlendi.\n{batchTitle}\nHatlar: {routeSummary}\n\nHer hat için ayrı arşiv ve dört PDF belgesi oluşturuldu; hat bazlı hakediş numaraları korunmuştur.";
         ArchiveStatusTextBlock.Text = "ARŞİV OLUŞTURULDU";
         ClearProgressEntryFields();
         SetProgressEditorMode(false);
