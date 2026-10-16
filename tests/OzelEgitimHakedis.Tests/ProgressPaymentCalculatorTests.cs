@@ -9,7 +9,7 @@ namespace OzelEgitimHakedis.Tests;
 public sealed class ProgressPaymentCalculatorTests
 {
     [Fact]
-    public void BasicOrSecondaryProgram_ShouldExcludeGuideAndMinimumWageSupportFromEveryCalculation()
+    public void BasicOrSecondaryProgram_ShouldExcludeGuideButIncludeMinimumWageSupport()
     {
         var input = new ProgressPaymentInput(
             WorkDays: 10,

@@ -676,7 +676,25 @@
                                                     <TextBlock x:Name="SocialSecurityDebtLabel" Grid.Row="6" Grid.Column="2" Text="SGK Borcu" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="7,4.5,0,4.5"/>
                                                     <TextBox x:Name="SocialSecurityDebtTextBox" Grid.Row="6" Grid.Column="3" Margin="4.5" Style="{StaticResource PremiumFieldTextBox}"/>
                                                     <TextBlock x:Name="MinimumWageSupportLabel" Grid.Row="7" Grid.Column="0" Text="Asgari Ücret Desteği" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
-                                                    <TextBox x:Name="MinimumWageSupportTextBox" Grid.Row="7" Grid.Column="1" Margin="4.5" Style="{StaticResource PremiumFieldTextBox}"/>
+                                                    <StackPanel Grid.Row="7" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="4.5">
+                                                        <CheckBox x:Name="MinimumWageSupportEnabledCheckBox"
+                                                                  Content="Uygula"
+                                                                  Foreground="#D8E4EF"
+                                                                  FontSize="10.5"
+                                                                  VerticalAlignment="Center"
+                                                                  Margin="0,0,6,0"
+                                                                  ToolTip="Temel/Ortaöğretim modelinde asgari ücret desteği kesintisini etkinleştirir."
+                                                                  Visibility="Collapsed"
+                                                                  IsChecked="True"
+                                                                  Checked="MinimumWageSupportEnabledCheckBox_Changed"
+                                                                  Unchecked="MinimumWageSupportEnabledCheckBox_Changed"/>
+                                                        <TextBox x:Name="MinimumWageSupportTextBox"
+                                                                 Width="145"
+                                                                 Margin="0"
+                                                                 IsEnabled="True"
+                                                                 ToolTip="Asgari ücret desteği kesinti tutarı."
+                                                                 Style="{StaticResource PremiumFieldTextBox}"/>
+                                                    </StackPanel>
                                                     <TextBlock x:Name="InspectionPenaltyLabel" Grid.Row="7" Grid.Column="2" Text="Denetim Cezası" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="7,4.5,0,4.5"/>
                                                     <TextBox x:Name="InspectionPenaltyTextBox" Grid.Row="7" Grid.Column="3" Margin="4.5" Style="{StaticResource PremiumFieldTextBox}"/>
                                                 </Grid>
@@ -718,7 +736,23 @@
                                                                 <DataGridTextColumn Header="Rehber Fiyat Farkı" Binding="{Binding GuidePriceDifference, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="115"/>
                                                                 <DataGridTextColumn Header="Vergi Borcu" Binding="{Binding TaxDebt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
                                                                 <DataGridTextColumn Header="SGK Borcu" Binding="{Binding SocialSecurityDebt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
-                                                                <DataGridTextColumn Header="Asgari Ücret Desteği" Binding="{Binding MinimumWageSupport, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="125"/>
+                                                                <DataGridCheckBoxColumn Header="Asgari Ücret Desteği Kullan" Binding="{Binding MinimumWageSupportEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="155"/>
+                                                                <DataGridTextColumn Header="Asgari Ücret Desteği" Binding="{Binding MinimumWageSupport, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="125">
+                                                                    <DataGridTextColumn.ElementStyle>
+                                                                        <Style TargetType="{x:Type TextBlock}">
+                                                                            <Style.Triggers>
+                                                                                <DataTrigger Binding="{Binding MinimumWageSupportEnabled}" Value="False">
+                                                                                    <Setter Property="Opacity" Value="0.5"/>
+                                                                                </DataTrigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </DataGridTextColumn.ElementStyle>
+                                                                    <DataGridTextColumn.EditingElementStyle>
+                                                                        <Style TargetType="{x:Type TextBox}">
+                                                                            <Setter Property="IsEnabled" Value="{Binding MinimumWageSupportEnabled}"/>
+                                                                        </Style>
+                                                                    </DataGridTextColumn.EditingElementStyle>
+                                                                </DataGridTextColumn>
                                                                 <DataGridTextColumn Header="Denetim Cezası" Binding="{Binding InspectionPenalty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="105"/>
                                                             </DataGrid.Columns>
                                                         </DataGrid>

@@ -1,9 +1,11 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
@@ -37,6 +39,7 @@ public partial class MainWindow : Window
     private string? _editingContractorKey;
     private RouteDraft? _editingRoute;
     private bool _suppressSelectionEvents;
+    private bool _suppressMinimumWageSupportToggle;
     private bool _suppressArchiveDirtyTracking;
     private Guid? _historyCorrectionTargetId;
     private HistoryCorrectionSection _historyCorrectionSection;
@@ -81,6 +84,7 @@ public partial class MainWindow : Window
         TaxDebtTextBox.Text = "0";
         SocialSecurityDebtTextBox.Text = "0";
         MinimumWageSupportTextBox.Text = "0";
+        SetMinimumWageSupportInputMode(null);
         InspectionPenaltyTextBox.Text = "0";
         DiscountTextBox.Text = "0";
         GuideWorkDaysTextBox.Text = "0";
@@ -802,11 +806,7 @@ public partial class MainWindow : Window
         GuideDiscountTextBox.Visibility = visibility;
         GuidePriceDifferenceLabel.Visibility = visibility;
         GuidePriceDifferenceTextBox.Visibility = visibility;
-        // Asgari ücret desteği her iki programın Excel hesaplamasında da
-        // kesinti kalemidir; yalnızca rehber personel alanları Özel Eğitim'e özgüdür.
-        var supportVisibility = contract is null ? Visibility.Collapsed : Visibility.Visible;
-        MinimumWageSupportLabel.Visibility = supportVisibility;
-        MinimumWageSupportTextBox.Visibility = supportVisibility;
+        SetMinimumWageSupportInputMode(contract?.ProgramType);
 
         if (!visible)
         {
@@ -815,6 +815,65 @@ public partial class MainWindow : Window
             GuideDiscountTextBox.Text = "0";
             GuidePriceDifferenceTextBox.Text = "0";
         }
+    }
+
+    private void SetMinimumWageSupportInputMode(
+        TransportationProgramType? programType,
+        bool restoreSavedValue = false,
+        decimal savedAmount = 0m)
+    {
+        var hasContract = programType.HasValue;
+        var isBasicOrSecondary = programType == TransportationProgramType.BasicOrSecondary;
+        var visibility = hasContract ? Visibility.Visible : Visibility.Collapsed;
+
+        MinimumWageSupportLabel.Visibility = visibility;
+        MinimumWageSupportTextBox.Visibility = visibility;
+        MinimumWageSupportEnabledCheckBox.Visibility =
+            hasContract && isBasicOrSecondary ? Visibility.Visible : Visibility.Collapsed;
+
+        _suppressMinimumWageSupportToggle = true;
+        try
+        {
+            if (isBasicOrSecondary)
+            {
+                MinimumWageSupportEnabledCheckBox.IsChecked =
+                    restoreSavedValue && savedAmount > 0m;
+                MinimumWageSupportTextBox.IsEnabled =
+                    MinimumWageSupportEnabledCheckBox.IsChecked == true;
+
+                // Temel/Ortaöğretim için yeni giriş varsayılanı sıfırdır.
+                // Kayıt yüklenirken pozitif tutar varsa yukarıda etkinleştirilir.
+                if (!MinimumWageSupportTextBox.IsEnabled)
+                    MinimumWageSupportTextBox.Text = "0";
+            }
+            else
+            {
+                // Özel Eğitim'de mevcut giriş davranışı korunur; destek alanı
+                // onay kutusu olmadan doğrudan kullanılabilir.
+                MinimumWageSupportEnabledCheckBox.IsChecked = true;
+                MinimumWageSupportTextBox.IsEnabled = hasContract;
+            }
+        }
+        finally
+        {
+            _suppressMinimumWageSupportToggle = false;
+        }
+    }
+
+    private void RestoreMinimumWageSupportInputState(
+        TransportationProgramType programType,
+        decimal savedAmount) =>
+        SetMinimumWageSupportInputMode(programType, restoreSavedValue: true, savedAmount);
+
+    private void MinimumWageSupportEnabledCheckBox_Changed(object sender, RoutedEventArgs e)
+    {
+        if (!IsInitialized || _suppressMinimumWageSupportToggle)
+            return;
+
+        var enabled = MinimumWageSupportEnabledCheckBox.IsChecked == true;
+        MinimumWageSupportTextBox.IsEnabled = enabled;
+        if (!enabled)
+            MinimumWageSupportTextBox.Text = "0";
     }
 
     private void UpdateContractSelectors()
@@ -959,8 +1018,10 @@ public partial class MainWindow : Window
         TaxDebtTextBox.Text = "0";
         SocialSecurityDebtTextBox.Text = "0";
         MinimumWageSupportTextBox.Text = "0";
+        SetMinimumWageSupportInputMode((ProgressTenderListBox.SelectedItem as ContractDraftData)?.ProgramType);
         InspectionPenaltyTextBox.Text = "0";
 
+        var selectedProgram = (ProgressTenderListBox.SelectedItem as ContractDraftData)?.ProgramType;
         foreach (var row in _multiRoutePaymentRows)
         {
             row.WorkDays = 0;
@@ -971,6 +1032,8 @@ public partial class MainWindow : Window
             row.GuidePriceDifference = 0m;
             row.TaxDebt = 0m;
             row.SocialSecurityDebt = 0m;
+            row.MinimumWageSupportEnabled =
+                selectedProgram != TransportationProgramType.BasicOrSecondary;
             row.MinimumWageSupport = 0m;
             row.InspectionPenalty = 0m;
         }
@@ -1861,6 +1924,7 @@ public partial class MainWindow : Window
             TaxDebtTextBox.Text = item.Input.TaxDebt.ToString("N2", CultureInfo.CurrentCulture);
             SocialSecurityDebtTextBox.Text = item.Input.SocialSecurityDebt.ToString("N2", CultureInfo.CurrentCulture);
             MinimumWageSupportTextBox.Text = item.Input.MinimumWageSupport.ToString("N2", CultureInfo.CurrentCulture);
+            RestoreMinimumWageSupportInputState(item.Input.ProgramType, item.Input.MinimumWageSupport);
             InspectionPenaltyTextBox.Text = item.Input.InspectionPenalty.ToString("N2", CultureInfo.CurrentCulture);
             ProgressNumberTextBox.Text = item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
             SelectProgressPeriod(item.PeriodDate);
@@ -4335,8 +4399,19 @@ public partial class MainWindow : Window
                 invalidFields.Add((GuideDiscountTextBox, "Rehber İskonto"));
             if (!TryParseDecimalOrZero(GuidePriceDifferenceTextBox.Text, out guidePriceDifference))
                 invalidFields.Add((GuidePriceDifferenceTextBox, "Rehber Fiyat Farkı"));
-            if (!TryParseDecimalOrZero(MinimumWageSupportTextBox.Text, out minimumWageSupport) || minimumWageSupport < 0)
-                invalidFields.Add((MinimumWageSupportTextBox, "Asgari Ücret Desteği"));
+        }
+
+        // Asgari ücret desteği her iki kaynak Excel'de de kesinti alanıdır.
+        // Temel/Ortaöğretim'de tutar yalnızca kullanıcı onay kutusunu açtıysa alınır.
+        if (!TryParseDecimalOrZero(MinimumWageSupportTextBox.Text, out minimumWageSupport) ||
+            minimumWageSupport < 0)
+        {
+            invalidFields.Add((MinimumWageSupportTextBox, "Asgari Ücret Desteği"));
+        }
+        if (selectedContract.ProgramType == TransportationProgramType.BasicOrSecondary &&
+            MinimumWageSupportEnabledCheckBox.IsChecked != true)
+        {
+            minimumWageSupport = 0m;
         }
 
         if (!TryParseDecimal(DailyPriceTextBox.Text, out var dailyPrice) || dailyPrice < 0)
@@ -5147,6 +5222,7 @@ public partial class MainWindow : Window
             TaxDebtTextBox.Text = input.TaxDebt.ToString("N2", CultureInfo.CurrentCulture);
             SocialSecurityDebtTextBox.Text = input.SocialSecurityDebt.ToString("N2", CultureInfo.CurrentCulture);
             MinimumWageSupportTextBox.Text = input.MinimumWageSupport.ToString("N2", CultureInfo.CurrentCulture);
+            RestoreMinimumWageSupportInputState(input.ProgramType, input.MinimumWageSupport);
             InspectionPenaltyTextBox.Text = input.InspectionPenalty.ToString("N2", CultureInfo.CurrentCulture);
             ProgressNumberTextBox.Text = archive.ProgressPayment.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
             SelectProgressPeriod(archive.ProgressPayment.PeriodDate);
@@ -5630,6 +5706,7 @@ public partial class MainWindow : Window
             TaxDebtTextBox.Text = payment.Input.TaxDebt.ToString("N2", CultureInfo.CurrentCulture);
             SocialSecurityDebtTextBox.Text = payment.Input.SocialSecurityDebt.ToString("N2", CultureInfo.CurrentCulture);
             MinimumWageSupportTextBox.Text = payment.Input.MinimumWageSupport.ToString("N2", CultureInfo.CurrentCulture);
+            RestoreMinimumWageSupportInputState(payment.Input.ProgramType, payment.Input.MinimumWageSupport);
             InspectionPenaltyTextBox.Text = payment.Input.InspectionPenalty.ToString("N2", CultureInfo.CurrentCulture);
             ProgressNumberTextBox.Text = payment.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
             SelectProgressPeriod(payment.PeriodDate);
@@ -5682,6 +5759,7 @@ public partial class MainWindow : Window
         TaxDebtTextBox.Text = item.Input.TaxDebt.ToString("N2", CultureInfo.CurrentCulture);
         SocialSecurityDebtTextBox.Text = item.Input.SocialSecurityDebt.ToString("N2", CultureInfo.CurrentCulture);
         MinimumWageSupportTextBox.Text = item.Input.MinimumWageSupport.ToString("N2", CultureInfo.CurrentCulture);
+            RestoreMinimumWageSupportInputState(item.Input.ProgramType, item.Input.MinimumWageSupport);
         InspectionPenaltyTextBox.Text = item.Input.InspectionPenalty.ToString("N2", CultureInfo.CurrentCulture);
         ProgressNumberTextBox.Text = item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
         SelectProgressPeriod(item.PeriodDate);
@@ -5722,6 +5800,7 @@ public partial class MainWindow : Window
             TaxDebtTextBox.Text = original.Input.TaxDebt.ToString("N2", CultureInfo.CurrentCulture);
             SocialSecurityDebtTextBox.Text = original.Input.SocialSecurityDebt.ToString("N2", CultureInfo.CurrentCulture);
             MinimumWageSupportTextBox.Text = original.Input.MinimumWageSupport.ToString("N2", CultureInfo.CurrentCulture);
+            RestoreMinimumWageSupportInputState(original.Input.ProgramType, original.Input.MinimumWageSupport);
             InspectionPenaltyTextBox.Text = original.Input.InspectionPenalty.ToString("N2", CultureInfo.CurrentCulture);
             ProgressNumberTextBox.Text = original.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
             SelectProgressPeriod(original.PeriodDate);
@@ -5981,6 +6060,8 @@ public partial class MainWindow : Window
                 RouteKey = routeKey,
                 RouteNumber = route.RouteNumber,
                 RouteName = route.Name,
+                MinimumWageSupportEnabled =
+                    route.ProgramType != TransportationProgramType.BasicOrSecondary,
                 // These are monthly inputs, not the route's annual workday totals.
                 WorkDays = 0,
                 DailyPrice = route.DailyPrice,
@@ -6002,7 +6083,12 @@ public partial class MainWindow : Window
                 row.GuidePriceDifference = hasGuide ? ReadDecimal(GuidePriceDifferenceTextBox) : 0m;
                 row.TaxDebt = ReadDecimal(TaxDebtTextBox);
                 row.SocialSecurityDebt = ReadDecimal(SocialSecurityDebtTextBox);
-                row.MinimumWageSupport = ReadDecimal(MinimumWageSupportTextBox);
+                row.MinimumWageSupportEnabled =
+                    route.ProgramType != TransportationProgramType.BasicOrSecondary ||
+                    MinimumWageSupportEnabledCheckBox.IsChecked == true;
+                row.MinimumWageSupport = row.MinimumWageSupportEnabled
+                    ? ReadDecimal(MinimumWageSupportTextBox)
+                    : 0m;
                 row.InspectionPenalty = ReadDecimal(InspectionPenaltyTextBox);
             }
 
@@ -6044,6 +6130,21 @@ public partial class MainWindow : Window
         SocialSecurityDebtTextBox.Visibility = visibility;
         MinimumWageSupportLabel.Visibility = visibility;
         MinimumWageSupportTextBox.Visibility = visibility;
+        MinimumWageSupportEnabledCheckBox.Visibility =
+            visible && selectedProgram == TransportationProgramType.BasicOrSecondary
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
+        var supportToggleColumn = MultiRoutePaymentGrid.Columns.FirstOrDefault(column =>
+            string.Equals(column.Header?.ToString(), "Asgari Ücret Desteği Kullan", StringComparison.Ordinal));
+        if (supportToggleColumn is not null)
+        {
+            supportToggleColumn.Visibility =
+                !visible && selectedProgram == TransportationProgramType.BasicOrSecondary
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+        }
+
         InspectionPenaltyLabel.Visibility = visibility;
         InspectionPenaltyTextBox.Visibility = visibility;
     }
@@ -7269,8 +7370,13 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
     }
 
 
-    public sealed class MultiRoutePaymentDraftRow
+    public sealed class MultiRoutePaymentDraftRow : INotifyPropertyChanged
     {
+        private bool _minimumWageSupportEnabled = true;
+        private decimal _minimumWageSupport;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
         public string RouteKey { get; set; } = string.Empty;
         public string RouteNumber { get; set; } = string.Empty;
         public string RouteName { get; set; } = string.Empty;
@@ -7285,8 +7391,42 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         public decimal GuidePriceDifference { get; set; }
         public decimal TaxDebt { get; set; }
         public decimal SocialSecurityDebt { get; set; }
-        public decimal MinimumWageSupport { get; set; }
+
+        public bool MinimumWageSupportEnabled
+        {
+            get => _minimumWageSupportEnabled;
+            set
+            {
+                if (_minimumWageSupportEnabled == value)
+                    return;
+
+                _minimumWageSupportEnabled = value;
+                if (!value)
+                    _minimumWageSupport = 0m;
+
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(MinimumWageSupport));
+            }
+        }
+
+        public decimal MinimumWageSupport
+        {
+            get => _minimumWageSupport;
+            set
+            {
+                var normalized = MinimumWageSupportEnabled ? value : 0m;
+                if (_minimumWageSupport == normalized)
+                    return;
+
+                _minimumWageSupport = normalized;
+                OnPropertyChanged();
+            }
+        }
+
         public decimal InspectionPenalty { get; set; }
+
+        private void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     private sealed record RouteDraft(
