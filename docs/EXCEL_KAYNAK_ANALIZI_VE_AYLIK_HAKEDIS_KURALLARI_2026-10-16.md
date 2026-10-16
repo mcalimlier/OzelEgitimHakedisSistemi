@@ -158,44 +158,44 @@ kavramları birbirine karıştırılmamalıdır. Kaynak Excel çoklu hatları te
 6. Kaynak Excel formüllerinin bir kısmı tutarları hücrelerde değer olarak saklar; bu nedenle VBA aktarım makroları ve geçmiş hücreleri formüller kadar önemlidir.
 7. Kaynak dosyalar örnek/önceden doldurulmuş veriler içeriyor. Bunlar üretim verisi olarak otomatik içe aktarılmamalıdır.
 
-## 10. Mevcut OEHS kodunda doğrulanan uyumsuzluklar
+## 10. Kaynakla eşleştirme kapsamında uygulanan kod değişiklikleri
 
-- `ProgressPaymentCalculator`, Temel/Ortaöğretim için `MinimumWageSupport` değerini sıfırlıyor. Kaynak Temel/Ortaöğretim Excel'i S sütunundaki Asgari Ücret Destek Tutarı'nı kesinti toplamına ekler; bu davranış kaldırılmalı.
-- `ProgressPaymentCalculator`, ek kesin teminatı `MAX(0, taşıma fiyat farkı + rehber fiyat farkı) × %6` olarak hesaplıyor. Kaynak formül `taşıma fiyat farkı × %6 + rehber fiyat farkı × %6` biçimindedir. Kaynakla birebir uyum için kod ve testler değiştirilmeli; mevzuat onayı ayrı işaretlenmeli.
-- Önceki çoklu hat güvenlik önlemi, ortak parasal girişlerden biri sıfır değilken çoklu hat kaydını engeller. Bu geçici güvenlik kapısıdır; doğru çözüm her hat için ayrı parasal giriş ve ayrı hesap satırıdır.
-- Kullanıcı tarafından açıklanan aylık ve çoklu hat iş akışı, yalnızca tek bir hat/tek bir seçilmiş kayıt gibi ele alınamaz. Bir aylık kayıt çok sayıda hat satırı taşımalı ve hat ayrıntıları arşiv/PDF/icmal boyunca korunmalıdır.
+Aşağıdaki değişiklikler `feature/official-payment-document-templates` dalına gönderildi. Her değişikliğin başarılı olduğu henüz en güncel CI sonucu ile doğrulanmalıdır.
 
-## 11. Aşamalı geliştirme ve kabul planı
+- Temel/Ortaöğretim hesaplamasında Asgari Ücret Desteği artık sıfırlanmıyor; Excel'in S sütununu V kesintiler toplamına ekleyen davranış korunuyor.
+- Ek kesin teminat kodu, kaynak Excel'in `I × %6 + R × %6` formülünü doğrudan uygular; negatif toplamı `MAX(0,...)` ile sıfırlamaz. Mevzuat onayı ayrı açık konu olarak tutulur.
+- Hakediş raporu A/B ayrımı düzeltildi. Excel D7 yalnızca mevcut ayın ham I+R fiyat farkını gösterir; D6 ise önceki ve mevcut aylık K+T toplamından mevcut ayın I+R tutarı çıkarılarak hesaplanır. D8 = D6 + D7 olur. Rapor PDF testi bu hücre zincirini kontrol eder.
+- Tek hat ekranında taşıma ve rehber iş günü alanları artık seçilen aya ait kullanıcı girdisidir. Sözleşmedeki hat tanımının yıllık/sözleşmesel gün sayısı aylık iş günü yerine kullanılmaz. Günlük fiyatlar hat/sözleşme tanımından okunur.
+- Çoklu hat seçimi için ayrı satır bazlı giriş tablosu eklendi. Her hat için iş günü, iskonto, fiyat farkı ve kesintiler ayrı hesaplanır; toplam, satır sonuçlarının toplamıdır. Tek bir hat için yazılan parasal değerler diğer seçili hatlara kopyalanmaz.
+- Her aylık kayıt için ortak `BatchId`, `BatchDisplayName` ve sıralı `BatchRouteNumbers` metadata alanları eklendi. Görünen ad; program, İKN, firma, seçilen hat kümesi ve ay/yıl bilgisini içerir.
+- Hakediş numarası, Excel'in hat bazlı geçmiş sayımına uygun olarak aynı program/sözleşme/firma/hat için seçilen aydan önceki pozitif aylık K+T kayıtlarını sayıp bir ekler. Çoklu kayıtta hatların numaraları farklı olabilir; arayüz bunu hat bazında gösterir.
+- Aynı sözleşme/hat/ay için ikinci ödeme kaydı hâlâ reddedilir; bu, Excel'deki hat başına tek aylık hücre yapısını korur.
+- Arşivleme artık çoklu kayıtları ortak BatchId ile gruplar; her hat satırı ve kendi hakediş numarası ayrı kalır. Arşiv adlarında program, seçili hat kümesi ve ay/yıl bulunur.
+- PDF çıktı klasörleri program ve aylık hat kümesi/ay bazında ayrılır; aynı ihale/hat/firma adı iki programda kullanılsa bile çıktı yolları çakışmaz.
+- Ay değiştirildiğinde önceki aya ait iş günü ve parasal girdiler sıfırlanır; yeni ay için yanlışlıkla önceki ay tutarları kullanılmaz.
+
+## 11. Güncel doğrulama ve sıradaki aşamalar
 
 ### Aşama 1 — Formül eşitliği
-- Temel/Ortaöğretim Asgari Ücret Desteği davranışını düzelt.
-- Ek kesin teminat formülünü Excel hücre formülüyle eşleştir.
-- Resmî net ödeme yuvarlamasını Excel'in ayrı yuvarlama adımıyla karşılaştır.
-- Her iki Excel için sayısal regresyon testleri ekle.
+- [x] Temel/Ortaöğretim Asgari Ücret Desteği kaynak formülle eşleştirildi.
+- [x] Ek kesin teminat formülü kaynak Excel'le eşleştirildi.
+- [x] Rapor D6/D7/D8/D10/D11 aylık formül zinciri kod ve testlerde eşleştirildi.
+- [ ] En son commit'teki tüm CI/test/PDF smoke sonucu başarılı olarak doğrulanmalı.
+- [ ] Gerçek örnek kayıtlarla Excel ara hücreleri ve PDF değerleri uzman tarafından karşılaştırılmalı.
 
-### Aşama 2 — Aylık hakediş veri modeli
-- Hakediş dönemini seçilen ay/yıl olarak sakla; sözleşme süresini tek hakediş gibi kullanma.
-- Kayıt başlığına program, İKN, firma, seçili hatlar ve ayı ekle.
-- Aynı hat + sözleşme + ay için mükerrer ödeme denetimi yap.
-- Bir kaydın hat satırlarını ve satır bazlı hesaplamalarını sakla.
+### Aşama 2 — Aylık/çoklu hat veri modeli
+- [x] Aylık batch kimliği ve görünen bileşik kayıt adı eklendi.
+- [x] Her hat için aylık iş günü ve ayrı parasal giriş tablosu eklendi.
+- [x] Hakediş numarası hat bazlı geçmişe bağlandı.
+- [ ] Çoklu kayıt düzenleme/geri yükleme akışı, batch içindeki bütün hatların tutarlılığını koruyacak biçimde ayrıca kabul testinden geçirilmeli.
+- [ ] Aynı hat/sözleşme/ay için mükerrer ödeme engeli; birleştirme, düzenleme ve arşivden geri yükleme senaryolarıyla test edilmeli.
 
-### Aşama 3 — Çoklu hat giriş ekranı
-- Sözleşme seçimiyle yalnızca o sözleşmenin hatlarını getir.
-- Hat seçimi birden fazla satırı desteklesin.
-- Her hat için iş günü, iskonto, fiyat farkı ve uygulanabilir kesintiler ayrı girilebilsin.
-- Genel toplam, yalnızca satır sonuçlarının toplamı olsun.
-- Özel Eğitimde taşıma ve rehber personel değerleri satır bazında ayrı tutulsun.
-
-### Aşama 4 — Geçmiş, arşiv ve icmal
-- Aylık geçmişi program + sözleşme + firma + hat + yıl/ay anahtarıyla yaz.
-- Düzeltme/geri yükleme aynı kimliği korusun.
-- İcmal aylık tutar, fiyat farkı ve kesintileri doğru ay sütununa aktarabilsin.
-
-### Aşama 5 — Resmî belgeler ve kabul
-- Dört PDF'nin tamamını ayrı üret.
-- Bir ve çok hatlı, iki programlı, KDV muaf/KDV'li, fiyat farkı/iskonto/kesinti içeren örneklerle karşılaştır.
-- PDF toplamlarını Excel formüllerinin ara sonuçlarıyla hücre bazında karşılaştır.
-- CI başarılı olmadan ve gerçek Windows görsel kabulü yapılmadan sürüm/EXE yayımlama.
+### Aşama 3 — Resmî belgeler ve kabul
+- [x] Çıktı klasörleri ve dosya adları program + aylık hat kümesi + ay/yıl ile ayrıştırıldı.
+- [ ] Her seçili hat için dört resmî PDF'nin üretilmesi, doğru batch adı ve doğru hat numarasıyla kaydedilmesi test edilmeli.
+- [ ] Dört belgenin her biri resmî XLSM hücreleriyle karşılaştırılmalı.
+- [ ] Bir hatlı ve çok hatlı senaryolar; iki program, KDV muaf/KDV'li, negatif/pozitif fiyat farkı, iskonto ve tüm kesinti kalemleriyle doğrulanmalı.
+- [ ] Gerçek Windows kullanım ve görsel kabulünden önce sürüm/EXE yayımlanmamalı.
 
 ## 12. Uzmanla onaylanacak açık noktalar
 
