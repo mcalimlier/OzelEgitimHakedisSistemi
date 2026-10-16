@@ -7,4 +7,5 @@ public sealed record Contractor(
     string Phone = "",
     string Email = "",
     string BankAccountNumber = "",
-    string ContactPerson = "");
+    string ContactPerson = "",
+    TransportationProgramType ProgramType = TransportationProgramType.SpecialEducation);
