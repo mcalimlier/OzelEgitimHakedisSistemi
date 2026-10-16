@@ -31,6 +31,7 @@ public partial class MainWindow : Window
     private Guid? _editingHistoryId;
     private string? _editingContractTender;
     private string? _editingContractNumber;
+    private TransportationProgramType? _editingContractProgramType;
     private string? _editingContractorKey;
     private RouteDraft? _editingRoute;
     private bool _suppressSelectionEvents;
@@ -657,7 +658,7 @@ public partial class MainWindow : Window
         return HomeTenderListBox.SelectedItem as ContractDraftData
             ?? RouteTenderListBox.SelectedItem as ContractDraftData
             ?? ProgressTenderListBox.SelectedItem as ContractDraftData
-            ?? FindContract(TenderNumberTextBox.Text, ContractNumberTextBox.Text)
+            ?? FindContract(TenderNumberTextBox.Text, ContractNumberTextBox.Text, GetSelectedTransportationProgramType())
             ?? _contracts.FirstOrDefault();
     }
 
@@ -1738,7 +1739,7 @@ public partial class MainWindow : Window
         {
             _lastCalculatedHistoryId = id;
 
-            var contract = FindContract(item.TenderNumber, item.ContractNumber);
+            var contract = FindContract(item.TenderNumber, item.ContractNumber, item.Input.ProgramType);
             _suppressSelectionEvents = true;
             try
             {
@@ -2691,7 +2692,7 @@ public partial class MainWindow : Window
     {
         var lookupTender = _editingContractTender ?? TenderNumberTextBox.Text.Trim();
         var lookupContractNumber = _editingContractNumber ?? ContractNumberTextBox.Text.Trim();
-        var contract = FindContract(lookupTender, lookupContractNumber);
+        var contract = FindContract(lookupTender, lookupContractNumber, _editingContractProgramType ?? GetSelectedTransportationProgramType());
         var hasContract = contract is not null || !string.IsNullOrWhiteSpace(WorkNameTextBox.Text);
 
         ContractStatusSummaryTextBlock.Text = hasContract ? "KAYITLI" : "TASLAK";
@@ -3062,7 +3063,7 @@ public partial class MainWindow : Window
 
         _editingRoute = route;
         SetRouteEditorMode(true);
-        var contract = FindContract(route.TenderNumber, route.ContractNumber);
+        var contract = FindContract(route.TenderNumber, route.ContractNumber, route.ProgramType);
         var contractor = FindContractor(route.ContractorTaxOrIdentityNumber, route.ProgramType);
 
         _suppressSelectionEvents = true;
@@ -3107,7 +3108,7 @@ public partial class MainWindow : Window
         _editingRoute = null;
         if (original is not null)
         {
-            RouteTenderListBox.SelectedItem = FindContract(original.TenderNumber, original.ContractNumber);
+            RouteTenderListBox.SelectedItem = FindContract(original.TenderNumber, original.ContractNumber, original.ProgramType);
             var contractor = FindContractor(original.ContractorTaxOrIdentityNumber, original.ProgramType);
             RouteContractorListBox.ItemsSource = contractor is null ? Array.Empty<ContractorDraft>() : new[] { contractor };
             RouteContractorListBox.SelectedItem = contractor;
@@ -3177,7 +3178,7 @@ public partial class MainWindow : Window
     {
         var archiveCorrection = IsArchiveCorrectionFor(ArchiveCorrectionSection.Contract);
         var original = !archiveCorrection && !string.IsNullOrWhiteSpace(_editingContractTender)
-            ? FindContract(_editingContractTender, _editingContractNumber)
+            ? FindContract(_editingContractTender, _editingContractNumber, _editingContractProgramType)
             : null;
 
         ClearArchiveCorrectionState();
@@ -3309,7 +3310,7 @@ public partial class MainWindow : Window
         var sourceContractNumberForEdit = _editingContractNumber ?? string.Empty;
         var oldContract = _editingContractTender is null
             ? null
-            : FindContract(sourceTenderForEdit, sourceContractNumberForEdit);
+            : FindContract(sourceTenderForEdit, sourceContractNumberForEdit, _editingContractProgramType ?? GetSelectedTransportationProgramType());
 
         if (_editingContractTender is not null && oldContract is null)
         {
@@ -5273,7 +5274,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        var contract = FindContract(item.TenderNumber, item.ContractNumber);
+        var contract = FindContract(item.TenderNumber, item.ContractNumber, item.Input.ProgramType);
         if (contract is null)
         {
             ShowAlreadyRegistered("Bu hakedişin bağlı olduğu ihale kaydı bulunamadı.");
@@ -5432,7 +5433,7 @@ public partial class MainWindow : Window
             _suppressSelectionEvents = true;
             try
             {
-                var liveContract = FindContract(payment.TenderNumber, payment.ContractNumber);
+                var liveContract = FindContract(payment.TenderNumber, payment.ContractNumber, payment.Input.ProgramType);
                 ProgressTenderListBox.SelectedItem = liveContract;
                 if (liveContract is not null)
                 {
@@ -6363,7 +6364,8 @@ public partial class MainWindow : Window
 
         var contract = FindContract(
             latest.TenderNumber ?? route.TenderNumber,
-            latest.ContractNumber ?? route.ContractNumber);
+            latest.ContractNumber ?? route.ContractNumber,
+            latest.Input.ProgramType);
 
         DateOnly? contractStartDate = latest.ContractStartDate ?? contract?.StartDate;
         DateOnly? contractEndDate = latest.ContractEndDate ?? contract?.EndDate;
