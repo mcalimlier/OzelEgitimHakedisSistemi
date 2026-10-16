@@ -260,3 +260,58 @@ OEHS'nin standart hesaplama kuralı kullanıcı teyidine göre korunur:
 - Rehber: `T=(P×Q)+R−S`
 
 Bu formüller tüm ilgili hatlarda uygulanır; Excel'de eksik kopyalanmış formüller uygulamaya taşınmaz. Bu bulgu, hesaplama kuralı bakımından artık kullanıcı tarafından teyit edilmiş kabul edilir. Diğer kaynak Excel aralıkları, ay başlıkları, yaklaşık eşleşmeler ve VBA davranışları hakkındaki bulgular ayrı inceleme konuları olmaya devam eder.
+
+
+## 15. Sayısal referans vektörleri — kaynak XLSM ön doldurulmuş örnekleri (16.10.2026)
+
+Aşağıdaki sayılar yüklenen çalışma kitaplarının `data_only` görünümünden, 4. satırdaki örnek kayıttan alınmıştır. Bunlar **kaynak Excel'in saklanmış sonuç değerleridir**; LibreOffice veya masaüstü Excel'de yeniden hesaplanmış, OEHS ile karşılaştırılmış sonuç olarak sunulmamaktadır. İlk aşama referans vektörleri olarak tutulur; otomatik testte aynı girdiler hesaplama motoruna aktarılıp toleranslı sayısal karşılaştırma yapılmalıdır.
+
+### Temel/Ortaöğretim — `Hesaplama Bilgileri`, satır 4
+
+Girdi alanları:
+- İş günü `G4 = 9.82693033060048`
+- Günlük taşıma fiyatı `H4 = 19539.1608`
+- KDV hariç fiyat farkı `I4 = 7365.35`
+- İskonto `J4` boş/0 olarak okunuyor
+- KDV muafiyeti `E4 = "Hayır"`
+
+Kaynak kitapta saklanan ara/sonuç değerleri:
+- Hakediş tutarı `K4 = 199375.32189999995` (formül: `G×H + I − J`)
+- KDV `L4 = 19937.532189999994`
+- Tevkifat `M4 = 9968.766094999997`
+- Fatura tutarı `N4 = 209344.08799499995`
+- Brüt tutar `O4 = 219312.85408999995`
+- Ek kesin teminat `T4 = 441.921`
+- Damga vergisi `U4 = 1890.0780516119996`
+- Toplam kesinti `V4 = 12300.765146611997`
+- Net tutar `W4 = 207012.08894338796`
+
+### Özel Eğitim — `Hesaplama`, satır 4
+
+Girdi alanları:
+- Taşıma iş günü `G4 = 22`
+- Günlük taşıma fiyatı `H4 = 2320`
+- Taşıma fiyat farkı `I4 = 1403.573`
+- Taşıma iskontosu `J4 = 0`
+- Rehber iş günü `P4 = 30`
+- Rehber günlük fiyat `Q4 = 1362.49`
+- Rehber fiyat farkı `R4` boş/0 olarak okunuyor
+- Rehber iskontosu `S4 = 0`
+- KDV muafiyeti `E4 = "Evet"`
+
+Kaynak kitapta saklanan ara/sonuç değerleri:
+- Taşıma hakedişi `K4 = 52443.573`
+- Rehber hakedişi `T4 = 40874.7`
+- Ek kesin teminat `AC4 = 84.21438`
+- Damga vergisi `AD4 = 884.6572280400001`
+- Toplam kesinti `AE4 = 968.8716080400001`
+- Brüt tutar `AF4 = 93318.27299999999`
+- Net tutar `AG4 = 92349.40139195998`
+
+### Karşılaştırma protokolü ve kalan iş
+
+1. Aynı girdi alanlarını uygulamanın gerçek hesaplama servisine veren test/fixture oluştur.
+2. Excel hücreleriyle karşılaştırılacak alanları açık eşleştir; boş hücreleri sıfır varsaymadan önce formülün boş hücre davranışını kontrol et.
+3. Para hesaplarında Excel'in hücre bazlı `ROUND` kullandığı yerleri aynen modelle; yalnızca görüntüleme katmanındaki biçimlendirmeyi hesaplama yuvarlaması sayma.
+4. Başlangıçta saklanmış örnek sonuçları karşılaştır; sonra Excel'de yeniden hesaplatılmış kopyada aynı girdileri kullanarak ikinci kez doğrula. Kaynakta saklanan değerlerin eski olma ihtimali nedeniyle iki kanıt türünü ayrı tut.
+5. Bu belgeye girilen sayısal vektörler henüz OEHS ile test edilmiş değildir. Programın aynı sonuçları verdiği ancak testler çalıştırılıp sonuçlar incelendikten sonra işaretlenebilir.
