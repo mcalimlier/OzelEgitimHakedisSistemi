@@ -315,3 +315,38 @@ Kaynak kitapta saklanan ara/sonuç değerleri:
 3. Para hesaplarında Excel'in hücre bazlı `ROUND` kullandığı yerleri aynen modelle; yalnızca görüntüleme katmanındaki biçimlendirmeyi hesaplama yuvarlaması sayma.
 4. Başlangıçta saklanmış örnek sonuçları karşılaştır; sonra Excel'de yeniden hesaplatılmış kopyada aynı girdileri kullanarak ikinci kez doğrula. Kaynakta saklanan değerlerin eski olma ihtimali nedeniyle iki kanıt türünü ayrı tut.
 5. Bu belgeye girilen sayısal vektörler henüz OEHS ile test edilmiş değildir. Programın aynı sonuçları verdiği ancak testler çalıştırılıp sonuçlar incelendikten sonra işaretlenebilir.
+
+
+## 16. Sayısal örneklerin bağımsız aritmetik kontrolü (16.10.2026)
+
+Bölüm 15'teki iki örneğin temel formülleri kaynak dosyadan bağımsız olarak yüksek hassasiyetli ondalık aritmetik ile yeniden hesaplandı. Bu kontrol, yalnızca belirtilen girdiler ve yazılı formüller için matematiksel çapraz kontroldür; **OEHS uygulama servisi çalıştırılmadı ve uygulama testi yerine geçmez.**
+
+### Temel/Ortaöğretim — satır 4
+
+- `K = G×H + I − J` → 199375.321899999939...
+- `L = K×10%` → 19937.532189999993...
+- `M = L/2` → 9968.766094999996...
+- `N = K+M` → 209344.087994999936...
+- `O = K+L` → 219312.854089999933...
+- `T = I×6%` → 441.921
+- `U = K×9.48/1000` → 1890.078051611999...
+- `V = T+U+M` (bu örnekte diğer kesintiler sıfır) → 12300.765146611996...
+- `W = O−V` → 207012.088943387936...
+
+Kaynak Excel'in saklanan hücre sonuçları bu aritmetik sonuçlarla kayan nokta hassasiyeti düzeyinde uyuşuyor.
+
+### Özel Eğitim — satır 4
+
+- `K = G×H + I − J` → 52443.573
+- `T = P×Q + R − S` → 40874.70
+- `AC = 6%×I + 6%×R` → 84.21438
+- `AD = (K+T)×9.48/1000` → 884.65722804
+- `AE = AC+AD` (bu örnekte diğer kesintiler sıfır) → 968.87160804
+- `AF = K+T` → 93318.273
+- `AG = AF−AE` → 92349.40139196
+
+Kaynak Excel'in saklanan hücre sonuçları bu aritmetik sonuçlarla uyuşuyor.
+
+### Teste geçişte dikkat edilecek konu
+
+Excel dosyasında `ROUND` veya hücre biçimlendirmesiyle ilişkili yuvarlama davranışları olan başka alanlar bulunuyor. Bu iki örnek, ara hesaplamaların ham hassasiyetini doğrular; resmî PDF'de iki ondalığa yuvarlanmış değerlerin karşılaştırması ayrı test edilmelidir. Uygulama servisinden sonuç alınmadan “OEHS ile eşleşti” durumu verilmemelidir.
