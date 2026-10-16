@@ -825,7 +825,9 @@ public partial class MainWindow : Window
         var contract = FindContract(selectedTender, selectedContractNumber, selectedProgram)
                        ?? (previousRoute is null ? null : FindContract(previousRoute.TenderNumber, previousRoute.ContractNumber, selectedProgram))
                        ?? scopedContracts.FirstOrDefault();
-        var homeContract = previousHome is null ? contract : FindContract(previousHome.TenderNumber, previousHome.ContractNumber) ?? contract;
+        var homeContract = previousHome is null
+            ? contract
+            : FindContract(previousHome.TenderNumber, previousHome.ContractNumber, previousHome.ProgramType) ?? contract;
         var progressContract = previousProgress is null
             ? null
             : FindContract(previousProgress.TenderNumber, previousProgress.ContractNumber, previousProgress.ProgramType);
