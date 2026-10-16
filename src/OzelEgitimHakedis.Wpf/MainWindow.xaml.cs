@@ -5493,7 +5493,8 @@ public partial class MainWindow : Window
             item.TenderNumber ?? string.Empty,
             item.RouteNumber ?? string.Empty,
             item.ContractorTaxOrIdentityNumber ?? string.Empty,
-            item.ContractNumber ?? string.Empty);
+            item.ContractNumber ?? string.Empty,
+            item.Input.ProgramType);
 
         ProgressRouteComboBox.SelectedItem = _routes.FirstOrDefault(x =>
             string.Equals(
@@ -5501,7 +5502,8 @@ public partial class MainWindow : Window
                     x.TenderNumber,
                     x.RouteNumber,
                     x.ContractorTaxOrIdentityNumber,
-                    x.ContractNumber),
+                    x.ContractNumber,
+                    x.ProgramType),
                 historyRouteKey,
                 StringComparison.Ordinal));
 
