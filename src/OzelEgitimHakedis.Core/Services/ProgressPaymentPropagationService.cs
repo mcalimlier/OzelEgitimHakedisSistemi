@@ -83,31 +83,23 @@ public static class ProgressPaymentPropagationService
         // Old API callers / legacy records may omit it. In that case use the legacy
         // tender-route-contractor key; when a contract number is present, never fall
         // back to the broader key and risk updating a sibling contract's history.
-        var oldKey = string.IsNullOrWhiteSpace(oldRoute.ContractNumber)
-            ? OehsIdentityService.BuildRouteKey(
-                oldRoute.TenderNumber,
-                oldRoute.RouteNumber,
-                oldRoute.ContractorTaxOrIdentityNumber)
-            : OehsIdentityService.BuildRouteKey(
-                oldRoute.TenderNumber,
-                oldRoute.RouteNumber,
-                oldRoute.ContractorTaxOrIdentityNumber,
-                oldRoute.ContractNumber);
+        var oldKey = OehsIdentityService.BuildRouteKey(
+            oldRoute.TenderNumber,
+            oldRoute.RouteNumber,
+            oldRoute.ContractorTaxOrIdentityNumber,
+            oldRoute.ContractNumber,
+            oldRoute.ProgramType);
 
         var newIdentity = OehsIdentityService.NormalizeIdentity(newRoute.ContractorTaxOrIdentityNumber);
         var updated = history
             .Select(item =>
             {
-                var itemKey = string.IsNullOrWhiteSpace(oldRoute.ContractNumber)
-                    ? OehsIdentityService.BuildRouteKey(
-                        item.TenderNumber ?? string.Empty,
-                        item.RouteNumber ?? string.Empty,
-                        item.ContractorTaxOrIdentityNumber ?? string.Empty)
-                    : OehsIdentityService.BuildRouteKey(
-                        item.TenderNumber ?? string.Empty,
-                        item.RouteNumber ?? string.Empty,
-                        item.ContractorTaxOrIdentityNumber ?? string.Empty,
-                        item.ContractNumber ?? string.Empty);
+                var itemKey = OehsIdentityService.BuildRouteKey(
+                    item.TenderNumber ?? string.Empty,
+                    item.RouteNumber ?? string.Empty,
+                    item.ContractorTaxOrIdentityNumber ?? string.Empty,
+                    item.ContractNumber ?? string.Empty,
+                    item.Input.ProgramType);
 
                 return string.Equals(itemKey, oldKey, StringComparison.Ordinal)
                     ? RebuildForRoute(item, newRoute, contractor, newIdentity, appliedConstants)
@@ -192,6 +184,9 @@ public static class ProgressPaymentPropagationService
         ProgressPaymentHistoryData item,
         ContractDraftData contract)
     {
+        if (item.Input.ProgramType != contract.ProgramType)
+            return false;
+
         if (!string.Equals(
                 item.TenderNumber?.Trim(),
                 contract.TenderNumber.Trim(),
@@ -217,7 +212,8 @@ public static class ProgressPaymentPropagationService
                 item.ContractorTaxOrIdentityNumber ?? string.Empty,
                 item.ProgressPaymentNumber!.Value,
                 item.PeriodDate!.Value,
-                item.ContractNumber ?? string.Empty))
+                item.ContractNumber ?? string.Empty,
+                item.Input.ProgramType))
             .GroupBy(key => key, StringComparer.Ordinal)
             .Where(group => group.Count() > 1)
             .Select(group => group.Key)
