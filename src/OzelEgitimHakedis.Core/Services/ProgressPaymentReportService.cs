@@ -78,8 +78,27 @@ public static class ProgressPaymentReportService
         ArgumentNullException.ThrowIfNull(current);
         ArgumentNullException.ThrowIfNull(payments);
 
+        // The official workbook report is route-specific. Never let a different
+        // route, contractor, contract, tender, or transport program contribute to
+        // the selected route's cumulative cells—even when names/numbers coincide.
+        var currentRouteKey = OehsIdentityService.BuildRouteKey(
+            current.TenderNumber ?? string.Empty,
+            current.RouteNumber ?? string.Empty,
+            current.ContractorTaxOrIdentityNumber ?? string.Empty,
+            current.ContractNumber ?? string.Empty,
+            current.Input.ProgramType);
+
         var previous = payments
             .Where(x => x.Id != current.Id)
+            .Where(x => string.Equals(
+                OehsIdentityService.BuildRouteKey(
+                    x.TenderNumber ?? string.Empty,
+                    x.RouteNumber ?? string.Empty,
+                    x.ContractorTaxOrIdentityNumber ?? string.Empty,
+                    x.ContractNumber ?? string.Empty,
+                    x.Input.ProgramType),
+                currentRouteKey,
+                StringComparison.Ordinal))
             .Where(x => IsBeforePayment(x, current))
             .Where(x => IsWithinCurrentFiscalYear(x, current))
             .ToArray();
