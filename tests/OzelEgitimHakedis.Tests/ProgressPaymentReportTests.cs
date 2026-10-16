@@ -41,6 +41,36 @@ public sealed class ProgressPaymentReportTests
     }
 
     [Fact]
+    public void ReportTotals_ShouldIgnoreOtherRoutesAndOtherPrograms()
+    {
+        var matchingPrevious = History(
+            1, new DateOnly(2026, 10, 31), new DateTime(2026, 10, 31), 100m, 5m);
+        var otherRoute = History(
+            1, new DateOnly(2026, 10, 31), new DateTime(2026, 10, 31), 900m, 90m)
+            with { RouteNumber = "Q3" };
+        var otherProgram = History(
+            1, new DateOnly(2026, 10, 31), new DateTime(2026, 10, 31), 800m, 80m)
+            with
+            {
+                Input = new ProgressPaymentInput(
+                    1, 800m, 0m, 80m, 100000m, false, 0m, 0m, 0m,
+                    ProgramType: TransportationProgramType.BasicOrSecondary)
+            };
+        var current = History(
+            2, new DateOnly(2026, 11, 30), new DateTime(2026, 12, 10), 150m, 10m);
+
+        var totals = ProgressPaymentReportService.Calculate(
+            current,
+            new[] { matchingPrevious, otherRoute, otherProgram, current });
+
+        Assert.Equal(255m, totals.CumulativeServiceAmount);
+        Assert.Equal(10m, totals.CumulativePriceDifference);
+        Assert.Equal(265m, totals.CumulativeTotal);
+        Assert.Equal(105m, totals.PreviousTotal);
+        Assert.Equal(160m, totals.CurrentTotal);
+    }
+
+    [Fact]
     public void ReportTotals_ShouldExcludePaymentsFromPriorFiscalYear()
     {
         var priorFiscalYear = History(
