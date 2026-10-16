@@ -2468,13 +2468,13 @@ public partial class MainWindow : Window
             return;
 
         var normalizedContractorIdentity = OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber);
-        var usedByContract = _contracts.Any(x => string.Equals(
+        var usedByContract = _contracts.Any(x => x.ProgramType == contractor.ProgramType && string.Equals(
             OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
             normalizedContractorIdentity, StringComparison.Ordinal));
-        var usedByRoute = _routes.Any(x => string.Equals(
+        var usedByRoute = _routes.Any(x => x.ProgramType == contractor.ProgramType && string.Equals(
             OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
             normalizedContractorIdentity, StringComparison.Ordinal));
-        var usedByHistory = _progressHistory.Any(x => string.Equals(
+        var usedByHistory = _progressHistory.Any(x => x.Input.ProgramType == contractor.ProgramType && string.Equals(
             OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
             normalizedContractorIdentity, StringComparison.Ordinal));
 
@@ -2971,7 +2971,7 @@ public partial class MainWindow : Window
 
         var contractor = FindContractor(updatedRoute.ContractorTaxOrIdentityNumber, updatedRoute.ProgramType);
         var contractorSnapshot = contractor is null
-            ? new Contractor(updatedRoute.ContractorName, updatedRoute.ContractorTaxOrIdentityNumber)
+            ? new Contractor(updatedRoute.ContractorName, updatedRoute.ContractorTaxOrIdentityNumber, ProgramType: updatedRoute.ProgramType)
             : new Contractor(
                 contractor.Name,
                 contractor.TaxOrIdentityNumber,
@@ -5386,7 +5386,7 @@ public partial class MainWindow : Window
         _editingRoute = route;
 
         var contract = FindContract(route.TenderNumber, route.ContractNumber);
-        var contractor = FindContractor(route.ContractorTaxOrIdentityNumber);
+        var contractor = FindContractor(route.ContractorTaxOrIdentityNumber, route.ProgramType);
 
         _suppressSelectionEvents = true;
         try
