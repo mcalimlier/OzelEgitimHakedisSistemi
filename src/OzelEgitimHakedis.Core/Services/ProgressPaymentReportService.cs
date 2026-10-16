@@ -102,7 +102,7 @@ public static class ProgressPaymentReportService
 
         return new ProgressPaymentReportTotals(
             cumulativeServiceAmount,
-            cumulativePriceDifference,
+            currentPriceDifference,
             cumulativeTotal,
             previousTotal,
             currentTotal);
