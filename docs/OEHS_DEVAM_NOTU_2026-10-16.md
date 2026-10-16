@@ -141,3 +141,15 @@ flowchart TD
 ## 8. Sonraki eylem
 
 **Evde ilk eylem: yerel bilgisayarı GitHub'daki en güncel `feature/official-payment-document-templates` HEAD'i ile güvenli şekilde eşitlemek.** Bundan önce kod yazmaya, eski EXE üretmeye veya PR'ı merge etmeye başlama.
+
+
+## 2026-10-16 ek devam kaydı — güncel CI ve çoklu hat güvenliği
+
+- Yerel eşitleme kullanıcı tarafından tamamlandı; bundan sonraki yerel çalışma bu dalın güncel HEAD'i üzerinden sürdürülmelidir.
+- Önceki başarısız CI çalışmasının ardından `OehsApplicationData.Empty` içindeki boş koleksiyonlar tutarlı biçimde başlatıldı.
+- `5be27e750627b6ece818659631ff7595e51875a8` commit'inde CI başarıyla tamamlandı. Build, test çözümü, PDF smoke üretimi ve Windows x64 yayın adımları başarılıydı.
+- PDF smoke arşivinde dört ayrı A4 PDF bulundu. Bunlar örnek/test verileriyle üretilmiştir; test imzacı adları gerçek üretim kabulü değildir. Gerçek kayıtla üretim ve resmî XLSM görsel karşılaştırması hâlâ gereklidir.
+- Kod incelemesinde çoklu hat kaydında tek formdaki manuel parasal alanların her seçilen hat kaydına aynen kopyalandığı görüldü. İskonto, fiyat farkı, vergi borcu, SGK borcu, asgari ücret desteği ve denetim cezası gibi tutarlar bu şekilde yanlışlıkla çoğalabilir.
+- Geçici mali güvenlik önlemi eklendi: çoklu hat seçiliyken bu ortak parasal alanlardan biri sıfır değilse kayıt durdurulur ve hat bazlı ayrı giriş istenir. İlgili servis: `MultiRouteProgressPaymentValidationService`; testler: `MultiRouteProgressPaymentValidationServiceTests`.
+- **Açık iş / öncelikli:** geçici engelin yerine, seçilen her hat için ayrı iskonto, fiyat farkı ve kesinti girdileri sağlayan hat bazlı çoklu giriş ekranı eklenmeli. Her satırın hesabı ayrı saklanmalı; toplam yalnızca satır sonuçlarının toplamı olmalı. Bu iş bitene kadar çoklu seçimde ortak parasal değerler sıfır değilken işlem bilerek engellenir.
+- Bu yeni güvenlik değişiklikleri `5be27e75` sonrasındaki commit'lerdir; bu nedenle önceki başarılı CI bunları kapsamaz. En yeni HEAD için Actions sonucu ayrıca doğrulanmalıdır.
