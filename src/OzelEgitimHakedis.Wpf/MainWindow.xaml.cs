@@ -5939,6 +5939,14 @@ public partial class MainWindow : Window
     private void SetGlobalMonetaryFieldsVisible(bool visible)
     {
         var visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+        WorkDaysLabel.Visibility = visibility;
+        WorkDaysTextBox.Visibility = visibility;
+        DailyPriceLabel.Visibility = visibility;
+        DailyPriceTextBox.Visibility = visibility;
+        ProgressGuideWorkDaysLabel.Visibility = visibility;
+        GuideWorkDaysTextBox.Visibility = visibility;
+        ProgressGuideDailyPriceLabel.Visibility = visibility;
+        GuideDailyPriceTextBox.Visibility = visibility;
         DiscountLabel.Visibility = visibility;
         DiscountTextBox.Visibility = visibility;
         PriceDifferenceLabel.Visibility = visibility;
