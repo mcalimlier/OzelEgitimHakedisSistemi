@@ -3977,6 +3977,189 @@ public partial class MainWindow : Window
             _progressHistory.Add(item);
     }
 
+    private void SaveMultiRouteProgressPayment(
+        ContractDraftData contract,
+        IReadOnlyList<RouteDraft> routes,
+        int enteredWorkDays,
+        decimal enteredDailyPrice,
+        decimal discount,
+        decimal priceDifference,
+        decimal taxDebt,
+        decimal socialSecurityDebt,
+        decimal minimumWageSupport,
+        decimal inspectionPenalty,
+        int guideWorkDays,
+        decimal guideDailyPrice,
+        decimal guideDiscount,
+        decimal guidePriceDifference,
+        int? progressNumber,
+        DateOnly? periodDate)
+    {
+        if (routes.Count < 2)
+            return;
+
+        if (!progressNumber.HasValue || progressNumber.Value < 1 || !periodDate.HasValue)
+        {
+            var message = "Çoklu hat hesabı için sözleşme dönemi ve otomatik hakediş numarası belirlenmelidir.";
+            ProgressValidationBanner.Visibility = Visibility.Visible;
+            ProgressValidationMessageTextBlock.Text = message;
+            CalculationStatusTextBlock.Text = message;
+            ProgressCalculationSummaryTextBlock.Text = "KONTROL GEREKLİ";
+            return;
+        }
+
+        var contractors = _contractors.Select(x => new Contractor(
+            x.Name, x.TaxOrIdentityNumber, x.Address, x.Phone, x.Email,
+            x.BankAccountNumber, x.ContactPerson, x.ProgramType)).ToArray();
+        var data = new OehsApplicationData(
+            contract,
+            _routes.Select(x => new RouteData(
+                x.RouteNumber, x.Name, x.DailyPrice, x.GuideWorkDays, x.GuideDailyPrice,
+                x.TransportWorkDays, x.TenderNumber, x.ContractorTaxOrIdentityNumber,
+                x.ContractNumber, x.ProgramType)).ToArray(),
+            contractors,
+            _progressHistory.ToArray(),
+            _contracts.ToArray());
+
+        var createdAt = DateTime.Now;
+        var batch = new List<ProgressPaymentHistoryData>();
+        var errors = new List<string>();
+        foreach (var route in routes)
+        {
+            if (route.ProgramType != contract.ProgramType || !IsRouteForContract(route, contract))
+            {
+                errors.Add($"Hat {route.RouteNumber}: seçilen sözleşmenin programına bağlı değil.");
+                continue;
+            }
+
+            var identity = OehsIdentityService.NormalizeIdentity(route.ContractorTaxOrIdentityNumber);
+            var contractor = FindContractor(identity, route.ProgramType);
+            var hasGuide = HasGuideStaff(contract.ProgramType);
+            var input = new ProgressPaymentInput(
+                route.TransportWorkDays > 0 ? route.TransportWorkDays : enteredWorkDays,
+                route.DailyPrice > 0 ? route.DailyPrice : enteredDailyPrice,
+                discount,
+                priceDifference,
+                contract.ContractAmount,
+                contract.VatExempt,
+                taxDebt,
+                socialSecurityDebt,
+                hasGuide ? minimumWageSupport : 0m,
+                inspectionPenalty,
+                hasGuide ? (route.GuideWorkDays > 0 ? route.GuideWorkDays : guideWorkDays) : 0,
+                hasGuide ? (route.GuideDailyPrice > 0 ? route.GuideDailyPrice : guideDailyPrice) : 0m,
+                hasGuide ? guideDiscount : 0m,
+                hasGuide ? guidePriceDifference : 0m,
+                contract.ProgramType);
+
+            var calculation = ProgressPaymentCalculator.Calculate(input, _calculationConstants);
+            var item = new ProgressPaymentHistoryData(
+                Guid.NewGuid(), createdAt, input, calculation,
+                progressNumber, periodDate,
+                route.RouteNumber, route.Name,
+                contract.WorkName, contractor?.Name ?? route.ContractorName,
+                contract.TenderNumber, contract.ContractNumber,
+                contract.TenderDate, contract.ContractDate,
+                contract.StartDate, contract.EndDate,
+                contractor?.BankAccountNumber ?? string.Empty,
+                identity);
+
+            var validationErrors = ProgressPaymentValidationService.ValidateCreation(
+                data, contract,
+                new RouteData(
+                    route.RouteNumber, route.Name, route.DailyPrice,
+                    route.GuideWorkDays, route.GuideDailyPrice, route.TransportWorkDays,
+                    route.TenderNumber, identity, route.ContractNumber, route.ProgramType),
+                item, editingExisting: false);
+            errors.AddRange(validationErrors.Select(error => $"Hat {route.RouteNumber}: {error}"));
+            batch.Add(item);
+        }
+
+        if (errors.Count > 0 || batch.Count != routes.Count)
+        {
+            var message = string.Join(Environment.NewLine, errors.Distinct());
+            ProgressValidationBanner.Visibility = Visibility.Visible;
+            ProgressValidationMessageTextBlock.Text = message;
+            ProgressCalculationSummaryTextBlock.Text = "KONTROL GEREKLİ";
+            CalculationStatusTextBlock.Foreground =
+                new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(198, 40, 40));
+            CalculationStatusTextBlock.FontWeight = FontWeights.Bold;
+            CalculationStatusTextBlock.Text = message;
+            ArchiveCurrentProgressButton.Visibility = Visibility.Collapsed;
+            CorrectCurrentProgressButton.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        _progressHistory.AddRange(batch);
+        if (!SavePersistedData())
+        {
+            foreach (var item in batch)
+                _progressHistory.Remove(item);
+            UpdateHistoryView();
+            UpdateSummaryView();
+            UpdateReportView();
+            UpdateHomeSummaryView();
+            UpdateAcceptanceView();
+            CalculationStatusTextBlock.Text = "Çoklu hat kaydı diske yazılamadı; tüm yeni hat kayıtları geri alındı.";
+            ProgressCalculationSummaryTextBlock.Text = "KAYIT BAŞARISIZ";
+            return;
+        }
+
+        var total = batch.Select(x => x.Calculation).ToArray();
+        decimal Sum(Func<ProgressPaymentCalculation, decimal> selector) =>
+            total.Sum(selector);
+        var deductions = new DeductionBreakdown(
+            Sum(x => x.Deductions.Withholding),
+            Sum(x => x.Deductions.StampTax),
+            Sum(x => x.Deductions.TaxDebt),
+            Sum(x => x.Deductions.InspectionPenalty),
+            Sum(x => x.Deductions.SocialSecurityDebt),
+            Sum(x => x.Deductions.MinimumWageSupport),
+            Sum(x => x.Deductions.AdditionalGuarantee));
+
+        ServiceAmountResultTextBlock.Text = FormatMoney(Sum(x => x.ServiceAmount));
+        GuideServiceAmountResultTextBlock.Text = FormatMoney(Sum(x => x.GuideServiceAmount));
+        TransportPriceDifferenceResultTextBlock.Text = FormatMoney(Sum(x => x.PriceDifferenceExcludingVat));
+        GuidePriceDifferenceResultTextBlock.Text = FormatMoney(Sum(x => x.GuidePriceDifferenceExcludingVat));
+        CombinedPriceDifferenceResultTextBlock.Text = FormatMoney(Sum(x => x.CombinedPriceDifferenceExcludingVat));
+        TotalAmountResultTextBlock.Text = FormatMoney(Sum(x => x.TotalAmount));
+        VatResultTextBlock.Text = FormatMoney(Sum(x => x.Vat));
+        DeductionsResultTextBlock.Text = FormatMoney(Sum(x => x.TotalDeductions));
+        GrossResultTextBlock.Text = FormatMoney(Sum(x => x.GrossAmount));
+        NetResultTextBlock.Text = FormatMoney(Sum(x => x.NetPayable));
+        NetControlResultTextBlock.Text = FormatMoney(Sum(x => x.NetPayable));
+        WithholdingResultTextBlock.Text = FormatMoney(deductions.Withholding);
+        StampTaxResultTextBlock.Text = FormatMoney(deductions.StampTax);
+        TaxDebtResultTextBlock.Text = FormatMoney(deductions.TaxDebt);
+        SocialSecurityDebtResultTextBlock.Text = FormatMoney(deductions.SocialSecurityDebt);
+        MinimumWageSupportResultTextBlock.Text = FormatMoney(deductions.MinimumWageSupport);
+        InspectionPenaltyResultTextBlock.Text = FormatMoney(deductions.InspectionPenalty);
+        AdditionalGuaranteeResultTextBlock.Text = FormatMoney(deductions.AdditionalGuarantee);
+        ProgressWorkDaysSummaryTextBlock.Text = routes.Sum(x => x.TransportWorkDays).ToString(CultureInfo.CurrentCulture);
+        ProgressNetSummaryTextBlock.Text = FormatMoney(Sum(x => x.NetPayable));
+        ProgressCalculationSummaryTextBlock.Text = "TAMAM";
+
+        _lastCalculatedHistoryId = batch[^1].Id;
+        SetProgressEditorMode(false);
+        UpdateHistoryView();
+        UpdateSummaryView();
+        UpdateReportView();
+        UpdateHomeSummaryView();
+        UpdateAcceptanceView();
+        UpdateArchiveView();
+
+        var routeLabels = string.Join(", ", routes.Select(x => x.RouteNumber));
+        var aggregateMessage = $"{routes.Count} hat ({routeLabels}) hesaplandı. Birleşik net tutar: {FormatMoney(Sum(x => x.NetPayable))}. Hat bazlı kayıtlar ayrı ayrı saklandı.";
+        ProgressValidationBanner.Visibility = Visibility.Collapsed;
+        ProgressValidationMessageTextBlock.Text = aggregateMessage;
+        CalculationStatusTextBlock.Foreground =
+            new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(36, 104, 216));
+        CalculationStatusTextBlock.FontWeight = FontWeights.SemiBold;
+        CalculationStatusTextBlock.Text = aggregateMessage;
+        ArchiveCurrentProgressButton.Visibility = Visibility.Visible;
+        CorrectCurrentProgressButton.Visibility = Visibility.Collapsed;
+    }
+
     private void CalculateProgressButton_Click(object sender, RoutedEventArgs e)
     {
         if (IsArchiveEditing && !IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment))
@@ -4114,6 +4297,19 @@ public partial class MainWindow : Window
             }
 
             var periodDate = (ProgressPeriodMonthComboBox.SelectedItem as ProgressPaymentMonthOption)?.PeriodDate;
+
+            var selectedRoutes = ProgressRouteComboBox.SelectedItems.OfType<RouteDraft>().ToArray();
+            if (!IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment) &&
+                !_editingHistoryId.HasValue &&
+                selectedRoutes.Length > 1)
+            {
+                SaveMultiRouteProgressPayment(
+                    selectedContract, selectedRoutes, workDays, dailyPrice, discount,
+                    priceDifference, taxDebt, socialSecurityDebt, minimumWageSupport,
+                    inspectionPenalty, guideWorkDays, guideDailyPrice, guideDiscount,
+                    guidePriceDifference, progressNumber, periodDate);
+                return;
+            }
 
             if (IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment))
             {
