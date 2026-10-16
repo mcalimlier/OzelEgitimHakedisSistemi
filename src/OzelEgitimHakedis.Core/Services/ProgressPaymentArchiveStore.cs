@@ -271,16 +271,7 @@ public sealed class ProgressPaymentArchiveStore
     public static string BuildFileStem(ProgressPaymentArchive archive)
     {
         ArgumentNullException.ThrowIfNull(archive);
-
-        var tender = SafeFilePart(archive.ProgressPayment.TenderNumber, "Ihale");
-        var contractor = OehsFileNameService.BuildContractorFilePart(
-            archive.Contractor.Name,
-            archive.Contractor.TaxOrIdentityNumber);
-        var route = SafeFilePart(archive.ProgressPayment.RouteNumber, "Hat");
-        var progress = archive.ProgressPayment.ProgressPaymentNumber?.ToString("00", System.Globalization.CultureInfo.InvariantCulture) ?? "Yeni";
-        var period = archive.ProgressPayment.PeriodDate?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) ?? "Donemsiz";
-
-        return $"OEHS_{tender}_Yuklenici-{contractor}_Hat-{route}_Hakediş-{progress}_{period}_v{archive.Revision:00}";
+        return $"{BuildBaseStem(archive)}_v{archive.Revision:00}";
     }
 
     private int FindNextRevision(ProgressPaymentArchive archive, int minimumRevision = 1)
@@ -302,14 +293,20 @@ public sealed class ProgressPaymentArchiveStore
 
     private static string BuildBaseStem(ProgressPaymentArchive archive)
     {
+        var program = archive.ProgressPayment.Input.ProgramType == TransportationProgramType.SpecialEducation
+            ? "OzelEgitim"
+            : "TemelOrtaogretim";
         var tender = SafeFilePart(archive.ProgressPayment.TenderNumber, "Ihale");
         var contractor = OehsFileNameService.BuildContractorFilePart(
             archive.Contractor.Name,
             archive.Contractor.TaxOrIdentityNumber);
+        var batchRoutes = SafeFilePart(
+            archive.ProgressPayment.BatchRouteNumbers ?? archive.ProgressPayment.RouteNumber,
+            "Hatlar");
         var route = SafeFilePart(archive.ProgressPayment.RouteNumber, "Hat");
         var progress = archive.ProgressPayment.ProgressPaymentNumber?.ToString("00", System.Globalization.CultureInfo.InvariantCulture) ?? "Yeni";
-        var period = archive.ProgressPayment.PeriodDate?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) ?? "Donemsiz";
-        return $"OEHS_{tender}_Yuklenici-{contractor}_Hat-{route}_Hakediş-{progress}_{period}";
+        var period = archive.ProgressPayment.PeriodDate?.ToString("yyyy-MM", System.Globalization.CultureInfo.InvariantCulture) ?? "Donemsiz";
+        return $"OEHS_{program}_{tender}_Yuklenici-{contractor}_Hatlar-{batchRoutes}_Hat-{route}_Hakediş-{progress}_{period}";
     }
 
     private static int? ParseRevision(string fileName, string baseStem)
