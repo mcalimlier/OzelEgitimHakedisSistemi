@@ -2038,7 +2038,8 @@ public partial class MainWindow : Window
             ContractorPhoneTextBox.Text.Trim(),
             ContractorEmailTextBox.Text.Trim(),
             ContractorBankTextBox.Text.Trim(),
-            ContractorContactTextBox.Text.Trim());
+            ContractorContactTextBox.Text.Trim(),
+            contractorProgramType);
 
         var updatedContract = archive.Contract with
         {
@@ -2323,16 +2324,16 @@ public partial class MainWindow : Window
             return;
         }
 
-        var normalizedEditingKey = OehsIdentityService.NormalizeIdentity(_editingContractorKey ?? string.Empty);
+        var editingContractor = FindContractorByKey(_editingContractorKey);
+        var contractorProgramType = editingContractor?.ProgramType ?? GetSelectedTransportationProgramType();
+        var proposedKey = $"{contractorProgramType}|{tax}";
         var duplicate = _contractors.FirstOrDefault(x =>
+            x.ProgramType == contractorProgramType &&
             string.Equals(
                 OehsIdentityService.NormalizeIdentity(x.TaxOrIdentityNumber),
                 tax,
                 StringComparison.Ordinal) &&
-            !string.Equals(
-                OehsIdentityService.NormalizeIdentity(x.TaxOrIdentityNumber),
-                normalizedEditingKey,
-                StringComparison.Ordinal));
+            !string.Equals(BuildContractorKey(x), _editingContractorKey ?? string.Empty, StringComparison.Ordinal));
 
         if (duplicate is not null)
         {
@@ -2364,12 +2365,7 @@ public partial class MainWindow : Window
         }
         else
         {
-            var editingIdentity = OehsIdentityService.NormalizeIdentity(_editingContractorKey ?? string.Empty);
-            var existing = _contractors.FirstOrDefault(x =>
-                string.Equals(
-                    OehsIdentityService.NormalizeIdentity(x.TaxOrIdentityNumber),
-                    editingIdentity,
-                    StringComparison.Ordinal));
+            var existing = FindContractorByKey(_editingContractorKey);
 
             if (existing is null)
                 _contractors.Add(updated);
@@ -2417,7 +2413,7 @@ public partial class MainWindow : Window
         if (sender is not Button { Tag: ContractorDraft contractor })
             return;
 
-        _editingContractorKey = contractor.TaxOrIdentityNumber;
+        _editingContractorKey = BuildContractorKey(contractor);
         SetContractorEditorMode(true);
         ContractorNameTextBox.Text = contractor.Name;
         ContractorTaxTextBox.Text = contractor.TaxOrIdentityNumber;
@@ -2433,7 +2429,7 @@ public partial class MainWindow : Window
     {
         var archiveCorrection = IsArchiveCorrectionFor(ArchiveCorrectionSection.Contractor);
         var original = !archiveCorrection && !string.IsNullOrWhiteSpace(_editingContractorKey)
-            ? FindContractor(_editingContractorKey)
+            ? FindContractorByKey(_editingContractorKey)
             : null;
 
         ClearArchiveCorrectionState();
@@ -2557,7 +2553,8 @@ public partial class MainWindow : Window
             oldContractor.Phone,
             oldContractor.Email,
             oldContractor.BankAccountNumber,
-            oldContractor.ContactPerson);
+            oldContractor.ContactPerson,
+            oldContractor.ProgramType);
 
         var newCore = new Contractor(
             updated.Name,
@@ -2566,7 +2563,8 @@ public partial class MainWindow : Window
             updated.Phone,
             updated.Email,
             updated.BankAccountNumber,
-            updated.ContactPerson);
+            updated.ContactPerson,
+            updated.ProgramType);
 
         // Önce tüm türetilmiş hakedişler doğrulanır; hata halinde hiçbir kaynak
         // koleksiyonu değiştirilmez.
@@ -2578,6 +2576,7 @@ public partial class MainWindow : Window
         var normalizedOld = OehsIdentityService.NormalizeIdentity(oldContractor.TaxOrIdentityNumber);
         var routeUpdates = _routes
             .Select((route, index) => (route, index))
+            .Where(x => x.route.ProgramType == oldContractor.ProgramType)
             .Where(x => string.Equals(
                 OehsIdentityService.NormalizeIdentity(x.route.ContractorTaxOrIdentityNumber),
                 normalizedOld,
@@ -2595,7 +2594,8 @@ public partial class MainWindow : Window
         for (var index = 0; index < _contracts.Count; index++)
         {
             var contract = _contracts[index];
-            if (string.Equals(
+            if (contract.ProgramType == oldContractor.ProgramType &&
+                string.Equals(
                     OehsIdentityService.NormalizeIdentity(contract.ContractorTaxOrIdentityNumber),
                     normalizedOld,
                     StringComparison.Ordinal))
@@ -3499,7 +3499,7 @@ public partial class MainWindow : Window
                     contractor.Name,
                     OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber),
                     contractor.Address, contractor.Phone, contractor.Email,
-                    contractor.BankAccountNumber, contractor.ContactPerson));
+                    contractor.BankAccountNumber, contractor.ContactPerson, contractor.ProgramType));
             }
 
             _routes.Clear();
@@ -3644,7 +3644,7 @@ public partial class MainWindow : Window
                 x.TransportWorkDays, x.TenderNumber, x.ContractorTaxOrIdentityNumber, x.ContractNumber, x.ProgramType)).ToArray(),
             _contractors.Select(x => new Contractor(
                 x.Name, x.TaxOrIdentityNumber, x.Address, x.Phone, x.Email,
-                x.BankAccountNumber, x.ContactPerson)).ToArray(),
+                x.BankAccountNumber, x.ContactPerson, x.ProgramType)).ToArray(),
             _progressHistory.ToArray(),
             _contracts.ToArray(),
             _calculationConstants,
@@ -4189,7 +4189,8 @@ public partial class MainWindow : Window
                     x.Phone,
                     x.Email,
                     x.BankAccountNumber,
-                    x.ContactPerson)).ToArray(),
+                    x.ContactPerson,
+                    x.ProgramType)).ToArray(),
                 _progressHistory.ToArray(),
                 _contracts.ToArray());
 
@@ -6678,7 +6679,8 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         string Phone = "",
         string Email = "",
         string BankAccountNumber = "",
-        string ContactPerson = "");
+        string ContactPerson = "",
+        TransportationProgramType ProgramType = TransportationProgramType.SpecialEducation);
 
     private sealed record ArchiveRow(
         string FullPath,
