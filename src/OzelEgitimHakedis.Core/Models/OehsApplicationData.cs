@@ -10,7 +10,14 @@ public sealed record OehsApplicationData(
     IReadOnlyList<ProgressPaymentCalculationConstantsChange>? CalculationConstantsHistory = null)
 {
     public static OehsApplicationData Empty =>
-        new(null, Array.Empty<RouteData>(), Array.Empty<Contractor>(), null, Array.Empty<ContractDraftData>());
+        new(
+            null,
+            Array.Empty<RouteData>(),
+            Array.Empty<Contractor>(),
+            Array.Empty<ProgressPaymentHistoryData>(),
+            Array.Empty<ContractDraftData>(),
+            CalculationConstants: null,
+            CalculationConstantsHistory: Array.Empty<ProgressPaymentCalculationConstantsChange>());
 }
 
 public sealed record ContractDraftData(
