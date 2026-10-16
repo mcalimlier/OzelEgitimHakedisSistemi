@@ -51,6 +51,7 @@ public static class ProgressPaymentIcmalService
 
         return payments
             .Where(x => x.Id != current.Id)
+            .Where(x => x.Input.ProgramType == current.Input.ProgramType)
             .Where(x => x.PeriodDate.HasValue)
             .Where(x => x.PeriodDate!.Value.Year == previousMonth.Year
                         && x.PeriodDate.Value.Month == previousMonth.Month)
