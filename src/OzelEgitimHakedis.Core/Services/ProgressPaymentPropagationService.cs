@@ -79,29 +79,24 @@ public static class ProgressPaymentPropagationService
 
         var appliedConstants = constants ?? ProgressPaymentCalculationConstants.Defaults;
 
-        // Current records carry the contract number as part of the route identity.
-        // Old API callers / legacy records may omit it. In that case use the legacy
-        // tender-route-contractor key; when a contract number is present, never fall
-        // back to the broader key and risk updating a sibling contract's history.
-        var oldKey = OehsIdentityService.BuildRouteKey(
-            oldRoute.TenderNumber,
-            oldRoute.RouteNumber,
-            oldRoute.ContractorTaxOrIdentityNumber,
-            oldRoute.ContractNumber,
-            oldRoute.ProgramType);
-
+        // Match the program and route identity explicitly. A contract-aware route
+        // must never propagate into a sibling contract. Blank contract numbers are
+        // legacy input and retain the historical tender/route/contractor matching.
         var newIdentity = OehsIdentityService.NormalizeIdentity(newRoute.ContractorTaxOrIdentityNumber);
         var updated = history
             .Select(item =>
             {
-                var itemKey = OehsIdentityService.BuildRouteKey(
-                    item.TenderNumber ?? string.Empty,
-                    item.RouteNumber ?? string.Empty,
-                    item.ContractorTaxOrIdentityNumber ?? string.Empty,
-                    item.ContractNumber ?? string.Empty,
-                    item.Input.ProgramType);
+                var sameRoute = item.Input.ProgramType == oldRoute.ProgramType
+                    && string.Equals(item.TenderNumber, oldRoute.TenderNumber, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(item.RouteNumber, oldRoute.RouteNumber, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(
+                        OehsIdentityService.NormalizeIdentity(item.ContractorTaxOrIdentityNumber),
+                        OehsIdentityService.NormalizeIdentity(oldRoute.ContractorTaxOrIdentityNumber),
+                        StringComparison.Ordinal)
+                    && (string.IsNullOrWhiteSpace(oldRoute.ContractNumber)
+                        || string.Equals(item.ContractNumber, oldRoute.ContractNumber, StringComparison.OrdinalIgnoreCase));
 
-                return string.Equals(itemKey, oldKey, StringComparison.Ordinal)
+                return sameRoute
                     ? RebuildForRoute(item, newRoute, contractor, newIdentity, appliedConstants)
                     : item;
             })
