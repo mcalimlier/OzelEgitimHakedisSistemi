@@ -1135,7 +1135,9 @@ public partial class MainWindow : Window
                 payment.ContractNumber ?? string.Empty,
                 payment.RouteNumber ?? string.Empty,
                 payment.ProgressPaymentNumber.Value,
-                payment.PeriodDate.Value);
+                payment.PeriodDate.Value,
+                payment.Input.ProgramType,
+                payment.BatchRouteNumbers);
         }
 
         return "OEHS_Hakediş.pdf";
@@ -3844,7 +3846,10 @@ public partial class MainWindow : Window
             tender,
             latest.ContractorName ?? string.Empty,
             latest.ContractorTaxOrIdentityNumber ?? string.Empty,
-            route);
+            route,
+            latest.Input.ProgramType,
+            latest.BatchRouteNumbers,
+            latest.PeriodDate);
         Directory.CreateDirectory(documentFolder);
 
         var fileNames = pdfPaths.Select(Path.GetFileName).ToArray();
@@ -5249,7 +5254,10 @@ public partial class MainWindow : Window
             item.TenderNumber ?? string.Empty,
             item.ContractorName ?? string.Empty,
             item.ContractorTaxOrIdentityNumber ?? string.Empty,
-            item.RouteNumber ?? string.Empty);
+            item.RouteNumber ?? string.Empty,
+            item.Input.ProgramType,
+            item.BatchRouteNumbers,
+            item.PeriodDate);
 
     private void OpenHistoryFolderButton_Click(object sender, RoutedEventArgs e)
     {
@@ -6825,7 +6833,10 @@ public partial class MainWindow : Window
                 latest.TenderNumber ?? string.Empty,
                 latest.ContractorName ?? string.Empty,
                 latest.ContractorTaxOrIdentityNumber ?? string.Empty,
-                latest.RouteNumber ?? string.Empty);
+                latest.RouteNumber ?? string.Empty,
+                latest.Input.ProgramType,
+                latest.BatchRouteNumbers,
+                latest.PeriodDate);
 
             var baseTargetPath = latest.ProgressPaymentNumber.HasValue && latest.PeriodDate.HasValue
                 ? OehsOutputPathService.BuildContractorPdfFilePath(
@@ -6834,7 +6845,9 @@ public partial class MainWindow : Window
                     latest.ContractorTaxOrIdentityNumber ?? string.Empty,
                     latest.RouteNumber ?? string.Empty,
                     latest.ProgressPaymentNumber.Value,
-                    latest.PeriodDate.Value)
+                    latest.PeriodDate.Value,
+                    latest.Input.ProgramType,
+                    latest.BatchRouteNumbers)
                 : Path.Combine(targetFolder, "OEHS_Hakedis.pdf");
 
             var baseName = Path.GetFileNameWithoutExtension(baseTargetPath);
