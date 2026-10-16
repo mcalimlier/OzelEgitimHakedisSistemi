@@ -184,7 +184,7 @@ internal static class OehsOfficialDocumentFactory
         var deductions = new (string Key, string Label, decimal Value, double Height)[]
         {
             ("a)", "Gelir / Kurumlar Vergisi ( E x % .. )", 0m, 29),
-            ("b)", BuildStampTaxLabel(c.Calculation), c.Calculation.StampTax, 29),
+            ("b)", BuildStampTaxLabel(c.Calculation), ProgressPaymentReportService.CalculateReportStampTax(c.Calculation, c.ProgramType), 29),
             ("c)", BuildWithholdingLabel(c.Calculation, c.ProgramType), c.Calculation.Withholding, 29),
             ("d)", "Sosyal Sigortalar Kurumu Kesintisi", c.Calculation.Deductions.SocialSecurityDebt, 29),
             ("e)", "İdare Makinesi Kiraları", 0m, 29),
@@ -210,7 +210,7 @@ internal static class OehsOfficialDocumentFactory
 
         AddCell(page, "H", x, y, 53, 28, 10, true, TextAlignment.Center, TotalGray);
         AddCell(page, "Kesintiler ve Mahsuplar Toplamı", x + 53, y, 356, 28, 10, true, TextAlignment.Left, TotalGray);
-        AddCell(page, FormatMoney(c.Calculation.TotalDeductions), x + 409, y, w - 409, 28, 10, true, TextAlignment.Right, TotalGray, new Thickness(3, 2, 8, 2));
+        AddCell(page, FormatMoney(ProgressPaymentReportService.CalculateReportTotalDeductions(c.Calculation, c.ProgramType)), x + 409, y, w - 409, 28, 10, true, TextAlignment.Right, TotalGray, new Thickness(3, 2, 8, 2));
         y += 28;
         AddCell(page, "I", x, y, 53, 28, 10, true, TextAlignment.Center, TotalGray);
         AddCell(page, "Yükleniciye Ödenecek Tutar  ( G - H )", x + 53, y, 356, 28, 10, true, TextAlignment.Left, TotalGray);

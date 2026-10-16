@@ -239,6 +239,8 @@ Bu sapmalar, Excel'in amaçlanan formül tanımı olan `K=(G×H)+I−J` ve `T=(P
 - Temel Eğitim `Hakediş Raporu!D10` formülü `VLOOKUP(...,15,)` biçiminde eşleşme türünü boş bırakarak yaklaşık eşleşmeye düşer; `Hakediş İcmali!E22` ise açıkça `TRUE` kullanır. Özel Eğitim'de başlık amaçlı `A31`, `Hizmet İşleri Hakediş Raporu!F6`, `Hizmet İşleri K. Tutanağı!B2` ve `Hakediş İcmali!A2` formüllerinde de yaklaşık eşleşme görülür. Uygulama, seçili kaydı program + İKN + sözleşme + yüklenici + hat kimliğiyle kesin eşleştirmeli; bu yaklaşık eşleşme davranışını kopyalamamalıdır.
 - Kaynak VBA özetindeki `AyVerileriniSil` yordamı seçili ayla sınırlı kalmadan bütün aylık aktarım bloklarını temizler ve önceden onay istemez. OEHS bu davranışı kopyalamamalı; seçili döneme sınırlı ve geri alınabilir işlem kullanmalıdır.
 
+- Temel Eğitim `Hakediş Raporu!D15` damga vergisini `IF(D11<0,0,D11*9,48/1000)` ile sınırlar; hesaplama sayfasındaki `U` hücresi ise işaretli `K*9,48/1000` sonucunu korur. Bu nedenle negatif K tutarında resmî Hakediş Raporu'nun kesinti toplamı, hesaplama sayfasındaki V toplamından farklıdır. OEHS'de yalnızca Hakediş Raporu çıktısı için rapor-damga-vergisi ve rapor-kesinti toplamı yardımcıları eklendi; Hakediş İcmali kaynak Excel'deki V toplamını kullanmaya devam eder. Negatif K senaryosu için regresyon testi eklendi.
+
 ### Uygulama doğrulaması
 
 - Temel/Ortaöğretim asgari ücret desteğinin varsayılan 0 TL + kullanıcı onayı davranışı WPF tek-hat ve çoklu-hat girişlerine eklendi.

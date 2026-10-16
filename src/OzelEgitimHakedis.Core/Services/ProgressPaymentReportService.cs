@@ -131,6 +131,32 @@ public static class ProgressPaymentReportService
     /// Excel Hakediş Raporu!D28 = ROUND(D13,2)-ROUND(D26,2).
     /// This report value is not interchangeable with Hesaplama!AG.
     /// </summary>
+    public static decimal CalculateReportStampTax(
+        ProgressPaymentCalculation calculation,
+        TransportationProgramType programType)
+    {
+        ArgumentNullException.ThrowIfNull(calculation);
+
+        // Basic/Secondary Hakediş Raporu!D15 uses IF(D11<0,0,D11*9.48/1000),
+        // although the calculation sheet keeps the signed K*9.48/1000 value.
+        // The Special Education report prints the calculation-sheet stamp tax as-is.
+        return programType == TransportationProgramType.BasicOrSecondary &&
+               calculation.TransportNetAmount < 0m
+            ? 0m
+            : calculation.StampTax;
+    }
+
+    public static decimal CalculateReportTotalDeductions(
+        ProgressPaymentCalculation calculation,
+        TransportationProgramType programType)
+    {
+        ArgumentNullException.ThrowIfNull(calculation);
+
+        return calculation.TotalDeductions
+               - calculation.StampTax
+               + CalculateReportStampTax(calculation, programType);
+    }
+
     public static decimal CalculateReportNetPayable(
         ProgressPaymentHistoryData current,
         ProgressPaymentReportTotals reportTotals)
@@ -139,8 +165,12 @@ public static class ProgressPaymentReportService
         ArgumentNullException.ThrowIfNull(reportTotals);
 
         var reportGross = reportTotals.CurrentTotal + current.Calculation.Vat;
+        var reportDeductions = CalculateReportTotalDeductions(
+            current.Calculation,
+            current.Input.ProgramType);
+
         return decimal.Round(reportGross, 2, MidpointRounding.AwayFromZero)
-               - decimal.Round(current.Calculation.TotalDeductions, 2, MidpointRounding.AwayFromZero);
+               - decimal.Round(reportDeductions, 2, MidpointRounding.AwayFromZero);
     }
 
     private static bool IsWithinCurrentFiscalYear(

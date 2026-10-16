@@ -40,6 +40,31 @@ public sealed class ProgressPaymentWorkbookFormulaTests
     }
 
     [Fact]
+    public void BasicReportNetPayable_ShouldUseZeroStampTaxWhenD11IsNegativeLikeExcel()
+    {
+        var input = new ProgressPaymentInput(
+            WorkDays: 1,
+            DailyPrice: 100m,
+            DiscountAmount: 0m,
+            PriceDifference: -200m,
+            ContractAmount: 1000m,
+            IsVatExempt: true,
+            TaxDebt: 0m,
+            SocialSecurityDebt: 0m,
+            MinimumWageSupport: 0m,
+            ProgramType: TransportationProgramType.BasicOrSecondary);
+        var current = History(1, new DateOnly(2026, 10, 31), input);
+        var totals = ProgressPaymentReportService.Calculate(current, new[] { current });
+
+        Assert.Equal(-0.948m, current.Calculation.StampTax);
+        Assert.Equal(0m, ProgressPaymentReportService.CalculateReportStampTax(
+            current.Calculation, current.Input.ProgramType));
+        Assert.Equal(-12m, ProgressPaymentReportService.CalculateReportTotalDeductions(
+            current.Calculation, current.Input.ProgramType));
+        Assert.Equal(-88m, ProgressPaymentReportService.CalculateReportNetPayable(current, totals));
+    }
+
+    [Fact]
     public void ReportNetPayable_ShouldRoundGrossAndDeductionsSeparatelyLikeExcelD28()
     {
         var current = History(
