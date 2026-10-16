@@ -2326,7 +2326,6 @@ public partial class MainWindow : Window
 
         var editingContractor = FindContractorByKey(_editingContractorKey);
         var contractorProgramType = editingContractor?.ProgramType ?? GetSelectedTransportationProgramType();
-        var proposedKey = $"{contractorProgramType}|{tax}";
         var duplicate = _contractors.FirstOrDefault(x =>
             x.ProgramType == contractorProgramType &&
             string.Equals(
@@ -2348,7 +2347,8 @@ public partial class MainWindow : Window
             ContractorPhoneTextBox.Text.Trim(),
             ContractorEmailTextBox.Text.Trim(),
             ContractorBankTextBox.Text.Trim(),
-            ContractorContactTextBox.Text.Trim());
+            ContractorContactTextBox.Text.Trim(),
+            contractorProgramType);
 
         if (!ConfirmLiveHistoryCorrection("Yüklenici bilgileri"))
             return;
@@ -2969,7 +2969,7 @@ public partial class MainWindow : Window
             updatedRoute.GuideWorkDays, updatedRoute.GuideDailyPrice, updatedRoute.TransportWorkDays,
             updatedRoute.TenderNumber, updatedRoute.ContractorTaxOrIdentityNumber, updatedRoute.ContractNumber, updatedRoute.ProgramType);
 
-        var contractor = FindContractor(updatedRoute.ContractorTaxOrIdentityNumber);
+        var contractor = FindContractor(updatedRoute.ContractorTaxOrIdentityNumber, updatedRoute.ProgramType);
         var contractorSnapshot = contractor is null
             ? new Contractor(updatedRoute.ContractorName, updatedRoute.ContractorTaxOrIdentityNumber)
             : new Contractor(
@@ -3061,7 +3061,7 @@ public partial class MainWindow : Window
         _editingRoute = route;
         SetRouteEditorMode(true);
         var contract = FindContract(route.TenderNumber, route.ContractNumber);
-        var contractor = FindContractor(route.ContractorTaxOrIdentityNumber);
+        var contractor = FindContractor(route.ContractorTaxOrIdentityNumber, route.ProgramType);
 
         _suppressSelectionEvents = true;
         try
@@ -3106,7 +3106,7 @@ public partial class MainWindow : Window
         if (original is not null)
         {
             RouteTenderListBox.SelectedItem = FindContract(original.TenderNumber, original.ContractNumber);
-            var contractor = FindContractor(original.ContractorTaxOrIdentityNumber);
+            var contractor = FindContractor(original.ContractorTaxOrIdentityNumber, original.ProgramType);
             RouteContractorListBox.ItemsSource = contractor is null ? Array.Empty<ContractorDraft>() : new[] { contractor };
             RouteContractorListBox.SelectedItem = contractor;
             RouteNumberTextBox.Text = original.RouteNumber;
@@ -3530,7 +3530,7 @@ public partial class MainWindow : Window
                 if (string.IsNullOrWhiteSpace(contractorTax))
                     contractorTax = OehsIdentityService.NormalizeIdentity(routeContract?.ContractorTaxOrIdentityNumber ?? string.Empty);
 
-                var contractorName = FindContractor(contractorTax)?.Name ?? routeContract?.ContractorName ?? string.Empty;
+                var contractorName = FindContractor(contractorTax, routeContract?.ProgramType ?? route.ProgramType)?.Name ?? routeContract?.ContractorName ?? string.Empty;
                 var contractNumber = !string.IsNullOrWhiteSpace(route.ContractNumber)
                     ? route.ContractNumber
                     : routeContract?.ContractNumber ?? string.Empty;
@@ -3565,7 +3565,7 @@ public partial class MainWindow : Window
 
                 var contractorTax = OehsIdentityService.NormalizeIdentity(
                     history.ContractorTaxOrIdentityNumber ?? contract?.ContractorTaxOrIdentityNumber ?? string.Empty);
-                var contractor = FindContractor(contractorTax);
+                var contractor = FindContractor(contractorTax, history.Input.ProgramType);
                 var contractNumber = !string.IsNullOrWhiteSpace(history.ContractNumber)
                     ? history.ContractNumber
                     : contract?.ContractNumber ?? string.Empty;
@@ -4398,7 +4398,9 @@ public partial class MainWindow : Window
                 OehsIdentityService.BuildRouteKey(item.TenderNumber ?? string.Empty, item.RouteNumber ?? string.Empty, item.ContractorTaxOrIdentityNumber ?? string.Empty, item.ContractNumber ?? string.Empty),
                 StringComparison.Ordinal));
 
-        var contractor = route is null ? FindContractor(item.ContractorTaxOrIdentityNumber ?? string.Empty) : FindContractor(route.ContractorTaxOrIdentityNumber);
+        var contractor = route is null
+            ? FindContractor(item.ContractorTaxOrIdentityNumber ?? string.Empty, item.Input.ProgramType)
+            : FindContractor(route.ContractorTaxOrIdentityNumber, route.ProgramType);
         if (contract is null || route is null || contractor is null)
         {
             MessageBox.Show("Arşiv için ihale, hat ve yüklenici snapshot'ı çözümlenemedi. Kaydı kontrol edin.", "OEHS",
@@ -4626,7 +4628,8 @@ public partial class MainWindow : Window
                     x.Phone,
                     x.Email,
                     x.BankAccountNumber,
-                    x.ContactPerson)).ToArray(),
+                    x.ContactPerson,
+                    x.ProgramType)).ToArray(),
                 _progressHistory.ToArray(),
                 _contracts.ToArray());
 
