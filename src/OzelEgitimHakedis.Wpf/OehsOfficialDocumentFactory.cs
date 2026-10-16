@@ -351,7 +351,7 @@ internal static class OehsOfficialDocumentFactory
             ("Yüklenicinin adı/ticari unvanı", c.ContractorName, 35),
             ("Sözleşme tarihi", FormatDate(c.ContractDate), 35),
             ("Sözleşme bedeli", FormatMoney(c.ContractAmount), 35),
-            ("Sözleşmeye göre işin süresi (iş günü)", FormatWorkDays(c), 35),
+            ("Sözleşmeye göre işin süresi (takvim günü)", FormatAcceptanceDuration(c), 35),
             ("Sözleşmeye göre işin bitirilmesi gereken tarih", FormatDate(endDate), 35),
             ("Varsa süre uzatımları", "", 35),
             ("Süre uzatımı dahil işin bitirilmesi gereken tarih", FormatDate(endDate), 35),
@@ -370,8 +370,13 @@ internal static class OehsOfficialDocumentFactory
             $"İlçe Milli Eğitim Müdürlüğü'nün {BuildWorkTitle(c, includeRouteNumber: true, includeStudentSuffix: false)} yüklenicisi {c.ContractorName} arasında imzalanan sözleşme kapsamında gerçekleştirilen iş için, {c.PreparerRole} {c.PreparerName} ve {c.ControllerRole} {c.ControllerName} tarafından inceleme yapılmış yüklenici, {c.ContractorName} tarafından {servicePeriod.Start:dd.MM.yyyy} / {servicePeriod.End:dd.MM.yyyy} tarihleri arasında yapılan işlerin,";
         var paragraphTwo =
             "Sözleşme ve eklerine uygun olduğu ve kabule engel olabilecek eksik kusur ve arızaların bulunmadığı görülmüştür.";
-        AddText(page, paragraphOne, x + 2, 501, w - 4, 124, 9.5, false, TextAlignment.Justify);
-        AddText(page, paragraphTwo, x + 2, 651, w - 4, 44, 9.5, false, TextAlignment.Justify);
+        // The two source workbooks use different acceptance-form print layouts:
+        // Basic/Secondary places the narrative immediately below the table;
+        // Special Education leaves a larger gap. Keep both aligned to their source.
+        var paragraphOneY = c.ProgramType == TransportationProgramType.BasicOrSecondary ? 448d : 501d;
+        var paragraphTwoY = c.ProgramType == TransportationProgramType.BasicOrSecondary ? 618d : 651d;
+        AddText(page, paragraphOne, x + 2, paragraphOneY, w - 4, 124, 9.5, false, TextAlignment.Justify);
+        AddText(page, paragraphTwo, x + 2, paragraphTwoY, w - 4, 44, 9.5, false, TextAlignment.Justify);
 
         AddText(page, "Yüklenici", x + 28, 775, w - 56, 20, 10, true, TextAlignment.Center);
         AddText(page, c.ContractorName, x + 28, 796, w - 56, 30, 9.5, false, TextAlignment.Center);
@@ -608,6 +613,13 @@ internal static class OehsOfficialDocumentFactory
         c.ContractWorkDays > 0
             ? $"{c.ContractWorkDays} İş Günü"
             : "-";
+
+    private static string FormatAcceptanceDuration(OehsOfficialDocumentContext c) =>
+        c.ContractWorkDays <= 0
+            ? "-"
+            : c.ProgramType == TransportationProgramType.BasicOrSecondary
+                ? c.ContractWorkDays.ToString(Turkish)
+                : $"{c.ContractWorkDays} İş Günü";
 
 
     private static string FormatDate(DateOnly? date) =>
