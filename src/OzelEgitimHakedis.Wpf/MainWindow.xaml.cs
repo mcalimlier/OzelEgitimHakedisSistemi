@@ -4090,7 +4090,8 @@ public partial class MainWindow : Window
             return;
         }
 
-        _progressHistory.AddRange(batch);
+        foreach (var item in batch)
+            _progressHistory.Add(item);
         if (!SavePersistedData())
         {
             foreach (var item in batch)
