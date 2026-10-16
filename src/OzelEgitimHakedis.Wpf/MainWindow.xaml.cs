@@ -4063,7 +4063,7 @@ public partial class MainWindow : Window
                 contract.VatExempt,
                 taxDebt,
                 socialSecurityDebt,
-                hasGuide ? minimumWageSupport : 0m,
+                minimumWageSupport,
                 inspectionPenalty,
                 hasGuide ? (route.GuideWorkDays > 0 ? route.GuideWorkDays : guideWorkDays) : 0,
                 hasGuide ? (route.GuideDailyPrice > 0 ? route.GuideDailyPrice : guideDailyPrice) : 0m,
