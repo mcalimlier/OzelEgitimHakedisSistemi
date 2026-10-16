@@ -234,6 +234,9 @@ Bu sapmalar, Excel'in amaçlanan formül tanımı olan `K=(G×H)+I−J` ve `T=(P
 - Her iki dosyada `Anasayfa!AA2` değeri `#VALUE!` türünde hata hücresi olarak saklanmıştır; hücrede çalıştırılabilir bir formül yoktur. Bu alanın işlevi Excel masaüstünde doğrulanmadan OEHS hesabına bağlanmamalıdır.
 - Özel Eğitim kitabında `İcmal Verileri!AP3` ve `AQ3` aynı `Anasayfa!I9` hücresine bağlıdır; böylece ay başlıkları Kasım'ı atlayıp Aralık'ı iki kez gösterir. VBA'nın hedef sütun eşlemesi AP'yi Kasım, AQ'yu Aralık saydığından uygulama tarih/ay anahtarıyla eşleştirmeye devam etmelidir.
 - Özel Eğitim dosyasında eski bir dış çalışma kitabı bağlantısı vardır. Uygulama bu dış bağlantıya bağımlı olmamalıdır.
+- Temel Eğitim `Hakediş İcmali!E3` ve `E4` formülleri aramayı `Hesaplama Bilgileri!A3:O52` aralığıyla sınırlar; buna karşılık hesaplama tablosu 100 satırlık giriş alanına sahiptir. 52. satırdan sonraki hatlarda başlıkta hakediş/hat bilgisi bulunamama riski vardır.
+- Temel Eğitim `Hizmet İşleri Hakediş Raporu!F16` formülü `İhale Verileri!A3:L25` aralığını kullanırken aynı belgedeki `F17` formülü `A2:L102` kullanır. F16'daki daha kısa aralık, 25. satırdan sonraki kayıtlar için olası bir arama sınır hatasıdır.
+- Temel Eğitim `Hakediş Raporu!D10` formülü `VLOOKUP(...,15,)` biçiminde eşleşme türünü boş bırakarak yaklaşık eşleşmeye düşer; `Hakediş İcmali!E22` ise açıkça `TRUE` kullanır. Özel Eğitim'de başlık amaçlı `A31`, `Hizmet İşleri Hakediş Raporu!F6`, `Hizmet İşleri K. Tutanağı!B2` ve `Hakediş İcmali!A2` formüllerinde de yaklaşık eşleşme görülür. Uygulama, seçili kaydı program + İKN + sözleşme + yüklenici + hat kimliğiyle kesin eşleştirmeli; bu yaklaşık eşleşme davranışını kopyalamamalıdır.
 - Kaynak VBA özetindeki `AyVerileriniSil` yordamı seçili ayla sınırlı kalmadan bütün aylık aktarım bloklarını temizler ve önceden onay istemez. OEHS bu davranışı kopyalamamalı; seçili döneme sınırlı ve geri alınabilir işlem kullanmalıdır.
 
 ### Uygulama doğrulaması
