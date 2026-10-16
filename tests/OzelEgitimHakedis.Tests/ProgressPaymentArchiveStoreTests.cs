@@ -373,7 +373,7 @@ public sealed class ProgressPaymentArchiveStoreTests
         Assert.NotEqual(path, revisedPath);
         Assert.True(File.Exists(path));
         Assert.True(File.Exists(revisedPath));
-        Assert.EndsWith("_Hat-02_Hakediş-01_2026-10-31_v02.json", revisedPath, StringComparison.OrdinalIgnoreCase);
+        Assert.EndsWith("_Hat-02_Hakediş-01_2026-10_v02.json", revisedPath, StringComparison.OrdinalIgnoreCase);
         Assert.Equal(1, oldVersion.Revision);
         Assert.Equal("01", oldVersion.Route.RouteNumber);
         Assert.Equal(2, newVersion.Revision);
