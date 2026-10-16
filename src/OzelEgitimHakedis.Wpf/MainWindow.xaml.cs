@@ -3495,11 +3495,33 @@ public partial class MainWindow : Window
             _contractors.Clear();
             foreach (var contractor in data.Contractors ?? Array.Empty<Contractor>())
             {
-                _contractors.Add(new ContractorDraft(
-                    contractor.Name,
-                    OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber),
-                    contractor.Address, contractor.Phone, contractor.Email,
-                    contractor.BankAccountNumber, contractor.ContactPerson, contractor.ProgramType));
+                var identity = OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber);
+                var linkedPrograms = _contracts
+                    .Where(x => string.Equals(
+                        OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
+                        identity,
+                        StringComparison.Ordinal))
+                    .Select(x => x.ProgramType)
+                    .Concat((data.Routes ?? Array.Empty<RouteData>())
+                        .Where(x => string.Equals(
+                            OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
+                            identity,
+                            StringComparison.Ordinal))
+                        .Select(x => x.ProgramType))
+                    .Distinct()
+                    .ToArray();
+                var programTypes = linkedPrograms.Length == 0
+                    ? new[] { contractor.ProgramType }
+                    : linkedPrograms;
+
+                foreach (var programType in programTypes)
+                {
+                    _contractors.Add(new ContractorDraft(
+                        contractor.Name,
+                        identity,
+                        contractor.Address, contractor.Phone, contractor.Email,
+                        contractor.BankAccountNumber, contractor.ContactPerson, programType));
+                }
             }
 
             _routes.Clear();
@@ -3514,7 +3536,9 @@ public partial class MainWindow : Window
                 var contractorTax = OehsIdentityService.NormalizeIdentity(route.ContractorTaxOrIdentityNumber);
                 var routeContract = !string.IsNullOrWhiteSpace(route.ContractNumber)
                     ? FindContract(tender, route.ContractNumber, route.ProgramType)
-                    : tenderContracts.Length == 1 ? tenderContracts[0] : null;
+                    : tenderContracts.Where(x => x.ProgramType == route.ProgramType).ToArray() is var programContracts && programContracts.Length == 1
+                        ? programContracts[0]
+                        : null;
 
                 if (routeContract is null && string.IsNullOrWhiteSpace(route.ContractNumber) && !string.IsNullOrWhiteSpace(contractorTax))
                 {
