@@ -162,7 +162,7 @@ kavramları birbirine karıştırılmamalıdır. Kaynak Excel çoklu hatları te
 
 Aşağıdaki değişiklikler `feature/official-payment-document-templates` dalına gönderildi. Her değişikliğin başarılı olduğu henüz en güncel CI sonucu ile doğrulanmalıdır.
 
-- Temel/Ortaöğretim hesaplamasında Asgari Ücret Desteği artık sıfırlanmıyor; Excel'in S sütununu V kesintiler toplamına ekleyen davranış korunuyor.
+- Temel/Ortaöğretim hesaplama motorunda Asgari Ücret Desteği Excel'deki S sütunu gibi V kesinti toplamına eklenir. WPF ekranında varsayılan tutar 0'dır; kullanıcı “Uygula” kutusunu işaretlemeden tutar alanı açılmaz ve hesaplamaya sıfır aktarılır. Çoklu hat girişinde aynı kural hat bazında uygulanır. Kayıtlı pozitif tutarlar düzenleme ekranına etkin biçimde geri yüklenir; sözleşme/hat kaynaklı yeniden hesaplamalar desteği silmez.
 - Ek kesin teminat kodu, kaynak Excel'in `I × %6 + R × %6` formülünü doğrudan uygular; negatif toplamı `MAX(0,...)` ile sıfırlamaz. Mevzuat onayı ayrı açık konu olarak tutulur.
 - Hakediş raporu A/B ayrımı düzeltildi. Excel D7 yalnızca mevcut ayın ham I+R fiyat farkını gösterir; D6 ise önceki ve mevcut aylık K+T toplamından mevcut ayın I+R tutarı çıkarılarak hesaplanır. D8 = D6 + D7 olur. Rapor PDF testi bu hücre zincirini kontrol eder.
 - Tek hat ekranında taşıma ve rehber iş günü alanları artık seçilen aya ait kullanıcı girdisidir. Sözleşmedeki hat tanımının yıllık/sözleşmesel gün sayısı aylık iş günü yerine kullanılmaz. Günlük fiyatlar hat/sözleşme tanımından okunur.
@@ -209,6 +209,35 @@ Aşağıdaki değişiklikler `feature/official-payment-document-templates` dalı
 ## 12. Son kod incelemesinde bulunan ek uyumsuzluklar (16.10.2026)
 
 - **Rapor geçmişi kapsamı:** Önceki aylık tutarlar toplanırken yalnızca dönem ve mali yıl filtresi vardı. Bu, farklı hat/program/sözleşme/yüklenicinin aynı rapora karışmasına neden olabilirdi. Önceki kayıtlar artık program + İKN + sözleşme + yüklenici kimliği + hat anahtarıyla eşleştiriliyor; buna karşı regresyon testi eklendi.
-- **Asgari Ücret Desteği giriş alanı:** Hesaplama motoru Temel/Ortaöğretim desteğini artık kesinti olarak korusa da WPF ekranı bu alanı rehber personel alanlarıyla birlikte gizliyor ve sıfırlıyordu. Alan her iki programda da görünür kalacak şekilde düzeltildi; rehber personel alanları yalnızca Özel Eğitim için koşullu.
+- **Asgari Ücret Desteği giriş alanı:** Hesaplama motoru tutarı doğru kesinti toplamına ekliyordu; ancak WPF ekranında destek yalnızca rehber alanlarıyla birlikte okunuyordu. Bu yüzden Temel/Ortaöğretim'de rehber personel bulunmadığında kullanıcı girişi hesaplamaya ulaşmıyordu. Giriş ayrıştırması rehber kontrolünden çıkarıldı; Temel/Ortaöğretim için varsayılan 0 TL + onay kutusu, çoklu hat satırları için ayrı etkinleştirme kutusu eklendi.
 - **Aylık batch kimliği:** Çoklu hat kaydı ortak BatchId ile gruplanır; görünen isim program, İKN, sözleşme, firma, seçili hat kümesi ve ay/yıl bilgisini içerir. Her hattın Excel uyumlu hakediş numarası ve hesaplama satırı ayrı saklanır.
 - **Son doğrulama durumu:** Bu ek düzeltmeler için GitHub Actions yeniden çalışıyor. En son commit'in test sonucu tamamlanmadan bu düzeltmeler başarılı doğrulandı diye işaretlenmemeli. Resmî Excel dosyalarıyla gerçek örnek değer karşılaştırması ve Windows WPF kabul testi hâlâ zorunlu.
+
+
+## 13. 16.10.2026 — hücre düzeyinde formül örüntüsü denetimi
+
+Yüklenen iki kaynak dosyanın SHA-256 değerleri bu belgedeki kaynak kimlikleriyle yeniden eşleşti. Temel hesaplama sayfalarındaki formüller, satır 4–103 boyunca sütun bazında karşılaştırıldı.
+
+### Özel Eğitim kitabında satır bazlı formül sapmaları
+
+- `Hesaplama!K4:K6` formülü `=(G*H)+I-J`; fakat `K7:K103` hücrelerinde formül `=(G*H)+I` biçimine dönüyor. Bu, **97 satırda J sütunundaki taşıma iskontosunun formülde çıkarılmadığı** anlamına gelir.
+- `Hesaplama!T4:T102` formülü `=(P*Q)+R-S`; fakat `T103` hücresinde `=(P*Q)+R` kullanılır. Son satırda S sütunundaki rehber iskontosu formülde çıkarılmaz.
+- `AD4:AD6` ile `AD7:AD103` arasında parantez yazımı farklıdır; bu fark cebirsel olarak eşdeğerdir ve tek başına hesap farkı üretmez.
+- Temel/Ortaöğretim `Hesaplama Bilgileri` sayfasındaki ana hesaplama sütunları satır 4–103 boyunca aynı formül örüntüsünü korur.
+
+### OEHS için karar
+
+Bu sapmalar, Excel'in amaçlanan formül tanımı olan `K=(G×H)+I−J` ve `T=(P×Q)+R−S` ile çelişir. OEHS hesaplama motoru tüm hatlarda bu standart formülleri uygular; kaynak kitabın yanlış kopyalanmış 97+1 satır formülünü uygulamaya taşımamalıdır. `ExcelDiscountIsSubtractedFromPriceDifference` regresyon testi taşıma ve rehber iskontosunun ilgili hizmet tutarlarından çıkarıldığını doğrular.
+
+### Ek teknik bulgular
+
+- Her iki dosyada `Anasayfa!AA2` değeri `#VALUE!` türünde hata hücresi olarak saklanmıştır; hücrede çalıştırılabilir bir formül yoktur. Bu alanın işlevi Excel masaüstünde doğrulanmadan OEHS hesabına bağlanmamalıdır.
+- Özel Eğitim kitabında `İcmal Verileri!AP3` ve `AQ3` aynı `Anasayfa!I9` hücresine bağlıdır; böylece ay başlıkları Kasım'ı atlayıp Aralık'ı iki kez gösterir. VBA'nın hedef sütun eşlemesi AP'yi Kasım, AQ'yu Aralık saydığından uygulama tarih/ay anahtarıyla eşleştirmeye devam etmelidir.
+- Özel Eğitim dosyasında eski bir dış çalışma kitabı bağlantısı vardır. Uygulama bu dış bağlantıya bağımlı olmamalıdır.
+- Kaynak VBA özetindeki `AyVerileriniSil` yordamı seçili ayla sınırlı kalmadan bütün aylık aktarım bloklarını temizler ve önceden onay istemez. OEHS bu davranışı kopyalamamalı; seçili döneme sınırlı ve geri alınabilir işlem kullanmalıdır.
+
+### Uygulama doğrulaması
+
+- Temel/Ortaöğretim asgari ücret desteğinin varsayılan 0 TL + kullanıcı onayı davranışı WPF tek-hat ve çoklu-hat girişlerine eklendi.
+- Sözleşme ve hat değişimlerinde destek tutarını sıfırlayan iki yeniden-hesaplama yolu düzeltildi; bu davranış için iki regresyon testi eklendi.
+- En son kod commit'inin CI sonucu tamamlanmadan bu değişiklikler için son doğrulama başarılı sayılmamalıdır. Gerçek Windows Excel ve WPF kabul testleri ayrıca gereklidir.
