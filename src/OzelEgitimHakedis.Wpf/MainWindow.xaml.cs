@@ -6990,6 +6990,26 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
     }
 
 
+    public sealed class MultiRoutePaymentDraftRow
+    {
+        public string RouteKey { get; set; } = string.Empty;
+        public string RouteNumber { get; set; } = string.Empty;
+        public string RouteName { get; set; } = string.Empty;
+        public string RouteDisplayText => $"Hat {RouteNumber} — {RouteName}";
+        public int WorkDays { get; set; }
+        public decimal DailyPrice { get; set; }
+        public decimal DiscountAmount { get; set; }
+        public decimal PriceDifference { get; set; }
+        public int GuideWorkDays { get; set; }
+        public decimal GuideDailyPrice { get; set; }
+        public decimal GuideDiscountAmount { get; set; }
+        public decimal GuidePriceDifference { get; set; }
+        public decimal TaxDebt { get; set; }
+        public decimal SocialSecurityDebt { get; set; }
+        public decimal MinimumWageSupport { get; set; }
+        public decimal InspectionPenalty { get; set; }
+    }
+
     private sealed record RouteDraft(
         string RouteNumber,
         string Name,
