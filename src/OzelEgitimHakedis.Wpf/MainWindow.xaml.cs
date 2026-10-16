@@ -934,28 +934,36 @@ public partial class MainWindow : Window
 
     private void UpdateAutomaticProgressNumber()
     {
+        var contract = ProgressTenderListBox.SelectedItem as ContractDraftData;
         var selected = ProgressPeriodMonthComboBox.SelectedItem as ProgressPaymentMonthOption;
-        var options = ProgressPeriodMonthComboBox.ItemsSource as IEnumerable<ProgressPaymentMonthOption>
-                      ?? Array.Empty<ProgressPaymentMonthOption>();
-        if (selected is null)
+        var selectedRoutes = ProgressRouteComboBox.SelectedItems.OfType<RouteDraft>().ToArray();
+        if (contract is null || selected is null || selectedRoutes.Length == 0)
         {
             ProgressNumberTextBox.Clear();
             return;
         }
 
-        var number = 1;
-        foreach (var option in options)
-        {
-            if (option.StartDate == selected.StartDate && option.EndDate == selected.EndDate)
+        var routeNumbers = selectedRoutes
+            .Select(route => new
             {
-                ProgressNumberTextBox.Text = number.ToString(CultureInfo.CurrentCulture);
-                return;
-            }
+                Route = route,
+                Number = MonthlyProgressPaymentIdentityService.SuggestNextRouteNumber(
+                    _progressHistory,
+                    contract.TenderNumber,
+                    contract.ContractNumber,
+                    route.ContractorTaxOrIdentityNumber,
+                    route.RouteNumber,
+                    contract.ProgramType,
+                    selected.PeriodDate)
+            })
+            .OrderBy(x => x.Route.RouteNumber, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
 
-            number++;
-        }
-
-        ProgressNumberTextBox.Clear();
+        // A combined batch can contain routes at different points in their payment
+        // history, so each route has its own Excel-compatible official number.
+        ProgressNumberTextBox.Text = routeNumbers.Length == 1
+            ? routeNumbers[0].Number.ToString(CultureInfo.CurrentCulture)
+            : string.Join(" • ", routeNumbers.Select(x => $"{x.Route.RouteNumber}: {x.Number}"));
     }
 
     private void SelectProgressPeriod(DateOnly? periodDate)
@@ -3989,9 +3997,9 @@ public partial class MainWindow : Window
         if (routes.Count < 2)
             return;
 
-        if (!progressNumber.HasValue || progressNumber.Value < 1 || !periodDate.HasValue)
+        if (!periodDate.HasValue)
         {
-            var message = "Çoklu hat hesabı için sözleşme dönemi ve otomatik hakediş numarası belirlenmelidir.";
+            var message = "Çoklu hat hesabı için sözleşme ayı seçilmelidir.";
             ProgressValidationBanner.Visibility = Visibility.Visible;
             ProgressValidationMessageTextBlock.Text = message;
             CalculationStatusTextBlock.Text = message;
@@ -4041,6 +4049,22 @@ public partial class MainWindow : Window
             _contracts.ToArray());
 
         var createdAt = DateTime.Now;
+        var batchId = Guid.NewGuid();
+        var sortedRouteNumbers = routes
+            .Select(x => x.RouteNumber.Trim())
+            .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var contractorNameForBatch = !string.IsNullOrWhiteSpace(contract.ContractorName)
+            ? contract.ContractorName
+            : routes.Select(x => x.ContractorName).FirstOrDefault(x => !string.IsNullOrWhiteSpace(x)) ?? "Yüklenici";
+        var batchDisplayName = MonthlyProgressPaymentIdentityService.BuildDisplayName(
+            contract.ProgramType,
+            contract.TenderNumber,
+            contract.ContractNumber,
+            contractorNameForBatch,
+            sortedRouteNumbers,
+            periodDate.Value);
+        var batchRouteNumbers = string.Join("+", sortedRouteNumbers);
         var batch = new List<ProgressPaymentHistoryData>();
         var errors = new List<string>();
         foreach (var route in routes)
@@ -4072,16 +4096,27 @@ public partial class MainWindow : Window
                 contract.ProgramType);
 
             var calculation = ProgressPaymentCalculator.Calculate(input, _calculationConstants);
+            var routeProgressNumber = MonthlyProgressPaymentIdentityService.SuggestNextRouteNumber(
+                _progressHistory,
+                contract.TenderNumber,
+                contract.ContractNumber,
+                identity,
+                route.RouteNumber,
+                contract.ProgramType,
+                periodDate.Value);
             var item = new ProgressPaymentHistoryData(
                 Guid.NewGuid(), createdAt, input, calculation,
-                progressNumber, periodDate,
+                routeProgressNumber, periodDate,
                 route.RouteNumber, route.Name,
                 contract.WorkName, contractor?.Name ?? route.ContractorName,
                 contract.TenderNumber, contract.ContractNumber,
                 contract.TenderDate, contract.ContractDate,
                 contract.StartDate, contract.EndDate,
                 contractor?.BankAccountNumber ?? string.Empty,
-                identity);
+                identity,
+                BatchId: batchId,
+                BatchDisplayName: batchDisplayName,
+                BatchRouteNumbers: batchRouteNumbers);
 
             var validationErrors = ProgressPaymentValidationService.ValidateCreation(
                 data, contract,
