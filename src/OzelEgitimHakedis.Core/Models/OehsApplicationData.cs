@@ -72,4 +72,7 @@ public sealed record ProgressPaymentHistoryData(
     DateOnly? ContractStartDate = null,
     DateOnly? ContractEndDate = null,
     string? BankAccountNumber = null,
-    string? ContractorTaxOrIdentityNumber = null);
+    string? ContractorTaxOrIdentityNumber = null,
+    Guid? BatchId = null,
+    string? BatchDisplayName = null,
+    string? BatchRouteNumbers = null);
