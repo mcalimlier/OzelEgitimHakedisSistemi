@@ -394,3 +394,43 @@ Bu matris, kaynak formüllerinin yalnızca olağan pozitif örnekte değil, davr
 ### Kabul kriteri
 
 Her testte (1) girişler, (2) kaynak Excel hücre/formülü, (3) OEHS hesaplama servisi sonucu, (4) fark, (5) geçme/kalma durumu kaydedilmelidir. Sonuç yalnızca net tutarla sınırlı kalmamalı; ara değerler de karşılaştırılmalıdır. Testlerin çalıştırıldığı commit SHA ve CI koşusu rapora eklenmeden matris “geçti” olarak işaretlenmemelidir.
+
+
+## 19. 16.10.2026 akşam denetim ilerlemesi ve doğrulama durumu
+
+### Bu oturumda eklenen otomatik testler
+
+- Commit `af8d16a8b219a86beefb9f0d0d9014cf471f6fb2`: Özel Eğitim ek kesin teminat formülünde taşıma/rehber fiyat farklarının işaretini koruma senaryoları (−/+, −/−, +/−) ve iskonto J/S değerlerinin AC tabanına katılmaması için testler.
+- Commit `15197159b5625f64f52addecb8824e01ef7f26aa`: Hakediş raporunda önceki mali yıl kayıtlarının ve farklı hat kayıtlarının kümülatif toplama karışmaması için testler.
+
+Bu testler kaynak formül ve mevcut servis kodu incelenerek eklendi. **Henüz Windows üzerinde derleme/test çalıştırmasıyla doğrulanmadılar.** Commit için sorgulanan durum kontrolleri boş döndü; bu, CI başarı durumu değildir.
+
+### Bu oturumda yeniden doğrulanan kod noktaları
+
+- `ProgressPaymentCalculator` Temel/Ortaöğretim programında rehber alanlarını sıfırlıyor, ancak `MinimumWageSupport` değerini kesinti toplamında koruyor. Mevcut `ProgressPaymentCalculatorTests.BasicOrSecondaryProgram_ShouldExcludeGuideButIncludeMinimumWageSupport` testi bu davranışı kontrol ediyor.
+- Ek kesin teminat kodu şu anda kaynak Excel formülüne uygun olarak `I×%6 + R×%6` hesaplıyor; negatif fiyat farkları işaretli kalıyor ve J/S iskontoları bu tabana katılmıyor. Yeni testler bu ayrımı daha açık hale getiriyor.
+- `ProgressPaymentReportService` önceki ödemeleri rota anahtarı ve mali yıl ile sınırlıyor. Yeni testler, farklı hat ve önceki mali yıl kayıtlarının rapor toplamını değiştirmediğini denetliyor.
+- `ProgressPaymentIcmalService` Eylül başlangıçlı dönem anahtarlarıyla önceki ay kesintisini buluyor; Temmuz basılı satırını korurken kaynak Excel'in canlı ay aralığının dışında tutuyor.
+
+### Kalan doğrulama engeli ve yarınki ilk adım
+
+GitHub dosya içerikleri okunabiliyor; ancak bu oturumda commit durum sorguları test sonucu döndürmedi. Yerel ortamda da daha önce GitHub erişim/derleme doğrulaması yapılamamıştı. Bu nedenle eklenen testlerin derlendiği veya geçtiği iddia edilmemelidir.
+
+Yarın ilk olarak GitHub Actions ekranında `feature/official-payment-document-templates` dalının en son commit'i `15197159b5625f64f52addecb8824e01ef7f26aa` için Windows derleme, Core testleri, WPF testleri, PDF smoke ve EXE yayın işlerinin sonuçları kontrol edilmeli. Başarısız iş varsa ilk hata çıktısı alınmalı, düzeltilmeli ve yeniden çalıştırılmalı. Başarılıysa yayımlanan PDF/EXE artefaktları indirilebilirlik ve temel belge kontrolüyle doğrulanmalı. Ana dala birleştirme yapılmamalı.
+
+Sonraki öncelik sırası:
+1. CI sonuçlarını ve test derlenmesini doğrula.
+2. Excel sayısal referans vektörlerini uygulama servisiyle karşılaştıran gerçek test fixture'ı ekle (kaynak XLSM'deki saklanmış değerlerle yeniden hesaplanan Excel değerlerini ayrı kaydet).
+3. PDF'nin dört resmî belgesini kaynak çalışma kitabının ilgili sayfalarıyla alan/yerleşim bazında karşılaştır.
+4. Temel Eğitim ve Özel Eğitim için ayrı ayrı; KDV dahil/muaf, iskontolu, negatif fiyat farkı, destek, kesinti ve ay devri sınır durumlarını çalıştır.
+5. Yalnızca gerçek CI ve çıktı incelemesi sonrası doğrulama durumunu güncelle.
+
+### Durum özeti
+
+- Kod/test değişiklikleri dalda kayıtlıdır.
+- Son test değişikliği commit'i: `15197159b5625f64f52addecb8824e01ef7f26aa`.
+- Son dokümantasyon değişikliği bu bölümle birlikte ayrıca kaydedilecektir.
+- CI: **doğrulanmadı**.
+- Excel ↔ OEHS tam sayısal parite: **doğrulanmadı**.
+- VBA makrolarının semantik uçtan uca denetimi: **tamamlanmadı**.
+- Ana dala birleştirme: **yapılmadı**.
