@@ -757,7 +757,6 @@ public partial class MainWindow : Window
         TenderDatePicker.SelectedDate = null;
         ContractDatePicker.SelectedDate = null;
         VatExemptCheckBox.IsChecked = false;
-        TransportProgramTypeComboBox.SelectedIndex = 0;
     }
 
     private TransportationProgramType GetSelectedTransportationProgramType()
@@ -3171,6 +3170,7 @@ public partial class MainWindow : Window
         _editingContractNumber = contract.ContractNumber;
         _editingContractProgramType = contract.ProgramType;
         ApplyContractToForm(contract);
+        UpdateContractSelectors();
         SetContractEditorMode(true);
         NavigationButton_Click(NavContract, new RoutedEventArgs(Button.ClickEvent, NavContract));
         ContractStatusTextBlock.Text = $"Düzenleme modu: İKN {contract.TenderNumber}. Değiştirip DÜZENLE'e basın.";
