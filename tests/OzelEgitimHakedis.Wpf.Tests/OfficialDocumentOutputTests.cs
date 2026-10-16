@@ -247,7 +247,8 @@ public sealed class OfficialDocumentOutputTests
             Assert.Contains("Hakediş No : 2", paymentText);
             Assert.Contains("KESİNTİLER VE MAHSUPLAR", paymentText);
             Assert.Contains("KDV (taşıma %10 + rehber %20)", paymentText);
-            Assert.Contains("KDV Tevkifatı (taşıma %50; rehber %90)", paymentText);
+            Assert.Contains("KDV Tevkifatı (taşıma 5/10; rehber 9/10)", paymentText);
+            Assert.DoesNotContain("TEST-SOZ", serviceReportText);
             Assert.Contains("Damga Vergisi (oran %0,948)", paymentText);
 
             var serviceReport = Assert.Single(
@@ -256,7 +257,8 @@ public sealed class OfficialDocumentOutputTests
                 Assert.IsType<FixedPage>(serviceReport.Document.Pages[0].Child));
             Assert.Contains("Örnek Yüklenici", serviceReportText);
             Assert.Contains("100.000,00 TL", serviceReportText);
-            Assert.Contains("25.08.2026 / TEST-SOZ", serviceReportText);
+            Assert.Contains("25.08.2026", serviceReportText);
+            Assert.DoesNotContain("TEST-SOZ", serviceReportText);
             Assert.Contains("180 İş Günü", serviceReportText);
             Assert.Contains("Tescile Dahil Değil", serviceReportText);
             Assert.Contains("Avans verilmeyecektir.", serviceReportText);

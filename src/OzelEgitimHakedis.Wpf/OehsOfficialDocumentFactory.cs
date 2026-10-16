@@ -34,7 +34,8 @@ internal sealed record OehsOfficialDocumentContext(
     string ControllerName = "Halil ÖZENÇ",
     string ControllerRole = "İlçe Milli Eğitim Şube Müdürü",
     string ApproverName = "Özgür BAYSAL",
-    string ApproverRole = "İlçe Milli Eğitim Müdürü");
+    string ApproverRole = "İlçe Milli Eğitim Müdürü",
+    TransportationProgramType ProgramType = TransportationProgramType.SpecialEducation);
 
 internal enum OehsOfficialDocumentKind
 {
@@ -168,7 +169,7 @@ internal static class OehsOfficialDocumentFactory
         {
             ("D", "Bir Önceki Hakedişlerin Toplam Tutarı", c.ReportTotals.PreviousTotal, White, 29),
             ("E", "Bu Hakedişin Tutarı ( C - D )", c.ReportTotals.CurrentTotal, White, 29),
-            ("F", BuildVatRateLabel(c.Calculation), c.Calculation.Vat, White, 29),
+            ("F", BuildVatRateLabel(c.Calculation, c.ProgramType), c.Calculation.Vat, White, 29),
             ("G", "Tahakkuk Tutarı", c.ReportTotals.CurrentTotal + c.Calculation.Vat, TotalGray, 32)
         };
         foreach (var row in summaryRows)
@@ -184,7 +185,7 @@ internal static class OehsOfficialDocumentFactory
         {
             ("a)", "Gelir / Kurumlar Vergisi ( E x % .. )", 0m, 29),
             ("b)", BuildStampTaxLabel(c.Calculation), c.Calculation.StampTax, 29),
-            ("c)", BuildWithholdingLabel(c.Calculation), c.Calculation.Withholding, 29),
+            ("c)", BuildWithholdingLabel(c.Calculation, c.ProgramType), c.Calculation.Withholding, 29),
             ("d)", "Sosyal Sigortalar Kurumu Kesintisi", c.Calculation.Deductions.SocialSecurityDebt, 29),
             ("e)", "İdare Makinesi Kiraları", 0m, 29),
             ("f)", "Gecikme Cezası", 0m, 29),
@@ -256,7 +257,7 @@ internal static class OehsOfficialDocumentFactory
             ("Yüklenicinin Adı / Ticari Unvanı", c.ContractorName),
             ("Sözleşme Bedeli", FormatMoney(c.ContractAmount)),
             ("İhale Tarihi", FormatDate(c.TenderDate)),
-            ("Sözleşme Tarihi ve No.su", $"{FormatDate(c.ContractDate)}{(string.IsNullOrWhiteSpace(c.ContractNumber) ? "" : " / " + c.ContractNumber)}"),
+            ("Sözleşme Tarihi", FormatDate(c.ContractDate)),
             ("Sözleşmenin Sayıştayca Tescil Tarihi ve No'su", "Tescile Dahil Değil"),
             ("Tescilin Yükleniciye Tebliğ Tarihi", "Tescile Dahil Değil"),
             ("İşyeri Teslim Tarihi", FormatDate(c.ContractStartDate)),
@@ -539,16 +540,33 @@ internal static class OehsOfficialDocumentFactory
         return $"Damga Vergisi (oran %{FormatPercent(rate)})";
     }
 
-    private static string BuildVatRateLabel(ProgressPaymentCalculation calculation)
+    private static string BuildVatRateLabel(
+        ProgressPaymentCalculation calculation,
+        TransportationProgramType programType)
     {
         var rates = AppliedConstants(calculation);
-        return $"KDV (taşıma %{FormatPercent(rates.TransportVatRate)} + rehber %{FormatPercent(rates.GuideVatRate)})";
+        var transport = $"taşıma %{FormatPercent(rates.TransportVatRate)}";
+        return programType == TransportationProgramType.BasicOrSecondary
+            ? $"KDV ({transport})"
+            : $"KDV ({transport} + rehber %{FormatPercent(rates.GuideVatRate)})";
     }
 
-    private static string BuildWithholdingLabel(ProgressPaymentCalculation calculation)
+    private static string BuildWithholdingLabel(
+        ProgressPaymentCalculation calculation,
+        TransportationProgramType programType)
     {
         var rates = AppliedConstants(calculation);
-        return $"KDV Tevkifatı (taşıma %{FormatPercent(rates.TransportWithholdingShare)}; rehber %{FormatPercent(rates.GuideWithholdingShare)})";
+        static string Share(decimal value) => value switch
+        {
+            0.5m => "5/10",
+            0.9m => "9/10",
+            _ => $"%{FormatPercent(value)}"
+        };
+
+        var transport = $"taşıma {Share(rates.TransportWithholdingShare)}";
+        return programType == TransportationProgramType.BasicOrSecondary
+            ? $"KDV Tevkifatı ({transport})"
+            : $"KDV Tevkifatı ({transport}; rehber {Share(rates.GuideWithholdingShare)})";
     }
 
     private static string BuildWorkTitle(

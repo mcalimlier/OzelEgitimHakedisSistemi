@@ -40,13 +40,18 @@ public static class TenderRoutePropagationService
                 var sameContract = !string.IsNullOrWhiteSpace(route.ContractNumber)
                     && string.Equals(route.ContractNumber.Trim(), oldContract.ContractNumber.Trim(), StringComparison.OrdinalIgnoreCase);
 
-                return sameTender && sameContract
-                    ? route with
-                    {
-                        TenderNumber = newContract.TenderNumber.Trim(),
-                        ContractNumber = newContract.ContractNumber.Trim()
-                    }
-                    : route;
+                if (!sameTender || !sameContract)
+                    return route;
+
+                var hasGuide = newContract.ProgramType == TransportationProgramType.SpecialEducation;
+                return route with
+                {
+                    TenderNumber = newContract.TenderNumber.Trim(),
+                    ContractNumber = newContract.ContractNumber.Trim(),
+                    ProgramType = newContract.ProgramType,
+                    GuideWorkDays = hasGuide ? route.GuideWorkDays : 0,
+                    GuideDailyPrice = hasGuide ? route.GuideDailyPrice : 0m
+                };
             })
             .ToArray();
     }

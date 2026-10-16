@@ -694,6 +694,12 @@ public partial class MainWindow : Window
             TenderDatePicker.SelectedDate = contract.TenderDate?.ToDateTime(TimeOnly.MinValue);
             ContractDatePicker.SelectedDate = contract.ContractDate?.ToDateTime(TimeOnly.MinValue);
             VatExemptCheckBox.IsChecked = contract.VatExempt;
+            TransportProgramTypeComboBox.SelectedItem = TransportProgramTypeComboBox.Items
+                .OfType<ComboBoxItem>()
+                .FirstOrDefault(item => string.Equals(
+                    item.Tag?.ToString(),
+                    contract.ProgramType.ToString(),
+                    StringComparison.OrdinalIgnoreCase));
 
         }
         finally
@@ -717,6 +723,59 @@ public partial class MainWindow : Window
         TenderDatePicker.SelectedDate = null;
         ContractDatePicker.SelectedDate = null;
         VatExemptCheckBox.IsChecked = false;
+        TransportProgramTypeComboBox.SelectedIndex = 0;
+    }
+
+    private TransportationProgramType GetSelectedTransportationProgramType()
+    {
+        var tag = (TransportProgramTypeComboBox.SelectedItem as ComboBoxItem)?.Tag?.ToString();
+        return Enum.TryParse<TransportationProgramType>(tag, ignoreCase: true, out var programType)
+            ? programType
+            : TransportationProgramType.SpecialEducation;
+    }
+
+    private static bool HasGuideStaff(TransportationProgramType programType) =>
+        programType == TransportationProgramType.SpecialEducation;
+
+    private void UpdateRouteProgramTypeFields(ContractDraftData? contract)
+    {
+        var visible = contract is not null && HasGuideStaff(contract.ProgramType);
+        var visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+        RouteGuideWorkDaysLabel.Visibility = visibility;
+        RouteGuideWorkDaysTextBox.Visibility = visibility;
+        RouteGuideDailyPriceLabel.Visibility = visibility;
+        RouteGuideDailyPriceTextBox.Visibility = visibility;
+
+        if (!visible)
+        {
+            RouteGuideWorkDaysTextBox.Text = "0";
+            RouteGuideDailyPriceTextBox.Text = "0";
+        }
+    }
+
+    private void UpdateProgressProgramTypeFields(ContractDraftData? contract)
+    {
+        var visible = contract is not null && HasGuideStaff(contract.ProgramType);
+        var visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+        ProgressGuideWorkDaysLabel.Visibility = visibility;
+        GuideWorkDaysTextBox.Visibility = visibility;
+        ProgressGuideDailyPriceLabel.Visibility = visibility;
+        GuideDailyPriceTextBox.Visibility = visibility;
+        GuideDiscountLabel.Visibility = visibility;
+        GuideDiscountTextBox.Visibility = visibility;
+        GuidePriceDifferenceLabel.Visibility = visibility;
+        GuidePriceDifferenceTextBox.Visibility = visibility;
+        MinimumWageSupportLabel.Visibility = visibility;
+        MinimumWageSupportTextBox.Visibility = visibility;
+
+        if (!visible)
+        {
+            GuideWorkDaysTextBox.Text = "0";
+            GuideDailyPriceTextBox.Text = "0";
+            GuideDiscountTextBox.Text = "0";
+            GuidePriceDifferenceTextBox.Text = "0";
+            MinimumWageSupportTextBox.Text = "0";
+        }
     }
 
     private void UpdateContractSelectors()
@@ -785,6 +844,7 @@ public partial class MainWindow : Window
             _suppressSelectionEvents = false;
         }
 
+        UpdateRouteProgramTypeFields(contract);
         UpdateRouteListView();
         RouteSelectedTenderTextBlock.Text = contract is null ? "İhale: seçilmedi" : $"İhale: {contract.TenderNumber}";
         RouteSelectedContractorTextBlock.Text = "Yüklenici: firma seçilmemiş";
@@ -847,6 +907,7 @@ public partial class MainWindow : Window
 
     private void UpdateProgressContractorAndRoutes(ContractDraftData? contract, bool preserveSelection = true)
     {
+        UpdateProgressProgramTypeFields(contract);
         UpdateProgressPeriodOptions(contract, preserveSelection);
         if (contract is null)
         {
@@ -2005,14 +2066,22 @@ public partial class MainWindow : Window
             TenderDate = TenderDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(TenderDatePicker.SelectedDate.Value) : archive.Contract.TenderDate,
             ContractDate = ContractDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(ContractDatePicker.SelectedDate.Value) : archive.Contract.ContractDate,
             ContractWorkDays = contractWorkDays,
-            TransportDailyPrice = transportDailyPrice
+            TransportDailyPrice = transportDailyPrice,
+            ProgramType = GetSelectedTransportationProgramType()
         };
 
+        var hasGuide = HasGuideStaff(updatedContract.ProgramType);
         var input = archive.ProgressPayment.Input with
         {
             ContractAmount = updatedContract.ContractAmount,
             IsVatExempt = updatedContract.VatExempt,
-            DailyPrice = updatedContract.TransportDailyPrice
+            DailyPrice = updatedContract.TransportDailyPrice,
+            GuideWorkDays = hasGuide ? archive.ProgressPayment.Input.GuideWorkDays : 0,
+            GuideDailyPrice = hasGuide ? archive.ProgressPayment.Input.GuideDailyPrice : 0m,
+            GuideDiscountAmount = hasGuide ? archive.ProgressPayment.Input.GuideDiscountAmount : 0m,
+            GuidePriceDifference = hasGuide ? archive.ProgressPayment.Input.GuidePriceDifference : 0m,
+            MinimumWageSupport = hasGuide ? archive.ProgressPayment.Input.MinimumWageSupport : 0m,
+            ProgramType = updatedContract.ProgramType
         };
 
         var payment = archive.ProgressPayment with
@@ -2032,17 +2101,27 @@ public partial class MainWindow : Window
         {
             TenderNumber = updatedContract.TenderNumber,
             ContractNumber = updatedContract.ContractNumber,
-            DailyPrice = updatedContract.TransportDailyPrice
+            DailyPrice = updatedContract.TransportDailyPrice,
+            GuideWorkDays = hasGuide ? archive.Route.GuideWorkDays : 0,
+            GuideDailyPrice = hasGuide ? archive.Route.GuideDailyPrice : 0m,
+            ProgramType = updatedContract.ProgramType
         };
 
         var updatedPreviousPayments = archive.PreviousPayments
             .Select(previous =>
             {
+                var previousHasGuide = HasGuideStaff(updatedContract.ProgramType);
                 var previousInput = previous.Input with
                 {
                     ContractAmount = updatedContract.ContractAmount,
                     IsVatExempt = updatedContract.VatExempt,
-                    DailyPrice = updatedContract.TransportDailyPrice
+                    DailyPrice = updatedContract.TransportDailyPrice,
+                    GuideWorkDays = previousHasGuide ? previous.Input.GuideWorkDays : 0,
+                    GuideDailyPrice = previousHasGuide ? previous.Input.GuideDailyPrice : 0m,
+                    GuideDiscountAmount = previousHasGuide ? previous.Input.GuideDiscountAmount : 0m,
+                    GuidePriceDifference = previousHasGuide ? previous.Input.GuidePriceDifference : 0m,
+                    MinimumWageSupport = previousHasGuide ? previous.Input.MinimumWageSupport : 0m,
+                    ProgramType = updatedContract.ProgramType
                 };
 
                 return previous with
@@ -2084,8 +2163,14 @@ public partial class MainWindow : Window
         if (string.IsNullOrWhiteSpace(routeNumber)) errors.Add(RouteNumberTextBox);
         if (string.IsNullOrWhiteSpace(routeName)) errors.Add(RouteNameTextBox);
         if (!int.TryParse(RouteTransportWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var transportWorkDays) || transportWorkDays < 0) errors.Add(RouteTransportWorkDaysTextBox);
-        if (!int.TryParse(RouteGuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var guideWorkDays) || guideWorkDays < 0) errors.Add(RouteGuideWorkDaysTextBox);
-        if (!TryParseDecimal(RouteGuideDailyPriceTextBox.Text, out var guideDailyPrice) || guideDailyPrice < 0) errors.Add(RouteGuideDailyPriceTextBox);
+        var hasGuide = HasGuideStaff(archive.Contract.ProgramType);
+        var guideWorkDays = 0;
+        var guideDailyPrice = 0m;
+        if (hasGuide)
+        {
+            if (!int.TryParse(RouteGuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out guideWorkDays) || guideWorkDays < 0) errors.Add(RouteGuideWorkDaysTextBox);
+            if (!TryParseDecimal(RouteGuideDailyPriceTextBox.Text, out guideDailyPrice) || guideDailyPrice < 0) errors.Add(RouteGuideDailyPriceTextBox);
+        }
 
         if (errors.Count > 0)
         {
@@ -2100,16 +2185,21 @@ public partial class MainWindow : Window
             Name = routeName,
             DailyPrice = archive.Contract.TransportDailyPrice,
             TransportWorkDays = transportWorkDays,
-            GuideWorkDays = guideWorkDays,
-            GuideDailyPrice = guideDailyPrice
+            GuideWorkDays = hasGuide ? guideWorkDays : 0,
+            GuideDailyPrice = hasGuide ? guideDailyPrice : 0m,
+            ProgramType = archive.Contract.ProgramType
         };
 
         var input = archive.ProgressPayment.Input with
         {
             WorkDays = transportWorkDays,
             DailyPrice = archive.Contract.TransportDailyPrice,
-            GuideWorkDays = guideWorkDays,
-            GuideDailyPrice = guideDailyPrice
+            GuideWorkDays = hasGuide ? guideWorkDays : 0,
+            GuideDailyPrice = hasGuide ? guideDailyPrice : 0m,
+            GuideDiscountAmount = hasGuide ? archive.ProgressPayment.Input.GuideDiscountAmount : 0m,
+            GuidePriceDifference = hasGuide ? archive.ProgressPayment.Input.GuidePriceDifference : 0m,
+            MinimumWageSupport = hasGuide ? archive.ProgressPayment.Input.MinimumWageSupport : 0m,
+            ProgramType = archive.Contract.ProgramType
         };
 
         var payment = archive.ProgressPayment with
@@ -2631,15 +2721,21 @@ public partial class MainWindow : Window
             errors.Add("Taşıma İş Günü");
             MarkInvalid(RouteTransportWorkDaysTextBox);
         }
-        if (!int.TryParse(RouteGuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var guideWorkDays) || guideWorkDays < 0)
+        var hasGuide = HasGuideStaff(contract?.ProgramType ?? TransportationProgramType.SpecialEducation);
+        var guideWorkDays = 0;
+        var guideDailyPrice = 0m;
+        if (hasGuide)
         {
-            errors.Add("Rehber Yıllık İş Günü");
-            MarkInvalid(RouteGuideWorkDaysTextBox);
-        }
-        if (!TryParseDecimal(RouteGuideDailyPriceTextBox.Text, out var guideDailyPrice) || guideDailyPrice < 0)
-        {
-            errors.Add("Rehber Personel Günlük Fiyat");
-            MarkInvalid(RouteGuideDailyPriceTextBox);
+            if (!int.TryParse(RouteGuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out guideWorkDays) || guideWorkDays < 0)
+            {
+                errors.Add("Rehber Yıllık İş Günü");
+                MarkInvalid(RouteGuideWorkDaysTextBox);
+            }
+            if (!TryParseDecimal(RouteGuideDailyPriceTextBox.Text, out guideDailyPrice) || guideDailyPrice < 0)
+            {
+                errors.Add("Rehber Personel Günlük Fiyat");
+                MarkInvalid(RouteGuideDailyPriceTextBox);
+            }
         }
         if (errors.Count > 0)
         {
@@ -2651,13 +2747,14 @@ public partial class MainWindow : Window
             routeNumber,
             routeName,
             contract!.TransportDailyPrice,
-            guideWorkDays,
-            guideDailyPrice,
+            hasGuide ? guideWorkDays : 0,
+            hasGuide ? guideDailyPrice : 0m,
             transportWorkDays,
             contract.TenderNumber,
             OehsIdentityService.NormalizeIdentity(contractor!.TaxOrIdentityNumber),
             contractor.Name,
-            contract.ContractNumber);
+            contract.ContractNumber,
+            contract.ProgramType);
 
         var duplicate = _routes.FirstOrDefault(x =>
             string.Equals(x.TenderNumber, proposed.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
@@ -2683,7 +2780,7 @@ public partial class MainWindow : Window
             proposed.TransportWorkDays,
             proposed.TenderNumber,
             proposed.ContractorTaxOrIdentityNumber,
-            proposed.ContractNumber);
+            proposed.ContractNumber, proposed.ProgramType);
         var existingRouteData = _routes
             .Where(x => !ReferenceEquals(x, _editingRoute))
             .Select(x => new RouteData(
@@ -2695,7 +2792,7 @@ public partial class MainWindow : Window
                 x.TransportWorkDays,
                 x.TenderNumber,
                 x.ContractorTaxOrIdentityNumber,
-                x.ContractNumber))
+                x.ContractNumber, x.ProgramType))
             .ToArray();
         var ownerConflict = RouteAssignmentValidationService.FindOwnerConflict(
             existingRouteData,
@@ -2780,11 +2877,11 @@ public partial class MainWindow : Window
         var oldData = new RouteData(
             oldRoute.RouteNumber, oldRoute.Name, oldRoute.DailyPrice,
             oldRoute.GuideWorkDays, oldRoute.GuideDailyPrice, oldRoute.TransportWorkDays,
-            oldRoute.TenderNumber, oldRoute.ContractorTaxOrIdentityNumber, oldRoute.ContractNumber);
+            oldRoute.TenderNumber, oldRoute.ContractorTaxOrIdentityNumber, oldRoute.ContractNumber, oldRoute.ProgramType);
         var newData = new RouteData(
             updatedRoute.RouteNumber, updatedRoute.Name, updatedRoute.DailyPrice,
             updatedRoute.GuideWorkDays, updatedRoute.GuideDailyPrice, updatedRoute.TransportWorkDays,
-            updatedRoute.TenderNumber, updatedRoute.ContractorTaxOrIdentityNumber, updatedRoute.ContractNumber);
+            updatedRoute.TenderNumber, updatedRoute.ContractorTaxOrIdentityNumber, updatedRoute.ContractNumber, updatedRoute.ProgramType);
 
         var contractor = FindContractor(updatedRoute.ContractorTaxOrIdentityNumber);
         var contractorSnapshot = contractor is null
@@ -3153,7 +3250,8 @@ public partial class MainWindow : Window
             oldContract?.ContractorTaxOrIdentityNumber ?? string.Empty,
             oldContract?.BankAccountNumber ?? string.Empty,
             contractWorkDays,
-            transportDailyPrice);
+            transportDailyPrice,
+            GetSelectedTransportationProgramType());
 
         var proposedContractKey = OehsIdentityService.BuildContractKey(
             proposedContract.TenderNumber,
@@ -3209,7 +3307,7 @@ public partial class MainWindow : Window
                 x.TransportWorkDays,
                 x.TenderNumber,
                 x.ContractorTaxOrIdentityNumber,
-                x.ContractNumber)).ToArray();
+                x.ContractNumber, x.ProgramType)).ToArray();
 
             var proposedHistories = ProgressPaymentPropagationService.RecalculateForContractChange(
                 _progressHistory.ToArray(), routeData, oldContract, proposedContract, _calculationConstants);
@@ -3241,7 +3339,10 @@ public partial class MainWindow : Window
                 {
                     TenderNumber = updatedRoute.TenderNumber,
                     ContractNumber = updatedRoute.ContractNumber,
-                    DailyPrice = proposedContract.TransportDailyPrice
+                    DailyPrice = proposedContract.TransportDailyPrice,
+                    GuideWorkDays = updatedRoute.GuideWorkDays,
+                    GuideDailyPrice = updatedRoute.GuideDailyPrice,
+                    ProgramType = updatedRoute.ProgramType
                 };
             }
 
@@ -3355,7 +3456,8 @@ public partial class MainWindow : Window
                 _routes.Add(new RouteDraft(
                     route.RouteNumber, route.Name, route.DailyPrice,
                     route.GuideWorkDays, route.GuideDailyPrice, route.TransportWorkDays,
-                    tender, contractorTax, contractorName, contractNumber));
+                    tender, contractorTax, contractorName, contractNumber,
+                    routeContract?.ProgramType ?? route.ProgramType));
             }
 
             _progressHistory.Clear();
@@ -3457,7 +3559,7 @@ public partial class MainWindow : Window
             activeContract,
             _routes.Select(x => new RouteData(
                 x.RouteNumber, x.Name, x.DailyPrice, x.GuideWorkDays, x.GuideDailyPrice,
-                x.TransportWorkDays, x.TenderNumber, x.ContractorTaxOrIdentityNumber, x.ContractNumber)).ToArray(),
+                x.TransportWorkDays, x.TenderNumber, x.ContractorTaxOrIdentityNumber, x.ContractNumber, x.ProgramType)).ToArray(),
             _contractors.Select(x => new Contractor(
                 x.Name, x.TaxOrIdentityNumber, x.Address, x.Phone, x.Email,
                 x.BankAccountNumber, x.ContactPerson)).ToArray(),
@@ -3744,7 +3846,7 @@ public partial class MainWindow : Window
                 x.TransportWorkDays,
                 x.TenderNumber,
                 x.ContractorTaxOrIdentityNumber,
-                x.ContractNumber)).ToArray(),
+                x.ContractNumber, x.ProgramType)).ToArray(),
             oldContract,
             updatedContract,
             _calculationConstants);
@@ -3777,32 +3879,50 @@ public partial class MainWindow : Window
         ProgressValidationBanner.Visibility = Visibility.Collapsed;
         ProgressValidationMessageTextBlock.Text = string.Empty;
 
+        var selectedContract = IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment)
+            ? _editingArchiveSnapshot!.Contract
+            : ProgressTenderListBox.SelectedItem as ContractDraftData;
+        if (selectedContract is null)
+        {
+            ShowAlreadyRegistered("Önce İhale Kayıt Numarası (İKN) seçin.");
+            return;
+        }
+        var hasGuide = HasGuideStaff(selectedContract.ProgramType);
+
         var invalidFields = new List<(Control Control, string Name)>();
 
         if (!int.TryParse(WorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var workDays) || workDays < 0)
             invalidFields.Add((WorkDaysTextBox, "Taşıma İş Günü"));
 
-        if (!int.TryParse(GuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var guideWorkDays) || guideWorkDays < 0)
-            invalidFields.Add((GuideWorkDaysTextBox, "Rehber İş Günü"));
+        var guideWorkDays = 0;
+        var guideDailyPrice = 0m;
+        var guideDiscount = 0m;
+        var guidePriceDifference = 0m;
+        var minimumWageSupport = 0m;
+        if (hasGuide)
+        {
+            if (!int.TryParse(GuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out guideWorkDays) || guideWorkDays < 0)
+                invalidFields.Add((GuideWorkDaysTextBox, "Rehber İş Günü"));
+            if (!TryParseDecimal(GuideDailyPriceTextBox.Text, out guideDailyPrice) || guideDailyPrice < 0)
+                invalidFields.Add((GuideDailyPriceTextBox, "Rehber Günlük Fiyat"));
+            if (!TryParseDecimalOrZero(GuideDiscountTextBox.Text, out guideDiscount) || guideDiscount < 0)
+                invalidFields.Add((GuideDiscountTextBox, "Rehber İskonto"));
+            if (!TryParseDecimalOrZero(GuidePriceDifferenceTextBox.Text, out guidePriceDifference))
+                invalidFields.Add((GuidePriceDifferenceTextBox, "Rehber Fiyat Farkı"));
+            if (!TryParseDecimalOrZero(MinimumWageSupportTextBox.Text, out minimumWageSupport) || minimumWageSupport < 0)
+                invalidFields.Add((MinimumWageSupportTextBox, "Asgari Ücret Desteği"));
+        }
 
         if (!TryParseDecimal(DailyPriceTextBox.Text, out var dailyPrice) || dailyPrice < 0)
             invalidFields.Add((DailyPriceTextBox, "Taşıma Günlük Fiyat"));
-        if (!TryParseDecimal(GuideDailyPriceTextBox.Text, out var guideDailyPrice) || guideDailyPrice < 0)
-            invalidFields.Add((GuideDailyPriceTextBox, "Rehber Günlük Fiyat"));
         if (!TryParseDecimalOrZero(DiscountTextBox.Text, out var discount) || discount < 0)
             invalidFields.Add((DiscountTextBox, "Taşıma İskonto"));
-        if (!TryParseDecimalOrZero(GuideDiscountTextBox.Text, out var guideDiscount) || guideDiscount < 0)
-            invalidFields.Add((GuideDiscountTextBox, "Rehber İskonto"));
         if (!TryParseDecimalOrZero(PriceDifferenceTextBox.Text, out var priceDifference))
             invalidFields.Add((PriceDifferenceTextBox, "Taşıma Fiyat Farkı"));
-        if (!TryParseDecimalOrZero(GuidePriceDifferenceTextBox.Text, out var guidePriceDifference))
-            invalidFields.Add((GuidePriceDifferenceTextBox, "Rehber Fiyat Farkı"));
         if (!TryParseDecimalOrZero(TaxDebtTextBox.Text, out var taxDebt) || taxDebt < 0)
             invalidFields.Add((TaxDebtTextBox, "Vergi Borcu"));
         if (!TryParseDecimalOrZero(SocialSecurityDebtTextBox.Text, out var socialSecurityDebt) || socialSecurityDebt < 0)
             invalidFields.Add((SocialSecurityDebtTextBox, "SGK Borcu"));
-        if (!TryParseDecimalOrZero(MinimumWageSupportTextBox.Text, out var minimumWageSupport) || minimumWageSupport < 0)
-            invalidFields.Add((MinimumWageSupportTextBox, "Asgari Ücret Desteği"));
         if (!TryParseDecimalOrZero(InspectionPenaltyTextBox.Text, out var inspectionPenalty) || inspectionPenalty < 0)
             invalidFields.Add((InspectionPenaltyTextBox, "Denetim Cezası"));
 
@@ -3822,15 +3942,6 @@ public partial class MainWindow : Window
             return;
         }
 
-        var selectedContract = IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment)
-            ? _editingArchiveSnapshot!.Contract
-            : ProgressTenderListBox.SelectedItem as ContractDraftData;
-        if (selectedContract is null)
-        {
-            ShowAlreadyRegistered("Önce İhale / Dosya No seçin.");
-            return;
-        }
-
         try
         {
             RouteDraft? selectedRoute;
@@ -3847,7 +3958,8 @@ public partial class MainWindow : Window
                     archivedRoute.TenderNumber,
                     archivedRoute.ContractorTaxOrIdentityNumber,
                     _editingArchiveSnapshot.Contractor.Name,
-                    archivedRoute.ContractNumber);
+                    archivedRoute.ContractNumber,
+                    _editingArchiveSnapshot.Contract.ProgramType);
             }
             else
             {
@@ -3875,7 +3987,8 @@ public partial class MainWindow : Window
                 guideWorkDays,
                 guideDailyPrice,
                 guideDiscount,
-                guidePriceDifference);
+                guidePriceDifference,
+                selectedContract.ProgramType);
 
             int? progressNumber = null;
             if (int.TryParse(
@@ -3980,7 +4093,7 @@ public partial class MainWindow : Window
                     x.TransportWorkDays,
                     x.TenderNumber,
                     x.ContractorTaxOrIdentityNumber,
-                    x.ContractNumber)).ToArray(),
+                    x.ContractNumber, x.ProgramType)).ToArray(),
                 _contractors.Select(x => new Contractor(
                     x.Name,
                     OehsIdentityService.NormalizeIdentity(x.TaxOrIdentityNumber),
@@ -4006,7 +4119,7 @@ public partial class MainWindow : Window
                         selectedRoute.TransportWorkDays,
                         selectedRoute.TenderNumber,
                         normalizedContractorIdentity,
-                        selectedContract.ContractNumber),
+                        selectedContract.ContractNumber, selectedRoute.ProgramType),
                     historyItem,
                     _editingHistoryId.HasValue);
 
@@ -4213,7 +4326,7 @@ public partial class MainWindow : Window
             route.TransportWorkDays,
             route.TenderNumber,
             route.ContractorTaxOrIdentityNumber,
-            route.ContractNumber);
+            route.ContractNumber, route.ProgramType);
 
         var prior = _progressHistory
             .Where(x => string.Equals(
@@ -4416,7 +4529,7 @@ public partial class MainWindow : Window
                     x.TransportWorkDays,
                     x.TenderNumber,
                     x.ContractorTaxOrIdentityNumber,
-                    x.ContractNumber)).ToArray(),
+                    x.ContractNumber, x.ProgramType)).ToArray(),
                 _contractors.Select(x => new Contractor(
                     x.Name,
                     OehsIdentityService.NormalizeIdentity(x.TaxOrIdentityNumber),
@@ -4459,7 +4572,8 @@ public partial class MainWindow : Window
                     route.TenderNumber,
                     OehsIdentityService.NormalizeIdentity(route.ContractorTaxOrIdentityNumber),
                     contractor?.Name ?? archive.Contractor.Name,
-                    route.ContractNumber));
+                    route.ContractNumber,
+                    archive.Contract.ProgramType));
             }
 
             _progressHistory.Clear();
@@ -4508,7 +4622,8 @@ public partial class MainWindow : Window
                     archive.Route.TenderNumber,
                     OehsIdentityService.NormalizeIdentity(archive.Route.ContractorTaxOrIdentityNumber),
                     archive.Contractor.Name,
-                    archive.Route.ContractNumber);
+                    archive.Route.ContractNumber,
+                    archive.Contract.ProgramType);
 
             var existing = _progressHistory.FirstOrDefault(x => x.Id == archive.ProgressPayment.Id);
             _editingHistoryId = existing?.Id;
@@ -5963,7 +6078,8 @@ public partial class MainWindow : Window
             ControllerName: signatories.ControllerName,
             ControllerRole: signatories.ControllerRole,
             ApproverName: signatories.ApproverName,
-            ApproverRole: signatories.ApproverRole);
+            ApproverRole: signatories.ApproverRole,
+            ProgramType: latest.Input.ProgramType);
     }
 
     private FixedDocument? BuildSelectedRouteOutputDocument()
@@ -6455,7 +6571,8 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         string TenderNumber = "",
         string ContractorTaxOrIdentityNumber = "",
         string ContractorName = "",
-        string ContractNumber = "")
+        string ContractNumber = "",
+        TransportationProgramType ProgramType = TransportationProgramType.SpecialEducation)
     {
         public string TransportWorkDaysText => $"Taşıma İş Günü: {TransportWorkDays}";
         public decimal TransportAnnualPrice => TransportWorkDays * DailyPrice;
@@ -6465,7 +6582,7 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         public string TransportSummaryText => $"Taşıma: {TransportWorkDays} gün × {DailyPrice:N2} ₺";
         public string GuideSummaryText => $"Rehber: {GuideWorkDays} gün × {GuideDailyPrice:N2} ₺";
         public string ServiceSummaryText => $"Taşıma {TransportWorkDays} gün • Rehber {GuideWorkDays} gün";
-        public string RelationshipText => $"İhale/Dosya: {TenderNumber} • Sözleşme: {ContractNumber} • Yüklenici: {ContractorName}";
+        public string RelationshipText => $"İKN: {TenderNumber} • Yüklenici: {ContractorName}";
         public string DisplayText => string.IsNullOrWhiteSpace(ContractorName)
             ? $"Hat {RouteNumber} — {Name}"
             : $"Hat {RouteNumber} — {Name} • {ContractorName}";
