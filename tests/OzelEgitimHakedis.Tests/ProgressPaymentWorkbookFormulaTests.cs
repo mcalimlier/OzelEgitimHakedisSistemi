@@ -7,7 +7,7 @@ namespace OzelEgitimHakedis.Tests;
 public sealed class ProgressPaymentWorkbookFormulaTests
 {
     [Fact]
-    public void ReportTotals_ShouldKeepCumulativeWorkAndPriceDifferenceSeparate()
+    public void ReportTotals_ShouldMatchExcelCurrentPriceDifferenceAndCumulativeTotals()
     {
         var input = new ProgressPaymentInput(
             WorkDays: 1,
@@ -29,10 +29,11 @@ public sealed class ProgressPaymentWorkbookFormulaTests
 
         var totals = ProgressPaymentReportService.Calculate(current, new[] { previous, current });
 
-        // Each month has 135 contract-price work and 40 signed raw I+R.
-        // A=270 service; B=80 cumulative price difference; C=350.
-        Assert.Equal(270m, totals.CumulativeServiceAmount);
-        Assert.Equal(80m, totals.CumulativePriceDifference);
+        // Excel D6 = (prior K+T + current K+T) - current I+R.
+        // Excel D7 = current I+R only; D8 = D6 + D7.
+        // A=310 (prior K+T 175 + current base work 135); B=40; C=350.
+        Assert.Equal(310m, totals.CumulativeServiceAmount);
+        Assert.Equal(40m, totals.CumulativePriceDifference);
         Assert.Equal(350m, totals.CumulativeTotal);
         Assert.Equal(175m, totals.PreviousTotal);
         Assert.Equal(175m, totals.CurrentTotal);
