@@ -4598,7 +4598,9 @@ public partial class MainWindow : Window
 
     private void ArchiveCurrentProgressButton_Click(object sender, RoutedEventArgs e)
     {
-        if (IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment) && _editingArchiveSnapshot is not null && !string.IsNullOrWhiteSpace(_editingArchiveSourcePath))
+        if (IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment) &&
+            _editingArchiveSnapshot is not null &&
+            !string.IsNullOrWhiteSpace(_editingArchiveSourcePath))
         {
             SaveArchiveCorrectionSnapshot(_editingArchiveSnapshot, "Arşiv");
             return;
@@ -4612,11 +4614,61 @@ public partial class MainWindow : Window
             return;
         }
 
-        var contract = FindContract(item.TenderNumber, item.ContractNumber);
+        // Multi-route calculations share an exact CreatedAt, contract, period and
+        // payment number. Archive every route snapshot in one click, independently.
+        var batch = _progressHistory
+            .Where(x => x.CreatedAt == item.CreatedAt &&
+                        string.Equals(x.TenderNumber, item.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+                        string.Equals(x.ContractNumber, item.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
+                        x.ProgressPaymentNumber == item.ProgressPaymentNumber &&
+                        x.PeriodDate == item.PeriodDate &&
+                        x.Input.ProgramType == item.Input.ProgramType)
+            .OrderBy(x => x.RouteNumber, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (batch.Length == 0)
+            batch = new[] { item };
+
+        var archivedPaths = new List<string>();
+        foreach (var payment in batch)
+        {
+            if (!TryArchiveProgressItem(payment, out var path, out _))
+                return;
+            archivedPaths.Add(path);
+        }
+
+        _lastCalculatedHistoryId = null;
+        ClearProgressEntryFields();
+        SetProgressEditorMode(false);
+        UpdateArchiveView();
+        NavigationButton_Click(NavArchives, new RoutedEventArgs(Button.ClickEvent, NavArchives));
+
+        var routeSummary = string.Join(", ", batch.Select(x => x.RouteNumber).Where(x => !string.IsNullOrWhiteSpace(x)));
+        var message = batch.Length == 1
+            ? $"Hakediş No {item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"} arşive eklendi.\n\n{Path.GetFileName(archivedPaths[0])}"
+            : $"{batch.Length} hat için hakediş No {item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"} arşivlendi.\nHatlar: {routeSummary}\n\nHer hat için ayrı arşiv ve dört PDF belgesi oluşturuldu.";
+        ArchiveStatusTextBlock.Text = "ARŞİV OLUŞTURULDU";
+        CalculationStatusTextBlock.Text = message;
+        MessageBox.Show(message, "OEHS — Arşiv Bilgisi", MessageBoxButton.OK, MessageBoxImage.Information);
+        _editingArchiveSourcePath = null;
+    }
+
+    private bool TryArchiveProgressItem(
+        ProgressPaymentHistoryData item,
+        out string archivePath,
+        out int revision)
+    {
+        archivePath = string.Empty;
+        revision = 0;
+
+        var contract = FindContract(item.TenderNumber, item.ContractNumber, item.Input.ProgramType);
         var route = _routes.FirstOrDefault(x =>
             string.Equals(
-                OehsIdentityService.BuildRouteKey(x.TenderNumber, x.RouteNumber, x.ContractorTaxOrIdentityNumber, x.ContractNumber),
-                OehsIdentityService.BuildRouteKey(item.TenderNumber ?? string.Empty, item.RouteNumber ?? string.Empty, item.ContractorTaxOrIdentityNumber ?? string.Empty, item.ContractNumber ?? string.Empty),
+                OehsIdentityService.BuildRouteKey(
+                    x.TenderNumber, x.RouteNumber, x.ContractorTaxOrIdentityNumber, x.ContractNumber, x.ProgramType),
+                OehsIdentityService.BuildRouteKey(
+                    item.TenderNumber ?? string.Empty, item.RouteNumber ?? string.Empty,
+                    item.ContractorTaxOrIdentityNumber ?? string.Empty, item.ContractNumber ?? string.Empty,
+                    item.Input.ProgramType),
                 StringComparison.Ordinal));
 
         var contractor = route is null
@@ -4624,59 +4676,44 @@ public partial class MainWindow : Window
             : FindContractor(route.ContractorTaxOrIdentityNumber, route.ProgramType);
         if (contract is null || route is null || contractor is null)
         {
-            MessageBox.Show("Arşiv için ihale, hat ve yüklenici snapshot'ı çözümlenemedi. Kaydı kontrol edin.", "OEHS",
-                MessageBoxButton.OK, MessageBoxImage.Warning);
-            return;
+            MessageBox.Show($"Hat {item.RouteNumber}: arşiv için ihale, hat ve yüklenici snapshot'ı çözümlenemedi. Kaydı kontrol edin.",
+                "OEHS", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return false;
         }
 
         var routeData = new RouteData(
-            route.RouteNumber,
-            route.Name,
-            route.DailyPrice,
-            route.GuideWorkDays,
-            route.GuideDailyPrice,
-            route.TransportWorkDays,
-            route.TenderNumber,
-            route.ContractorTaxOrIdentityNumber,
-            route.ContractNumber, route.ProgramType);
+            route.RouteNumber, route.Name, route.DailyPrice, route.GuideWorkDays,
+            route.GuideDailyPrice, route.TransportWorkDays, route.TenderNumber,
+            route.ContractorTaxOrIdentityNumber, route.ContractNumber, route.ProgramType);
 
         var prior = _progressHistory
+            .Where(x => x.Input.ProgramType == item.Input.ProgramType)
             .Where(x => string.Equals(
                 OehsIdentityService.BuildRouteKey(
-                    x.TenderNumber ?? string.Empty,
-                    x.RouteNumber ?? string.Empty,
-                    x.ContractorTaxOrIdentityNumber ?? string.Empty,
-                    x.ContractNumber ?? string.Empty),
-                OehsIdentityService.BuildRouteKey(route.TenderNumber, route.RouteNumber, route.ContractorTaxOrIdentityNumber, route.ContractNumber),
+                    x.TenderNumber ?? string.Empty, x.RouteNumber ?? string.Empty,
+                    x.ContractorTaxOrIdentityNumber ?? string.Empty, x.ContractNumber ?? string.Empty,
+                    x.Input.ProgramType),
+                OehsIdentityService.BuildRouteKey(
+                    route.TenderNumber, route.RouteNumber, route.ContractorTaxOrIdentityNumber,
+                    route.ContractNumber, route.ProgramType),
                 StringComparison.Ordinal))
-            .Where(x => !x.Id.Equals(item.Id))
+            .Where(x => x.Id != item.Id)
             .Where(x => x.PeriodDate.HasValue && (!item.PeriodDate.HasValue || x.PeriodDate.Value < item.PeriodDate.Value))
             .OrderBy(x => x.PeriodDate)
             .ThenBy(x => x.CreatedAt)
             .ToArray();
 
         var archive = new ProgressPaymentArchive(
-            "1.0",
-            1,
-            DateTime.UtcNow,
-            "ActiveRecord",
-            contract,
+            "1.0", 1, DateTime.UtcNow, "ActiveRecord", contract,
             new Contractor(
                 contractor.Name,
                 OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber),
-                contractor.Address,
-                contractor.Phone,
-                contractor.Email,
-                contractor.BankAccountNumber,
-                contractor.ContactPerson),
-            routeData,
-            item,
-            prior,
+                contractor.Address, contractor.Phone, contractor.Email,
+                contractor.BankAccountNumber, contractor.ContactPerson, contractor.ProgramType),
+            routeData, item, prior,
             OehsFileNameService.BuildProgressPdfFileName(
-                item.TenderNumber ?? string.Empty,
-                item.ContractNumber ?? string.Empty,
-                route.RouteNumber,
-                item.ProgressPaymentNumber ?? 1,
+                item.TenderNumber ?? string.Empty, item.ContractNumber ?? string.Empty,
+                route.RouteNumber, item.ProgressPaymentNumber ?? 1,
                 item.PeriodDate ?? DateOnly.FromDateTime(DateTime.Today)),
             new[]
             {
@@ -4688,38 +4725,17 @@ public partial class MainWindow : Window
 
         try
         {
-            var path = _archiveStore.Save(archive);
-            var revision = ExtractArchiveRevision(path);
-            var wasCorrection = !string.IsNullOrWhiteSpace(_editingArchiveSourcePath);
-
-            ArchiveStatusTextBlock.Text = "ARŞİV OLUŞTURULDU";
-            CalculationStatusTextBlock.Text =
-                wasCorrection
-                    ? $"Düzeltme başarıyla arşive eklendi: v{revision:00}."
-                    : $"Hakediş arşivlendi: v{revision:00}.";
-
-            // The archive operation has succeeded; the calculated item remains
-            // available in history, while the entry form is ready for the next one.
-            _lastCalculatedHistoryId = null;
-            ClearProgressEntryFields();
-            SetProgressEditorMode(false);
-            UpdateArchiveView();
-            NavigationButton_Click(NavArchives, new RoutedEventArgs(Button.ClickEvent, NavArchives));
-
-            MessageBox.Show(
-                wasCorrection
-                    ? $"Hakediş No {item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"} başarıyla düzeltilerek arşive v{revision:00} olarak eklendi.\n\nÖnceki revision korunmuştur.\n{Path.GetFileName(path)}"
-                    : $"Hakediş No {item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"} arşive v{revision:00} olarak eklendi.\n\n{Path.GetFileName(path)}",
-                "OEHS — Arşiv Bilgisi",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
-
-            _editingArchiveSourcePath = null;
+            archivePath = _archiveStore.Save(archive);
+            revision = ExtractArchiveRevision(archivePath);
+            return true;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ProgressPaymentArchiveException)
         {
             ArchiveStatusTextBlock.Text = "ARŞİV HATASI";
-            CalculationStatusTextBlock.Text = ex.Message;
+            CalculationStatusTextBlock.Text = $"Hat {item.RouteNumber}: {ex.Message}";
+            MessageBox.Show(CalculationStatusTextBlock.Text, "OEHS — Arşiv Hatası",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+            return false;
         }
     }
 
