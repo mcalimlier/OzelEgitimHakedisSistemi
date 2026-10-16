@@ -6682,14 +6682,49 @@ public partial class MainWindow : Window
         if (!EnsureRouteForOutput())
             return null;
 
-        if (ReportRouteComboBox.SelectedItem is not RouteDraft route)
-            return null;
-
         var latest = GetSelectedRouteLatestPayment();
-        if (latest is null)
+        return latest is null ? null : BuildOfficialDocumentContextForPayment(latest);
+    }
+
+    private OehsOfficialDocumentContext? BuildOfficialDocumentContextForPayment(ProgressPaymentHistoryData latest)
+    {
+        ArgumentNullException.ThrowIfNull(latest);
+
+        var routeKey = OehsIdentityService.BuildRouteKey(
+            latest.TenderNumber ?? string.Empty,
+            latest.RouteNumber ?? string.Empty,
+            latest.ContractorTaxOrIdentityNumber ?? string.Empty,
+            latest.ContractNumber ?? string.Empty,
+            latest.Input.ProgramType);
+        var route = _routes.FirstOrDefault(candidate => string.Equals(
+            OehsIdentityService.BuildRouteKey(
+                candidate.TenderNumber,
+                candidate.RouteNumber,
+                candidate.ContractorTaxOrIdentityNumber,
+                candidate.ContractNumber,
+                candidate.ProgramType),
+            routeKey,
+            StringComparison.Ordinal));
+        if (route is null)
             return null;
 
-        var payments = GetSelectedRoutePayments();
+        var payments = _progressHistory
+            .Where(x => string.Equals(
+                OehsIdentityService.BuildRouteKey(
+                    x.TenderNumber ?? string.Empty,
+                    x.RouteNumber ?? string.Empty,
+                    x.ContractorTaxOrIdentityNumber ?? string.Empty,
+                    x.ContractNumber ?? string.Empty,
+                    x.Input.ProgramType),
+                routeKey,
+                StringComparison.Ordinal))
+            .OrderBy(x => x.PeriodDate ?? DateOnly.MinValue)
+            .ThenBy(x => x.CreatedAt)
+            .ToList();
+        if (!payments.Any(x => x.Id == latest.Id))
+            payments.Add(latest);
+        payments = ProgressPaymentReportService.OrderByPaymentPeriod(payments).ToList();
+
         var reportTotals = ProgressPaymentReportService.Calculate(latest, payments);
         var reportNetPayable = ProgressPaymentReportService.CalculateReportNetPayable(latest, reportTotals);
         var previousDeduction = ProgressPaymentIcmalService.FindPreviousDeduction(payments, latest);
@@ -6700,22 +6735,16 @@ public partial class MainWindow : Window
             latest.ContractNumber ?? route.ContractNumber,
             latest.Input.ProgramType);
 
-        DateOnly? contractStartDate = latest.ContractStartDate ?? contract?.StartDate;
-        DateOnly? contractEndDate = latest.ContractEndDate ?? contract?.EndDate;
-        DateOnly? tenderDate = latest.TenderDate ?? contract?.TenderDate;
-        DateOnly? contractDate = latest.ContractDate ?? contract?.ContractDate;
-
-        if (!contractStartDate.HasValue && StartDatePicker.SelectedDate is DateTime selectedStart)
-            contractStartDate = DateOnly.FromDateTime(selectedStart);
-        if (!contractEndDate.HasValue && EndDatePicker.SelectedDate is DateTime selectedEnd)
-            contractEndDate = DateOnly.FromDateTime(selectedEnd);
+        var contractStartDate = latest.ContractStartDate ?? contract?.StartDate;
+        var contractEndDate = latest.ContractEndDate ?? contract?.EndDate;
+        var tenderDate = latest.TenderDate ?? contract?.TenderDate;
+        var contractDate = latest.ContractDate ?? contract?.ContractDate;
 
         // Do not label a calendar-day subtraction as contract workdays.
         // If the authoritative workday count is absent, official forms show "-".
         var duration = contract?.ContractWorkDays ?? 0;
-
         var contractorName = string.IsNullOrWhiteSpace(latest.ContractorName)
-            ? (string.IsNullOrWhiteSpace(CurrentContractorName) ? "-" : CurrentContractorName.Trim())
+            ? (string.IsNullOrWhiteSpace(contract?.ContractorName) ? "-" : contract.ContractorName.Trim())
             : latest.ContractorName.Trim();
 
         return new OehsOfficialDocumentContext(
@@ -6733,7 +6762,7 @@ public partial class MainWindow : Window
             PeriodDate: latest.PeriodDate,
             ProgressPaymentNumber: latest.ProgressPaymentNumber,
             Calculation: latest.Calculation,
-            Payments: ProgressPaymentReportService.OrderByPaymentPeriod(payments),
+            Payments: payments,
             ReportTotals: reportTotals,
             ReportNetPayable: reportNetPayable,
             PreviousDeduction: previousDeduction,
