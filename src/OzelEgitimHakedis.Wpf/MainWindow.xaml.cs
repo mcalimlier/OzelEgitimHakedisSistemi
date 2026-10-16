@@ -707,8 +707,9 @@ public partial class MainWindow : Window
         if (!string.IsNullOrWhiteSpace(route.ContractNumber))
             return string.Equals(route.ContractNumber.Trim(), contract.ContractNumber.Trim(), StringComparison.OrdinalIgnoreCase);
 
-        return _contracts.Count(x => string.Equals(
-            x.TenderNumber.Trim(), contract.TenderNumber.Trim(), StringComparison.OrdinalIgnoreCase)) == 1;
+        return _contracts.Count(x =>
+            x.ProgramType == contract.ProgramType &&
+            string.Equals(x.TenderNumber.Trim(), contract.TenderNumber.Trim(), StringComparison.OrdinalIgnoreCase)) == 1;
     }
 
     private void ApplyContractToForm(ContractDraftData contract)
@@ -3537,6 +3538,7 @@ public partial class MainWindow : Window
                     ? _contracts.FirstOrDefault()?.TenderNumber ?? string.Empty
                     : route.TenderNumber;
                 var tenderContracts = _contracts.Where(x =>
+                    x.ProgramType == route.ProgramType &&
                     string.Equals(x.TenderNumber, tender, StringComparison.OrdinalIgnoreCase)).ToArray();
 
                 var contractorTax = OehsIdentityService.NormalizeIdentity(route.ContractorTaxOrIdentityNumber);
@@ -3734,6 +3736,7 @@ public partial class MainWindow : Window
         ClearArchiveCorrectionState();
         _editingContractTender = null;
         _editingContractNumber = null;
+        _editingContractProgramType = null;
         ClearContractFormOnly();
         UpdateContractSummaryView();
         ContractStatusTextBlock.Text = "Yeni ihale/sözleşme kaydı için alanlar temizlendi.";
