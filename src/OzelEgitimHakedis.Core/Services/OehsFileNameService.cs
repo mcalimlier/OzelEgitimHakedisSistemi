@@ -1,4 +1,6 @@
 using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace OzelEgitimHakedis.Core.Services;
 
@@ -37,6 +39,32 @@ public static class OehsFileNameService
         var route = Safe(routeNumber, "Hat");
 
         return $"OEHS_{tender}{contract}_Hat-{route}_Hakediş-{progressPaymentNumber.ToString("00", CultureInfo.InvariantCulture)}_{periodDate:yyyy-MM-dd}.pdf";
+    }
+
+    public static string BuildProgressPdfFileNameForContractor(
+        string tenderNumber,
+        string contractorName,
+        string contractorTaxOrIdentityNumber,
+        string routeNumber,
+        int progressPaymentNumber,
+        DateOnly periodDate)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(progressPaymentNumber);
+        var tender = Safe(tenderNumber, "Ihale");
+        var contractor = BuildContractorFilePart(contractorName, contractorTaxOrIdentityNumber);
+        var route = Safe(routeNumber, "Hat");
+        return $"OEHS_{tender}_Yuklenici-{contractor}_Hat-{route}_Hakediş-{progressPaymentNumber.ToString("00", CultureInfo.InvariantCulture)}_{periodDate:yyyy-MM-dd}.pdf";
+    }
+
+    public static string BuildContractorFilePart(string? contractorName, string? contractorTaxOrIdentityNumber)
+    {
+        var name = Safe(contractorName, "Yuklenici");
+        var normalizedIdentity = OehsIdentityService.NormalizeIdentity(contractorTaxOrIdentityNumber);
+        var hashInput = string.IsNullOrWhiteSpace(normalizedIdentity)
+            ? name.ToUpperInvariant()
+            : normalizedIdentity;
+        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(hashInput)))[..10];
+        return $"{name}-{hash}";
     }
 
     public static string SanitizeFileName(string? value, string fallback = "Kayitsiz") =>

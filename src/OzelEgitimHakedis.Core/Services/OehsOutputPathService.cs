@@ -38,6 +38,55 @@ public static class OehsOutputPathService
         return Path.Combine(root, "Ciktilar", "Hakedisler", tender, $"Sozlesme-{contract}", $"Hat-{route}");
     }
 
+    public static string BuildPdfDirectoryForContractor(
+        string tenderNumber,
+        string contractorName,
+        string contractorTaxOrIdentityNumber,
+        string routeNumber) =>
+        BuildPdfDirectoryForContractor(
+            DesktopRoot, tenderNumber, contractorName, contractorTaxOrIdentityNumber, routeNumber);
+
+    public static string BuildPdfDirectoryForContractor(
+        string root,
+        string tenderNumber,
+        string contractorName,
+        string contractorTaxOrIdentityNumber,
+        string routeNumber)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(root);
+
+        var tender = OehsFileNameService.SanitizeFileName(tenderNumber, "Ihale");
+        var contractor = OehsFileNameService.BuildContractorFilePart(contractorName, contractorTaxOrIdentityNumber);
+        var route = OehsFileNameService.SanitizeFileName(routeNumber, "Hat");
+        return Path.Combine(root, "Ciktilar", "Hakedisler", tender, $"Yuklenici-{contractor}", $"Hat-{route}");
+    }
+
+    public static string BuildContractorPdfFilePath(
+        string tenderNumber,
+        string contractorName,
+        string contractorTaxOrIdentityNumber,
+        string routeNumber,
+        int progressPaymentNumber,
+        DateOnly periodDate) =>
+        BuildContractorPdfFilePath(
+            DesktopRoot, tenderNumber, contractorName, contractorTaxOrIdentityNumber, routeNumber, progressPaymentNumber, periodDate);
+
+    public static string BuildContractorPdfFilePath(
+        string root,
+        string tenderNumber,
+        string contractorName,
+        string contractorTaxOrIdentityNumber,
+        string routeNumber,
+        int progressPaymentNumber,
+        DateOnly periodDate)
+    {
+        var directory = BuildPdfDirectoryForContractor(
+            root, tenderNumber, contractorName, contractorTaxOrIdentityNumber, routeNumber);
+        var fileName = OehsFileNameService.BuildProgressPdfFileNameForContractor(
+            tenderNumber, contractorName, contractorTaxOrIdentityNumber, routeNumber, progressPaymentNumber, periodDate);
+        return Path.Combine(directory, fileName);
+    }
+
     public static string BuildPdfFilePath(
         string tenderNumber,
         string routeNumber,

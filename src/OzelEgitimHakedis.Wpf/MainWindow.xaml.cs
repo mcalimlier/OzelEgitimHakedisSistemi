@@ -3660,7 +3660,11 @@ public partial class MainWindow : Window
 
         var tender = latest.TenderNumber ?? string.Empty;
         var route = latest.RouteNumber ?? string.Empty;
-        var documentFolder = OehsOutputPathService.BuildPdfDirectoryForContract(tender, latest.ContractNumber ?? string.Empty, route);
+        var documentFolder = OehsOutputPathService.BuildPdfDirectoryForContractor(
+            tender,
+            latest.ContractorName ?? string.Empty,
+            latest.ContractorTaxOrIdentityNumber ?? string.Empty,
+            route);
         Directory.CreateDirectory(documentFolder);
 
         var fileNames = pdfPaths.Select(Path.GetFileName).ToArray();
@@ -5365,9 +5369,10 @@ public partial class MainWindow : Window
         }
         else
         {
-            var targetFolder = OehsOutputPathService.BuildPdfDirectoryForContract(
+            var targetFolder = OehsOutputPathService.BuildPdfDirectoryForContractor(
                 selectedRoute.TenderNumber,
-                selectedRoute.ContractNumber,
+                selectedRoute.ContractorName,
+                selectedRoute.ContractorTaxOrIdentityNumber,
                 selectedRoute.RouteNumber);
             ReportPdfTargetTextBlock.Text = $"PDF hedefi: {targetFolder}";
         }
@@ -6167,15 +6172,17 @@ public partial class MainWindow : Window
         var preserveStagingFolderForRecovery = false;
         try
         {
-            var targetFolder = OehsOutputPathService.BuildPdfDirectoryForContract(
+            var targetFolder = OehsOutputPathService.BuildPdfDirectoryForContractor(
                 latest.TenderNumber ?? string.Empty,
-                latest.ContractNumber ?? string.Empty,
+                latest.ContractorName ?? string.Empty,
+                latest.ContractorTaxOrIdentityNumber ?? string.Empty,
                 latest.RouteNumber ?? string.Empty);
 
             var baseTargetPath = latest.ProgressPaymentNumber.HasValue && latest.PeriodDate.HasValue
-                ? OehsOutputPathService.BuildContractPdfFilePath(
+                ? OehsOutputPathService.BuildContractorPdfFilePath(
                     latest.TenderNumber ?? string.Empty,
-                    latest.ContractNumber ?? string.Empty,
+                    latest.ContractorName ?? string.Empty,
+                    latest.ContractorTaxOrIdentityNumber ?? string.Empty,
                     latest.RouteNumber ?? string.Empty,
                     latest.ProgressPaymentNumber.Value,
                     latest.PeriodDate.Value)

@@ -61,6 +61,36 @@ public sealed class OehsOutputPathServiceTests
     }
 
     [Fact]
+    public void BuildPdfDirectoryForContractor_ShouldSeparateContractorsWithoutExposingTaxIdentity()
+    {
+        var root = Path.Combine(@"C:\Users\Test\Desktop", "OzelEgitimHakedisSistemi");
+
+        var first = OehsOutputPathService.BuildPdfDirectoryForContractor(
+            root, "2026/01", "Firma A", "11111111111", "01");
+        var second = OehsOutputPathService.BuildPdfDirectoryForContractor(
+            root, "2026/01", "Firma B", "22222222222", "01");
+
+        Assert.NotEqual(first, second);
+        Assert.Contains("Firma A-", first, StringComparison.Ordinal);
+        Assert.DoesNotContain("11111111111", first, StringComparison.Ordinal);
+        Assert.DoesNotContain("Sozlesme", first, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void BuildContractorPdfFilePath_ShouldNotExposeInternalContractNumberOrFullIdentity()
+    {
+        var root = Path.Combine(@"C:\Users\Test\Desktop", "OzelEgitimHakedisSistemi");
+
+        var path = OehsOutputPathService.BuildContractorPdfFilePath(
+            root, "2026/01", "Firma A", "11111111111", "01", 3, new DateOnly(2026, 11, 30));
+
+        Assert.DoesNotContain("11111111111", path, StringComparison.Ordinal);
+        Assert.DoesNotContain("Sozlesme", path, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Yuklenici-Firma A-", path, StringComparison.Ordinal);
+        Assert.EndsWith("Hakediş-03_2026-11-30.pdf", path, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void BuildPdfFilePath_ShouldUseDescriptiveName()
     {
         var root = Path.Combine(@"C:\Users\Test\Desktop", "OzelEgitimHakedisSistemi");

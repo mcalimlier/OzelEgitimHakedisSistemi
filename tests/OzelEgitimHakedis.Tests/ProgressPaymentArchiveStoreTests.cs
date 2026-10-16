@@ -63,6 +63,17 @@ public sealed class ProgressPaymentArchiveStoreTests
     }
 
     [Fact]
+    public void BuildFileStem_ShouldUseContractorIdentityHashInsteadOfInternalContractNumber()
+    {
+        var archive = CreateArchive(1);
+        var stem = ProgressPaymentArchiveStore.BuildFileStem(archive);
+
+        Assert.Contains("Yuklenici-Firma-", stem, StringComparison.Ordinal);
+        Assert.DoesNotContain("SOZ-01", stem, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("12345678901", stem, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void BuildFileStem_ShouldSanitizeWindowsInvalidCharacters()
     {
         var archive = CreateArchive(1) with
