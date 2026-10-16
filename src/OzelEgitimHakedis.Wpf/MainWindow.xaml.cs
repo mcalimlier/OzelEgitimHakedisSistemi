@@ -565,11 +565,12 @@ public partial class MainWindow : Window
         ArchivePanel.Visibility = page == "Archives" ? Visibility.Visible : Visibility.Collapsed;
         SummaryPanel.Visibility = page == "Summary" ? Visibility.Visible : Visibility.Collapsed;
         ReportsPanel.Visibility = page == "Reports" ? Visibility.Visible : Visibility.Collapsed;
-        AcceptancePanel.Visibility = page == "Acceptance" ? Visibility.Visible : Visibility.Collapsed;
+        AcceptancePanel.Visibility = Visibility.Collapsed;
+        StatisticsPanel.Visibility = page == "Statistics" ? Visibility.Visible : Visibility.Collapsed;
         SettingsPanel.Visibility = page == "Settings" ? Visibility.Visible : Visibility.Collapsed;
         CalculationConstantsPanel.Visibility = page == "Constants" ? Visibility.Visible : Visibility.Collapsed;
         PlaceholderPanel.Visibility = page is "Home" or "Contract" or "Progress" or "Lines" or "Contractors"
-            or "History" or "Archives" or "Summary" or "Reports" or "Acceptance" or "Settings" or "Constants"
+            or "History" or "Archives" or "Summary" or "Reports" or "Acceptance" or "Statistics" or "Settings" or "Constants"
             ? Visibility.Collapsed
             : Visibility.Visible;
 
@@ -584,6 +585,7 @@ public partial class MainWindow : Window
             "Summary" => "İcmal",
             "Reports" => "Çıktılar",
             "Acceptance" => "Kabul Tutanağı",
+            "Statistics" => "İstatistikler",
             "Settings" => "Ayarlar",
             "Constants" => "Hesaplama Sabitleri",
             _ => "Ana Ekran"

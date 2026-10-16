@@ -170,10 +170,10 @@
                                 <TextBlock Text="HAKEDİŞ GEÇMİŞİ" FontSize="11.5" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
-                        <Button x:Name="NavAcceptance" Style="{StaticResource NavButton}" Tag="Acceptance" Click="NavigationButton_Click">
+                        <Button x:Name="NavAcceptance" Style="{StaticResource NavButton}" Tag="Statistics" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8A1;" FontSize="15" Width="42"/>
-                                <TextBlock Text="KABUL TUTANAĞI" FontSize="11.5" FontWeight="SemiBold"/>
+                                <TextBlock Text="İSTATİSTİKLER" FontSize="11.5" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                         <Button x:Name="NavArchives" Style="{StaticResource NavButton}" Tag="Archives" Click="NavigationButton_Click">
@@ -1139,6 +1139,21 @@
 </StackPanel></Border>
 </Grid></StackPanel>
                             </ScrollViewer>
+</Grid>
+
+<Grid x:Name="StatisticsPanel" Visibility="Collapsed">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0">
+        <StackPanel>
+            <TextBlock Text="İSTATİSTİKLER" Style="{StaticResource PageTitle}"/>
+            <TextBlock Text="İhale, yüklenici, hat ve hakediş verilerine göre istatistikler bu alanda geliştirilecektir." Style="{StaticResource PageSubtitle}" TextWrapping="Wrap"/>
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="İSTATİSTİK MODÜLÜ" Style="{StaticResource CardTitle}"/>
+                    <TextBlock Text="Bu bölüm şimdilik yer tutucudur. İstatistik kapsamı ve hesapları, mevcut hakediş kayıtları doğrulandıktan sonra ayrıca belirlenecektir." Style="{StaticResource CardSubtitle}" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
 </Grid>
 
 <Grid x:Name="AcceptancePanel" Visibility="Collapsed">
