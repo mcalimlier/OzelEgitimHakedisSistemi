@@ -7447,14 +7447,18 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
     private static string NormalizePhoneNumber(string? value)
     {
         var digits = new string((value ?? string.Empty).Where(char.IsDigit).ToArray());
-        if (digits.Length == 0 || digits == "0")
+        if (digits.Length == 0 || digits.All(digit => digit == '0'))
             return string.Empty;
 
-        // 90XXXXXXXXXX and +90XXXXXXXXXX are normalized to the domestic 0XXXXXXXXXX form.
-        if (digits.StartsWith("90", StringComparison.Ordinal) && digits.Length >= 12)
+        // Accept Turkish international prefixes as well as the domestic format.
+        if (digits.StartsWith("0090", StringComparison.Ordinal) && digits.Length >= 14)
+            digits = digits[4..];
+        else if (digits.StartsWith("90", StringComparison.Ordinal) && digits.Length >= 12)
             digits = digits[2..];
 
-        return digits.StartsWith('0') ? digits : "0" + digits;
+        // The textbox starts with 0, so users who type another 0 must not save 00...
+        digits = digits.TrimStart('0');
+        return digits.Length == 0 ? string.Empty : "0" + digits;
     }
 
     private void ContractValidationDateChanged(object? sender, SelectionChangedEventArgs e)
