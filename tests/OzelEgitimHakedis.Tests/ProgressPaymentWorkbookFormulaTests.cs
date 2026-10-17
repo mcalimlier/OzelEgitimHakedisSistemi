@@ -65,6 +65,27 @@ public sealed class ProgressPaymentWorkbookFormulaTests
     }
 
     [Fact]
+    public void SpecialEducationReport_ShouldUseCalculationSheetStampTaxAsIs()
+    {
+        var input = new ProgressPaymentInput(
+            WorkDays: 1,
+            DailyPrice: 100m,
+            DiscountAmount: 0m,
+            PriceDifference: -200m,
+            ContractAmount: 1000m,
+            IsVatExempt: true,
+            TaxDebt: 0m,
+            SocialSecurityDebt: 0m,
+            MinimumWageSupport: 0m,
+            ProgramType: TransportationProgramType.SpecialEducation);
+        var current = History(1, new DateOnly(2026, 10, 31), input);
+
+        Assert.Equal(current.Calculation.StampTax,
+            ProgressPaymentReportService.CalculateReportStampTax(
+                current.Calculation, current.Input.ProgramType));
+    }
+
+    [Fact]
     public void ReportNetPayable_ShouldRoundGrossAndDeductionsSeparatelyLikeExcelD28()
     {
         var current = History(
