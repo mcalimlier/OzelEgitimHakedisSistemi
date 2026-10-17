@@ -319,4 +319,42 @@ public sealed class ProgressPaymentReportTests
         Assert.Equal(90m, totals.CurrentTotal);
     }
 
+
+    [Fact]
+    public void BasicOrSecondaryReportTotals_ShouldIgnoreLegacyGuideFields()
+    {
+        var current = History(
+            1,
+            new DateOnly(2026, 10, 31),
+            new DateTime(2026, 10, 31),
+            100m,
+            10m) with
+        {
+            Input = new ProgressPaymentInput(
+                WorkDays: 1,
+                DailyPrice: 100m,
+                DiscountAmount: 0m,
+                PriceDifference: 10m,
+                ContractAmount: 100000m,
+                IsVatExempt: false,
+                TaxDebt: 0m,
+                SocialSecurityDebt: 0m,
+                MinimumWageSupport: 0m,
+                ProgramType: TransportationProgramType.BasicOrSecondary,
+                GuideWorkDays: 1,
+                GuideDailyPrice: 999m,
+                GuideDiscountAmount: 0m,
+                GuidePriceDifference: 500m)
+        };
+
+        var totals = ProgressPaymentReportService.Calculate(current, new[] { current });
+
+        Assert.Equal(100m, ProgressPaymentReportService.CalculateWorkbookMonthlyPaymentAmount(current));
+        Assert.Equal(10m, ProgressPaymentReportService.CalculateWorkbookPriceDifference(current));
+        Assert.Equal(100m, totals.CumulativeServiceAmount);
+        Assert.Equal(10m, totals.CumulativePriceDifference);
+        Assert.Equal(110m, totals.CumulativeTotal);
+        Assert.Equal(110m, totals.CurrentTotal);
+    }
+
 }
