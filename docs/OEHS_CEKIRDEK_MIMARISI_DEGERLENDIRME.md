@@ -98,3 +98,30 @@ CI'da test başarısı ile görsel kabulü ayrı raporlanmalı. PDF'nin oluştur
 ## Sonuç
 
 OEHS için modüler çekirdek yaklaşımı önerilir. En büyük kazanç; **hesaplama hatası, geçmiş/raporlama hatası, veri izolasyonu hatası ve PDF yerleşim hatasını ayrı test ve sorumluluk alanlarına ayırmak** olacaktır. İlk hedef daha fazla proje üretmek değil, mevcut Core/WPF sınırını koruyarak program türlerini ve dört belge üretimini test edilebilir, açık sözleşmeli bileşenlere dönüştürmektir.
+
+
+## 7. Kod ve test incelemesinden ek bulgular (17.10.2026)
+
+### CI durumu
+- İncelenen dal: `feature/official-payment-document-templates`
+- Commit: `9b832e411bcd85b25fe1b0baa10cf5ca89f6abe2`
+- Windows Build run: [39054744710](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39054744710)
+- Sonuç: **success**. Tam çözüm/WPF/test projeleri derleme, Core testleri, PDF smoke üretimi, Windows EXE ve deneme paketi artefakt adımları tamamlandı.
+- Bu CI sonucu, PDF'lerin kaynak Excel/PDF şablonlarıyla piksel bazında eşit olduğunu tek başına kanıtlamaz.
+
+### PDF testlerinin mevcut kapsaması
+`OfficialDocumentOutputTests.cs` şu an dört belgeyi her iki program türü için üretip tek sayfa A4, metin, bazı hücre tutarları, imza alanları ve belirli koordinatları denetliyor. Bu değerli bir yapısal regresyon tabanı. Ancak test, kaynak Excel/PDF sayfalarıyla raster karşılaştırma yapmıyor; metin taşması ve çizgi konumu gibi bazı görsel farklar otomatik olarak kaçabilir.
+
+**Güvenli sonraki adım:** mevcut smoke PDF artefaktlarını kaynak kabul etmeyip, önce gerçek kaynak şablon sayfalarının erişilebilirliğini ve lisans/format uygunluğunu doğrulamak; ardından Windows CI üzerinde PDF'leri sabit DPI ile görsele dönüştürüp karşılaştırma raporu üretmek. Onaylı referans görsel olmadan otomatik “pixel-perfect” eşiği koyulmamalı.
+
+### Belge etiketi için açık doğrulama noktası
+Kabul Tutanağı testinde `Sözleşmeye göre işin süresi (takvim günü)` etiketiyle `180 İş Günü` değeri birlikte bekleniyor. Bu, etiket ile gösterilen değerin birbiriyle tutarlı olup olmadığının kaynak XLSM şablonunda ve kullanıcının onayladığı resmî örnekte doğrulanması gereken bir farktır. Bu turda etiketi değiştirmedik; testin mevcut beklentisi de sessizce yeniden yazılmadı.
+
+### Sıradaki uygulama kapıları
+1. Rapor servisinin D6/D7/D8/D10/D11/D13/D26/D28 hesapları için mevcut testlerin hangi hücre zincirini kanıtladığını haritala; yalnızca gerçek kaynak giriş zinciri tekrar kurulabilen örnekleri golden-master kabul et.
+2. Program türüne göre hesaplama stratejisi eklemeden önce mevcut `ProgressPaymentCalculator` dallarını ve çağrı noktalarını listele; mevcut sonuçları karakterizasyon testleriyle sabitle.
+3. Dört belge için veri aktarım sözleşmesini tanımla; PDF üreticisinin iş hesabı yapmadığını testlerle kanıtla.
+4. Görsel karşılaştırmayı, gerçek kaynak sayfalar ve sabit render ortamı hazır olduğunda ekle.
+5. Her aşamayı ayrı commit ve CI ile doğrula; ana dala birleştirme veya yayın yapma.
+
+Bu ek bulgular yalnızca mimari ve test planını netleştirir; resmi ödeme hesaplama kurallarını değiştirmez.
