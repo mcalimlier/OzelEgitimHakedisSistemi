@@ -110,35 +110,39 @@ public sealed class ProgressPaymentWorkbookFormulaTests
             "SOZ",
             ContractorTaxOrIdentityNumber: "TEST-VKN-01");
 
-    [Theory]
-    [InlineData(-100, 50, -3)]
-    [InlineData(-100, -50, -9)]
-    [InlineData(100, -50, 3)]
-    public void AdditionalGuarantee_ShouldApplySixPercentToEachSignedPriceDifference(
-        decimal transportPriceDifference,
-        decimal guidePriceDifference,
-        decimal expectedGuarantee)
+    [Fact]
+    public void AdditionalGuarantee_ShouldApplySixPercentToEachSignedPriceDifference()
     {
-        var input = new ProgressPaymentInput(
-            WorkDays: 0,
-            DailyPrice: 0m,
-            DiscountAmount: 0m,
-            PriceDifference: transportPriceDifference,
-            ContractAmount: 1000m,
-            IsVatExempt: true,
-            TaxDebt: 0m,
-            SocialSecurityDebt: 0m,
-            MinimumWageSupport: 0m,
-            GuideWorkDays: 0,
-            GuideDailyPrice: 0m,
-            GuideDiscountAmount: 0m,
-            GuidePriceDifference: guidePriceDifference,
-            ProgramType: TransportationProgramType.SpecialEducation);
+        var scenarios = new (decimal TransportPriceDifference, decimal GuidePriceDifference, decimal ExpectedGuarantee)[]
+        {
+            (-100m, 50m, -3m),
+            (-100m, -50m, -9m),
+            (100m, -50m, 3m)
+        };
 
-        var result = ProgressPaymentCalculator.Calculate(input);
+        foreach (var scenario in scenarios)
+        {
+            var input = new ProgressPaymentInput(
+                WorkDays: 0,
+                DailyPrice: 0m,
+                DiscountAmount: 0m,
+                PriceDifference: scenario.TransportPriceDifference,
+                ContractAmount: 1000m,
+                IsVatExempt: true,
+                TaxDebt: 0m,
+                SocialSecurityDebt: 0m,
+                MinimumWageSupport: 0m,
+                GuideWorkDays: 0,
+                GuideDailyPrice: 0m,
+                GuideDiscountAmount: 0m,
+                GuidePriceDifference: scenario.GuidePriceDifference,
+                ProgramType: TransportationProgramType.SpecialEducation);
 
-        // Special Education XLSM AC = I*6% + R*6%; negative differences remain signed.
-        Assert.Equal(expectedGuarantee, result.AdditionalGuarantee);
+            var result = ProgressPaymentCalculator.Calculate(input);
+
+            // Special Education XLSM AC = I*6% + R*6%; negative differences remain signed.
+            Assert.Equal(scenario.ExpectedGuarantee, result.AdditionalGuarantee);
+        }
     }
 
     [Fact]
