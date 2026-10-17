@@ -536,6 +536,99 @@ public partial class MainWindow : Window
             "OEHS — Başlangıç Değerleri", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
+    private void LoadSignatoriesIntoFields()
+    {
+        var signatories = OehsOfficialDocumentSettingsStore.Load();
+        SignatoryPreparerNameTextBox.Text = signatories.PreparerName;
+        SignatoryPreparerRoleTextBox.Text = signatories.PreparerRole;
+        SignatoryControllerNameTextBox.Text = signatories.ControllerName;
+        SignatoryControllerRoleTextBox.Text = signatories.ControllerRole;
+        SignatoryApproverNameTextBox.Text = signatories.ApproverName;
+        SignatoryApproverRoleTextBox.Text = signatories.ApproverRole;
+    }
+
+    private void LoadSignatoriesButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            LoadSignatoriesIntoFields();
+            MessageBox.Show(
+                "Kayıtlı imzacı bilgileri yeniden yüklendi.",
+                "OEHS — İmzacı Ayarları",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                ex.Message,
+                "OEHS — İmzacı Ayarları Okunamadı",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+    }
+
+    private void SaveSignatoriesButton_Click(object sender, RoutedEventArgs e)
+    {
+        var values = new[]
+        {
+            SignatoryPreparerNameTextBox.Text,
+            SignatoryPreparerRoleTextBox.Text,
+            SignatoryControllerNameTextBox.Text,
+            SignatoryControllerRoleTextBox.Text,
+            SignatoryApproverNameTextBox.Text,
+            SignatoryApproverRoleTextBox.Text
+        };
+
+        if (values.Any(string.IsNullOrWhiteSpace))
+        {
+            MessageBox.Show(
+                "Lütfen üç imzacının da adını ve görev/unvan bilgisini doldurun. Boş alanla kayıt yapılmadı.",
+                "OEHS — Eksik İmza Bilgisi",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
+        }
+
+        if (values.Any(value => value.Trim().Length > 150))
+        {
+            MessageBox.Show(
+                "İsim ve görev/unvan alanları 150 karakteri aşamaz.",
+                "OEHS — İmza Bilgisi Çok Uzun",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
+        }
+
+        try
+        {
+            var signatories = new OehsOfficialDocumentSignatories(
+                PreparerName: values[0].Trim(),
+                PreparerRole: values[1].Trim(),
+                ControllerName: values[2].Trim(),
+                ControllerRole: values[3].Trim(),
+                ApproverName: values[4].Trim(),
+                ApproverRole: values[5].Trim());
+
+            OehsOfficialDocumentSettingsStore.Save(signatories);
+            LoadSignatoriesIntoFields();
+
+            MessageBox.Show(
+                "İmzacı bilgileri kaydedildi. Yeni oluşturulacak dört resmî PDF bu bilgileri kullanacaktır. Önceden oluşturulmuş PDF dosyaları otomatik değişmez; gerekiyorsa yeniden oluşturun.",
+                "OEHS — İmzacı Ayarları Kaydedildi",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                "İmzacı ayarları kaydedilemedi. Dosya izinlerini ve ayar dosyasını kontrol edin.\n\n" + ex.Message,
+                "OEHS — Kayıt Hatası",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+    }
+
     private void NavigationButton_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not System.Windows.Controls.Button button)
@@ -561,6 +654,23 @@ public partial class MainWindow : Window
                     "OEHS — Düzenleme Devam Ediyor",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
+                return;
+            }
+        }
+
+        if (page == "Settings")
+        {
+            try
+            {
+                LoadSignatoriesIntoFields();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    ex.Message,
+                    "OEHS — İmzacı Ayarları Okunamadı",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
                 return;
             }
         }
