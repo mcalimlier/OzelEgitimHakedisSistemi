@@ -2447,7 +2447,7 @@ public partial class MainWindow : Window
             GuideDailyPrice = hasGuide ? archive.ProgressPayment.Input.GuideDailyPrice : 0m,
             GuideDiscountAmount = hasGuide ? archive.ProgressPayment.Input.GuideDiscountAmount : 0m,
             GuidePriceDifference = hasGuide ? archive.ProgressPayment.Input.GuidePriceDifference : 0m,
-            MinimumWageSupport = hasGuide ? archive.ProgressPayment.Input.MinimumWageSupport : 0m,
+            MinimumWageSupport = archive.ProgressPayment.Input.MinimumWageSupport,
             ProgramType = updatedContract.ProgramType
         };
 
@@ -2487,7 +2487,7 @@ public partial class MainWindow : Window
                     GuideDailyPrice = previousHasGuide ? previous.Input.GuideDailyPrice : 0m,
                     GuideDiscountAmount = previousHasGuide ? previous.Input.GuideDiscountAmount : 0m,
                     GuidePriceDifference = previousHasGuide ? previous.Input.GuidePriceDifference : 0m,
-                    MinimumWageSupport = previousHasGuide ? previous.Input.MinimumWageSupport : 0m,
+                    MinimumWageSupport = previous.Input.MinimumWageSupport,
                     ProgramType = updatedContract.ProgramType
                 };
 
@@ -2565,7 +2565,7 @@ public partial class MainWindow : Window
             GuideDailyPrice = hasGuide ? guideDailyPrice : 0m,
             GuideDiscountAmount = hasGuide ? archive.ProgressPayment.Input.GuideDiscountAmount : 0m,
             GuidePriceDifference = hasGuide ? archive.ProgressPayment.Input.GuidePriceDifference : 0m,
-            MinimumWageSupport = hasGuide ? archive.ProgressPayment.Input.MinimumWageSupport : 0m,
+            MinimumWageSupport = archive.ProgressPayment.Input.MinimumWageSupport,
             ProgramType = archive.Contract.ProgramType
         };
 
