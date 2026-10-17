@@ -63,7 +63,7 @@ Aşağıdaki formüller workbook'un `Hesaplama` sayfasından okunmuştur. Taşı
 | D26 | `SUM(D14:F25)` | Kesintiler ve mahsuplar toplamı |
 | D28 | `ROUND(D13,2)-ROUND(D26,2)` | Bu PDF'nin “Yükleniciye Ödenecek Tutar” değeri |
 
-**Başlık-formül farkı korunarak test edilmelidir:** PDF/Excel'de E satırının açıklaması “C - D” şeklindeyken D11 formülü `H2 ± ABS(D7)` mantığındadır. Kaynak formül sessizce `C-D` biçimine çevrilmemeli; kullanıcı tarafından onaylanacak bir iş kuralı kararı olmadan birebir formül davranışı korunmalıdır.
+**Kaynak formül (iki XLSM'de de doğrulandı):** `=IF(D7<0,H2-ABS(D7),H2+D7)-D7`. Cebirsel olarak her iki dalda da `H2` değerine sadeleşir. PDF/Excel'de E satırının açıklaması “C - D” şeklinde olduğu için açıklama ile formül arasında fark vardır; formül sessizce `C-D` biçimine çevrilmemeli, kullanıcı tarafından onaylanacak iş kuralı kararı olmadan birebir formül davranışı korunmalıdır.
 
 **Ayrı net değerler:** `Hesaplama!AG = AF-AE` ile `Hakediş Raporu!D28 = ROUND(D13,2)-ROUND(D26,2)` farklı formüllerdir ve farklı sonuç verebilir. Resmî Hakediş Raporu PDF'sinin I satırı D28'e göre oluşturulmalı; hesaplama ekranındaki AG değeri onun yerine kullanılmamalıdır.
 
