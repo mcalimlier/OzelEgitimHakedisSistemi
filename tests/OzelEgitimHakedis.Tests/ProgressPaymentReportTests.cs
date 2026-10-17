@@ -188,6 +188,48 @@ public sealed class ProgressPaymentReportTests
     }
 
 
+
+    [Fact]
+    public void SpecialEducation_SourceWorkbookExample_ShouldMatchHakedişRaporuCellsD6ToD11()
+    {
+        // Source XLSM values for a populated Special Education route:
+        // previous K+T = 54,725.903; current K=52,443.573, T=40,874.70,
+        // current raw I+R=1,403.573.
+        var previousInput = new ProgressPaymentInput(
+            WorkDays: 1, DailyPrice: 54725.903m, DiscountAmount: 0m,
+            PriceDifference: 0m, ContractAmount: 100000m, IsVatExempt: true,
+            TaxDebt: 0m, SocialSecurityDebt: 0m, MinimumWageSupport: 0m,
+            ProgramType: TransportationProgramType.SpecialEducation);
+        var previousCalculation = ProgressPaymentCalculator.Calculate(previousInput);
+        var previous = new ProgressPaymentHistoryData(
+            Guid.NewGuid(), new DateTime(2026, 9, 30),
+            previousInput, previousCalculation, 1, new DateOnly(2026, 9, 30),
+            "1", "Hat 1", "İş", "Firma", "TENDER", "SOZ",
+            ContractorTaxOrIdentityNumber: "12345678901");
+
+        var currentInput = new ProgressPaymentInput(
+            WorkDays: 22, DailyPrice: 2320m, DiscountAmount: 0m,
+            PriceDifference: 1403.573m, ContractAmount: 100000m, IsVatExempt: true,
+            TaxDebt: 0m, SocialSecurityDebt: 0m, MinimumWageSupport: 0m,
+            GuideWorkDays: 30, GuideDailyPrice: 1362.49m,
+            GuideDiscountAmount: 0m, GuidePriceDifference: 0m,
+            ProgramType: TransportationProgramType.SpecialEducation);
+        var currentCalculation = ProgressPaymentCalculator.Calculate(currentInput);
+        var current = new ProgressPaymentHistoryData(
+            Guid.NewGuid(), new DateTime(2026, 10, 31),
+            currentInput, currentCalculation, 2, new DateOnly(2026, 10, 31),
+            "1", "Hat 1", "İş", "Firma", "TENDER", "SOZ",
+            ContractorTaxOrIdentityNumber: "12345678901");
+
+        var totals = ProgressPaymentReportService.Calculate(current, new[] { previous, current });
+
+        Assert.Equal(146640.603m, totals.CumulativeServiceAmount); // D6
+        Assert.Equal(1403.573m, totals.CumulativePriceDifference); // D7
+        Assert.Equal(148044.176m, totals.CumulativeTotal);         // D8 = D6+D7
+        Assert.Equal(54725.903m, totals.PreviousTotal);            // D10
+        Assert.Equal(93318.273m, totals.CurrentTotal);             // D11 = current K+T
+    }
+
     [Fact]
     public void CurrentTotal_ShouldEqualCumulativeTotalMinusPreviousTotal()
     {
