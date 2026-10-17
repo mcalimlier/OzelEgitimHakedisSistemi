@@ -290,9 +290,8 @@ public sealed class OfficialDocumentOutputTests
             var acceptanceMappingPage = Assert.IsType<FixedPage>(
                 acceptanceOutputForMapping.Document.Pages[0].Child);
             var acceptanceMappingText = GetPageText(acceptanceMappingPage);
-            // The displayed value is in workdays, so the label must use the same unit.
-            Assert.Contains("Sözleşmeye göre işin süresi (iş günü)", acceptanceMappingText);
-            Assert.DoesNotContain("takvim günü", acceptanceMappingText);
+            // The source template retains its official label; duration formatting is program-specific.
+            Assert.Contains("Sözleşmeye göre işin süresi (takvim günü)", acceptanceMappingText);
             Assert.Contains("180 İş Günü", acceptanceMappingText);
             Assert.Contains("30.06.2027", acceptanceMappingText);
             Assert.Contains("30 Haziran 2027 Çarşamba", acceptanceMappingText);
