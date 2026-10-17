@@ -73,6 +73,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        ContractorPhoneTextBox.Text = "0";
         ResetEditorUiToCreateMode();
         ConfigureWindow();
         ConfigureZeroValueInputs();
@@ -2288,7 +2289,7 @@ public partial class MainWindow : Window
                 ContractorNameTextBox.Clear();
                 ContractorTaxTextBox.Clear();
                 ContractorAddressTextBox.Clear();
-                ContractorPhoneTextBox.Clear();
+                ContractorPhoneTextBox.Text = "0";
                 ContractorEmailTextBox.Clear();
                 ContractorBankTextBox.Clear();
                 ContractorContactTextBox.Clear();
@@ -2330,7 +2331,7 @@ public partial class MainWindow : Window
             name,
             tax,
             ContractorAddressTextBox.Text.Trim(),
-            ContractorPhoneTextBox.Text.Trim(),
+            NormalizePhoneNumber(ContractorPhoneTextBox.Text),
             ContractorEmailTextBox.Text.Trim(),
             ContractorBankTextBox.Text.Trim(),
             ContractorContactTextBox.Text.Trim(),
@@ -2713,7 +2714,7 @@ public partial class MainWindow : Window
         ContractorNameTextBox.Text = contractor.Name;
         ContractorTaxTextBox.Text = contractor.TaxOrIdentityNumber;
         ContractorAddressTextBox.Text = contractor.Address;
-        ContractorPhoneTextBox.Text = contractor.Phone;
+        ContractorPhoneTextBox.Text = NormalizePhoneNumber(contractor.Phone);
         ContractorEmailTextBox.Text = contractor.Email;
         ContractorBankTextBox.Text = contractor.BankAccountNumber;
         ContractorContactTextBox.Text = contractor.ContactPerson;
@@ -2735,7 +2736,7 @@ public partial class MainWindow : Window
             ContractorNameTextBox.Clear();
             ContractorTaxTextBox.Clear();
             ContractorAddressTextBox.Clear();
-            ContractorPhoneTextBox.Clear();
+            ContractorPhoneTextBox.Text = "0";
             ContractorEmailTextBox.Clear();
             ContractorBankTextBox.Clear();
             ContractorContactTextBox.Clear();
@@ -7437,6 +7438,25 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
             ClearInvalid(control);
     }
 
+    private void ContractTransportDailyPriceTextBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (TryParseDecimal(ContractTransportDailyPriceTextBox.Text, out var price) && price >= 0)
+            ClearInvalid(ContractTransportDailyPriceTextBox);
+    }
+
+    private static string NormalizePhoneNumber(string? value)
+    {
+        var digits = new string((value ?? string.Empty).Where(char.IsDigit).ToArray());
+        if (digits.Length == 0 || digits == "0")
+            return string.Empty;
+
+        // 90XXXXXXXXXX and +90XXXXXXXXXX are normalized to the domestic 0XXXXXXXXXX form.
+        if (digits.StartsWith("90", StringComparison.Ordinal) && digits.Length >= 12)
+            digits = digits[2..];
+
+        return digits.StartsWith('0') ? digits : "0" + digits;
+    }
+
     private void ContractValidationDateChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (sender is Control control)
@@ -7468,6 +7488,7 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
             WorkNameTextBox,
             ContractAmountTextBox,
             ContractWorkDaysTextBox,
+            ContractTransportDailyPriceTextBox,
             StartDatePicker,
             EndDatePicker
         })
