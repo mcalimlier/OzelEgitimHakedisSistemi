@@ -434,3 +434,79 @@ Sonraki öncelik sırası:
 - Excel ↔ OEHS tam sayısal parite: **doğrulanmadı**.
 - VBA makrolarının semantik uçtan uca denetimi: **tamamlanmadı**.
 - Ana dala birleştirme: **yapılmadı**.
+
+
+## 17. 17.10.2026 — Kullanıcının yeniden yüklediği nihai XLSM dosyalarıyla tekrar tarama
+
+Bu tarama, 17.10.2026 tarihinde konuşmaya yeniden yüklenen iki dosya üzerinde yapıldı. SHA-256 değerleri önceki analizdeki dosyalarla aynıdır; bu nedenle kaynak dosya kimlikleri aynı, yeniden tarama sonuçları önceki bulgularla çapraz doğrulandı.
+
+| Kaynak | SHA-256 | Sayfa sayısı | Formül hücresi | VBA projesi |
+|---|---|---:|---:|---|
+| Temel Eğitim Taşıma | `9f89be5a8e0315e177b97c02cb8f146be0040ebc1f4be7d7a3d30b5f57040423` | 11 | 2.289 | Var |
+| Özel Eğitim | `3c67f22327f9c748208cdcd7f9ed5952e37d514ea75a2043aa2f3d49867f61a4` | 8 | 3.402 | Var |
+| **Toplam** | — | **19** | **5.691** | **Her iki dosyada da** |
+
+İki kitapta da formül hücrelerinin önbelleğe alınmış sonuçlarında hata metni bulunmadı. Ancak her iki kitabın `Anasayfa!AA2` hücresinde formül olmayan, sabit `#VALUE!` değeri mevcut. Bu alan formül zincirinin parçası olarak güvenilir kabul edilmemeli; uygulamanın bu hücreye bağımlılığı olmamalı.
+
+### 17.1 Kullanıcının belirttiği “aşağı çekilmemiş formül” kuralının uygulanması
+
+- Özel Eğitim `Hesaplama!K4:K6` formülleri `=(G*H)+I-J` şeklindedir; `K7:K103` formüllerinin büyük bölümü `-J` kısmını içermiyor. İlk çalışan formül zinciri ve kullanıcı talimatı doğrultusunda OEHS'nin tüm satırlarda doğru kabul edilen `K=(G×H)+I−J` kuralını uygulaması gerekir. Mevcut hesap motoru bunu yapıyor; bu noktada Excel'deki aşağı kopyalama eksikliği OEHS'ye taşınmamalı.
+- Özel Eğitim `Hesaplama!T103` formülü `=(P103*Q103)+R103` biçiminde ve `-S103` kısmı eksik. Üst satırların tutarlı formülü `T=(P×Q)+R−S`; OEHS bu tutarlı kuralı bütün satırlara uygulamalı.
+- Özel Eğitim `Hesaplama!H104:AG104` toplamlarının bir kısmı yalnızca 4:26 satırlarını topluyor. Bu, 27–103 satırlarındaki hatların toplam dışı kalmasına neden olur. OEHS toplamları seçili/geçerli tüm hat kayıtlarından üretmeli; sabit ve eksik aralık taklit edilmemeli.
+- Temel/Ortaöğretim `Hesaplama Bilgileri!H104:W104` toplam formülleri 4:103 aralığını kapsıyor. OEHS'nin dinamik hat kümesi yaklaşımı bu davranışı koruyup satır sayısı sınırına bağımlılığı azaltır.
+
+### 17.2 Başvuru/arama aralıkları ve yaklaşık eşleşme kusurları
+
+- Temel/Ortaöğretim `Hakediş İcmali!E3:E4` formülleri bazı aramalarda yalnızca `A3:O52` aralığını kullanıyor; 52. satırdan sonraki hatlar için sonuç bulunamayabilir.
+- Temel/Ortaöğretim `Hizmet İşleri Hakediş Raporu!F16` araması `İhale Verileri!A3:L25` aralığıyla sınırlı; aynı sayfadaki F17 daha geniş `A2:L102` aralığını kullanıyor. Bu tutarsızlık kaynakta aralık hatası riskidir.
+- Temel/Ortaöğretim `Hakediş Raporu!D10` VLOOKUP eşleşme parametresini belirtmiyor; Excel varsayılan yaklaşık eşleşmeye dönebilir.
+- Temel/Ortaöğretim `Hakediş İcmali!A2` VLOOKUP için `TRUE` kullanıyor. Özel Eğitim'de de bazı başlık/rapor aramalarında yaklaşık eşleşme veya tüm sütun aralığı kullanımı var.
+- OEHS, kimlik/hat/yüklenici/İKN eşleştirmelerinde yaklaşık eşleşme yerine açık ve tam kimlik eşleşmesi kullanmalı. Bu, kaynak formülün birebir sözdizimini değil, aynı iş amacını daha güvenilir şekilde koruyan iyileştirmedir.
+
+### 17.3 Dönem başlıkları ve tarih anahtarları
+
+- Temel/Ortaöğretim kitabındaki tarih başlıklarında ay numaraları `DATE(...,13,1)`, `DATE(...,14,1)` gibi taşırılarak ilerletilmiş; Excel bunları sonraki aylara normalize eder. Sonuçlar bazı Excel motorlarında çalışsa da okunabilir ve sağlam bir dönem anahtarı değildir.
+- Özel Eğitim kitabında `Anasayfa!K6` önbellekli değeri 1905 yılına ait bir tarihe karşılık geliyor; ilgili hücre formülü mevcut tarih düzeniyle tutarsız görünüyor ve masaüstü Excel'de yeniden hesaplanarak doğrulanmalı.
+- Özel Eğitim `İcmal Verileri!AP3` ve `AQ3` aynı başlığa (`Anasayfa!I9`) bağlı; Kasım dönemi atlanırken Aralık iki kez gösteriliyor.
+- Özel Eğitim `İcmal Verileri!O4:O103` önceki dönem toplamında dış MATCH aralığı `I6:I14`, iç MATCH aralığı ise `I6:I15`; Haziran dönemi bu aralık farkından etkilenebilir.
+- OEHS'nin takvim ayı/yılını açık tarih anahtarıyla eşleştirmesi bu kaynak kusurlarından daha sağlamdır. Temmuz satırı resmî icmal şablonunda gösterilmeye devam etmeli; kaynakta Temmuz'un arama aralığı dışında kalması nedeniyle sıfır/boş davranışının değiştirilip değiştirilmeyeceği ayrı bir iş kuralı kararıdır.
+
+### 17.4 VBA/makro envanteri ve doğrulama sınırı
+
+Her iki XLSM'de `xl/vbaProject.bin` bulundu. İkili proje üzerinde metin/isim taraması; `Module1`, `ThisWorkbook`, sayfa olay yordamları ve aşağıdaki türde makro adlarını doğruluyor:
+
+- Aylık hakediş tutarlarını icmal sütunlarına aktarma
+- Taşıma fiyat farkı aktarımı
+- Özel Eğitim için rehber personel fiyat farkı aktarımı
+- Kesinti toplamlarını aylık bloklara aktarma
+- Sayfa/belge yazdırma
+- Seçilen aya ait verileri silme
+- `Workbook_Open`, `Worksheet_Change` ve `Worksheet_Activate` olay yordamları
+
+Özel Eğitim kitabında taşıma ve rehber fiyat farkı aktarımının ayrı olması ve kesinti bloklarının ayrı aktarılması, uygulama tarafında taşıma/rehber ve dönem kayıtlarının birbirinden ayrı tutulmasını gerektirir. Temel/Ortaöğretim kitabında rehber aktarımı bulunmaması, bu programda rehber tutarlarının sıfır kalmasıyla uyumludur.
+
+**Sınır:** Bu tekrar taramasında VBA proje akışının varlığı ve makro isimleri doğrulandı; mevcut çalışma ortamında VBA kaynak kodunu güvenilir biçimde bütünüyle ayrıştırıp Excel masaüstünde çalıştırarak olaylar arası davranışı uçtan uca yeniden yürütme tamamlanmadı. Dolayısıyla “tüm VBA semantiği eksiksiz doğrulandı” denemez. Önceki kaynak incelemesinde çıkarılmış makro akışları referans alınabilir; son kabul için gerçek Excel/VBA çalıştırması ve aylık geçmişe aktarım senaryosu hâlâ gereklidir.
+
+### 17.5 Hesap motoru ile nihai kaynak karşılaştırması
+
+Mevcut `ProgressPaymentCalculator` şu kritik formülleri tutarlı şekilde uyguluyor:
+
+- Taşıma neti: `G×H + I − J`
+- Rehber neti: `P×Q + R − S`
+- Taşıma KDV/tevkifat: %10 ve KDV'nin %50'si
+- Rehber KDV/tevkifat: %20 ve KDV'nin %90'ı
+- Ek kesin teminat: Temel/Ortaöğretimde `I×%6`; Özel Eğitimde `I×%6 + R×%6`. İskontolar bu tabana dahil edilmez; negatif fiyat farkı işaretli kalır.
+- Damga vergisi: kaynak hesap sayfasında taşıma ve rehber netleri üzerinden ayrı ayrı binde 9,48.
+- Kesinti toplamı: tevkifatlar + vergi borcu + denetim cezası + SGK borcu + asgari ücret desteği + ek kesin teminat + damga vergisi.
+- Net ödeme: hesaplama sayfası `AF−AE`; resmî Hakediş Raporu D28 ise tahakkuk ve kesintiyi ayrı ayrı iki ondalığa yuvarlayıp çıkarır. Bunlar farklı çıktı kurallarıdır; birbirine karıştırılmamalı.
+
+Bu maddeler kod incelemesi ve mevcut otomatik testlerle destekleniyor. Ancak bu, iki XLSM'nin bütün 5.691 formül hücresinin uygulama sonuçlarıyla hücre hücre sayısal eşitliğinin kanıtlandığı anlamına gelmez. Bunun için kaynak hücre adresi, kaynak formülü, önbellekli değer, yeniden hesaplanan beklenen değer ve OEHS sonucu içeren ayrı bir karşılaştırma fixture'ı gerekir.
+
+### 17.6 Son kabul için açık kalan işler
+
+1. VBA kaynak kodunu güvenilir şekilde çıkarıp tüm modüller/olay yordamları için prosedür envanteri ve yan etki tablosu oluştur.
+2. Kaynak Excel'i masaüstü Excel'de açıp tam yeniden hesaplat; `#VALUE!` sabit hücreleri ve tarih anormalliklerini yeniden kontrol et.
+3. Formül örüntüsü farklarını satır satır sınıflandır: kopyalama eksikliği, kasıtlı özel formül, aralık kusuru veya belirsiz durum. İlk çalışan satır kuralını özellikle uygula.
+4. Excel'in önbellekli sonuçlarını “kaynak kayıt”, yeniden hesaplanmış sonuçları “yeniden hesaplama sonucu” diye ayır; uygulama paritesi için yalnızca güncel ve doğrulanmış değerleri kullan.
+5. Her iki program için çok hatlı ve en az iki ardışık aylı gerçek senaryo çalıştır; dört PDF'nin tüm alanlarını karşılaştır.
+6. Bu işler tamamlanmadan nihai üretim kabulü veya “hata sıfır” iddiası verme.
