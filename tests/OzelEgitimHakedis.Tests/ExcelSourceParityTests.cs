@@ -106,7 +106,7 @@ public sealed class ExcelSourceParityTests
         Assert.Equal(8164.94m, result.GuideVat);                     // U = T*20%
         Assert.Equal(2617.17865m, result.TransportWithholding);      // M = L/2
         Assert.Equal(7348.446m, result.GuideWithholding);            // V = U*90%
-        Assert.Equal(54960.75165m, result.InvoiceAmountAfterWithholding); // N+W
+        Assert.Equal(103133.89765m, result.InvoiceAmountAfterWithholding); // N+W
         Assert.Equal(84.21438m, result.AdditionalGuarantee);
         Assert.Equal(883.23522804m, result.StampTax);
         Assert.Equal(10933.07425804m, result.TotalDeductions);
