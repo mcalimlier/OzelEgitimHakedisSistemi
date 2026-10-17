@@ -198,7 +198,7 @@ internal static class OehsOfficialDocumentFactory
         };
         var deductionsHeight = deductions.Sum(d => d.Height);
         AddCell(page, "", x, y, 165, deductionsHeight, 9, false, TextAlignment.Center, White, new Thickness(0));
-        AddRotatedText(page, "KESİNTİLER VE MAHSUPLAR", x, y, 165, deductionsHeight, 10, true, -90);
+        AddCell(page, "KESİNTİLER VE MAHSUPLAR", x, y, 165, deductionsHeight, 12, true, TextAlignment.Center, White, new Thickness(4, 2, 4, 2));
 
         foreach (var row in deductions)
         {
@@ -217,12 +217,12 @@ internal static class OehsOfficialDocumentFactory
         AddCell(page, FormatMoney(c.ReportNetPayable), x + 409, y, w - 409, 28, 10, true, TextAlignment.Right, TotalGray, new Thickness(3, 2, 8, 2));
 
         y += 29;
-        var footerY = Math.Max(y + 24, 850);
+        var footerY = Math.Max(y + 12, 790);
         AddText(page, "Yüklenici", x + 45, footerY, w - 90, 22, 10, true, TextAlignment.Left);
         AddText(page, c.ContractorName, x + 12, footerY + 23, w - 24, 36, 9.5, false, TextAlignment.Left);
-        AddSignatures(page, footerY + 92, c, "M.Y.H.B.Y. Örnek No :4/10",
+        AddSignatures(page, footerY + 45, c, "M.Y.H.B.Y. Örnek No :4/10",
             leftX: 115, leftWidth: 205, rightX: 435, rightWidth: 200,
-            nameOffset: 34, roleOffset: 53, dateOffset: 82, directorOffset: 118, titleOffset: 138, footerY: 1103);
+            nameOffset: 34, roleOffset: 53, dateOffset: 72, directorOffset: 108, titleOffset: 126, footerY: 1050);
         return page;
     }
 
