@@ -1471,6 +1471,41 @@
                                 </StackPanel></Border>
                             </StackPanel></Border>
                         </Grid>
+                        <Border Style="{StaticResource Card}" Padding="14" Margin="0,12,0,10">
+                            <StackPanel>
+                                <TextBlock Text="RESMÎ BELGE İMZACILARI" Style="{StaticResource CardTitle}"/>
+                                <TextBlock Text="Düzenleyen, kontrol eden veya onaylayan kişiler değiştiğinde bilgileri burada güncelleyin. Kaydedilen bilgiler dört resmî PDF şablonuna uygulanır." Style="{StaticResource CardSubtitle}" TextWrapping="Wrap" Margin="0,4,0,12"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="150"/>
+                                        <ColumnDefinition Width="2*"/>
+                                        <ColumnDefinition Width="2*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="İMZA GÖREVİ" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,8"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="ADI SOYADI" Style="{StaticResource FieldLabel}" Margin="4,0,4,4"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="UNVANI / GÖREVİ" Style="{StaticResource FieldLabel}" Margin="4,0,4,4"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Düzenleyen" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,5"/>
+                                    <TextBox x:Name="SignatoryPreparerNameTextBox" Grid.Row="1" Grid.Column="1" Style="{StaticResource PremiumFieldTextBox}" Margin="4"/>
+                                    <TextBox x:Name="SignatoryPreparerRoleTextBox" Grid.Row="1" Grid.Column="2" Style="{StaticResource PremiumFieldTextBox}" Margin="4"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Kontrol eden" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,5"/>
+                                    <TextBox x:Name="SignatoryControllerNameTextBox" Grid.Row="2" Grid.Column="1" Style="{StaticResource PremiumFieldTextBox}" Margin="4"/>
+                                    <TextBox x:Name="SignatoryControllerRoleTextBox" Grid.Row="2" Grid.Column="2" Style="{StaticResource PremiumFieldTextBox}" Margin="4"/>
+                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Onaylayan" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,5"/>
+                                    <TextBox x:Name="SignatoryApproverNameTextBox" Grid.Row="3" Grid.Column="1" Style="{StaticResource PremiumFieldTextBox}" Margin="4"/>
+                                    <TextBox x:Name="SignatoryApproverRoleTextBox" Grid.Row="3" Grid.Column="2" Style="{StaticResource PremiumFieldTextBox}" Margin="4"/>
+                                </Grid>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+                                    <Button Content="KAYITLI İMZACILARI YENİDEN YÜKLE" Click="LoadSignatoriesButton_Click" Style="{StaticResource SecondaryButton}" Height="36" Margin="0,0,8,0"/>
+                                    <Button Content="İMZACI BİLGİLERİNİ KAYDET" Click="SaveSignatoriesButton_Click" Style="{StaticResource ModernButton}" Height="36"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
                 </ScrollViewer>
             </Grid>
