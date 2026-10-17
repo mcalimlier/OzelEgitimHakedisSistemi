@@ -80,6 +80,31 @@ internal static class OehsOfficialDocumentSettingsStore
         }
     }
 
+    public static void Save(OehsOfficialDocumentSignatories signatories, string? settingsPath = null)
+    {
+        ArgumentNullException.ThrowIfNull(signatories);
+
+        var path = string.IsNullOrWhiteSpace(settingsPath)
+            ? DefaultPath
+            : Path.GetFullPath(settingsPath);
+        var directory = Path.GetDirectoryName(path);
+        if (!string.IsNullOrWhiteSpace(directory))
+            Directory.CreateDirectory(directory);
+
+        var normalized = signatories.Normalize();
+        var temporaryPath = path + ".tmp";
+        try
+        {
+            File.WriteAllText(temporaryPath, JsonSerializer.Serialize(normalized, JsonOptions));
+            File.Move(temporaryPath, path, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+                File.Delete(temporaryPath);
+        }
+    }
+
     private static void CreateDefaultFile(string path)
     {
         var directory = Path.GetDirectoryName(path);
