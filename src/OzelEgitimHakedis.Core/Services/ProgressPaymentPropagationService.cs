@@ -16,19 +16,18 @@ public static class ProgressPaymentPropagationService
         IReadOnlyList<ProgressPaymentHistoryData> history,
         IReadOnlyList<RouteData> routes,
         ContractDraftData oldContract,
-        ContractDraftData newContract)
+        ContractDraftData newContract,
+        ProgressPaymentCalculationConstants? constants = null)
     {
         ArgumentNullException.ThrowIfNull(history);
         ArgumentNullException.ThrowIfNull(routes);
         ArgumentNullException.ThrowIfNull(oldContract);
         ArgumentNullException.ThrowIfNull(newContract);
 
+        var appliedConstants = constants ?? ProgressPaymentCalculationConstants.Defaults;
         var updated = history
-            .Select(item => string.Equals(
-                    item.TenderNumber?.Trim(),
-                    oldContract.TenderNumber.Trim(),
-                    StringComparison.OrdinalIgnoreCase)
-                ? RebuildForContract(item, newContract)
+            .Select(item => IsHistoryForContract(item, oldContract)
+                ? RebuildForContract(item, newContract, appliedConstants)
                 : item)
             .ToArray();
 
@@ -51,7 +50,8 @@ public static class ProgressPaymentPropagationService
                 string.Equals(
                     OehsIdentityService.NormalizeIdentity(item.ContractorTaxOrIdentityNumber ?? string.Empty),
                     oldIdentity,
-                    StringComparison.Ordinal)
+                    StringComparison.Ordinal) &&
+                item.Input.ProgramType == oldContractor.ProgramType
                     ? item with
                     {
                         ContractorName = newContractor.Name,
@@ -69,30 +69,37 @@ public static class ProgressPaymentPropagationService
         IReadOnlyList<ProgressPaymentHistoryData> history,
         RouteData oldRoute,
         RouteData newRoute,
-        Contractor contractor)
+        Contractor contractor,
+        ProgressPaymentCalculationConstants? constants = null)
     {
         ArgumentNullException.ThrowIfNull(history);
         ArgumentNullException.ThrowIfNull(oldRoute);
         ArgumentNullException.ThrowIfNull(newRoute);
         ArgumentNullException.ThrowIfNull(contractor);
 
-        var oldKey = OehsIdentityService.BuildRouteKey(
-            oldRoute.TenderNumber,
-            oldRoute.RouteNumber,
-            oldRoute.ContractorTaxOrIdentityNumber);
+        var appliedConstants = constants ?? ProgressPaymentCalculationConstants.Defaults;
 
+        // Match the program and route identity explicitly. A contract-aware route
+        // must never propagate into a sibling contract. Blank contract numbers are
+        // legacy input and retain the historical tender/route/contractor matching.
         var newIdentity = OehsIdentityService.NormalizeIdentity(newRoute.ContractorTaxOrIdentityNumber);
         var updated = history
             .Select(item =>
-                string.Equals(
-                    OehsIdentityService.BuildRouteKey(
-                        item.TenderNumber ?? string.Empty,
-                        item.RouteNumber ?? string.Empty,
-                        item.ContractorTaxOrIdentityNumber ?? string.Empty),
-                    oldKey,
-                    StringComparison.Ordinal)
-                    ? RebuildForRoute(item, newRoute, contractor, newIdentity)
-                    : item)
+            {
+                var sameRoute = item.Input.ProgramType == oldRoute.ProgramType
+                    && string.Equals(item.TenderNumber, oldRoute.TenderNumber, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(item.RouteNumber, oldRoute.RouteNumber, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(
+                        OehsIdentityService.NormalizeIdentity(item.ContractorTaxOrIdentityNumber),
+                        OehsIdentityService.NormalizeIdentity(oldRoute.ContractorTaxOrIdentityNumber),
+                        StringComparison.Ordinal)
+                    && (string.IsNullOrWhiteSpace(oldRoute.ContractNumber)
+                        || string.Equals(item.ContractNumber, oldRoute.ContractNumber, StringComparison.OrdinalIgnoreCase));
+
+                return sameRoute
+                    ? RebuildForRoute(item, newRoute, contractor, newIdentity, appliedConstants)
+                    : item;
+            })
             .ToArray();
 
         EnsureNoDuplicateProgressPaymentKeys(updated);
@@ -101,16 +108,24 @@ public static class ProgressPaymentPropagationService
 
     private static ProgressPaymentHistoryData RebuildForContract(
         ProgressPaymentHistoryData item,
-        ContractDraftData contract)
+        ContractDraftData contract,
+        ProgressPaymentCalculationConstants constants)
     {
+        var hasGuide = contract.ProgramType == TransportationProgramType.SpecialEducation;
         var input = item.Input with
         {
             ContractAmount = contract.ContractAmount,
             IsVatExempt = contract.VatExempt,
-            DailyPrice = contract.TransportDailyPrice
+            DailyPrice = contract.TransportDailyPrice,
+            ProgramType = contract.ProgramType,
+            GuideWorkDays = hasGuide ? item.Input.GuideWorkDays : 0,
+            GuideDailyPrice = hasGuide ? item.Input.GuideDailyPrice : 0m,
+            GuideDiscountAmount = hasGuide ? item.Input.GuideDiscountAmount : 0m,
+            GuidePriceDifference = hasGuide ? item.Input.GuidePriceDifference : 0m,
+            MinimumWageSupport = item.Input.MinimumWageSupport
         };
 
-        var calculation = ProgressPaymentCalculator.Calculate(input);
+        var calculation = ProgressPaymentCalculator.Calculate(input, constants);
         return item with
         {
             Input = input,
@@ -129,27 +144,56 @@ public static class ProgressPaymentPropagationService
         ProgressPaymentHistoryData item,
         RouteData route,
         Contractor contractor,
-        string normalizedIdentity)
+        string normalizedIdentity,
+        ProgressPaymentCalculationConstants constants)
     {
         var input = item.Input with
         {
             WorkDays = route.TransportWorkDays,
             DailyPrice = route.DailyPrice,
-            GuideWorkDays = route.GuideWorkDays,
-            GuideDailyPrice = route.GuideDailyPrice
+            GuideWorkDays = route.ProgramType == TransportationProgramType.BasicOrSecondary ? 0 : route.GuideWorkDays,
+            GuideDailyPrice = route.ProgramType == TransportationProgramType.BasicOrSecondary
+                ? 0m
+                : route.GuideDailyPrice,
+            ProgramType = route.ProgramType,
+            GuideDiscountAmount = route.ProgramType == TransportationProgramType.BasicOrSecondary ? 0m : item.Input.GuideDiscountAmount,
+            GuidePriceDifference = route.ProgramType == TransportationProgramType.BasicOrSecondary ? 0m : item.Input.GuidePriceDifference,
+            MinimumWageSupport = item.Input.MinimumWageSupport
         };
 
         return item with
         {
             Input = input,
-            Calculation = ProgressPaymentCalculator.Calculate(input),
+            Calculation = ProgressPaymentCalculator.Calculate(input, constants),
             RouteNumber = route.RouteNumber,
             RouteName = route.Name,
             TenderNumber = route.TenderNumber,
+            ContractNumber = string.IsNullOrWhiteSpace(route.ContractNumber) ? item.ContractNumber : route.ContractNumber,
             ContractorName = contractor.Name,
             BankAccountNumber = contractor.BankAccountNumber,
             ContractorTaxOrIdentityNumber = normalizedIdentity
         };
+    }
+
+    private static bool IsHistoryForContract(
+        ProgressPaymentHistoryData item,
+        ContractDraftData contract)
+    {
+        if (item.Input.ProgramType != contract.ProgramType)
+            return false;
+
+        if (!string.Equals(
+                item.TenderNumber?.Trim(),
+                contract.TenderNumber.Trim(),
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        // Legacy rows are mapped by the WPF load migration when the association is unique.
+        // A remaining blank identifier is ambiguous and must not be propagated across parts.
+        return !string.IsNullOrWhiteSpace(item.ContractNumber)
+            && string.Equals(item.ContractNumber.Trim(), contract.ContractNumber.Trim(), StringComparison.OrdinalIgnoreCase);
     }
 
     private static void EnsureNoDuplicateProgressPaymentKeys(
@@ -162,7 +206,9 @@ public static class ProgressPaymentPropagationService
                 item.RouteNumber ?? string.Empty,
                 item.ContractorTaxOrIdentityNumber ?? string.Empty,
                 item.ProgressPaymentNumber!.Value,
-                item.PeriodDate!.Value))
+                item.PeriodDate!.Value,
+                item.ContractNumber ?? string.Empty,
+                item.Input.ProgramType))
             .GroupBy(key => key, StringComparer.Ordinal)
             .Where(group => group.Count() > 1)
             .Select(group => group.Key)

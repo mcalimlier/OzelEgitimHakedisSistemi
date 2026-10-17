@@ -15,6 +15,15 @@ public sealed class PdfFileNameTests
     }
 
     [Fact]
+    public void BuildProgressPdfFileName_ShouldIncludeContractPartWhenPresent()
+    {
+        var name = OehsFileNameService.BuildProgressPdfFileName(
+            "123", "SOZ-02", "01", 3, new DateOnly(2026, 11, 30));
+
+        Assert.Equal("OEHS_123_Sozlesme-SOZ-02_Hat-01_Hakediş-03_2026-11-30.pdf", name);
+    }
+
+    [Fact]
     public void SanitizeFileName_ShouldPreventDotTraversalAndReservedDeviceNames()
     {
         Assert.Equal("Ihale", OehsFileNameService.SanitizeFileName("..", "Ihale"));

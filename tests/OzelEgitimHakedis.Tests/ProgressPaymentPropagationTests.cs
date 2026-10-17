@@ -31,6 +31,48 @@ public sealed class ProgressPaymentPropagationTests
     }
 
     [Fact]
+    public void BasicOrSecondaryContractChange_ShouldPreserveMinimumWageSupport()
+    {
+        var oldContract = Contract(vatExempt: false) with
+        {
+            ProgramType = TransportationProgramType.BasicOrSecondary
+        };
+        var newContract = oldContract with { TransportDailyPrice = 1500m };
+        var input = new ProgressPaymentInput(
+            10, 1000m, 0m, 100m, 100000m, false, 0m, 0m, 250m,
+            ProgramType: TransportationProgramType.BasicOrSecondary);
+        var history = History(input);
+
+        var updated = ProgressPaymentPropagationService.RecalculateForContractChange(
+            new[] { history }, Array.Empty<RouteData>(), oldContract, newContract);
+
+        var result = Assert.Single(updated);
+        Assert.Equal(250m, result.Input.MinimumWageSupport);
+        Assert.Equal(250m, result.Calculation.Deductions.MinimumWageSupport);
+    }
+
+    [Fact]
+    public void BasicOrSecondaryRouteChange_ShouldPreserveMinimumWageSupport()
+    {
+        var oldRoute = Route(1000m) with
+        {
+            ProgramType = TransportationProgramType.BasicOrSecondary
+        };
+        var newRoute = oldRoute with { DailyPrice = 1500m };
+        var input = new ProgressPaymentInput(
+            10, 1000m, 0m, 100m, 100000m, false, 0m, 0m, 250m,
+            ProgramType: TransportationProgramType.BasicOrSecondary);
+        var history = History(input);
+
+        var updated = ProgressPaymentPropagationService.RecalculateForRouteChange(
+            new[] { history }, oldRoute, newRoute, Contractor());
+
+        var result = Assert.Single(updated);
+        Assert.Equal(250m, result.Input.MinimumWageSupport);
+        Assert.Equal(250m, result.Calculation.Deductions.MinimumWageSupport);
+    }
+
+    [Fact]
     public void ContractorRename_ShouldKeepStableIdentityAndUpdateDisplayName()
     {
         var oldContractor = Contractor();
@@ -46,6 +88,29 @@ public sealed class ProgressPaymentPropagationTests
         Assert.Equal("TR-NEW", updated[0].BankAccountNumber);
         Assert.Equal("12345678901", updated[0].ContractorTaxOrIdentityNumber);
         Assert.Equal(history.Calculation, updated[0].Calculation);
+    }
+
+    [Fact]
+    public void ContractorChange_ShouldNotPropagateAcrossTransportationPrograms()
+    {
+        var specialContractor = Contractor();
+        var basicHistoryInput = new ProgressPaymentInput(
+            10, 1000m, 0m, 0m, 100000m, false, 0m, 0m, 0m,
+            ProgramType: TransportationProgramType.BasicOrSecondary);
+        var specialHistory = History(new ProgressPaymentInput(
+            10, 1000m, 0m, 0m, 100000m, false, 0m, 0m, 0m));
+        var basicHistory = History(basicHistoryInput) with
+        {
+            Id = Guid.NewGuid(),
+            ContractorName = "Temel Program Firma"
+        };
+        var updatedContractor = specialContractor with { Name = "Özel Program Firma" };
+
+        var updated = ProgressPaymentPropagationService.RecalculateForContractorChange(
+            new[] { specialHistory, basicHistory }, specialContractor, updatedContractor);
+
+        Assert.Equal("Özel Program Firma", updated[0].ContractorName);
+        Assert.Equal("Temel Program Firma", updated[1].ContractorName);
     }
 
     [Fact]
@@ -110,6 +175,35 @@ public sealed class ProgressPaymentPropagationTests
     }
 
     [Fact]
+    public void ContractChange_ShouldNotRecalculateSiblingOrAmbiguousHistory()
+    {
+        var oldContract = Contract(vatExempt: false);
+        var newContract = oldContract with { TransportDailyPrice = 1500m };
+        var linked = History(new ProgressPaymentInput(10, 1000m, 0m, 0m, 100000m, false, 0m, 0m, 0m));
+        var siblingInput = linked.Input with { DailyPrice = 2500m };
+        var sibling = linked with
+        {
+            Id = Guid.NewGuid(),
+            ContractNumber = "SOZ-02",
+            WorkName = "İkinci Kısım",
+            Input = siblingInput,
+            Calculation = ProgressPaymentCalculator.Calculate(siblingInput)
+        };
+        var ambiguousLegacy = linked with { Id = Guid.NewGuid(), ContractNumber = "" };
+
+        var updated = ProgressPaymentPropagationService.RecalculateForContractChange(
+            new[] { linked, sibling, ambiguousLegacy },
+            Array.Empty<RouteData>(),
+            oldContract,
+            newContract);
+
+        Assert.Equal(1500m, updated[0].Input.DailyPrice);
+        Assert.Equal(2500m, updated[1].Input.DailyPrice);
+        Assert.Equal("İkinci Kısım", updated[1].WorkName);
+        Assert.Equal(1000m, updated[2].Input.DailyPrice);
+    }
+
+    [Fact]
     public void SourceChangeCreatingDuplicateKey_ShouldBeRejected()
     {
         var oldRoute = Route(1000m);
@@ -127,6 +221,33 @@ public sealed class ProgressPaymentPropagationTests
                 oldRoute,
                 newRoute,
                 Contractor()));
+    }
+
+
+    [Fact]
+    public void RouteChange_ShouldRecalculateWithCurrentSavedCalculationConstants()
+    {
+        var oldRoute = Route(1000m);
+        var newRoute = oldRoute with { DailyPrice = 1500m };
+        var history = History(new ProgressPaymentInput(
+            10, 1000m, 50m, 100m, 100000m, false, 0m, 0m, 0m, 0m,
+            5, 500m, 25m, 50m));
+        var currentConstants = new ProgressPaymentCalculationConstants(
+            TransportVatRate: 0.12m,
+            GuideVatRate: 0.25m,
+            TransportWithholdingShare: 0.40m,
+            GuideWithholdingShare: 0.80m,
+            StampTaxRate: 0.01m,
+            AdditionalGuaranteeRate: 0.07m);
+
+        var updated = ProgressPaymentPropagationService.RecalculateForRouteChange(
+            new[] { history }, oldRoute, newRoute, Contractor(), currentConstants);
+
+        var result = Assert.Single(updated).Calculation;
+        Assert.Equal(0.12m, result.AppliedConstants!.TransportVatRate);
+        Assert.Equal(0.25m, result.AppliedConstants.GuideVatRate);
+        Assert.Equal(17575m * 0.01m, result.StampTax);
+        Assert.Equal(10.5m, result.AdditionalGuarantee);
     }
 
     private static ContractDraftData Contract(bool vatExempt) =>

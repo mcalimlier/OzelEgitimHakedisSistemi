@@ -2,9 +2,9 @@
 
 ## Ana dönüşüm sırası
 
-1. Excel tersine mühendislik — **TAMAMLANDI**
+1. Excel tersine mühendislik — **YAPISAL TARAMA TAMAMLANDI / SEMANTİK DOĞRULAMA SÜRÜYOR**
 2. İş kurallarının çıkarılması — **TAMAMLANDI / doğrulama sürüyor**
-3. VBA/makro kontrolü — **TAMAMLANDI** (aktif VBA projesi tespit edilmedi)
+3. VBA/makro kontrolü — **KAYNAK KODU ÇIKARILDI / UÇTAN UCA DOĞRULAMA SÜRÜYOR** (iki XLSM'de VBA projesi bulundu; makro aktarım davranışı hesap ve aylık geçmiş kayıtlarıyla çapraz doğrulanıyor)
 4. Domain model — **TAMAMLANDI / genişletme sürüyor**
 5. Hakediş hesaplama motoru — **TAMAMLANDI**
 6. Veri saklama — **TAMAMLANDI / geliştirme sürüyor**
@@ -49,6 +49,10 @@ Her hat için:
 - Kabul tutanağındaki resmî metin
 - İcmal A/B/C yapısı
 - Kurum örneklerine yakın yerleşim
+
+16.10.2026 CI smoke artefaktındaki dört örnek PDF görsel olarak açıldı: her biri tek sayfa A4 portre, Türkçe karakterler okunur ve örnek çıktıda belirgin metin taşması görülmedi. Bu, sentetik test verili smoke çıktısının kontrolüdür; orijinal Excel'in yazdırma alanlarıyla birebir karşılaştırma, gerçek kullanıcı verisiyle kabul testi ve yazıcı kontrolünün yerine geçmez.
+
+Kaynak XLSM dosyalarının yazdırma alanları ayrıca LibreOffice ile PDF'e aktarılarak dört resmi formun yerleşimiyle karşılaştırıldı. Bu karşılaştırma Excel masaüstü/VBA çalıştırmalı birebir kabul testi değildir; kaynak dosyanın mevcut önbellekli değerleri ve LibreOffice yazdırma motoruyla sınırlıdır. Görsel karşılaştırmada Kabul Tutanağı için iki somut uyumsuzluk düzeltildi: Temel/Ortaöğretim formunda süre değeri birim olmadan gösterilirken Özel Eğitim'de "İş Günü" eki korunuyor; anlatım paragrafları programın kaynak form yerleşimine göre farklı düşey konum kullanıyor. Kod değişikliği commit'i: [2818ec6](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/commit/2818ec6cf271114a21d645ee98a4665e151b2b55). Bu değişiklik için yeni CI sonucu henüz doğrulanmadı.
 
 Bu aşamanın son doğrulaması gerçek üretilen PDF'lerin referanslarla karşılaştırılmasıdır.
 
@@ -110,7 +114,7 @@ Kullanıcı ekranında **KDV HESAPLA / DAHİL ET** seçeneği bulunur.
 
 Excel'in orijinal Hesaplama sayfasındaki “KDV'den Muafmı?” alanı ile mevcut formüller ayrıca karşılaştırılmıştır; OEHS kullanıcı arayüzünde seçim davranışı açık ve anlaşılır olacak şekilde sunulmuştur.
 
-### Excel v2 ikinci tarama — tamamlandı / uygulanıyor
+### Excel v2 ikinci tarama — formül ve VBA envanteri tamamlandı / semantik kabul doğrulaması sürüyor
 - `vbaProject.bin` içindeki Module1 VBA kaynak kodu çıkarıldı ve makro aktarım akışları doğrulandı.
 - Rehber personel hakediş hesabı eklendi.
 - Taşıma ve rehber personel fiyat farkları ayrı alanlara ayrıldı.
@@ -126,7 +130,38 @@ Excel'in orijinal Hesaplama sayfasındaki “KDV'den Muafmı?” alanı ile mevc
 
 - ARŞİVLER > DÜZELT, seçilen bitmiş işin snapshot'ını düzenleme moduna alır.
 - HAT BİLGİLERİ seçildiğinde Hat No dahil tüm ilgili hat alanları değiştirilebilir.
-- Düzeltme sonucu yeni aktif hat veya yeni arşiv revision'ı oluşturulmaz; seçilen mevcut JSON snapshot aynı vXX dosyasına yazılır.
+- Onaylanan arşiv düzeltmesi `SaveRevision` ile yeni bir arşiv revizyonu oluşturur; önceki vXX dosyası korunur.
 - PDF OLARAK KAYDET yazıcı sürücüsüne bağlı değildir; OEHS yerleşik PDF üreticisiyle doğrudan PDF dosyası üretir.
 - PDF dosyası Masaüstü\OzelEgitimHakedisSistemi\Ciktilar\Hakedisler\<İhale-Dosya-No>\Hat-<Hat-No> altında descriptive adla tutulur.
 - Önizleme gerçek A4 sayfa rasterı üzerinden, sayfa geçişi ve zoom kontrolleri ile gösterilir.
+
+
+## 15.10.2026 — İzole deneme paketi ve arşiv çakışması kontrolü
+
+- Arkadaş incelemesi için Windows x64 self-contained paket üretimi CI'a bağlandı. Paket yalnızca `OEHS.exe`, `OEHS_DENEME_PAKETI.flag` ve `KULLANIM.txt` içerir; kaynak kullanıcı verisi veya mevcut arşiv pakete kopyalanmaz.
+- İşaret dosyası bulunan pakette ana veri, .bak yedeği, arşivler, imza ayarları ve PDF/çıktılar EXE yanındaki `DenemeVerisi` klasörüne yönlendirilir. İşaret dosyası olmayan normal çalıştırmada standart kullanıcı profili ve Masaüstü dizinleri korunur.
+- Arşiv geri yüklemede aynı GUID veya aynı iş anahtarındaki kayıt mevcutsa ikinci hakediş satırı eklenmez. Aktif kayıt ile arşiv girdileri, brüt/net/kesinti tutarları ya da hesapta kullanılan sabitler farklıysa aktif ve arşiv net tutarlarını gösteren uyarı üretilir; aktif kayıt otomatik değiştirilmez.
+- İzole yol seçimi ve normal yol geri uyumluluğu için testler; farklı GUID'li iş anahtarı çakışması ve aynı GUID'li ama farklı girdili arşiv için regresyon testleri eklendi. CI sonuçları son committe doğrulanacaktır.
+
+### Güncel iş akışı
+
+```mermaid
+flowchart LR
+    A["İhale, yüklenici, hat ve dönem girdileri"] --> B["Hesaplama sabitleri paneli"]
+    B --> C["Taşıma + rehber ayrı hesap"]
+    C --> D["Kontrol ve hesap sabiti snapshot'ı"]
+    D --> E["Geçmiş / revizyonlu arşiv"]
+    E --> F{"Aynı GUID veya iş anahtarı var mı?"}
+    F -->|Yok| G["Arşive ekle"]
+    F -->|Var, fark yok| H["Yeni kopya ekleme"]
+    F -->|Var, tutar/girdi farkı| I["Net fark uyarısı; otomatik ezme yok"]
+    D --> J["4 resmi A4 PDF + önizleme/yazdırma"]
+    K{"Çalışma modu"} -->|Normal| L["%LOCALAPPDATA% + Masaüstü"]
+    K -->|Deneme işaret dosyası| M["EXE yanındaki DenemeVerisi"]
+    B --> N["Eski/yeni oran, kullanıcı, gerekçe ve onay kaydı"]
+```
+
+### Kalan kritik kabul işleri
+
+- Kaynak Excel'in D11 etiketi/formül çelişkisi, AG/D28 farkı ve icmal Temmuz/Kasım/Aralık davranışı için iş sahibi/Excel tabanlı karar alınmalı; kaynak farkları varsayımla değiştirilmemeli.
+- Dört gerçek PDF'nin kaynak örnekleriyle görsel fark karşılaştırması, fiziksel yazıcı ve temiz Windows profili kabul testleri tamamlanmadan uygulama üretime hazır sayılmamalıdır.

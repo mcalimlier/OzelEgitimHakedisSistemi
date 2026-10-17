@@ -45,9 +45,9 @@ internal static class ExcelDocumentExporter
         var c = item.Calculation;
         return new SheetData("Hakediş Raporu", new[]
         {
-            Row("İşin Adı", workName, "Yüklenici", contractor),
+            Row($"{ProgramTypeLabel(item.Input.ProgramType)} • {workName}", workName, "Yüklenici", contractor),
             Row("Hat No", routeNumber, "Hat Adı", routeName),
-            Row("İhale / Dosya No", item.TenderNumber ?? "-", "Sözleşme No", item.ContractNumber ?? "-"),
+            Row("İhale Kayıt Numarası (İKN)", item.TenderNumber ?? "-", "Yüklenici", contractor),
             Row("Sözleşme Bedeli", Money(item.Input.ContractAmount), "Banka Hesap No", item.BankAccountNumber ?? "-"),
             Row("İhale Tarihi", item.TenderDate?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) ?? "-", "Sözleşme Tarihi", item.ContractDate?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) ?? "-"),
             Row("İş Başlangıcı", item.ContractStartDate?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) ?? "-", "İş Bitişi", item.ContractEndDate?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) ?? "-"),
@@ -69,9 +69,9 @@ internal static class ExcelDocumentExporter
         var d = c.Deductions;
         return new SheetData("Hizmet İşleri Hakediş", new[]
         {
-            Row("İşin Adı", workName, "Yüklenici", contractor),
+            Row($"{ProgramTypeLabel(item.Input.ProgramType)} • {workName}", workName, "Yüklenici", contractor),
             Row("Hat No", routeNumber, "Hat Adı", routeName),
-            Row("İhale / Dosya No", item.TenderNumber ?? "-", "Sözleşme No", item.ContractNumber ?? "-"),
+            Row("İhale Kayıt Numarası (İKN)", item.TenderNumber ?? "-", "Yüklenici", contractor),
             Row("Sözleşme Bedeli", Money(item.Input.ContractAmount), "Banka Hesap No", item.BankAccountNumber ?? "-"),
             Header("HİZMET / HESAP", "TUTAR", "KESİNTİ / MAHSUP", "TUTAR"),
             Row("Taşıma Hizmet", Money(c.ServiceAmount), "Vergi Borcu", Money(d.TaxDebt)),
@@ -91,10 +91,10 @@ internal static class ExcelDocumentExporter
         var input = item.Input;
         return new SheetData("Kabul Tutanağı", new[]
         {
-            Row("İşin Adı", workName, "Yüklenici", contractor),
+            Row($"{ProgramTypeLabel(item.Input.ProgramType)} • {workName}", workName, "Yüklenici", contractor),
             Row("Hat No", routeNumber, "Hat Adı", routeName),
             Row("Sözleşme Bedeli", Money(item.Input.ContractAmount), "Banka Hesap No", item.BankAccountNumber ?? "-"),
-            Row("Sözleşme No", item.ContractNumber ?? "-", "İhale / Dosya No", item.TenderNumber ?? "-"),
+            Row("İhale Kayıt Numarası (İKN)", item.TenderNumber ?? "-", "Sözleşme Tarihi", item.ContractDate?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) ?? "-"),
             Row("Sözleşme Tarihi", item.ContractDate?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) ?? "-", "Hakediş Tarihi", item.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) ?? "-"),
             Header("BİLGİ", "DEĞER", "BİLGİ", "DEĞER"),
             Row("Taşıma İş Günü", input.WorkDays.ToString(CultureInfo.InvariantCulture), "Taşıma Günlük Fiyat", Money(input.DailyPrice)),
@@ -111,9 +111,9 @@ internal static class ExcelDocumentExporter
         var c = item.Calculation;
         return new SheetData("Hakediş İcmali", new[]
         {
-            Row("İşin Adı", workName, "Yüklenici", contractor),
+            Row($"{ProgramTypeLabel(item.Input.ProgramType)} • {workName}", workName, "Yüklenici", contractor),
             Row("Hat No", routeNumber, "Hat Adı", routeName),
-            Row("İhale / Dosya No", item.TenderNumber ?? "-", "Sözleşme No", item.ContractNumber ?? "-"),
+            Row("İhale Kayıt Numarası (İKN)", item.TenderNumber ?? "-", "Yüklenici", contractor),
             Row("Sözleşme Bedeli", Money(item.Input.ContractAmount), "Banka Hesap No", item.BankAccountNumber ?? "-"),
             Row("Hakediş No", item.ProgressPaymentNumber?.ToString(CultureInfo.InvariantCulture) ?? "-", "Dönem", item.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) ?? "-"),
             Header("KALEM", "TUTAR", "KALEM", "TUTAR"),
@@ -124,6 +124,11 @@ internal static class ExcelDocumentExporter
             Row("Brüt Tutar", Money(c.GrossAmount), "Net Ödenecek", Money(c.NetPayable))
         });
     }
+
+    private static string ProgramTypeLabel(TransportationProgramType type) =>
+        type == TransportationProgramType.BasicOrSecondary
+            ? "Temel / Ortaöğretim Taşıma"
+            : "Özel Eğitim Taşıma";
 
     private static RowData Row(string a, string b, string c, string d) => new(false, a, b, c, d);
     private static RowData Header(string a, string b, string c, string d) => new(true, a, b, c, d);

@@ -17,9 +17,36 @@ public sealed class ProgressPaymentCalculator
     public const decimal VatRate = TransportVatRate;
     public const decimal WithholdingRate = TransportWithholdingRate;
 
-    public static ProgressPaymentCalculation Calculate(ProgressPaymentInput input)
+    public static ProgressPaymentCalculation Calculate(ProgressPaymentInput input) =>
+        Calculate(input, ProgressPaymentCalculationConstants.Defaults);
+
+    public static ProgressPaymentCalculation Calculate(
+        ProgressPaymentInput input,
+        ProgressPaymentCalculationConstants constants)
     {
         ArgumentNullException.ThrowIfNull(input);
+        ArgumentNullException.ThrowIfNull(constants);
+        if (!constants.TryValidate(out var constantsError))
+            throw new ArgumentOutOfRangeException(nameof(constants), constantsError);
+
+        // Temel/ortaöğretim kaynak Excel'inde rehber personel kalemi yoktur,
+        // ancak Asgari Ücret Destek Tutarı kesinti toplamına dahildir.
+        // Bu nedenle yalnızca rehber alanları program kapsamında sıfırlanır.
+        if (input.ProgramType == TransportationProgramType.BasicOrSecondary)
+        {
+            input = input with
+            {
+                GuideWorkDays = 0,
+                GuideDailyPrice = 0m,
+                GuideDiscountAmount = 0m,
+                GuidePriceDifference = 0m
+            };
+            constants = constants with
+            {
+                GuideVatRate = 0m,
+                GuideWithholdingShare = 0m
+            };
+        }
 
         if (input.WorkDays < 0 || input.GuideWorkDays < 0)
             throw new ArgumentOutOfRangeException(nameof(input), "İş günü negatif olamaz.");
@@ -67,17 +94,17 @@ public sealed class ProgressPaymentCalculator
         var totalAmount = transportNetAmount + guideNetAmount;
 
         var transportVat = input.IncludeVat
-            ? transportNetAmount * TransportVatRate
+            ? transportNetAmount * constants.TransportVatRate
             : 0m;
         var guideVat = input.IncludeVat
-            ? guideNetAmount * GuideVatRate
+            ? guideNetAmount * constants.GuideVatRate
             : 0m;
 
         var transportWithholding = input.IncludeVat
-            ? transportVat * TransportWithholdingShare
+            ? transportVat * constants.TransportWithholdingShare
             : 0m;
         var guideWithholding = input.IncludeVat
-            ? guideVat * GuideWithholdingShare
+            ? guideVat * constants.GuideWithholdingShare
             : 0m;
 
         var vat = transportVat + guideVat;
@@ -92,16 +119,19 @@ public sealed class ProgressPaymentCalculator
 
         // Excel AD:
         // AD = (K*9.48/1000) + (T*9.48/1000)
-        var transportStampTax = transportNetAmount * StampTaxRate;
-        var guideStampTax = guideNetAmount * StampTaxRate;
+        var transportStampTax = transportNetAmount * constants.StampTaxRate;
+        var guideStampTax = guideNetAmount * constants.StampTaxRate;
+        // Damga vergisi bir kesintidir; negatif fiyat farkı negatif vergi/kredi oluşturamaz.
         var stampTax = transportStampTax + guideStampTax;
 
-        // Excel AC doğrudan ham fiyat farkı hücrelerini kullanır:
-        // AC = (I*6%) + (R*6%).
-        var transportAdditionalGuarantee = input.PriceDifference * AdditionalGuaranteeRate;
-        var guideAdditionalGuarantee = input.GuidePriceDifference * AdditionalGuaranteeRate;
+        // Kaynak XLSM formülü birebir:
+        // Temel/Ortaöğretim T = I*6%.
+        // Özel Eğitim AC = I*6% + R*6%.
+        // İskontolar J/S bu tabana dahil değildir. Kaynak formülde MAX(0, ...) yoktur;
+        // mevzuat yorumu ayrıca uzman onayına sunulmalı, hesap kodu kaynağı sessizce değiştirmemelidir.
         var additionalGuarantee =
-            transportAdditionalGuarantee + guideAdditionalGuarantee;
+            (input.PriceDifference * constants.AdditionalGuaranteeRate)
+            + (input.GuidePriceDifference * constants.AdditionalGuaranteeRate);
 
         // Excel AE = M+V+Y+Z+AA+AB+AC+AD.
         var totalDeductions =
@@ -149,6 +179,7 @@ public sealed class ProgressPaymentCalculator
             transportVat,
             guideVat,
             transportWithholding,
-            guideWithholding);
+            guideWithholding,
+            AppliedConstants: constants);
     }
 }

@@ -20,4 +20,39 @@ public static class TenderRoutePropagationService
                     : route)
             .ToArray();
     }
+
+    public static IReadOnlyList<RouteData> UpdateContractIdentity(
+        IReadOnlyList<RouteData> routes,
+        ContractDraftData oldContract,
+        ContractDraftData newContract)
+    {
+        ArgumentNullException.ThrowIfNull(routes);
+        ArgumentNullException.ThrowIfNull(oldContract);
+        ArgumentNullException.ThrowIfNull(newContract);
+
+        return routes
+            .Select(route =>
+            {
+                var sameTender = string.Equals(
+                    route.TenderNumber?.Trim(),
+                    oldContract.TenderNumber.Trim(),
+                    StringComparison.OrdinalIgnoreCase);
+                var sameContract = !string.IsNullOrWhiteSpace(route.ContractNumber)
+                    && string.Equals(route.ContractNumber.Trim(), oldContract.ContractNumber.Trim(), StringComparison.OrdinalIgnoreCase);
+
+                if (!sameTender || !sameContract)
+                    return route;
+
+                var hasGuide = newContract.ProgramType == TransportationProgramType.SpecialEducation;
+                return route with
+                {
+                    TenderNumber = newContract.TenderNumber.Trim(),
+                    ContractNumber = newContract.ContractNumber.Trim(),
+                    ProgramType = newContract.ProgramType,
+                    GuideWorkDays = hasGuide ? route.GuideWorkDays : 0,
+                    GuideDailyPrice = hasGuide ? route.GuideDailyPrice : 0m
+                };
+            })
+            .ToArray();
+    }
 }

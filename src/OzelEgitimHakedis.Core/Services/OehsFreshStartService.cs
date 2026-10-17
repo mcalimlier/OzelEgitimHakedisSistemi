@@ -4,14 +4,12 @@ public static class OehsFreshStartService
 {
     // One-time clean-slate migration. Existing files are moved to a recoverable
     // backup, never permanently deleted by an automatic launch-time operation.
-    public const string CurrentResetVersion = "2026-10-01-clean-slate-01";
+    public const string CurrentResetVersion = "2026-10-16-program-partitioned-storage-v3";
 
     public static bool EnsureFreshStart() =>
         EnsureFreshStart(
-            Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "OEHS"),
-            OehsOutputPathService.DesktopRoot);
+            OehsRuntimePaths.DataRoot,
+            OehsRuntimePaths.DesktopRoot);
 
     public static bool EnsureFreshStart(string localDataRoot, string desktopRoot)
     {
@@ -32,7 +30,17 @@ public static class OehsFreshStartService
         {
             Path.Combine(localDataRoot, "oehs-data.json"),
             Path.Combine(localDataRoot, "oehs-data.json.bak"),
-            Path.Combine(localDataRoot, "oehs-data.json.tmp")
+            Path.Combine(localDataRoot, "oehs-data.json.tmp"),
+            Path.Combine(localDataRoot, "oehs-special-education.json"),
+            Path.Combine(localDataRoot, "oehs-special-education.json.bak"),
+            Path.Combine(localDataRoot, "oehs-special-education.json.pending"),
+            Path.Combine(localDataRoot, "oehs-special-education.json.pending.bak"),
+            Path.Combine(localDataRoot, "oehs-special-education.json.rollback"),
+            Path.Combine(localDataRoot, "oehs-basic-secondary.json"),
+            Path.Combine(localDataRoot, "oehs-basic-secondary.json.bak"),
+            Path.Combine(localDataRoot, "oehs-basic-secondary.json.pending"),
+            Path.Combine(localDataRoot, "oehs-basic-secondary.json.pending.bak"),
+            Path.Combine(localDataRoot, "oehs-basic-secondary.json.rollback")
         };
 
         var fullDesktopRoot = Path.GetFullPath(desktopRoot);

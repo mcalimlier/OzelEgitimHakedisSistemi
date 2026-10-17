@@ -4,7 +4,7 @@ namespace OzelEgitimHakedis.Core.Services;
 
 public sealed record ProgressPaymentReportTotals(
     decimal CumulativeServiceAmount,
-    decimal CurrentPriceDifference,
+    decimal CumulativePriceDifference,
     decimal CumulativeTotal,
     decimal PreviousTotal,
     decimal CurrentTotal);
@@ -32,27 +32,53 @@ public static class ProgressPaymentReportService
     }
 
     /// <summary>
-    /// Maps a saved payment to the Excel workbook's monthly service-amount area.
-    /// The workbook keeps the price-difference cells separately, so subtract the
-    /// raw I/R inputs from K+T. This also preserves J/S discounts in the service base.
+    /// Calculates the base service after discounts for one route/month:
+    /// G*H-J plus P*Q-S. The official report's D6 is not simply the sum of this
+    /// value across months; it is cumulative K+T less the current month's raw I+R.
+    /// See Calculate for the exact report-cell mapping.
     /// </summary>
-    public static decimal CalculateWorkbookServiceAmount(ProgressPaymentHistoryData payment)
+    public static decimal CalculateWorkbookMonthlyPaymentAmount(ProgressPaymentHistoryData payment)
     {
         ArgumentNullException.ThrowIfNull(payment);
 
-        return payment.Calculation.TotalAmount
-               - payment.Input.PriceDifference
-               - payment.Input.GuidePriceDifference;
+        var transportAmount = payment.Input.WorkDays * payment.Input.DailyPrice
+                              - payment.Input.DiscountAmount;
+
+        // Temel/Ortaöğretim Excel'inde rehber personel alanı bulunmaz.
+        // Arşivde eski/elle değiştirilmiş rehber değerleri bulunsa bile rapor
+        // geçmişine sızmamalıdır.
+        if (payment.Input.ProgramType == TransportationProgramType.BasicOrSecondary)
+            return transportAmount;
+
+        return transportAmount
+               + payment.Input.GuideWorkDays * payment.Input.GuideDailyPrice
+               - payment.Input.GuideDiscountAmount;
     }
 
     /// <summary>
-    /// Excel's Hakediş Raporu!D7 and the İcmal Verileri price-difference columns
-    /// use the raw I+R source inputs. They do not use I-J or R-S.
+    /// Excel Hakediş Raporu!D7 uses only the current month's raw I+R inputs.
+    /// Monthly history also stores these raw price differences separately from
+    /// K+T totals; discounts J/S are not subtracted from I/R for this field.
     /// </summary>
     public static decimal CalculateWorkbookPriceDifference(ProgressPaymentHistoryData payment)
     {
         ArgumentNullException.ThrowIfNull(payment);
-        return payment.Input.PriceDifference + payment.Input.GuidePriceDifference;
+        return payment.Input.ProgramType == TransportationProgramType.BasicOrSecondary
+            ? payment.Input.PriceDifference
+            : payment.Input.PriceDifference + payment.Input.GuidePriceDifference;
+    }
+
+    /// <summary>
+    /// Mirrors the XLSM's monthly K+T value: contract-price work after discount
+    /// plus the signed transport and guide price differences for that month.
+    /// Used for completed prior periods, whose price differences are already part
+    /// of the previous cumulative payment.
+    /// </summary>
+    public static decimal CalculateWorkbookMonthlyPaymentTotal(ProgressPaymentHistoryData payment)
+    {
+        ArgumentNullException.ThrowIfNull(payment);
+        return CalculateWorkbookMonthlyPaymentAmount(payment)
+               + CalculateWorkbookPriceDifference(payment);
     }
 
     public static ProgressPaymentReportTotals Calculate(
@@ -62,32 +88,46 @@ public static class ProgressPaymentReportService
         ArgumentNullException.ThrowIfNull(current);
         ArgumentNullException.ThrowIfNull(payments);
 
+        // The official workbook report is route-specific. Never let a different
+        // route, contractor, contract, tender, or transport program contribute to
+        // the selected route's cumulative cells—even when names/numbers coincide.
+        var currentRouteKey = OehsIdentityService.BuildRouteKey(
+            current.TenderNumber ?? string.Empty,
+            current.RouteNumber ?? string.Empty,
+            current.ContractorTaxOrIdentityNumber ?? string.Empty,
+            current.ContractNumber ?? string.Empty,
+            current.Input.ProgramType);
+
         var previous = payments
             .Where(x => x.Id != current.Id)
+            .Where(x => string.Equals(
+                OehsIdentityService.BuildRouteKey(
+                    x.TenderNumber ?? string.Empty,
+                    x.RouteNumber ?? string.Empty,
+                    x.ContractorTaxOrIdentityNumber ?? string.Empty,
+                    x.ContractNumber ?? string.Empty,
+                    x.Input.ProgramType),
+                currentRouteKey,
+                StringComparison.Ordinal))
             .Where(x => IsBeforePayment(x, current))
             .Where(x => IsWithinCurrentFiscalYear(x, current))
             .ToArray();
 
-        // Hakediş Raporu!D6: cumulative monthly service amounts, excluding the
-        // separately stored raw price-difference cells.
-        var previousServiceAmount = previous.Sum(CalculateWorkbookServiceAmount);
-        var currentServiceAmount = CalculateWorkbookServiceAmount(current);
+        // XLSM Hakediş Raporu formül zinciri:
+        // D6 = toplam aylık K+T tutarı (önceki + mevcut) - mevcut ayın ham I+R fiyat farkı.
+        // D7 = yalnızca mevcut ayın ham I+R fiyat farkı.
+        // D8 = D6 + D7 = önceki toplamlar + mevcut ayın K+T tutarı.
+        // D10 = önceki aylara ait toplam K+T.
+        // D11 = IF(D7<0,H2-ABS(D7),H2+D7)-D7; her iki dal da cebirsel olarak H2'ye,
+        // yani mevcut satırın K+T tutarına sadeleşir.
+        // Gelecek aylardaki olası önceden girilmiş değerleri rapora katmamak için
+        // yalnızca seçili aya kadar olan uygulama geçmişini topluyoruz.
+        var currentMonthlyTotal = CalculateWorkbookMonthlyPaymentTotal(current);
+        var previousTotal = previous.Sum(CalculateWorkbookMonthlyPaymentTotal);
         var currentPriceDifference = CalculateWorkbookPriceDifference(current);
-        var cumulativeServiceAmount = previousServiceAmount + currentServiceAmount;
-
-        // Hakediş Raporu!D8 = D6 + D7.
-        var cumulativeTotal = cumulativeServiceAmount + currentPriceDifference;
-
-        // Hakediş Raporu!D10 reads the previous cumulative service-only value
-        // from İcmal Verileri!O. Price differences are kept in their own columns.
-        var previousTotal = previousServiceAmount;
-
-        // Excel formula in Hakediş Raporu!D11, despite the row label saying C-D:
-        // H2 = K + T; D7 = raw I + R; D11 = IF(D7<0,H2-ABS(D7),H2+D7).
-        // Keep the source formula exactly; do not silently replace it with C-D.
-        var currentTotal = currentPriceDifference < 0m
-            ? current.Calculation.TotalAmount - Math.Abs(currentPriceDifference)
-            : current.Calculation.TotalAmount + currentPriceDifference;
+        var cumulativeTotal = previousTotal + currentMonthlyTotal;
+        var cumulativeServiceAmount = cumulativeTotal - currentPriceDifference;
+        var currentTotal = currentMonthlyTotal;
 
         return new ProgressPaymentReportTotals(
             cumulativeServiceAmount,
@@ -101,6 +141,32 @@ public static class ProgressPaymentReportService
     /// Excel Hakediş Raporu!D28 = ROUND(D13,2)-ROUND(D26,2).
     /// This report value is not interchangeable with Hesaplama!AG.
     /// </summary>
+    public static decimal CalculateReportStampTax(
+        ProgressPaymentCalculation calculation,
+        TransportationProgramType programType)
+    {
+        ArgumentNullException.ThrowIfNull(calculation);
+
+        // Basic/Secondary Hakediş Raporu!D15 uses IF(D11<0,0,D11*9.48/1000),
+        // although the calculation sheet keeps the signed K*9.48/1000 value.
+        // The Special Education report prints the calculation-sheet stamp tax as-is.
+        return programType == TransportationProgramType.BasicOrSecondary &&
+               calculation.TransportNetAmount < 0m
+            ? 0m
+            : calculation.StampTax;
+    }
+
+    public static decimal CalculateReportTotalDeductions(
+        ProgressPaymentCalculation calculation,
+        TransportationProgramType programType)
+    {
+        ArgumentNullException.ThrowIfNull(calculation);
+
+        return calculation.TotalDeductions
+               - calculation.StampTax
+               + CalculateReportStampTax(calculation, programType);
+    }
+
     public static decimal CalculateReportNetPayable(
         ProgressPaymentHistoryData current,
         ProgressPaymentReportTotals reportTotals)
@@ -109,8 +175,12 @@ public static class ProgressPaymentReportService
         ArgumentNullException.ThrowIfNull(reportTotals);
 
         var reportGross = reportTotals.CurrentTotal + current.Calculation.Vat;
+        var reportDeductions = CalculateReportTotalDeductions(
+            current.Calculation,
+            current.Input.ProgramType);
+
         return decimal.Round(reportGross, 2, MidpointRounding.AwayFromZero)
-               - decimal.Round(current.Calculation.TotalDeductions, 2, MidpointRounding.AwayFromZero);
+               - decimal.Round(reportDeductions, 2, MidpointRounding.AwayFromZero);
     }
 
     private static bool IsWithinCurrentFiscalYear(

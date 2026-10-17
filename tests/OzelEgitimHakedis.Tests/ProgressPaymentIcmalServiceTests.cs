@@ -30,6 +30,45 @@ public sealed class ProgressPaymentIcmalServiceTests
     }
 
     [Fact]
+    public void FindPreviousDeduction_ShouldCarryBasicProgramDespiteSourceLookupRangeDefect()
+    {
+        var previous = History(1, new DateOnly(2026, 10, 31), 200m) with
+        {
+            Input = new ProgressPaymentInput(
+                1, 1000m, 0m, 0m, 100000m, false, 0m, 0m, 0m,
+                ProgramType: TransportationProgramType.BasicOrSecondary)
+        };
+        var current = History(2, new DateOnly(2026, 11, 30), 300m) with
+        {
+            Input = new ProgressPaymentInput(
+                1, 1000m, 0m, 0m, 100000m, false, 0m, 0m, 0m,
+                ProgramType: TransportationProgramType.BasicOrSecondary)
+        };
+
+        var result = ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { previous, current }, current);
+
+        Assert.Equal(200m, result);
+    }
+
+    [Fact]
+    public void FindPreviousDeduction_ShouldNotCarryAcrossTransportationPrograms()
+    {
+        var basicPrevious = History(1, new DateOnly(2026, 10, 31), 200m) with
+        {
+            Input = new ProgressPaymentInput(
+                1, 1000m, 0m, 0m, 100000m, false, 0m, 0m, 0m,
+                ProgramType: TransportationProgramType.BasicOrSecondary)
+        };
+        var current = History(2, new DateOnly(2026, 11, 30), 300m);
+
+        var result = ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { basicPrevious, current }, current);
+
+        Assert.Equal(0m, result);
+    }
+
+    [Fact]
     public void FindPreviousDeduction_ShouldReturnZeroWhenImmediatelyPreviousMonthHasNoPayment()
     {
         var september = History(1, new DateOnly(2026, 9, 30), 100m);
@@ -51,6 +90,18 @@ public sealed class ProgressPaymentIcmalServiceTests
     }
 
     [Fact]
+    public void FindPreviousDeduction_ShouldCarryMayDeductionIntoJune()
+    {
+        var may = History(1, new DateOnly(2027, 5, 31), 185m);
+        var june = History(2, new DateOnly(2027, 6, 30), 240m);
+
+        var result = ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { may, june }, june);
+
+        Assert.Equal(185m, result);
+    }
+
+    [Fact]
     public void FindPreviousDeduction_ShouldReturnZeroForFirstSeptemberOfFiscalYear()
     {
         var august = History(1, new DateOnly(2026, 8, 31), 450m);
@@ -63,7 +114,7 @@ public sealed class ProgressPaymentIcmalServiceTests
     }
 
     [Fact]
-    public void FindPreviousDeduction_ShouldMirrorMissingNovemberHeaderFallbackToZero()
+    public void FindPreviousDeduction_ShouldUseNovemberDespiteMissingSourceHeader()
     {
         var november = History(1, new DateOnly(2026, 11, 30), 180m);
         var december = History(2, new DateOnly(2026, 12, 31), 250m);
@@ -71,7 +122,7 @@ public sealed class ProgressPaymentIcmalServiceTests
         var result = ProgressPaymentIcmalService.FindPreviousDeduction(
             new[] { november, december }, december);
 
-        Assert.Equal(0m, result);
+        Assert.Equal(180m, result);
     }
 
     [Fact]
@@ -84,6 +135,54 @@ public sealed class ProgressPaymentIcmalServiceTests
             new[] { june, july }, july);
 
         Assert.Equal(0m, result);
+    }
+
+    [Fact]
+    public void BuildPeriods_ShouldKeepSeptemberAsFiscalYearStart()
+    {
+        var periods = ProgressPaymentIcmalService.BuildPeriods(new DateOnly(2026, 9, 30));
+
+        Assert.Equal(new DateOnly(2026, 9, 1), periods[0]);
+        Assert.Equal(new DateOnly(2027, 7, 1), periods[^1]);
+    }
+
+    [Fact]
+    public void BuildPeriods_ShouldTreatAugustAsTheEndOfPreviousFiscalCycle()
+    {
+        var periods = ProgressPaymentIcmalService.BuildPeriods(new DateOnly(2026, 8, 31));
+
+        Assert.Equal(new DateOnly(2025, 9, 1), periods[0]);
+        Assert.Equal(new DateOnly(2026, 7, 1), periods[^1]);
+    }
+
+    [Fact]
+    public void FindPreviousDeduction_ShouldNotCarryAcrossRoutes()
+    {
+        var otherRoute = History(1, new DateOnly(2026, 10, 31), 200m) with
+        {
+            RouteNumber = "Q2"
+        };
+        var current = History(2, new DateOnly(2026, 11, 30), 300m) with
+        {
+            RouteNumber = "Q1"
+        };
+
+        var result = ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { otherRoute, current }, current);
+
+        Assert.Equal(0m, result);
+    }
+
+    [Fact]
+    public void FindPreviousDeduction_ShouldCrossCalendarYearFromJanuaryToDecember()
+    {
+        var previousDecember = History(1, new DateOnly(2026, 12, 31), 420m);
+        var currentJanuary = History(2, new DateOnly(2027, 1, 31), 180m);
+
+        var result = ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { previousDecember, currentJanuary }, currentJanuary);
+
+        Assert.Equal(420m, result);
     }
 
     private static ProgressPaymentHistoryData History(

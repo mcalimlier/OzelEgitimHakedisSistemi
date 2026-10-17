@@ -74,6 +74,17 @@ if errorlevel 1 (
     goto :fail
 )
 
+copy /Y "%ROOT%\OEHS_DENEME_PAKETI.flag" "%PUBLISH%\OEHS_DENEME_PAKETI.flag" >nul
+if errorlevel 1 (
+    echo [HATA] Deneme paketi izole-veri isareti kopyalanamadi.
+    goto :fail
+)
+copy /Y "%ROOT%\OEHS_DENEME_KULLANIM.txt" "%PUBLISH%\KULLANIM.txt" >nul
+if errorlevel 1 (
+    echo [HATA] Kullanim yonergesi kopyalanamadi.
+    goto :fail
+)
+
 if not exist "%PUBLISH%\OEHS.exe" (
     echo [HATA] Beklenen OEHS.exe bulunamadi.
     goto :fail
