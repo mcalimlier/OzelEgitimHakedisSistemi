@@ -947,7 +947,7 @@
                                                 <ItemsControl x:Name="RoutesListBox">
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <Border Background="#F7FAFC" BorderBrush="#D7E2EC" BorderThickness="1" CornerRadius="8" Padding="5.5" Margin="0,2.5">
+                                                            <Border Background="#FFFFFF" BorderBrush="#9AAAB8" BorderThickness="1.2" CornerRadius="8" Padding="7" Margin="0,3">
                                                             <Grid Margin="0">
                                                                 <Grid.ColumnDefinitions>
                                                                     <ColumnDefinition Width="62"/>
@@ -955,15 +955,15 @@
                                                                     <ColumnDefinition Width="230"/>
                                                                     <ColumnDefinition Width="170" MinWidth="170"/>
                                                                 </Grid.ColumnDefinitions>
-                                                                <TextBlock Grid.Column="0" Text="{Binding RouteNumber}" Foreground="#172B3A" FontSize="11.5" FontWeight="Bold" VerticalAlignment="Center"/>
+                                                                <TextBlock Grid.Column="0" Text="{Binding RouteNumber}" Foreground="#000000" FontSize="13" FontWeight="Bold" VerticalAlignment="Center"/>
                                                                 <StackPanel Grid.Column="1" Margin="6.5,0">
-                                                                    <TextBlock Text="{Binding Name}" Foreground="#172B3A" FontSize="11.5" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                                                                    <TextBlock Text="{Binding RelationshipText}" Foreground="#805B00" FontSize="11.5" TextWrapping="Wrap"/>
-                                                                    <TextBlock Text="{Binding TransportSummaryText}" Foreground="#34495E" FontSize="11.5" TextWrapping="Wrap"/>
-                                                                    <TextBlock Text="{Binding GuideSummaryText}" Foreground="#34495E" FontSize="11.5" TextWrapping="Wrap"/>
+                                                                    <TextBlock Text="{Binding Name}" Foreground="#000000" FontSize="13" FontWeight="Bold" TextWrapping="Wrap"/>
+                                                                    <TextBlock Text="{Binding RelationshipText}" Foreground="#5C3B00" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                                                    <TextBlock Text="{Binding TransportSummaryText}" Foreground="#202B33" FontSize="12" TextWrapping="Wrap"/>
+                                                                    <TextBlock Text="{Binding GuideSummaryText}" Foreground="#202B33" FontSize="12" TextWrapping="Wrap"/>
                                                                 </StackPanel>
                                                                 <StackPanel Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                                                    <TextBlock Text="{Binding TransportAnnualPriceText}" Foreground="{StaticResource Text700Brush}" FontSize="11.5" FontWeight="SemiBold" HorizontalAlignment="Right"/>
+                                                                    <TextBlock Text="{Binding TransportAnnualPriceText}" Foreground="#000000" FontSize="12.5" FontWeight="Bold" HorizontalAlignment="Right"/>
                                                                 </StackPanel>
                                                                 <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                                                                     <Button Content="DÜZENLE" Tag="{Binding}" Click="EditRouteButton_Click" Style="{StaticResource SecondaryButton}" Height="32" FontSize="11.5" Width="96" Margin="0,0,6,0"/>
