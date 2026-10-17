@@ -2812,7 +2812,7 @@ public partial class MainWindow : Window
         ContractorNameTextBox.Clear();
         ContractorTaxTextBox.Clear();
         ContractorAddressTextBox.Clear();
-        ContractorPhoneTextBox.Clear();
+        ContractorPhoneTextBox.Text = "0";
         ContractorEmailTextBox.Clear();
         ContractorBankTextBox.Clear();
         ContractorContactTextBox.Clear();
