@@ -110,4 +110,26 @@ public sealed class ExcelSourceParityTests
         Assert.Equal(106567.5703m, result.GrossAmount);
         Assert.Equal(95634.49604196m, result.NetPayable);
     }
+
+    [Fact]
+    public void FractionalWorkDays_ShouldPreserveTwentyDecimalPlacesInCalculation()
+    {
+        var input = new ProgressPaymentInput(
+            WorkDays: 1.12345678901234567890m,
+            DailyPrice: 1000m,
+            DiscountAmount: 0m,
+            PriceDifference: 0m,
+            ContractAmount: 100000m,
+            IsVatExempt: true,
+            TaxDebt: 0m,
+            SocialSecurityDebt: 0m,
+            MinimumWageSupport: 0m,
+            ProgramType: TransportationProgramType.BasicOrSecondary);
+
+        var result = ProgressPaymentCalculator.Calculate(input);
+
+        Assert.Equal(1123.45678901234567890m, result.ServiceAmount);
+        Assert.Equal(1123.45678901234567890m, result.TotalAmount);
+    }
+
 }
