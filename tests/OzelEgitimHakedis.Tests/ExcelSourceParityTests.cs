@@ -114,6 +114,78 @@ public sealed class ExcelSourceParityTests
         Assert.Equal(95634.49604196m, result.NetPayable);
     }
 
+
+    [Fact]
+    public void BasicOrSecondary_ExcelRow5_VatExempt_ShouldMatchSourceCells()
+    {
+        // Source: 03-Temel Eğitim Taşıma Ödeme.xlsm, Hesaplama Bilgileri row 5.
+        // Source cells: G=13, H=6545, I=3659.2, K=88744.2,
+        // T=219.552, U=841.295016, V=1060.847016, W=87683.352984.
+        var input = new ProgressPaymentInput(
+            WorkDays: 13, DailyPrice: 6545m, DiscountAmount: 0m,
+            PriceDifference: 3659.2m, ContractAmount: 100000m,
+            IsVatExempt: true, TaxDebt: 0m, SocialSecurityDebt: 0m,
+            MinimumWageSupport: 0m, InspectionPenalty: 0m,
+            ProgramType: TransportationProgramType.BasicOrSecondary);
+        var result = ProgressPaymentCalculator.Calculate(input);
+        Assert.Equal(88744.2m, result.TransportNetAmount); // K
+        Assert.Equal(0m, result.TransportVat); // L
+        Assert.Equal(0m, result.TransportWithholding); // M
+        Assert.Equal(88744.2m, result.GrossAmount); // O
+        Assert.Equal(219.552m, result.AdditionalGuarantee); // T
+        Assert.Equal(841.295016m, result.StampTax); // U
+        Assert.Equal(1060.847016m, result.TotalDeductions); // V
+        Assert.Equal(87683.352984m, result.NetPayable); // W
+    }
+
+    [Fact]
+    public void SpecialEducation_ExcelRow5_VatExempt_ShouldMatchSourceCells()
+    {
+        // Source: 02-Özel Eğitim Hakediş Ödeme.xlsm, Hesaplama row 5.
+        // K=42813.848, T=40874.70, AC=68.75088, AD=793.36743504,
+        // AE=862.11831504, AF=83688.548, AG=82826.42968496.
+        var input = new ProgressPaymentInput(
+            WorkDays: 22, DailyPrice: 1894m, DiscountAmount: 0m,
+            PriceDifference: 1145.848m, ContractAmount: 100000m,
+            IsVatExempt: true, TaxDebt: 0m, SocialSecurityDebt: 0m,
+            MinimumWageSupport: 0m, InspectionPenalty: 0m,
+            GuideWorkDays: 30, GuideDailyPrice: 1362.49m,
+            GuideDiscountAmount: 0m, GuidePriceDifference: 0m,
+            ProgramType: TransportationProgramType.SpecialEducation);
+        var result = ProgressPaymentCalculator.Calculate(input);
+        Assert.Equal(42813.848m, result.TransportNetAmount); // K
+        Assert.Equal(40874.70m, result.GuideNetAmount); // T
+        Assert.Equal(68.75088m, result.AdditionalGuarantee); // AC
+        Assert.Equal(793.36743504m, result.StampTax); // AD
+        Assert.Equal(862.11831504m, result.TotalDeductions); // AE
+        Assert.Equal(83688.548m, result.GrossAmount); // AF
+        Assert.Equal(82826.42968496m, result.NetPayable); // AG
+    }
+
+    [Fact]
+    public void SpecialEducation_ExcelRow6_VatExempt_ShouldMatchSourceCells()
+    {
+        // Source: 02-Özel Eğitim Hakediş Ödeme.xlsm, Hesaplama row 6.
+        // K=49369.2946, T=40874.70, AC=79.277676, AD=855.513068808,
+        // AE=934.790744808, AF=90243.9946, AG=89309.203855192.
+        var input = new ProgressPaymentInput(
+            WorkDays: 22, DailyPrice: 2184m, DiscountAmount: 0m,
+            PriceDifference: 1321.2946m, ContractAmount: 100000m,
+            IsVatExempt: true, TaxDebt: 0m, SocialSecurityDebt: 0m,
+            MinimumWageSupport: 0m, InspectionPenalty: 0m,
+            GuideWorkDays: 30, GuideDailyPrice: 1362.49m,
+            GuideDiscountAmount: 0m, GuidePriceDifference: 0m,
+            ProgramType: TransportationProgramType.SpecialEducation);
+        var result = ProgressPaymentCalculator.Calculate(input);
+        Assert.Equal(49369.2946m, result.TransportNetAmount); // K
+        Assert.Equal(40874.70m, result.GuideNetAmount); // T
+        Assert.Equal(79.277676m, result.AdditionalGuarantee); // AC
+        Assert.Equal(855.513068808m, result.StampTax); // AD
+        Assert.Equal(934.790744808m, result.TotalDeductions); // AE
+        Assert.Equal(90243.9946m, result.GrossAmount); // AF
+        Assert.Equal(89309.203855192m, result.NetPayable); // AG
+    }
+
     [Fact]
     public void FractionalWorkDays_ShouldPreserveTwentyDecimalPlacesInCalculation()
     {
