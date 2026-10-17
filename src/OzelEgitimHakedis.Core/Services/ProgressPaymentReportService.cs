@@ -41,8 +41,16 @@ public static class ProgressPaymentReportService
     {
         ArgumentNullException.ThrowIfNull(payment);
 
-        return payment.Input.WorkDays * payment.Input.DailyPrice
-               - payment.Input.DiscountAmount
+        var transportAmount = payment.Input.WorkDays * payment.Input.DailyPrice
+                              - payment.Input.DiscountAmount;
+
+        // Temel/Ortaöğretim Excel'inde rehber personel alanı bulunmaz.
+        // Arşivde eski/elle değiştirilmiş rehber değerleri bulunsa bile rapor
+        // geçmişine sızmamalıdır.
+        if (payment.Input.ProgramType == TransportationProgramType.BasicOrSecondary)
+            return transportAmount;
+
+        return transportAmount
                + payment.Input.GuideWorkDays * payment.Input.GuideDailyPrice
                - payment.Input.GuideDiscountAmount;
     }
@@ -55,7 +63,9 @@ public static class ProgressPaymentReportService
     public static decimal CalculateWorkbookPriceDifference(ProgressPaymentHistoryData payment)
     {
         ArgumentNullException.ThrowIfNull(payment);
-        return payment.Input.PriceDifference + payment.Input.GuidePriceDifference;
+        return payment.Input.ProgramType == TransportationProgramType.BasicOrSecondary
+            ? payment.Input.PriceDifference
+            : payment.Input.PriceDifference + payment.Input.GuidePriceDifference;
     }
 
     /// <summary>
