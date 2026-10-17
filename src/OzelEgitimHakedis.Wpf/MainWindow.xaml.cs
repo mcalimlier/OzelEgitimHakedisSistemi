@@ -1387,12 +1387,12 @@ public partial class MainWindow : Window
             case ArchiveCorrectionSection.Route:
                 if (!decimal.TryParse(RouteTransportWorkDaysTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out var transportWorkDays) || transportWorkDays < 0)
                 {
-                    message = "Taşıma iş gününü sıfır veya daha büyük bir tam sayı olarak girin.";
+                    message = "Taşıma iş gününü sıfır veya daha büyük, en fazla 20 ondalık basamaklı bir sayı olarak girin.";
                     return false;
                 }
                 if (!decimal.TryParse(RouteGuideWorkDaysTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out var guideWorkDays) || guideWorkDays < 0)
                 {
-                    message = "Rehber iş gününü sıfır veya daha büyük bir tam sayı olarak girin.";
+                    message = "Rehber iş gününü sıfır veya daha büyük, en fazla 20 ondalık basamaklı bir sayı olarak girin.";
                     return false;
                 }
                 if (!TryParseDecimal(RouteGuideDailyPriceTextBox.Text, out var guideDailyPrice) || guideDailyPrice < 0)
@@ -1412,7 +1412,7 @@ public partial class MainWindow : Window
             case ArchiveCorrectionSection.ProgressPayment:
                 if (!decimal.TryParse(WorkDaysTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out var workDays) || workDays < 0)
                 {
-                    message = "Taşıma iş gününü kontrol edin.";
+                    message = "Taşıma iş gününü kontrol edin (0 veya daha büyük; en fazla 20 ondalık basamak).";
                     return false;
                 }
                 if (!decimal.TryParse(GuideWorkDaysTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out var paymentGuideWorkDays) || paymentGuideWorkDays < 0)
@@ -1714,12 +1714,12 @@ public partial class MainWindow : Window
                 }
                 if (!decimal.TryParse(RouteTransportWorkDaysTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out var transportWorkDays) || transportWorkDays < 0)
                 {
-                    message = "Taşıma iş gününü sıfır veya daha büyük bir tam sayı olarak girin.";
+                    message = "Taşıma iş gününü sıfır veya daha büyük, en fazla 20 ondalık basamaklı bir sayı olarak girin.";
                     return false;
                 }
                 if (!decimal.TryParse(RouteGuideWorkDaysTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out var guideWorkDays) || guideWorkDays < 0)
                 {
-                    message = "Rehber iş gününü sıfır veya daha büyük bir tam sayı olarak girin.";
+                    message = "Rehber iş gününü sıfır veya daha büyük, en fazla 20 ondalık basamaklı bir sayı olarak girin.";
                     return false;
                 }
                 if (!TryParseDecimal(RouteGuideDailyPriceTextBox.Text, out var guideDailyPrice) || guideDailyPrice < 0)
@@ -1738,7 +1738,7 @@ public partial class MainWindow : Window
             case HistoryCorrectionSection.ProgressPayment:
                 if (!decimal.TryParse(WorkDaysTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out var workDays) || workDays < 0)
                 {
-                    message = "Taşıma iş gününü kontrol edin.";
+                    message = "Taşıma iş gününü kontrol edin (0 veya daha büyük; en fazla 20 ondalık basamak).";
                     return false;
                 }
                 if (!decimal.TryParse(GuideWorkDaysTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out var paymentGuideWorkDays) || paymentGuideWorkDays < 0)
