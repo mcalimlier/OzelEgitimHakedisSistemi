@@ -397,15 +397,22 @@ public sealed class OfficialDocumentOutputTests
                     Assert.Equal(1122.5197d, page.Height, 2);
 
                     var pdfPath = Path.Combine(temporaryDirectory, output.FileSuffix + ".pdf");
-                    PdfVectorWriter.Save(output.Document, pdfPath);
+                    SaveAndAssertA4Pdf(output.Document, pdfPath);
+                }
 
-                    Assert.True(File.Exists(pdfPath));
-                    Assert.True(new FileInfo(pdfPath).Length > 1000);
+                // Export a separate four-document set for Basic/Secondary transport too.
+                // Prefix the filenames so both program types can be reviewed side by side.
+                foreach (var output in basicOutputs)
+                {
+                    Assert.Single(output.Document.Pages);
+                    var page = Assert.IsType<FixedPage>(output.Document.Pages[0].Child);
+                    Assert.Equal(793.7008d, page.Width, 2);
+                    Assert.Equal(1122.5197d, page.Height, 2);
 
-                    using var pdf = PdfReader.Open(pdfPath, PdfDocumentOpenMode.Import);
-                    Assert.Single(pdf.Pages);
-                    Assert.Equal(595.2756d, pdf.Pages[0].Width.Point, 1);
-                    Assert.Equal(841.8898d, pdf.Pages[0].Height.Point, 1);
+                    var pdfPath = Path.Combine(
+                        temporaryDirectory,
+                        "Temel_Ortaogretim_" + output.FileSuffix + ".pdf");
+                    SaveAndAssertA4Pdf(output.Document, pdfPath);
                 }
             }
             finally
@@ -414,6 +421,19 @@ public sealed class OfficialDocumentOutputTests
                     Directory.Delete(temporaryDirectory, recursive: true);
             }
         });
+    }
+
+    private static void SaveAndAssertA4Pdf(FixedDocument document, string pdfPath)
+    {
+        PdfVectorWriter.Save(document, pdfPath);
+
+        Assert.True(File.Exists(pdfPath));
+        Assert.True(new FileInfo(pdfPath).Length > 1000);
+
+        using var pdf = PdfReader.Open(pdfPath, PdfDocumentOpenMode.Import);
+        Assert.Single(pdf.Pages);
+        Assert.Equal(595.2756d, pdf.Pages[0].Width.Point, 1);
+        Assert.Equal(841.8898d, pdf.Pages[0].Height.Point, 1);
     }
 
     private static string[] GetPageText(FixedPage page) =>
