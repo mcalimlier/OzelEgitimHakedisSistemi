@@ -244,6 +244,51 @@ public sealed class ProgressPaymentReportTests
         Assert.Equal(92349.40m, reportNet);                    // D28
     }
 
+
+    [Fact]
+    public void BasicOrSecondary_SourceWorkbookRow5_ShouldMapTransportPriceDifferenceToReportCells()
+    {
+        // Source workbook Hesaplama Bilgileri row 5:
+        // K=88,744.20 and current raw I=3,659.20; guide columns are excluded
+        // for Basic/Secondary. This test verifies the report service's documented
+        // cell mapping using the source calculation vector, not cached report cells.
+        var input = new ProgressPaymentInput(
+            WorkDays: 13,
+            DailyPrice: 6545m,
+            DiscountAmount: 0m,
+            PriceDifference: 3659.2m,
+            ContractAmount: 100000m,
+            IsVatExempt: true,
+            TaxDebt: 0m,
+            SocialSecurityDebt: 0m,
+            MinimumWageSupport: 0m,
+            ProgramType: TransportationProgramType.BasicOrSecondary);
+        var calculation = ProgressPaymentCalculator.Calculate(input);
+        var current = new ProgressPaymentHistoryData(
+            Guid.NewGuid(),
+            new DateTime(2026, 10, 31),
+            input,
+            calculation,
+            1,
+            new DateOnly(2026, 10, 31),
+            "1",
+            "Hat 1",
+            "İş",
+            "Firma",
+            "TENDER",
+            "SOZ",
+            ContractorTaxOrIdentityNumber: "12345678901");
+
+        var totals = ProgressPaymentReportService.Calculate(current, new[] { current });
+
+        Assert.Equal(88744.2m, calculation.TransportNetAmount); // Hesaplama!K
+        Assert.Equal(85085.0m, totals.CumulativeServiceAmount); // report D6 = K - I
+        Assert.Equal(3659.2m, totals.CumulativePriceDifference); // report D7 = I
+        Assert.Equal(88744.2m, totals.CumulativeTotal); // report D8 = D6 + D7
+        Assert.Equal(0m, totals.PreviousTotal); // report D10
+        Assert.Equal(88744.2m, totals.CurrentTotal); // report D11 / current K+T
+    }
+
     [Fact]
     public void CurrentTotal_ShouldEqualCumulativeTotalMinusPreviousTotal()
     {
