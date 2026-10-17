@@ -246,12 +246,11 @@ public sealed class ProgressPaymentReportTests
 
 
     [Fact]
-    public void BasicOrSecondary_SourceWorkbookRow5_ShouldMapTransportPriceDifferenceToReportCells()
+    public void BasicOrSecondary_SyntheticTransportVector_ShouldMapReportCells()
     {
-        // Source workbook Hesaplama Bilgileri row 5:
-        // K=88,744.20 and current raw I=3,659.20; guide columns are excluded
-        // for Basic/Secondary. This test verifies the report service's documented
-        // cell mapping using the source calculation vector, not cached report cells.
+        // Synthetic regression vector for the Basic/Secondary report mapping.
+        // It checks service-cell arithmetic only; it is NOT represented as a
+        // reconstructed source-workbook row or a golden-master Excel result.
         var input = new ProgressPaymentInput(
             WorkDays: 13,
             DailyPrice: 6545m,
