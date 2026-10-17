@@ -121,7 +121,8 @@ public sealed class ProgressPaymentCalculator
         // AD = (K*9.48/1000) + (T*9.48/1000)
         var transportStampTax = transportNetAmount * constants.StampTaxRate;
         var guideStampTax = guideNetAmount * constants.StampTaxRate;
-        var stampTax = transportStampTax + guideStampTax;
+        // Damga vergisi bir kesintidir; negatif fiyat farkı negatif vergi/kredi oluşturamaz.
+        var stampTax = Math.Max(0m, transportStampTax + guideStampTax);
 
         // Kaynak XLSM formülü birebir:
         // Temel/Ortaöğretim T = I*6%.
