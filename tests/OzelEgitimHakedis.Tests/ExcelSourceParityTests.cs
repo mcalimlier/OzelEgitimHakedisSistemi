@@ -29,12 +29,14 @@ public sealed class ExcelSourceParityTests
 
         var result = ProgressPaymentCalculator.Calculate(input);
 
-        Assert.Equal(36530m, result.ServiceAmount);
-        Assert.Equal(1571.03m, result.PriceDifferenceExcludingVat);
-        Assert.Equal(38101.03m, result.TotalAmount);
-        Assert.Equal(3810.103m, result.Vat);
-        Assert.Equal(1905.0515m, result.Withholding);
-        Assert.Equal(41911.133m, result.GrossAmount);
+        Assert.Equal(36530m, result.ServiceAmount);                 // G*H
+        Assert.Equal(38101.03m, result.TransportNetAmount);          // K = G*H+I-J
+        Assert.Equal(1571.03m, result.PriceDifferenceExcludingVat);  // I
+        Assert.Equal(38101.03m, result.TotalAmount);                 // K
+        Assert.Equal(3810.103m, result.TransportVat);                // L = K*10%
+        Assert.Equal(1905.0515m, result.TransportWithholding);       // M = L/2
+        Assert.Equal(40006.0815m, result.InvoiceAmountAfterWithholding); // N = K+M
+        Assert.Equal(41911.133m, result.GrossAmount);                // O = K+L
         Assert.Equal(94.2618m, result.AdditionalGuarantee);
         Assert.Equal(361.1977644m, result.StampTax);
         Assert.Equal(2360.5110644m, result.TotalDeductions);
@@ -98,12 +100,13 @@ public sealed class ExcelSourceParityTests
 
         var result = ProgressPaymentCalculator.Calculate(input);
 
-        Assert.Equal(52343.573m, result.TransportNetAmount);
-        Assert.Equal(40824.70m, result.GuideNetAmount);
-        Assert.Equal(5234.3573m, result.TransportVat);
-        Assert.Equal(8164.94m, result.GuideVat);
-        Assert.Equal(2617.17865m, result.TransportWithholding);
-        Assert.Equal(7348.446m, result.GuideWithholding);
+        Assert.Equal(52343.573m, result.TransportNetAmount);         // K = G*H+I-J
+        Assert.Equal(40824.70m, result.GuideNetAmount);              // T = P*Q+R-S
+        Assert.Equal(5234.3573m, result.TransportVat);                // L = K*10%
+        Assert.Equal(8164.94m, result.GuideVat);                     // U = T*20%
+        Assert.Equal(2617.17865m, result.TransportWithholding);      // M = L/2
+        Assert.Equal(7348.446m, result.GuideWithholding);            // V = U*90%
+        Assert.Equal(54960.75165m, result.InvoiceAmountAfterWithholding); // N+W
         Assert.Equal(84.21438m, result.AdditionalGuarantee);
         Assert.Equal(883.23522804m, result.StampTax);
         Assert.Equal(10933.07425804m, result.TotalDeductions);
