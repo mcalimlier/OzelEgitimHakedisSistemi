@@ -37,6 +37,9 @@ public sealed class ProgressPaymentCalculatorTests
         Assert.Equal(100m, result.TransportVat);
         Assert.Equal(50m, result.TransportWithholding);
         Assert.Equal(250m, result.Deductions.MinimumWageSupport);
+        // Temel/Ortaöğretim modunda girilmiş rehber fiyat farkı yok sayılır;
+        // ek kesin teminat hesabına da taşınmamalıdır.
+        Assert.Equal(0m, result.AdditionalGuarantee);
         Assert.Equal(309.48m, result.TotalDeductions);
         Assert.Equal(790.52m, result.NetPayable);
         Assert.Equal(0m, result.AppliedConstants!.GuideVatRate);
