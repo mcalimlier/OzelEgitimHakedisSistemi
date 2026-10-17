@@ -40,7 +40,7 @@ public sealed class ProgressPaymentWorkbookFormulaTests
     }
 
     [Fact]
-    public void BasicReportNetPayable_ShouldUseZeroStampTaxWhenD11IsNegativeLikeExcel()
+    public void StampTax_ShouldNeverBeNegativeWhenPriceDifferenceIsNegative()
     {
         var input = new ProgressPaymentInput(
             WorkDays: 1,
@@ -56,7 +56,7 @@ public sealed class ProgressPaymentWorkbookFormulaTests
         var current = History(1, new DateOnly(2026, 10, 31), input);
         var totals = ProgressPaymentReportService.Calculate(current, new[] { current });
 
-        Assert.Equal(-0.948m, current.Calculation.StampTax);
+        Assert.Equal(0m, current.Calculation.StampTax);
         Assert.Equal(0m, ProgressPaymentReportService.CalculateReportStampTax(
             current.Calculation, current.Input.ProgramType));
         Assert.Equal(-12m, ProgressPaymentReportService.CalculateReportTotalDeductions(
