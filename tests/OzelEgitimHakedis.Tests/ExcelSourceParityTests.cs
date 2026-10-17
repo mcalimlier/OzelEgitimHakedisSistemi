@@ -29,7 +29,7 @@ public sealed class ExcelSourceParityTests
 
         var result = ProgressPaymentCalculator.Calculate(input);
 
-        Assert.Equal(38101.03m, result.ServiceAmount);
+        Assert.Equal(36530m, result.ServiceAmount);
         Assert.Equal(1571.03m, result.PriceDifferenceExcludingVat);
         Assert.Equal(38101.03m, result.TotalAmount);
         Assert.Equal(3810.103m, result.Vat);
