@@ -490,7 +490,7 @@
                                                     <DatePicker x:Name="ContractDatePicker" Grid.Row="5" Grid.Column="3" Margin="4.5" Style="{StaticResource FieldDatePicker}"/>
 
                                                     <TextBlock Grid.Row="6" Grid.Column="0" Text="Taşıma Günlük Fiyatı" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
-                                                    <TextBox x:Name="ContractTransportDailyPriceTextBox" Grid.Row="6" Grid.Column="1" Margin="4.5" Style="{StaticResource FieldTextBox}" ToolTip="Excel İhale Verileri içindeki Günlük Fiyat. Hat ve hakediş ekranlarında tekrar girilmez."/>
+                                                    <TextBox x:Name="ContractTransportDailyPriceTextBox" Grid.Row="6" Grid.Column="1" Margin="4.5" Style="{StaticResource FieldTextBox}" TextChanged="ContractTransportDailyPriceTextBox_TextChanged" ToolTip="Excel İhale Verileri içindeki Günlük Fiyat. Hat ve hakediş ekranlarında tekrar girilmez."/>
                                                     <TextBlock Grid.Row="0" Grid.Column="0" Text="TAŞIMA PROGRAMI" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
                                                     <ComboBox x:Name="TransportProgramTypeComboBox" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Margin="4.5" Style="{StaticResource FieldComboBox}" SelectedIndex="0" SelectionChanged="TransportProgramTypeComboBox_SelectionChanged" ToolTip="Rehber ve asgari ücret desteği kuralları seçilen program türüne göre uygulanır.">
                                                         <ComboBoxItem Content="Özel Eğitim Taşıma" Tag="SpecialEducation"/>
@@ -955,12 +955,12 @@
                                                                     <ColumnDefinition Width="230"/>
                                                                     <ColumnDefinition Width="170" MinWidth="170"/>
                                                                 </Grid.ColumnDefinitions>
-                                                                <TextBlock Grid.Column="0" Text="{Binding RouteNumber}" Foreground="{StaticResource Text900Brush}" FontSize="11.5" FontWeight="Bold" VerticalAlignment="Center"/>
+                                                                <TextBlock Grid.Column="0" Text="{Binding RouteNumber}" Foreground="#172B3A" FontSize="11.5" FontWeight="Bold" VerticalAlignment="Center"/>
                                                                 <StackPanel Grid.Column="1" Margin="6.5,0">
-                                                                    <TextBlock Text="{Binding Name}" Foreground="{StaticResource Text900Brush}" FontSize="11.5" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                                                                    <TextBlock Text="{Binding RelationshipText}" Foreground="{StaticResource Gold500Brush}" FontSize="11.5" TextWrapping="Wrap"/>
-                                                                    <TextBlock Text="{Binding TransportSummaryText}" Foreground="{StaticResource Text700Brush}" FontSize="11.5" TextWrapping="Wrap"/>
-                                                                    <TextBlock Text="{Binding GuideSummaryText}" Foreground="{StaticResource Text700Brush}" FontSize="11.5" TextWrapping="Wrap"/>
+                                                                    <TextBlock Text="{Binding Name}" Foreground="#172B3A" FontSize="11.5" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                                                    <TextBlock Text="{Binding RelationshipText}" Foreground="#805B00" FontSize="11.5" TextWrapping="Wrap"/>
+                                                                    <TextBlock Text="{Binding TransportSummaryText}" Foreground="#34495E" FontSize="11.5" TextWrapping="Wrap"/>
+                                                                    <TextBlock Text="{Binding GuideSummaryText}" Foreground="#34495E" FontSize="11.5" TextWrapping="Wrap"/>
                                                                 </StackPanel>
                                                                 <StackPanel Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center">
                                                                     <TextBlock Text="{Binding TransportAnnualPriceText}" Foreground="{StaticResource Text700Brush}" FontSize="11.5" FontWeight="SemiBold" HorizontalAlignment="Right"/>
