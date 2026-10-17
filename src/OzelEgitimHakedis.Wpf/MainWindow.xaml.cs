@@ -1264,6 +1264,15 @@ public partial class MainWindow : Window
                actual != expected;
     }
 
+    private static bool DecimalWorkDaysDiffer(TextBox textBox, decimal expected)
+    {
+        if (string.IsNullOrWhiteSpace(textBox.Text))
+            return expected != 0m;
+
+        return !decimal.TryParse(textBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out var actual) ||
+               actual != expected;
+    }
+
     private static bool NullableIntDiffers(TextBox textBox, int? expected)
     {
         if (string.IsNullOrWhiteSpace(textBox.Text))
@@ -1316,14 +1325,14 @@ public partial class MainWindow : Window
             ArchiveCorrectionSection.Route =>
                 TextDiffers(RouteNumberTextBox, archive.Route.RouteNumber) ||
                 TextDiffers(RouteNameTextBox, archive.Route.Name) ||
-                IntDiffers(RouteTransportWorkDaysTextBox, archive.Route.TransportWorkDays) ||
-                IntDiffers(RouteGuideWorkDaysTextBox, archive.Route.GuideWorkDays) ||
+                DecimalWorkDaysDiffer(RouteTransportWorkDaysTextBox, archive.Route.TransportWorkDays) ||
+                DecimalWorkDaysDiffer(RouteGuideWorkDaysTextBox, archive.Route.GuideWorkDays) ||
                 DecimalDiffers(RouteGuideDailyPriceTextBox, archive.Route.GuideDailyPrice),
 
             ArchiveCorrectionSection.ProgressPayment =>
-                IntDiffers(WorkDaysTextBox, archive.ProgressPayment.Input.WorkDays) ||
+                DecimalWorkDaysDiffer(WorkDaysTextBox, archive.ProgressPayment.Input.WorkDays) ||
                 DecimalDiffers(DailyPriceTextBox, archive.ProgressPayment.Input.DailyPrice) ||
-                IntDiffers(GuideWorkDaysTextBox, archive.ProgressPayment.Input.GuideWorkDays) ||
+                DecimalWorkDaysDiffer(GuideWorkDaysTextBox, archive.ProgressPayment.Input.GuideWorkDays) ||
                 DecimalDiffers(GuideDailyPriceTextBox, archive.ProgressPayment.Input.GuideDailyPrice) ||
                 DecimalDiffers(DiscountTextBox, archive.ProgressPayment.Input.DiscountAmount) ||
                 DecimalDiffers(GuideDiscountTextBox, archive.ProgressPayment.Input.GuideDiscountAmount) ||
@@ -1376,12 +1385,12 @@ public partial class MainWindow : Window
                 break;
 
             case ArchiveCorrectionSection.Route:
-                if (!int.TryParse(RouteTransportWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var transportWorkDays) || transportWorkDays < 0)
+                if (!decimal.TryParse(RouteTransportWorkDaysTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out var transportWorkDays) || transportWorkDays < 0)
                 {
                     message = "Taşıma iş gününü sıfır veya daha büyük bir tam sayı olarak girin.";
                     return false;
                 }
-                if (!int.TryParse(RouteGuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var guideWorkDays) || guideWorkDays < 0)
+                if (!decimal.TryParse(RouteGuideWorkDaysTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out var guideWorkDays) || guideWorkDays < 0)
                 {
                     message = "Rehber iş gününü sıfır veya daha büyük bir tam sayı olarak girin.";
                     return false;
@@ -1401,12 +1410,12 @@ public partial class MainWindow : Window
                 break;
 
             case ArchiveCorrectionSection.ProgressPayment:
-                if (!int.TryParse(WorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var workDays) || workDays < 0)
+                if (!decimal.TryParse(WorkDaysTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out var workDays) || workDays < 0)
                 {
                     message = "Taşıma iş gününü kontrol edin.";
                     return false;
                 }
-                if (!int.TryParse(GuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var paymentGuideWorkDays) || paymentGuideWorkDays < 0)
+                if (!decimal.TryParse(GuideWorkDaysTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out var paymentGuideWorkDays) || paymentGuideWorkDays < 0)
                 {
                     message = "Rehber iş gününü kontrol edin.";
                     return false;
@@ -1471,7 +1480,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private void UpdateProgressCalculationDisplay(ProgressPaymentCalculation result, int workDays)
+    private void UpdateProgressCalculationDisplay(ProgressPaymentCalculation result, decimal workDays)
     {
         ServiceAmountResultTextBlock.Text = FormatMoney(result.ServiceAmount);
         GuideServiceAmountResultTextBlock.Text = FormatMoney(result.GuideServiceAmount);
@@ -1626,14 +1635,14 @@ public partial class MainWindow : Window
                         StringComparison.Ordinal)) is not RouteDraft route ||
                 TextDiffers(RouteNumberTextBox, route.RouteNumber) ||
                 TextDiffers(RouteNameTextBox, route.Name) ||
-                IntDiffers(RouteTransportWorkDaysTextBox, route.TransportWorkDays) ||
-                IntDiffers(RouteGuideWorkDaysTextBox, route.GuideWorkDays) ||
+                DecimalWorkDaysDiffer(RouteTransportWorkDaysTextBox, route.TransportWorkDays) ||
+                DecimalWorkDaysDiffer(RouteGuideWorkDaysTextBox, route.GuideWorkDays) ||
                 DecimalDiffers(RouteGuideDailyPriceTextBox, route.GuideDailyPrice),
 
             HistoryCorrectionSection.ProgressPayment =>
-                IntDiffers(WorkDaysTextBox, item.Input.WorkDays) ||
+                DecimalWorkDaysDiffer(WorkDaysTextBox, item.Input.WorkDays) ||
                 DecimalDiffers(DailyPriceTextBox, item.Input.DailyPrice) ||
-                IntDiffers(GuideWorkDaysTextBox, item.Input.GuideWorkDays) ||
+                DecimalWorkDaysDiffer(GuideWorkDaysTextBox, item.Input.GuideWorkDays) ||
                 DecimalDiffers(GuideDailyPriceTextBox, item.Input.GuideDailyPrice) ||
                 DecimalDiffers(DiscountTextBox, item.Input.DiscountAmount) ||
                 DecimalDiffers(GuideDiscountTextBox, item.Input.GuideDiscountAmount) ||
@@ -1703,12 +1712,12 @@ public partial class MainWindow : Window
                     message = "Hat No ve hat adı zorunludur.";
                     return false;
                 }
-                if (!int.TryParse(RouteTransportWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var transportWorkDays) || transportWorkDays < 0)
+                if (!decimal.TryParse(RouteTransportWorkDaysTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out var transportWorkDays) || transportWorkDays < 0)
                 {
                     message = "Taşıma iş gününü sıfır veya daha büyük bir tam sayı olarak girin.";
                     return false;
                 }
-                if (!int.TryParse(RouteGuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var guideWorkDays) || guideWorkDays < 0)
+                if (!decimal.TryParse(RouteGuideWorkDaysTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out var guideWorkDays) || guideWorkDays < 0)
                 {
                     message = "Rehber iş gününü sıfır veya daha büyük bir tam sayı olarak girin.";
                     return false;
@@ -1727,12 +1736,12 @@ public partial class MainWindow : Window
                 break;
 
             case HistoryCorrectionSection.ProgressPayment:
-                if (!int.TryParse(WorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var workDays) || workDays < 0)
+                if (!decimal.TryParse(WorkDaysTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out var workDays) || workDays < 0)
                 {
                     message = "Taşıma iş gününü kontrol edin.";
                     return false;
                 }
-                if (!int.TryParse(GuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var paymentGuideWorkDays) || paymentGuideWorkDays < 0)
+                if (!decimal.TryParse(GuideWorkDaysTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out var paymentGuideWorkDays) || paymentGuideWorkDays < 0)
                 {
                     message = "Rehber iş gününü kontrol edin.";
                     return false;
@@ -2387,13 +2396,13 @@ public partial class MainWindow : Window
         var errors = new List<Control>();
         if (string.IsNullOrWhiteSpace(routeNumber)) errors.Add(RouteNumberTextBox);
         if (string.IsNullOrWhiteSpace(routeName)) errors.Add(RouteNameTextBox);
-        if (!int.TryParse(RouteTransportWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var transportWorkDays) || transportWorkDays < 0) errors.Add(RouteTransportWorkDaysTextBox);
+        if (!decimal.TryParse(RouteTransportWorkDaysTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out var transportWorkDays) || transportWorkDays < 0) errors.Add(RouteTransportWorkDaysTextBox);
         var hasGuide = HasGuideStaff(archive.Contract.ProgramType);
-        var guideWorkDays = 0;
+        decimal guideWorkDays = 0m;
         var guideDailyPrice = 0m;
         if (hasGuide)
         {
-            if (!int.TryParse(RouteGuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out guideWorkDays) || guideWorkDays < 0) errors.Add(RouteGuideWorkDaysTextBox);
+            if (!decimal.TryParse(RouteGuideWorkDaysTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out guideWorkDays) || guideWorkDays < 0) errors.Add(RouteGuideWorkDaysTextBox);
             if (!TryParseDecimal(RouteGuideDailyPriceTextBox.Text, out guideDailyPrice) || guideDailyPrice < 0) errors.Add(RouteGuideDailyPriceTextBox);
         }
 
@@ -2954,17 +2963,17 @@ public partial class MainWindow : Window
             errors.Add("Hat Adı");
             MarkInvalid(RouteNameTextBox);
         }
-        if (!int.TryParse(RouteTransportWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var transportWorkDays) || transportWorkDays < 0)
+        if (!decimal.TryParse(RouteTransportWorkDaysTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out var transportWorkDays) || transportWorkDays < 0)
         {
             errors.Add("Taşıma İş Günü");
             MarkInvalid(RouteTransportWorkDaysTextBox);
         }
         var hasGuide = HasGuideStaff(contract?.ProgramType ?? TransportationProgramType.SpecialEducation);
-        var guideWorkDays = 0;
+        decimal guideWorkDays = 0m;
         var guideDailyPrice = 0m;
         if (hasGuide)
         {
-            if (!int.TryParse(RouteGuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out guideWorkDays) || guideWorkDays < 0)
+            if (!decimal.TryParse(RouteGuideWorkDaysTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out guideWorkDays) || guideWorkDays < 0)
             {
                 errors.Add("Rehber Yıllık İş Günü");
                 MarkInvalid(RouteGuideWorkDaysTextBox);
@@ -4381,17 +4390,17 @@ public partial class MainWindow : Window
 
         var invalidFields = new List<(Control Control, string Name)>();
 
-        if (!int.TryParse(WorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var workDays) || workDays < 0)
+        if (!decimal.TryParse(WorkDaysTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out var workDays) || workDays < 0)
             invalidFields.Add((WorkDaysTextBox, "Taşıma İş Günü"));
 
-        var guideWorkDays = 0;
+        decimal guideWorkDays = 0m;
         var guideDailyPrice = 0m;
         var guideDiscount = 0m;
         var guidePriceDifference = 0m;
         var minimumWageSupport = 0m;
         if (hasGuide)
         {
-            if (!int.TryParse(GuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out guideWorkDays) || guideWorkDays < 0)
+            if (!decimal.TryParse(GuideWorkDaysTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out guideWorkDays) || guideWorkDays < 0)
                 invalidFields.Add((GuideWorkDaysTextBox, "Rehber İş Günü"));
             if (!TryParseDecimal(GuideDailyPriceTextBox.Text, out guideDailyPrice) || guideDailyPrice < 0)
                 invalidFields.Add((GuideDailyPriceTextBox, "Rehber Günlük Fiyat"));
@@ -6029,10 +6038,10 @@ public partial class MainWindow : Window
             row => row.RouteKey,
             StringComparer.Ordinal);
         var seedRouteKey = _lastProgressDefaultsRouteKey;
-        var seedWorkDays = int.TryParse(WorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var parsedWorkDays)
+        var seedWorkDays = decimal.TryParse(WorkDaysTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out var parsedWorkDays)
             ? parsedWorkDays
             : 0;
-        var seedGuideWorkDays = int.TryParse(GuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var parsedGuideWorkDays)
+        var seedGuideWorkDays = decimal.TryParse(GuideWorkDaysTextBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out var parsedGuideWorkDays)
             ? parsedGuideWorkDays
             : 0;
 
@@ -7381,11 +7390,11 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         public string RouteNumber { get; set; } = string.Empty;
         public string RouteName { get; set; } = string.Empty;
         public string RouteDisplayText => $"Hat {RouteNumber} — {RouteName}";
-        public int WorkDays { get; set; }
+        public decimal WorkDays { get; set; }
         public decimal DailyPrice { get; set; }
         public decimal DiscountAmount { get; set; }
         public decimal PriceDifference { get; set; }
-        public int GuideWorkDays { get; set; }
+        public decimal GuideWorkDays { get; set; }
         public decimal GuideDailyPrice { get; set; }
         public decimal GuideDiscountAmount { get; set; }
         public decimal GuidePriceDifference { get; set; }
@@ -7433,9 +7442,9 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         string RouteNumber,
         string Name,
         decimal DailyPrice,
-        int GuideWorkDays = 0,
+        decimal GuideWorkDays = 0,
         decimal GuideDailyPrice = 0m,
-        int TransportWorkDays = 0,
+        decimal TransportWorkDays = 0,
         string TenderNumber = "",
         string ContractorTaxOrIdentityNumber = "",
         string ContractorName = "",
