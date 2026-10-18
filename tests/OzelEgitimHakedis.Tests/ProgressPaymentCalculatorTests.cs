@@ -59,6 +59,8 @@ public sealed class ProgressPaymentCalculatorTests
 
         Assert.Equal(1500m, result.AdditionalGuarantee);
         Assert.Equal(1500m, result.Deductions.AdditionalGuarantee);
+        // Temel Eğitim kaynak U formülü damga vergisi matrahına elle girilen T tutarını da ekler.
+        Assert.Equal(15.3576m, result.StampTax);
     }
 
     [Fact]
