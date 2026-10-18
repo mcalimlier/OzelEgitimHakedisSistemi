@@ -33,7 +33,9 @@ public sealed class CurrentBasicWorkbookDiscrepancyTests
                 SourceGross = 109368.6m,
                 SourceStampTax = 956.77848m,
                 SourceTotalDeductions = 13428.07848m,
-                SourceNet = 95940.52152m
+                SourceNet = 95940.52152m,
+                SourceReportD28 = 97441.51m,
+                ExpectedReportNet = 97364.68m
             },
             new
             {
@@ -53,7 +55,9 @@ public sealed class CurrentBasicWorkbookDiscrepancyTests
                 SourceGross = 102516.7m,
                 SourceStampTax = 897.72756m,
                 SourceTotalDeductions = 13057.57756m,
-                SourceNet = 89459.12244m
+                SourceNet = 89459.12244m,
+                SourceReportD28 = 90961.10m,
+                ExpectedReportNet = 90883.22m
             }
         };
 
@@ -74,6 +78,26 @@ public sealed class CurrentBasicWorkbookDiscrepancyTests
             Assert.NotEqual(example.SourceStampTax, result.StampTax);
             Assert.NotEqual(example.SourceTotalDeductions, result.TotalDeductions);
             Assert.Equal(example.Input.PriceDifference == 1501m ? 1424.16m : 1424.10m, result.NetPayable - example.SourceNet);
+
+            var current = new ProgressPaymentHistoryData(
+                Id: Guid.NewGuid(),
+                CreatedAt: new DateTime(2026, 10, 31, 12, 0, 0, DateTimeKind.Utc),
+                Input: example.Input,
+                Calculation: result,
+                ProgressPaymentNumber: example.Input.PriceDifference == 1501m ? 2 : 3,
+                PeriodDate: new DateOnly(2026, 10, 31),
+                RouteNumber: example.Input.PriceDifference == 1501m ? "02" : "03",
+                RouteName: "Örnek Güzergâh",
+                WorkName: "Örnek Güzergâh",
+                ContractorName: "Örnek Yüklenici",
+                TenderNumber: "TEST-IHALE",
+                ContractNumber: "TEST-SOZ",
+                ContractorTaxOrIdentityNumber: "12345678901");
+            var reportTotals = ProgressPaymentReportService.Calculate(current, new[] { current });
+            var reportNet = ProgressPaymentReportService.CalculateReportNetPayable(current, reportTotals);
+
+            Assert.Equal(example.ExpectedReportNet, reportNet);
+            Assert.NotEqual(example.SourceReportD28, reportNet);
         }
     }
 
