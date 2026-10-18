@@ -29,7 +29,7 @@ public sealed class OfficialDocumentOutputTests
             Assert.Equal("Aşkın KESKİNBALTA", settings.PreparerName);
             Assert.Equal("Halil ÖZENÇ", settings.ControllerName);
             Assert.Equal("Özgür BAYSAL", settings.ApproverName);
-            Assert.Contains("preparerName", File.ReadAllText(settingsPath));
+            Assert.Contains("preparerName", File.ReadAllText(settingsPath), StringComparison.Ordinal);
         }
         finally
         {
@@ -82,7 +82,7 @@ public sealed class OfficialDocumentOutputTests
             var exception = Assert.Throws<InvalidDataException>(
                 () => OehsOfficialDocumentSettingsStore.Load(settingsPath));
 
-            Assert.Contains(settingsPath, exception.Message);
+            Assert.Contains(settingsPath, exception.Message, StringComparison.Ordinal);
         }
         finally
         {
@@ -322,8 +322,8 @@ public sealed class OfficialDocumentOutputTests
                 .Where(block => block.Text.StartsWith(
                     "İlçe Milli Eğitim Müdürlüğü",
                     StringComparison.Ordinal)));
-            Assert.Contains("TEST MEMUR TEST DÜZENLEYEN", acceptanceNarrative.Text);
-            Assert.Contains("TEST ŞUBE MÜDÜRÜ TEST KONTROL EDEN", acceptanceNarrative.Text);
+            Assert.Contains("TEST MEMUR TEST DÜZENLEYEN", acceptanceNarrative.Text, StringComparison.Ordinal);
+            Assert.Contains("TEST ŞUBE MÜDÜRÜ TEST KONTROL EDEN", acceptanceNarrative.Text, StringComparison.Ordinal);
             Assert.Contains("01.10.2026 / 31.10.2026", acceptanceNarrative.Text);
             Assert.DoesNotContain("Aşkın KESKİNBALTA", acceptanceNarrative.Text);
             Assert.DoesNotContain("Halil ÖZENÇ", acceptanceNarrative.Text);
