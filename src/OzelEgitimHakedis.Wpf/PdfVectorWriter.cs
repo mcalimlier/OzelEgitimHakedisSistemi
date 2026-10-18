@@ -220,13 +220,25 @@ public static class PdfVectorWriter
         // "KESİNTİLER VE MAHSUPLAR" cell in the official Hakediş Raporu.
         if (block.RenderTransform is RotateTransform rotation && Math.Abs(rotation.Angle % 360) > 0.001)
         {
-            var transform = block.TransformToAncestor(page);
-            var center = transform.Transform(new Point(block.ActualWidth / 2d, block.ActualHeight / 2d));
+            // Use the declared layout slot rather than ActualWidth/ActualHeight.
+            // FixedPage text blocks may not have completed WPF measure/arrange before
+            // vector export; ActualWidth/ActualHeight can therefore be zero or stale.
+            // RenderTransform rotates around this slot's center, which is also the
+            // intended center of the merged vertical-heading cell.
+            var left = FixedPage.GetLeft(block);
+            var top = FixedPage.GetTop(block);
+            if (double.IsNaN(left)) left = 0;
+            if (double.IsNaN(top)) top = 0;
+            var width = block.Width;
+            var height = block.Height;
+            if (double.IsNaN(width) || width <= 0) width = block.ActualWidth;
+            if (double.IsNaN(height) || height <= 0) height = block.ActualHeight;
+            var center = new Point(left + width / 2d, top + height / 2d);
             var localRect = new XRect(
-                ToPoint(center.X - block.ActualWidth / 2d),
-                ToPoint(center.Y - block.ActualHeight / 2d),
-                ToPoint(block.ActualWidth),
-                ToPoint(block.ActualHeight));
+                ToPoint(center.X - width / 2d),
+                ToPoint(center.Y - height / 2d),
+                ToPoint(width),
+                ToPoint(height));
 
             var state = gfx.Save();
             try
