@@ -291,6 +291,13 @@ public sealed class OfficialDocumentOutputTests
             Assert.Contains("KDV Tevkifatı (taşıma 5/10; rehber 9/10)", paymentText, StringComparison.Ordinal);
             Assert.Contains("Damga Vergisi (oran %0,948)", paymentText, StringComparison.Ordinal);
 
+            // The report must expose the exact payment period and contractor identity,
+            // not only the computed monetary cells.
+            Assert.Contains("Örnek Yüklenici", paymentText, StringComparison.Ordinal);
+            Assert.Contains("TEST-IHALE", paymentText, StringComparison.Ordinal);
+            Assert.Contains("TEST-SOZ", paymentText, StringComparison.Ordinal);
+            Assert.Contains("31.10.2026", paymentText, StringComparison.Ordinal);
+
             var serviceReport = Assert.Single(
                 outputs.Where(output => output.Kind == OehsOfficialDocumentKind.HizmetIsleriHakedisRaporu));
             var serviceReportText = GetPageText(
