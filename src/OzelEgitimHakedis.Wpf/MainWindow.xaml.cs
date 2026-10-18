@@ -5205,18 +5205,27 @@ public partial class MainWindow : Window
 
                 lines.AddRange(new[]
                 {
-                    "3) TÜM HESAPLAMA ADIMLARI — ÇEKİRDEK HESAPLAYICI SONUCU",
-                    "Taşıma KDV (L) = K × " + (effectiveTransportVat * 100m).ToString("0.##", culture) + "% = " + M(result.TransportVat) + " TL",
-                    "Taşıma tevkifat (M) = L × " + (effectiveTransportWithholding * 100m).ToString("0.##", culture) + "% = " + M(result.TransportWithholding) + " TL",
+                    "Taşıma hizmet tutarı = G × H = " + M(result.ServiceAmount) + " TL",
+                    "Taşıma fiyat farkı neti = I − J = " + M(result.PriceDifferenceExcludingVat) + " TL",
+                    "K — Taşıma neti = hizmet tutarı + fiyat farkı neti = " + M(result.TransportNetAmount) + " TL",
+                    "Taşıma KDV (L) = IF(KDV muaf, 0, K × " + (effectiveTransportVat * 100m).ToString("0.##", culture) + "%) = " + M(result.TransportVat) + " TL",
+                    "Taşıma tevkifat (M) = IF(KDV muaf, 0, L × " + (effectiveTransportWithholding * 100m).ToString("0.##", culture) + "%) = " + M(result.TransportWithholding) + " TL",
                     "Taşıma fatura ara toplamı (N) = K + M = " + M(result.TransportNetAmount + result.TransportWithholding) + " TL",
                     "Taşıma brüt (O) = K + L = " + M(result.TransportGrossAmount) + " TL",
-                    "Rehber KDV (U) = T × " + (effectiveGuideVat * 100m).ToString("0.##", culture) + "% = " + M(result.GuideVat) + " TL",
-                    "Rehber tevkifat (V) = U × " + (effectiveGuideWithholding * 100m).ToString("0.##", culture) + "% = " + M(result.GuideWithholding) + " TL",
+                    "Rehber hizmet tutarı = P × Q = " + M(result.GuideServiceAmount) + " TL",
+                    "Rehber fiyat farkı neti = R − S = " + M(result.GuidePriceDifferenceExcludingVat) + " TL",
+                    "T — Rehber neti = hizmet tutarı + fiyat farkı neti = " + M(result.GuideNetAmount) + " TL",
+                    "Rehber KDV (U) = IF(KDV muaf, 0, T × " + (effectiveGuideVat * 100m).ToString("0.##", culture) + "%) = " + M(result.GuideVat) + " TL",
+                    "Rehber tevkifat (V) = IF(KDV muaf, 0, U × " + (effectiveGuideWithholding * 100m).ToString("0.##", culture) + "%) = " + M(result.GuideWithholding) + " TL",
                     "Rehber fatura ara toplamı (W) = T + V = " + M(result.GuideNetAmount + result.GuideWithholding) + " TL",
                     "Rehber brüt (X) = T + U = " + M(result.GuideGrossAmount) + " TL",
+                    "Toplam iş tutarı = K + T = " + M(result.TotalAmount) + " TL",
+                    "Toplam KDV = L + U = " + M(result.Vat) + " TL",
+                    "Toplam tevkifat = M + V = " + M(result.Withholding) + " TL",
+                    "Fatura ara toplamı = N + W = " + M(result.InvoiceAmountAfterWithholding) + " TL",
                     "AD — Damga vergisi = " + (selectedProgram == TransportationProgramType.BasicOrSecondary
                         ? "(K + elle girilen ek kesin teminat) × oran = " + M(result.StampTax) + " TL"
-                        : "(K + T) × oran = " + M(result.StampTax) + " TL"),
+                        : "(K × oran) + (T × oran) = " + M(result.StampTax) + " TL"),
                     "AE — Toplam kesintiler = tevkifat + vergi borcu + denetim cezası + SGK + asgari ücret desteği + AC + AD = " + M(result.TotalDeductions) + " TL",
                     "AF — Brüt toplam = O + X = " + M(result.GrossAmount) + " TL",
                     "AG — NET ÖDEME = AF − AE = " + M(result.GrossAmount) + " − " + M(result.TotalDeductions) + " = " + M(result.NetPayable) + " TL",
@@ -5265,10 +5274,16 @@ public partial class MainWindow : Window
                         row.ManualAdditionalGuarantee);
                     var rowResult = ProgressPaymentCalculator.Calculate(rowInput, _calculationConstants);
                     lines.Add("Hat " + row.RouteNumber + " — " + row.RouteName);
-                    lines.Add("  K = G×H+I−J = " + M(row.WorkDays * row.DailyPrice + row.PriceDifference - row.DiscountAmount) + " TL");
-                    lines.Add("  T = P×Q+R−S = " + M(hasGuide
-                        ? row.GuideWorkDays * row.GuideDailyPrice + row.GuidePriceDifference - row.GuideDiscountAmount
-                        : 0m) + " TL");
+                    lines.Add("  K = G×H+I−J = " + M(rowResult.TransportNetAmount) + " TL");
+                    lines.Add("  L — Taşıma KDV = " + M(rowResult.TransportVat) + " TL");
+                    lines.Add("  M — Taşıma tevkifat = " + M(rowResult.TransportWithholding) + " TL");
+                    lines.Add("  N — Taşıma fatura ara toplamı = " + M(rowResult.TransportNetAmount + rowResult.TransportWithholding) + " TL");
+                    lines.Add("  O — Taşıma brüt = " + M(rowResult.TransportGrossAmount) + " TL");
+                    lines.Add("  T = P×Q+R−S = " + M(rowResult.GuideNetAmount) + " TL");
+                    lines.Add("  U — Rehber KDV = " + M(rowResult.GuideVat) + " TL");
+                    lines.Add("  V — Rehber tevkifat = " + M(rowResult.GuideWithholding) + " TL");
+                    lines.Add("  W — Rehber fatura ara toplamı = " + M(rowResult.GuideNetAmount + rowResult.GuideWithholding) + " TL");
+                    lines.Add("  X — Rehber brüt = " + M(rowResult.GuideGrossAmount) + " TL");
                     lines.Add("  AC — Ek kesin teminat = " + M(rowResult.AdditionalGuarantee) + " TL");
                     lines.Add("  AD — Damga vergisi = " + M(rowResult.StampTax) + " TL");
                     lines.Add("  AE — Toplam kesinti = " + M(rowResult.TotalDeductions) + " TL");
