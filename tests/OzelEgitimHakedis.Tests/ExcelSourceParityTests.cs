@@ -12,7 +12,7 @@ namespace OzelEgitimHakedis.Tests;
 public sealed class ExcelSourceParityTests
 {
     [Fact]
-    public void BasicOrSecondary_LegacyRow8Vector_ShouldMatchTransportCalculationChain()
+    public void BasicOrSecondary_LegacyRow8Vector_ShouldMatchTransportChainWithManualGuarantee()
     {
         var input = new ProgressPaymentInput(
             WorkDays: 13,
@@ -38,10 +38,12 @@ public sealed class ExcelSourceParityTests
         Assert.Equal(1905.0515m, result.TransportWithholding);       // M = L/2
         Assert.Equal(40006.0815m, result.InvoiceAmountAfterWithholding); // N = K+M
         Assert.Equal(41911.133m, result.GrossAmount);                // O = K+L
+        // The old row's guarantee amount is supplied explicitly as a manual input.
+        // Current authoritative Basic rules include that input in the stamp-tax base.
         Assert.Equal(94.2618m, result.AdditionalGuarantee);
-        Assert.Equal(361.1977644m, result.StampTax);
-        Assert.Equal(2360.5110644m, result.TotalDeductions);
-        Assert.Equal(39550.6219356m, result.NetPayable);
+        Assert.Equal(362.091366264m, result.StampTax);
+        Assert.Equal(2361.404666264m, result.TotalDeductions);
+        Assert.Equal(39549.728333736m, result.NetPayable);
     }
 
     [Fact]
