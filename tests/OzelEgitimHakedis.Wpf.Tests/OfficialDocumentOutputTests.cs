@@ -488,6 +488,12 @@ public sealed class OfficialDocumentOutputTests
                     Math.Abs(border.Width - 659d) < 0.01 &&
                     Math.Abs(border.Height - 1014d) < 0.01));
             Assert.Equal(0d, reportOuterFrame.BorderThickness.Bottom);
+            var reportFooter = Assert.Single(contractorReportPage.Children
+                .OfType<TextBlock>()
+                .Where(block => block.Text == "M.Y.H.B.Y. Örnek No :4/10"));
+            Assert.True(
+                FixedPage.GetTop(reportFooter) >= FixedPage.GetTop(reportOuterFrame) + reportOuterFrame.Height,
+                "The report number footer must sit below the outer frame so the frame border cannot cross its text.");
             var reportTitle = Assert.Single(contractorReportPage.Children
                 .OfType<TextBlock>()
                 .Where(block => block.Text == "HAK EDİŞ RAPORU"));
