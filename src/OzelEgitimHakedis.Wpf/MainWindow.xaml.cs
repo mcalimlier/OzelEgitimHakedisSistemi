@@ -4963,6 +4963,106 @@ public partial class MainWindow : Window
         }
     }
 
+    private void TemporaryCalculationTraceButton_Click(object sender, RoutedEventArgs e)
+    {
+        var item = GetLastCalculatedProgress();
+        if (item is null)
+        {
+            MessageBox.Show(
+                "Önce Hakediş Oluştur ekranında HAKEDİŞİ HESAPLA işlemini tamamlayın. Hesap tutucu, hesaplanan girdilerin ve ara sonuçların izini gösterir.",
+                "Geçici Hesap Tutucu",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        var input = item.Input;
+        var calc = item.Calculation;
+        var culture = CultureInfo.CurrentCulture;
+        string N(decimal value) => value.ToString("N4", culture);
+        string M(decimal value) => value.ToString("N2", culture);
+        var vatText = input.IncludeVat ? "KDV dahil" : "KDV muaf / KDV ve tevkifat uygulanmaz";
+        var lines = new List<string>
+        {
+            "OEHS — GEÇİCİ HESAP TUTUCU",
+            "AMAÇ: Denetim dökümü. Resmî Excel/VBA paritesi veya mevzuat onayı anlamına gelmez.",
+            $"Program: {input.ProgramType} | İhale: {item.TenderNumber} | Sözleşme: {item.ContractNumber} | Hat: {item.RouteNumber}",
+            $"Dönem: {(item.PeriodDate.HasValue ? item.PeriodDate.Value.ToString("dd.MM.yyyy", culture) : "-")} | Hakediş No: {item.ProgressPaymentNumber?.ToString(culture) ?? "-"}",
+            "",
+            "1. GİRDİLER (kayıtlı hesap anlık görüntüsü)",
+            $"G (Taşıma iş günü): {N(input.WorkDays)}",
+            $"H (Taşıma günlük fiyat): {M(input.DailyPrice)} TL",
+            $"I (Taşıma fiyat farkı): {M(input.PriceDifference)} TL",
+            $"J (Taşıma iskontosu): {M(input.DiscountAmount)} TL",
+            $"Sözleşme bedeli: {M(input.ContractAmount)} TL (mevcut bu hesap zincirinde doğrudan ara formüle girmiyor)",
+            $"KDV seçimi: {vatText}",
+            $"Vergi borcu: {M(input.TaxDebt)} TL",
+            $"SGK borcu: {M(input.SocialSecurityDebt)} TL",
+            $"Asgari ücret desteği: {M(input.MinimumWageSupport)} TL",
+            $"Denetim cezası: {M(input.InspectionPenalty)} TL",
+            $"P (Rehber iş günü): {N(input.GuideWorkDays)}",
+            $"Q (Rehber günlük fiyat): {M(input.GuideDailyPrice)} TL",
+            $"R (Rehber fiyat farkı): {M(input.GuidePriceDifference)} TL",
+            $"S (Rehber iskontosu): {M(input.GuideDiscountAmount)} TL",
+            "",
+            "2. TAŞIMA HESABI — uygulanan formüller",
+            $"Taşıma hizmeti = G × H = {N(input.WorkDays)} × {M(input.DailyPrice)} = {M(calc.ServiceAmount)} TL",
+            $"Taşıma neti K = (G × H) + I − J = ({N(input.WorkDays)} × {M(input.DailyPrice)}) + {M(input.PriceDifference)} − {M(input.DiscountAmount)} = {M(calc.TransportNetAmount)} TL",
+            $"Taşıma KDV = K × %{N((calc.AppliedConstants ?? ProgressPaymentCalculationConstants.Defaults).TransportVatRate * 100m)} = {M(calc.TransportVat)} TL",
+            $"Taşıma tevkifatı = Taşıma KDV × %{N((calc.AppliedConstants ?? ProgressPaymentCalculationConstants.Defaults).TransportWithholdingShare * 100m)} = {M(calc.TransportWithholding)} TL",
+            "",
+            "3. REHBER HESABI — yalnız program türünde rehber kalemi varsa uygulanır",
+            $"Rehber hizmeti = P × Q = {N(input.GuideWorkDays)} × {M(input.GuideDailyPrice)} = {M(calc.GuideServiceAmount)} TL",
+            $"Rehber neti T = (P × Q) + R − S = ({N(input.GuideWorkDays)} × {M(input.GuideDailyPrice)}) + {M(input.GuidePriceDifference)} − {M(input.GuideDiscountAmount)} = {M(calc.GuideNetAmount)} TL",
+            $"Rehber KDV = T × %{N((calc.AppliedConstants ?? ProgressPaymentCalculationConstants.Defaults).GuideVatRate * 100m)} = {M(calc.GuideVat)} TL",
+            $"Rehber tevkifatı = Rehber KDV × %{N((calc.AppliedConstants ?? ProgressPaymentCalculationConstants.Defaults).GuideWithholdingShare * 100m)} = {M(calc.GuideWithholding)} TL",
+            "",
+            "4. TOPLAM, KESİNTİLER VE NET",
+            $"Toplam hizmet/fiyat farkı = Taşıma neti + Rehber neti = {M(calc.TransportNetAmount)} + {M(calc.GuideNetAmount)} = {M(calc.TotalAmount)} TL",
+            $"Brüt = Taşıma neti + Taşıma KDV + Rehber neti + Rehber KDV = {M(calc.GrossAmount)} TL",
+            $"Damga vergisi = (Taşıma neti + Rehber neti) × ‰9,48 = ({M(calc.TransportNetAmount)} + {M(calc.GuideNetAmount)}) × 0,00948 = {M(calc.StampTax)} TL",
+            $"Tevkifat toplamı = Taşıma tevkifatı + Rehber tevkifatı = {M(calc.Withholding)} TL",
+            $"Ek kesin teminat (MEVCUT OEHS FORMÜLÜ) = (I × %6) + (R × %6) = ({M(input.PriceDifference)} × 0,06) + ({M(input.GuidePriceDifference)} × 0,06) = {M(calc.AdditionalGuarantee)} TL",
+            "UYARI: Kullanıcının doğruladığı iş kuralı: ek kesin teminat elle girilir; kesin teminat bu girilen değerin %6'sıdır. Mevcut modelde elle girilen ek kesin teminat alanı bulunmuyor ve yukarıdaki formül fiyat farkını kullanıyor. Bu nedenle teminat satırı iş kuralıyla uyumlu kabul edilmemeli; ayrı düzeltme/test gerektirir.",
+            $"Toplam kesinti = Tevkifat + damga vergisi + vergi borcu + SGK borcu + asgari ücret desteği + denetim cezası + mevcut teminat hesabı = {M(calc.TotalDeductions)} TL",
+            $"NET ÖDENECEK = Brüt − Toplam kesinti = {M(calc.GrossAmount)} − {M(calc.TotalDeductions)} = {M(calc.NetPayable)} TL",
+            "",
+            "5. KAYIT / SINIRLAR",
+            $"Hesap kaydı: {item.Id}",
+            $"Hesaplama sabitleri anlık görüntüsü: {(calc.AppliedConstants is null ? "varsayılan sabitler" : "hesaplamada kullanılan kayıtlı sabitler")}",
+            "Tutarlar aritmetik ara değerlerde decimal hassasiyetle korunur; bu döküm TL sonuçlarını iki ondalık gösterir. Kaynak XLSM hücreleri, VBA makroları ve dört resmî PDF ile karşılaştırma ayrıca yapılmalıdır."
+        };
+
+        var viewer = new Window
+        {
+            Title = "OEHS — Geçici Hesap Tutucu",
+            Width = 980,
+            Height = 760,
+            MinWidth = 700,
+            MinHeight = 500,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            Owner = this,
+            Background = System.Windows.Media.Brushes.White
+        };
+        var textBox = new TextBox
+        {
+            Text = string.Join(Environment.NewLine, lines),
+            IsReadOnly = true,
+            AcceptsReturn = true,
+            AcceptsTab = true,
+            TextWrapping = TextWrapping.Wrap,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+            FontFamily = new System.Windows.Media.FontFamily("Consolas"),
+            FontSize = 13,
+            Padding = new Thickness(12),
+            Background = System.Windows.Media.Brushes.White,
+            Foreground = System.Windows.Media.Brushes.Black
+        };
+        viewer.Content = textBox;
+        viewer.ShowDialog();
+    }
+
     private ProgressPaymentHistoryData? GetLastCalculatedProgress()
     {
         if (_lastCalculatedHistoryId is Guid id)
