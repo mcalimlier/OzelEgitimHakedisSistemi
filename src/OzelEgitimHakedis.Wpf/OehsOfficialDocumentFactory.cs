@@ -197,11 +197,10 @@ internal static class OehsOfficialDocumentFactory
             ("l)", "Asgari Ücret Destek Tutarı Kesintisi", c.Calculation.Deductions.MinimumWageSupport, 29)
         };
         var deductionsHeight = deductions.Sum(d => d.Height);
-        // Keep the section title horizontal in a full-width header row;
-        // do not rotate or stack the words in the tall first column.
-        AddCell(page, "KESİNTİLER VE MAHSUPLAR", x, y, w, 25, 12, true, TextAlignment.Center, LightGray, new Thickness(4, 2, 4, 2));
-        y += 25;
+        // Keep the section title inside the tall left-side merged cell,
+        // rotated vertically and centered across the full deductions section.
         AddCell(page, "", x, y, 165, deductionsHeight, 9, false, TextAlignment.Center, White, new Thickness(0));
+        AddRotatedText(page, "KESİNTİLER VE MAHSUPLAR", x, y, 165, deductionsHeight, 12, true, -90);
 
         foreach (var row in deductions)
         {
