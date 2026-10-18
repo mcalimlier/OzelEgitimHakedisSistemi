@@ -114,9 +114,9 @@ VBA projesinin CFB/OLE akışı ve MS-OVBA sıkıştırılmış kaynak akışlar
 
 ## CI tetikleyicisi — 18.10.2026 devam incelemesi
 
-PR #3 hedef dalı `feature/wpf-contract-entry-v0.5` iken Windows workflow dosyasının `pull_request.branches` listesinde yalnızca `main` vardı. Bu nedenle PR'nin hedef dala açılması durumunda PR olayıyla doğrulama çalışması tetiklenmiyordu. Workflow, hedef dalı da kapsayacak şekilde düzeltildi; commit: `9d7d413692f22b2bb719bfaa5e9b4c6e0c6ada91`.
+PR #3 hedef dalı `feature/wpf-contract-entry-v0.5`. Windows workflow dosyasının başlık dalındaki `pull_request.branches` listesinde başlangıçta yalnızca `main` vardı; listeye hedef dal eklendi. Değişiklik commit'i: `9d7d413692f22b2bb719bfaa5e9b4c6e0c6ada91`.
 
-Bu değişiklik tetikleyici kapsamını düzeltir, testlerin başarılı olduğunu kanıtlamaz. Yeni commit için erişilebilir durum kontrollerinde henüz CI sonucu yoktu. Core testleri, WPF PDF testleri ve tam Windows derlemesi tamamlanıp sonuçları gözlemlenmeden başarılı kabul edilmemelidir.
+Bu, başlık dalındaki workflow tanımını düzeltir; fakat PR olayının tetiklenmesi için temel dalda bulunan workflow tanımı da etkili olabileceğinden, tek başına PR CI'sının çalıştığını kanıtlamaz. Workflow ayrıca bu özellik dalına yapılan push'larda çalışacak şekilde tanımlı. Sonraki commit `966f4ccab8847057ec2fad73581c9045595e2c4c` için erişilebilir durum kontrollerinde hâlâ CI sonucu görünmedi. Core testleri, WPF PDF testleri ve tam Windows derlemesi tamamlanıp sonuçları gözlemlenmeden başarılı kabul edilmemelidir.
 
 ## Tam VBA çözümlemesi — ek bulgular
 
