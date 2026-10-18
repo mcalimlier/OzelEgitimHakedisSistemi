@@ -11,7 +11,7 @@ namespace OzelEgitimHakedis.Tests;
 public sealed class CurrentBasicWorkbookDiscrepancyTests
 {
     [Fact]
-    public void CurrentBasicRows5And6_ShouldRepeatTheSourceGuaranteeStampAndNetGap()
+    public void CurrentBasicRows5And6_ShouldMatchCalculationSheetAndKeepReportGapVisible()
     {
         var examples = new[]
         {
@@ -51,7 +51,8 @@ public sealed class CurrentBasicWorkbookDiscrepancyTests
                     SocialSecurityDebt: 1500m,
                     MinimumWageSupport: 1500m,
                     InspectionPenalty: 1500m,
-                    ProgramType: TransportationProgramType.BasicOrSecondary),
+                    ProgramType: TransportationProgramType.BasicOrSecondary,
+                    ManualAdditionalGuarantee: 1500m),
                 SourceTransportNet = 93197m,
                 SourceGross = 102516.7m,
                 SourceStampTax = 897.72756m,
@@ -98,7 +99,7 @@ public sealed class CurrentBasicWorkbookDiscrepancyTests
     }
 
     [Fact]
-    public void CurrentBasicRow4_ShouldKeepGuaranteeAndStampTaxGapVisibleUntilDecision()
+    public void CurrentBasicRow4_ShouldMatchCalculationSheetAndKeepReportGapVisible()
     {
         var input = new ProgressPaymentInput(
             WorkDays: 15m,
