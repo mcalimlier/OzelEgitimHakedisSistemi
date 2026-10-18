@@ -84,4 +84,30 @@ public sealed class MonthlyProgressPaymentIdentityServiceTests
             ContractNumber: "S-2026",
             ContractorTaxOrIdentityNumber: "ID-1");
     }
+
+    [Fact]
+    public void SuggestNextRouteNumber_ShouldIgnoreHistoryWithMissingContractorIdentity()
+    {
+        var previous = Payment("Q1", TransportationProgramType.SpecialEducation, new DateOnly(2026, 9, 30))
+            with { ContractorTaxOrIdentityNumber = "" };
+
+        var number = MonthlyProgressPaymentIdentityService.SuggestNextRouteNumber(
+            new[] { previous }, "2026-454", "S-2026", "", "Q1",
+            TransportationProgramType.SpecialEducation, new DateOnly(2026, 10, 31));
+
+        Assert.Equal(1, number);
+    }
+
+    [Fact]
+    public void SuggestNextRouteNumber_ShouldIgnoreIdentityThatNormalizesToEmpty()
+    {
+        var previous = Payment("Q1", TransportationProgramType.SpecialEducation, new DateOnly(2026, 9, 30))
+            with { ContractorTaxOrIdentityNumber = "----" };
+
+        var number = MonthlyProgressPaymentIdentityService.SuggestNextRouteNumber(
+            new[] { previous }, "2026-454", "S-2026", "----", "Q1",
+            TransportationProgramType.SpecialEducation, new DateOnly(2026, 10, 31));
+
+        Assert.Equal(1, number);
+    }
 }
