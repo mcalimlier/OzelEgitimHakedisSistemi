@@ -4987,18 +4987,6 @@ public partial class MainWindow : Window
         return value;
     }
 
-    private decimal ParseManualAdditionalGuarantee(TransportationProgramType programType)
-    {
-        if (programType != TransportationProgramType.BasicOrSecondary)
-            return 0m;
-
-        if (!TryParseDecimal(ManualAdditionalGuaranteeTextBox.Text, out var value) || value < 0m)
-            throw new ArgumentOutOfRangeException(nameof(ManualAdditionalGuaranteeTextBox),
-                "Temel/Ortaöğretim için ek kesin teminat tutarını sıfır veya daha büyük geçerli bir tutar olarak girin.");
-
-        return value;
-    }
-
     private void ConfigureLiveCalculationTrace()
     {
         foreach (var textBox in new TextBox[]
