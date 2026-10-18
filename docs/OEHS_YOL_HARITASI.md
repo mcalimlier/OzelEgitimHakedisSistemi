@@ -457,3 +457,12 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - Kaynak XLSM dosyaları değiştirilmedi; resmî hesap davranışı hakkında varsayımsal değişiklik yapılmadı. PR #3 birleştirilmedi.
 - Genel ilerleme hâlâ %90 altında. Başlıca kapanış kapıları: iki XLSM için Excel masaüstünde gerçek VBA/aylık aktarım paritesi, D11/AG-D28 anlamının doğrulanması ve aynı gerçek hakediş verisinden üretilen dört PDF'nin kaynak Excel çıktılarıyla birlikte kabulü.
 - Sonraki adım: CI run `39137915002` nihai sonucunu kontrol et; ardından Özel Eğitim/Temel Eğitim aylık aktarım ve dört PDF karşılaştırma kapılarını kanıtla kapatmaya devam et.
+
+## Devam notu — 18.10.2026, Temel Eğitim ek kesin teminat uyuşmazlığı
+
+- Güncel Temel Eğitim XLSM'sinde `Hesaplama Bilgileri!T4:T6` sabit `1500` değerleri; T sütununda `I*6%` formülü yok. Özel Eğitim XLSM'sinde `Hesaplama!AC4` açıkça `I*6% + R*6%` kullanıyor. OEHS motorundaki ortak %6 ek teminat hesabı bu nedenle Temel Eğitim'in güncel dosyasıyla doğrulanmış parite sayılmaz.
+- İş davranışı değiştirilmedi. Kaynak XLSM'ler korunuyor; hesap motorundaki yanıltıcı “kaynak formülü birebir” yorumu, bu farkı açıkça bildiren uyarıyla değiştirildi. Temel Eğitim T hücrelerinin kullanıcı girdisi mi, eski veri mi yoksa makro aktarımı mı olduğu Excel/VBA yürütmesiyle belirlenmeli.
+- İcmal kimlik koruması için Windows CI run `39137915002` **başarılı**: tam çözüm ve WPF derlemesi, UI sözleşme kontrolleri, 207 Core testi, 4 WPF testi, PDF smoke ve Windows EXE publish adımları geçti. Bu testler kaynak Excel masaüstü/VBA paritesini kanıtlamaz.
+- Ardından yol haritası güncellemesi için run `39138076733` ve hesap motoru açıklama düzeltmesi için run `39138161192` açıldı; son durumları ayrıca kontrol edilecek.
+- Yeni bulgu, resmî hesap eşdeğerliği riskini artırıyor; bu yüzden genel ilerleme yüzdesi yükseltilmedi. %90 hedefi henüz tamamlanmadı.
+- Sıradaki adım: güncel kaynak XLSM'deki T4:T6 değerlerinin kaynağını VBA ve kullanıcı giriş zincirinde takip et; Temel Eğitim ek teminat davranışını eski test vektörlerinden ayır; ardından her iki programın gerçek Excel sonuçlarıyla karşılaştırmayı sürdür.
