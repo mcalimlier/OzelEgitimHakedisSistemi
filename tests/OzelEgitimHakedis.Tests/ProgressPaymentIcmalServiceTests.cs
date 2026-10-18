@@ -243,6 +243,30 @@ public sealed class ProgressPaymentIcmalServiceTests
             new DateOnly(2027, 7, 1), TransportationProgramType.SpecialEducation));
     }
 
+    [Fact]
+    public void FindPreviousDeduction_ShouldNormalizeIdentityFieldsLikeOtherCoreServices()
+    {
+        var previous = History(1, new DateOnly(2026, 10, 31), 200m) with
+        {
+            TenderNumber = " TENDER ",
+            ContractNumber = " soz ",
+            RouteNumber = " 1 ",
+            ContractorTaxOrIdentityNumber = "123-456-789-01"
+        };
+        var current = History(2, new DateOnly(2026, 11, 30), 300m) with
+        {
+            TenderNumber = "tender",
+            ContractNumber = "SOZ",
+            RouteNumber = "1",
+            ContractorTaxOrIdentityNumber = "12345678901"
+        };
+
+        var result = ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { previous, current }, current);
+
+        Assert.Equal(200m, result);
+    }
+
     private static ProgressPaymentHistoryData History(
         int number,
         DateOnly period,
