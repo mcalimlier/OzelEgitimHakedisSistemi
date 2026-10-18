@@ -184,7 +184,11 @@ Bu eşleştirme, ilgili şekillerin XML'de hangi yordam adlarına bağlı olduğ
 - Temel Eğitim'in `Worksheet_Change` yordamı ve aktarım makrosu dönem alanı olarak E4'ü, kesinti aktarımı ise `AB3:AM3` başlık aralığını kullanıyor. E21 formülünün hem dönem hücresi hem de sütun aralığı diğer kaynaklarla çelişiyor.
 - OEHS mevcut kodu her iki programda da önceki ayın `TotalDeductions` değerini arşiv kayıtlarından bulup aktarabiliyor. Dolayısıyla Temel Eğitim için kaynak Excel'in saklı/formül sonucu ile OEHS arasında fark oluşabilir.
 
-**Karar gerektiren nokta:** Temel Eğitim E21 formülü Excel'de gerçekten E5'e bağlı kaldığı için sıfır sonucu mu esas alınacak, yoksa E4'e çevrilerek amaçlanan önceki ay kesintisi mi uygulanacak? Bu fark resmî ödeme tutarını değiştirebileceğinden kodda sessizce değiştirilmedi. Uzman/iş sahibi onayı ve Excel masaüstünde aynı örnekle sonuç doğrulaması gerekli.
+**Karar ve uygulama:** Kullanıcı, Temel Eğitim için E21 tutarsızlığının düzeltilmesi yönünde onay verdi. OEHS tarafında önceki ay kesintisi, seçili hakediş dönemi (E4 karşılığı) ve Temel Eğitim'in aylık kesinti dizisi (AB:AL; makro aktarım başlıkları AB:AM) esas alınarak, aynı program/ihale/sözleşme/hat/yüklenici kapsamındaki bir önceki ay hakedişinden bulunur. E5 (TODAY()/hakediş tarihi) dönem anahtarı olarak kullanılmaz. Özel Eğitim'in E5 + AN:AX davranışı ayrı tutulur.
+
+Kaynak makro karşılaştırması: Temel Eğitim KesintiToplamlariniAktar, dönemi Anasayfa!E4 üzerinden alır ve kesinti ay başlıklarını İcmal Verileri!AB3:AM3 aralığında arar; bu nedenle E21'deki E5 + AN3:AX3 başvurusu aynı dosyanın makro akışıyla çelişir. Örnek kaynak satırında Kasım 2026 seçiliyken önceki ay Ekim kesintisi İcmal Verileri!AC4 = 24.104,02472 TL'dir. Yeni regresyon testi bu değerin Kasım hakedişinin önceki kesintisi olarak taşındığını doğrulamalıdır.
+
+**Doğrulama sınırı:** Kaynak makro kodu ve örnek hücre değeriyle eşleşme belgelendi; Excel masaüstünde düzeltilmiş E21 formülünü çalıştırma testi hâlâ yapılmadı. CI testi OEHS geçmiş verisinden yapılan eşdeğer dönem aktarımını doğrular; bu, Excel masaüstü kabul testinin yerine geçmez.
 
 
 ### E21 tutar farkı için somut örnek
