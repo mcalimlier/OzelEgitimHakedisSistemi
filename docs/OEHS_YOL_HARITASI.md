@@ -221,3 +221,28 @@ flowchart LR
 
 - Kaynak Excel'in D11 etiketi/formül çelişkisi, AG/D28 farkı ve icmal Temmuz/Kasım/Aralık davranışı için iş sahibi/Excel tabanlı karar alınmalı; kaynak farkları varsayımla değiştirilmemeli.
 - Dört gerçek PDF'nin kaynak örnekleriyle görsel fark karşılaştırması, fiziksel yazıcı ve temiz Windows profili kabul testleri tamamlanmadan uygulama üretime hazır sayılmamalıdır.
+
+
+## Genel çekirdek modül tamamlama tablosu — 2026-10-18
+
+**Yüzdeler, mevcut özellikler ve açık kabul işleri üzerinden yapılan mühendislik tahminidir; test/CI başarısı veya üretime hazır olma oranı değildir.** Alt modüllerin dar kapsamlı %100 değerleri aşağıdaki daha geniş modül yüzdelerine doğrudan eşitlenmemelidir.
+
+| # | Çekirdek modül | Tahmini tamamlanma | Dayanak / açık kalan işler |
+|---:|---|---:|---|
+| 1 | WPF arayüzü ve kullanıcı akışları | **%80** | İhale/yüklenici/hat/hakediş ve arşiv akışları mevcut; ekranların iki program türünde tam izolasyonu, açılış/temizleme davranışlarının uçtan uca kullanıcı kabulü ve okunabilirlik kontrolü sürüyor. |
+| 2 | Ortak veri modeli, kayıt ve arşiv güvenliği | **%85** | Revizyon koruması, çakışma uyarıları, yedek/geri yükleme ve deneme verisi izolasyonu tanımlı; temiz Windows profili ve gerçek kullanıcı verisiyle kabul testi gerekiyor. |
+| 3 | Özel Eğitim taşıma ve rehber hesaplama | **%75** | Taşıma/rehber bileşenleri, ayrı KDV/tevkifat davranışları ve rapor bağlantıları mevcut; özgün XLSM/VBA ile uçtan uca örneklerin tam karşılaştırması ve sınır senaryoları sürüyor. |
+| 4 | Temel/Ortaöğretim taşıma hesaplama | **%75** | Ayrı program türü davranışı ve belge etiketleri mevcut; ihale-firma-hat izolasyonu ile aylık/çoklu hat senaryolarının gerçek Excel örnekleriyle doğrulanması gerekiyor. |
+| 5 | Hakediş hesaplama motoru ve Excel eşleştirmesi | **%80** | A–I tutar zinciri ve regresyon senaryoları tanımlı; XLSM'deki D11 etiket/formül çelişkisi, AG/D28 farkı ve icmal ay davranışları karar/kanıt gerektiriyor. |
+| 6 | Dört resmî PDF, icmal ve önizleme | **%75** | Dört çıktı türü, A4 üretimi ve PDF smoke kontrolleri mevcut; son kesinti başlığı hizalaması, kaynak Excel ile birebir görsel karşılaştırma ve yazıcı/temiz profil kabulü açık. |
+| 7 | Testler, CI, kalite ve dağıtım | **%70** | Daha önceki PR açıklamasında başarılı Windows CI ve test sonuçları kaydedilmiş; güncel dalın son commit'i için yeni doğrulama sonucu teyit edilemiyor. Gerçek senaryo kabulü ve kurulum paketi son kontrolü gerekli. |
+
+**Basit ortalama: %77,1.** Bu yalnızca yukarıdaki yedi tahminin eşit ağırlıklı ortalamasıdır; proje başarı olasılığı veya resmî kabul sonucu değildir. Hesaplama/PDF/Excel belirsizlikleri yüksek riskli olduğundan üretime hazır olma kararı bu ortalamadan çıkarılamaz.
+
+### Yüzdeyi yükseltmek için zorunlu kanıt kapıları
+
+1. Etkin dalın son commit'inde Windows/.NET 8 tam çözüm derlemesi ve tüm testler başarılı olmalı.
+2. Her iki taşıma türünde aynı firma/hat numaralarının karışmadığı, birden fazla hat ve birden fazla aylık hakediş içeren uçtan uca senaryo çalıştırılmalı.
+3. Aynı örnek veriden üretilen dört PDF, kaynak Excel çıktılarıyla tutar, dönem, yüklenici, hat, imza ve sayfa yerleşimi açısından karşılaştırılmalı.
+4. Kaynak Excel çelişkileri belgelenmeli; karar gerektiren noktalarda varsayımla değişiklik yapılmamalı.
+5. Gerçek Windows kullanıcı profili, arşivden düzeltme/geri yükleme ve izole deneme paketi kabulü tamamlanmalı.
