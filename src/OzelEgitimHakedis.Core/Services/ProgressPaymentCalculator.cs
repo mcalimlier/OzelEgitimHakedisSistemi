@@ -57,6 +57,9 @@ public sealed class ProgressPaymentCalculator
         if (input.ContractAmount < 0)
             throw new ArgumentOutOfRangeException(nameof(input), "Sözleşme bedeli negatif olamaz.");
 
+        if (input.ManualAdditionalGuarantee < 0)
+            throw new ArgumentOutOfRangeException(nameof(input), "Elle girilen ek kesin teminat tutarı negatif olamaz.");
+
         if (input.TaxDebt < 0 ||
             input.SocialSecurityDebt < 0 ||
             input.MinimumWageSupport < 0 ||
@@ -127,16 +130,14 @@ public sealed class ProgressPaymentCalculator
         // Damga vergisi bir kesintidir; negatif fiyat farkı negatif vergi/kredi oluşturamaz.
         var stampTax = transportStampTax + guideStampTax;
 
-        // Kaynak doğrulama uyarısı (2026-10-18):
-        // Özel Eğitim AC = I*6% + R*6% formülü mevcut XLSM'de doğrulandı.
-        // Temel/Ortaöğretim'in güncel XLSM'sinde T4:T6 hücreleri sabit 1500
-        // değerleri; T sütununda I*6% formülü yok. Bu nedenle aşağıdaki 6% hesabı
-        // güncel Temel Eğitim XLSM ile doğrulanmış eşdeğerlik değildir; eski/transkribe
-        // edilmiş test vektörleriyle uyumludur ve iş kararı gerektirir.
-        // İskontolar J/S bu tabana dahil değildir. MAX(0, ...) eklenmemiştir.
-        var additionalGuarantee =
-            (input.PriceDifference * constants.AdditionalGuaranteeRate)
-            + (input.GuidePriceDifference * constants.AdditionalGuaranteeRate);
+        // Program-specific source rules confirmed by the user after checking the workbooks:
+        // Basic/Secondary: additional guarantee is manually entered.
+        // Special Education: AC = I*6% + R*6%; discount fields J/S are not included.
+        // Keep the programs separate; do not derive Basic/Secondary from price difference.
+        var additionalGuarantee = input.ProgramType == TransportationProgramType.BasicOrSecondary
+            ? input.ManualAdditionalGuarantee
+            : (input.PriceDifference * constants.AdditionalGuaranteeRate)
+              + (input.GuidePriceDifference * constants.AdditionalGuaranteeRate);
 
         // Excel AE = M+V+Y+Z+AA+AB+AC+AD.
         var totalDeductions =
