@@ -597,3 +597,10 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - İlk CI denemesi satır 6 rapor netini 87.543,80 TL beklediği için başarısız oldu; logdaki gerçek servis sonucu 87.543,81 TL olarak düzeltilip yeniden çalıştırıldı. Ürün hesaplama kodu değişmedi.
 - Düzeltilmiş commit `a1d9870f352076780bd8a2730eb01034e21bf915` Windows CI run `39141635477` başarılı: **218/218 Core + 4/4 WPF**, tam çözüm/WPF derlemesi, PDF smoke ve Windows EXE publish geçti.
 - Genel proje yaklaşık **%81**, %90 hedefi tamamlanmadı. Hesap farkları artık üç hat örneğiyle daha iyi tanımlandı; gerçek Excel/VBA çıktısı ve dört PDF'nin aynı hakedişle karşılaştırması hâlâ açık kabul kapıları. PR #3 açık taslak, ana dala birleştirme/yayınlama yok.
+
+## Devam notu — 18.10.2026, Temel Eğitim rapor neti satır 5–6
+
+- Temel Eğitim satır 5 ve 6 kaynak D28 ile OEHS rapor servis netleri arasındaki farklar da regresyon testine alındı: kaynak D28 97.441,51 / 90.961,10 TL; OEHS rapor neti 97.364,68 / 90.883,22 TL. Bu testler kaynak rapor davranışının OEHS ile aynı olmadığını açıkça koruyor.
+- Windows CI run `39141832492` başarılı: **218/218 Core + 4/4 WPF**; tam çözüm ve WPF derlemeleri, PDF smoke üretimi ve Windows EXE publish geçti.
+- Yeni karar kaydı bu farkları ve LibreOffice kopyasıyla sınırlı kanıt niteliğini belirtiyor. Kaynak Excel/VBA masaüstü kabulü olmadan resmî ödeme davranışı değiştirilmedi.
+- Genel ilerleme yaklaşık **%81**; %90 değil. Kod/test güveni artmış olsa da kalan kritik işler gerçek Excel/VBA yürütmesi, Temel Eğitim T/U ve D28-D11 zincirinin kararının verilmesi, Özel Eğitim icmal ay başlıklarının doğrulanması ve aynı hakediş için iki programın dört PDF'sinin birlikte karşılaştırılmasıdır. PR #3 açık taslak, ana dala birleştirme/yayınlama yok.
