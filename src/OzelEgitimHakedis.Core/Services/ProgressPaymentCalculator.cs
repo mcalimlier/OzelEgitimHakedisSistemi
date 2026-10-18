@@ -135,7 +135,7 @@ public sealed class ProgressPaymentCalculator
         // Special Education: AC = I*6% + R*6%; discount fields J/S are not included.
         // Keep the programs separate; do not derive Basic/Secondary from price difference.
         var additionalGuarantee = input.ProgramType == TransportationProgramType.BasicOrSecondary
-            ? input.ManualAdditionalGuarantee
+            ? input.ManualAdditionalGuarantee * constants.AdditionalGuaranteeRate
             : (input.PriceDifference * constants.AdditionalGuaranteeRate)
               + (input.GuidePriceDifference * constants.AdditionalGuaranteeRate);
 
