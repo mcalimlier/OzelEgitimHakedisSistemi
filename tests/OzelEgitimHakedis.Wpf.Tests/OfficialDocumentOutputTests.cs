@@ -347,6 +347,45 @@ public sealed class OfficialDocumentOutputTests
                 }
             }
 
+            // July is a real period for Basic/Secondary, unlike the current
+            // Special Education lookup range where July remains a zero placeholder.
+            var julyInput = input with
+            {
+                ProgramType = TransportationProgramType.BasicOrSecondary
+            };
+            var julyCalculation = ProgressPaymentCalculator.Calculate(julyInput);
+            var julyPayment = currentPayment with
+            {
+                Id = Guid.NewGuid(),
+                CreatedAt = new DateTime(2027, 7, 31, 12, 0, 0, DateTimeKind.Utc),
+                Input = julyInput,
+                Calculation = julyCalculation,
+                ProgressPaymentNumber = 9,
+                PeriodDate = new DateOnly(2027, 7, 31)
+            };
+            var basicJulyTotals = ProgressPaymentReportService.Calculate(
+                julyPayment,
+                new[] { julyPayment });
+            var basicJulyContext = basicContext with
+            {
+                PeriodDate = new DateOnly(2027, 7, 31),
+                Payments = new[] { julyPayment },
+                ReportTotals = basicJulyTotals,
+                ReportNetPayable = ProgressPaymentReportService.CalculateReportNetPayable(
+                    julyPayment,
+                    basicJulyTotals),
+                PreviousDeduction = 0m
+            };
+            var basicJulyIcmal = Assert.Single(
+                OehsOfficialDocumentFactory.BuildSeparate(basicJulyContext)
+                    .Where(output => output.Kind == OehsOfficialDocumentKind.HakedisIcmali));
+            var basicJulyIcmalText = GetPageText(
+                Assert.IsType<FixedPage>(basicJulyIcmal.Document.Pages[0].Child));
+            Assert.Contains("Hizmet Alımı İşi Temmuz 2027", basicJulyIcmalText, StringComparison.Ordinal);
+            Assert.Contains("₺100,00", basicJulyIcmalText, StringComparison.Ordinal);
+            Assert.Contains("₺10,00", basicJulyIcmalText, StringComparison.Ordinal);
+            Assert.Contains("₺110,00", basicJulyIcmalText, StringComparison.Ordinal);
+
             var basicPayment = Assert.Single(
                 basicOutputs.Where(output => output.Kind == OehsOfficialDocumentKind.HakedisRaporu));
             var basicPaymentText = GetPageText(
