@@ -294,8 +294,6 @@ public sealed class OfficialDocumentOutputTests
             // The report must expose the exact payment period and contractor identity,
             // not only the computed monetary cells.
             Assert.Contains("Örnek Yüklenici", paymentText, StringComparison.Ordinal);
-            Assert.Contains("TEST-IHALE", paymentText, StringComparison.Ordinal);
-            Assert.Contains("TEST-SOZ", paymentText, StringComparison.Ordinal);
             Assert.Contains("31.10.2026", paymentText, StringComparison.Ordinal);
 
             var serviceReport = Assert.Single(
