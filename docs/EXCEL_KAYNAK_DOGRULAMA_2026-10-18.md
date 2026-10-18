@@ -50,7 +50,13 @@ Dosyaların önbellekli örneklerinde:
 
 D6 formülü aylık K(+T) toplamını kullanıyor ve kaynak aktarım yordamları da K(+T) değerini aylık sütunlara yazıyor. K/T formülleri mevcut fiyat farkını içerdiğinden, D6'nın D10'dan farkı H2'ye eşitken D8/D11'e ayrıca D7 eklenmesi, aynı fiyat farkının iki kez sayılıyor olabileceği yönünde **ciddi bir kaynak zinciri çelişkisi** oluşturuyor. Önbellekli değerler güncel formülün Excel'de yeniden hesaplanmış sonucunu kanıtlamaz; dosyalar tam yeniden hesaplama istiyor.
 
-**Karar:** Bu farkı sessizce OEHS'ye taşımayın veya mevcut kodu tahminle değiştirmeyin. Excel masaüstünde aynı hat/ay için K/T, aylık D:N aktarım hücreleri, D6, D7, D8, D10, D11 ve makro kontrol sonucu birlikte kaydedilmeli. D11'in beklenen iş anlamı ancak bu zincir doğrulandıktan sonra kesinleştirilebilir.
+Aynı örneklerde Hakediş Raporu net tutarı ile Hesaplama sayfası net tutarı da ayrışıyor:
+- **Temel/Ortaöğretim:** `Hesaplama Bilgileri!W4=221.910,0348` iken `Hakediş Raporu!D28=223.410,03`; fark 1.500 TL, yani D7 fiyat farkı.
+- **Özel Eğitim:** `Hesaplama!AG4=95.527,1346528` iken `Hakediş Raporu!D28=98.907,13`; fark 3.380 TL, yine D7 fiyat farkı.
+
+Bu, kaynak Excel'in kendi hesaplama sayfası ile resmî Hakediş Raporu net ödeme tutarının önbellekli örneklerde aynı olmadığını gösteriyor. OEHS'nin rapor neti hesaplaması bu örneklerde Hesaplama sayfası zincirine yakın davranabilir; ancak kaynak Excel'in resmî rapor formülü farklı sonuç üretiyor. İki kaynaktan hangisinin beklenen resmi sonuç olduğu kullanıcı/Excel masaüstü kararı gerektiriyor.
+
+**Karar:** Bu farkı sessizce OEHS'ye taşımayın veya mevcut kodu tahminle değiştirmeyin. Excel masaüstünde aynı hat/ay için K/T, aylık D:N aktarım hücreleri, D6, D7, D8, D10, D11, Hesaplama sayfası neti, D28 ve makro kontrol sonucu birlikte kaydedilmeli. D11'in ve resmî net ödemenin beklenen iş anlamı ancak bu zincir doğrulandıktan sonra kesinleştirilebilir.
 
 ## Sonraki doğrulama adımları
 
