@@ -33,7 +33,7 @@ public sealed record ProgressPaymentCalculationConstants(
         return issues.Count == 0;
     }
 
-    private static void AddRangeError(decimal value, string label, ICollection<string> issues)
+    private static void AddRangeError(decimal value, string label, List<string> issues)
     {
         if (value < 0m || value > 1m)
             issues.Add($"{label} %0 ile %100 arasında olmalıdır.");
