@@ -748,3 +748,13 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - Özel Eğitim dosyasında Anasayfa!E3=19 ve E4=30 gibi sayısal iş günü girişleri var; aynı adreslerin Temel Eğitim'deki anlamıyla karıştırılmaması gerektiği doğrulandı. Programlara özel hücre eşlemesi korunmalı.
 - Excel'deki örnek hücreler tek başına dört PDF'nin uçtan uca kabulünü tamamlamıyor. Gerçek örnek verilerin UI'ye aktarılması ve PDF'lerin Excel çıktılarıyla satır satır karşılaştırılması hâlâ kullanıcı/Windows masaüstü kabul adımıdır.
 - **Sıradaki adım:** Visual Studio'da her program için kendi Excel örneğiyle ayrı kabul koşusu yap; her koşuda dört PDF'nin dönem, yüklenici, hat, imza ve hesaplanan tutarlarını karşılaştır. PR açık ve birleştirilmemiş durumda.
+
+
+## Devam notu — 2026-10-18, son yol haritası CI ve örnek hücre kaydı
+
+- Önceki yol haritası commit'i `d4139dfa7ab8a6e2402c0042479534afc61dd15f` için Windows CI run 1984 / ID 39154228914 başarılı tamamlandı. Tam çözüm/WPF derleme, test derleme, çözüm testleri, PDF smoke ve Windows EXE publish adımları başarılı.
+- Salt okunur XLSM incelemesinde Temel Eğitim dosyasında Anasayfa!E3=15, E4="Kasım 2026", E5 formülü =TODAY() ve K16=1 bulundu. E5'in kayıtlı hesaplanan değeri 18.10.2026; bu hücre hakediş döneminin yerine kullanılmamalı.
+- Temel Eğitim İcmal Verileri satır 4'te AB4=27579.08424, AC4=24104.02472, AD4=20628.9652; AM4 formülü =SUM(AB4:AL4) ve önbellekli sonuç 72312.07416. Bu hücreler gerçek Excel örneğiyle birebir karşılaştırmada kullanılacak; değerlerin kaynak formül zinciri olmadan uygulamaya sabitlenmesi yapılmayacak.
+- Özel Eğitim dosyasında Anasayfa!E3=19, E4=30 ve E5="Kasım 2026". Temel Eğitim'deki E4/E5 anlamlarıyla karıştırılmamalı. Özel Eğitim İcmal Verileri satır 4'te AB4:AD4=1530 ve AM4 formülü =IF(Anasayfa!$E$4="Eylül",0,SUM(AB4:AL4)); bu farklı yapı ayrıca korunmalı.
+- Bu değerler çalışma kitabının kayıtlı önbellek değerleridir; Excel masaüstünde VBA'yı yeniden çalıştırarak güncel hesaplama üretildiği anlamına gelmez. Gerçek Excel/VBA karşılaştırması ve Visual Studio kullanıcı kabul testi açık.
+- **Sıradaki adım:** Her program için ayrı örnek veri setiyle dört PDF'yi üret; yukarıdaki kaynak hücreleri, hakediş raporu D28 ve icmal toplamını Excel'in yeniden hesaplanmış sonucu ile karşılaştırıp sonuçları kabul listesine yaz.
