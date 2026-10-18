@@ -223,21 +223,21 @@ flowchart LR
 - Dört gerçek PDF'nin kaynak örnekleriyle görsel fark karşılaştırması, fiziksel yazıcı ve temiz Windows profili kabul testleri tamamlanmadan uygulama üretime hazır sayılmamalıdır.
 
 
-## Genel çekirdek modül tamamlama tablosu — 2026-10-18
+## Genel çekirdek modül tamamlama tablosu — 18.10.2026 (son kaynak-parite turu)
 
-**Yüzdeler, mevcut özellikler ve açık kabul işleri üzerinden yapılan mühendislik tahminidir; test/CI başarısı veya üretime hazır olma oranı değildir.** Alt modüllerin dar kapsamlı %100 değerleri aşağıdaki daha geniş modül yüzdelerine doğrudan eşitlenmemelidir.
+**Yüzdeler, uygulama kapsamı ve otomatik doğrulama kanıtı üzerinden yapılan mühendislik tahminidir; gerçek Excel masaüstü/VBA veya görsel kullanıcı kabulü anlamına gelmez.** Bu güncel tablo, önceki tarihli ara durum kayıtlarının yerine geçer.
 
 | # | Çekirdek modül | Tahmini tamamlanma | Dayanak / açık kalan işler |
 |---:|---|---:|---|
-| 1 | WPF arayüzü ve kullanıcı akışları | **%80** | İhale/yüklenici/hat/hakediş ve arşiv akışları mevcut; ekranların iki program türünde tam izolasyonu, açılış/temizleme davranışlarının uçtan uca kullanıcı kabulü ve okunabilirlik kontrolü sürüyor. |
-| 2 | Ortak veri modeli, kayıt ve arşiv güvenliği | **%85** | Revizyon koruması, çakışma uyarıları, yedek/geri yükleme ve deneme verisi izolasyonu tanımlı; temiz Windows profili ve gerçek kullanıcı verisiyle kabul testi gerekiyor. |
-| 3 | Özel Eğitim taşıma ve rehber hesaplama | **%75** | Taşıma/rehber bileşenleri, ayrı KDV/tevkifat davranışları ve rapor bağlantıları mevcut; özgün XLSM/VBA ile uçtan uca örneklerin tam karşılaştırması ve sınır senaryoları sürüyor. |
-| 4 | Temel/Ortaöğretim taşıma hesaplama | **%75** | Ayrı program türü davranışı ve belge etiketleri mevcut; ihale-firma-hat izolasyonu ile aylık/çoklu hat senaryolarının gerçek Excel örnekleriyle doğrulanması gerekiyor. |
-| 5 | Hakediş hesaplama motoru ve Excel eşleştirmesi | **%80** | A–I tutar zinciri ve regresyon senaryoları tanımlı; XLSM'deki D11 etiket/formül çelişkisi, AG/D28 farkı ve icmal ay davranışları karar/kanıt gerektiriyor. |
-| 6 | Dört resmî PDF, icmal ve önizleme | **%75** | Dört çıktı türü, A4 üretimi ve PDF smoke kontrolleri mevcut; son kesinti başlığı hizalaması, kaynak Excel ile birebir görsel karşılaştırma ve yazıcı/temiz profil kabulü açık. |
-| 7 | Testler, CI, kalite ve dağıtım | **%70** | 18.10.2026 tarihli son dal commit'inde Windows CI başarılı: 180 Core + 4 WPF testi, tam çözüm/WPF derlemesi, PDF smoke, Windows x64 EXE publish ve izole deneme paketi adımları geçti. Gerçek senaryo kabulü ve kurulum paketi son kontrolü hâlâ gerekli. |
+| 1 | WPF arayüzü ve kullanıcı akışları | **%90** | Temel/Özel program seçimi, ayrı canlı hesap tutucu ekranı ve giriş değişikliklerinde anlık hesap izi mevcut; Windows UI sözleşmesi ve kompakt yerleşim kontrolleri geçti. Visual Studio görsel kabulü sonraki aşama. |
+| 2 | Ortak veri modeli, kayıt ve arşiv güvenliği | **%90** | Program kapsamlı veri deposu, rota/ihale/yüklenici kimliği, arşiv revision/restore ve mükerrer kayıt kontrolleri mevcut; 221 Core testi geçti. Temiz Windows profiliyle kullanıcı kabulü açık. |
+| 3 | Özel Eğitim taşıma ve rehber hesaplama | **%92** | Güncel Özel Eğitim XLSM satır 4–6 vektörleri; taşıma/rehber KDV, tevkifat, AC ek teminat ve AD damga vergisi zinciri test edildi. Gerçek Excel masaüstü/VBA tekrar çalıştırması sonraki kabul kapısı. |
+| 4 | Temel/Ortaöğretim taşıma hesaplama | **%92** | Güncel Temel Eğitim XLSM satır 4–6 vektörleri; elle girilen T, U damga vergisi, W neti ve ayrı rapor D28 zinciri test edildi. |
+| 5 | Hakediş hesaplama motoru ve Excel eşleştirmesi | **%92** | Hesaplama sayfası W/AG neti ile rapor D28 zinciri ayrıldı; D11/D13/D15/D26/D28 ve program türüne göre fiyat farkı formülleri regresyon testleriyle eşleştirildi. |
+| 6 | Dört resmî PDF, icmal ve önizleme | **%90** | Dört belge türü, tek sayfalı A4 çıktılar ve sekiz PDF smoke çıktısı doğrulandı. İcmal C/D/E formülleri, Temel Eğitim K+I+V ve Özel Eğitim K+T ile I+R aktarım davranışına göre eşlendi. Kaynak Excel ile görsel karşılaştırma sonraki aşama. |
+| 7 | Testler, CI, kalite ve dağıtım | **%95** | Windows CI run 1969 başarılı: 221/221 Core, 4/4 WPF, tam çözüm/WPF derlemesi, sekiz PDF smoke çıktısı, Windows EXE ve izole test paketi adımları geçti. Ana dala birleştirme/yayınlama yapılmadı. |
 
-**Basit ortalama: %77,1.** Bu yalnızca yukarıdaki yedi tahminin eşit ağırlıklı ortalamasıdır; proje başarı olasılığı veya resmî kabul sonucu değildir. Hesaplama/PDF/Excel belirsizlikleri yüksek riskli olduğundan üretime hazır olma kararı bu ortalamadan çıkarılamaz.
+**Basit ortalama: %91,6.** Bu, uygulama kapsamı tahminidir; Excel masaüstü/VBA doğrulaması ve Visual Studio görsel kabulinin tamamlandığı anlamına gelmez. Sonraki aşama, aynı gerçek hakediş örneğiyle iki programın dört PDF'sini birlikte karşılaştırmaktır.
 
 ### Yüzdeyi yükseltmek için zorunlu kanıt kapıları
 
