@@ -76,7 +76,7 @@ public sealed class PdfFileNameTests
             OzelEgitimHakedis.Core.Models.TransportationProgramType.SpecialEducation);
         var basicEducation = OehsFileNameService.BuildProgressPdfFileName(
             "123", "01", 3, new DateOnly(2026, 11, 30),
-            OzelEgitimHakedis.Core.Models.TransportationProgramType.BasicAndSecondaryEducation);
+            OzelEgitimHakedis.Core.Models.TransportationProgramType.BasicOrSecondary);
 
         Assert.Contains("_OzelEgitim_", specialEducation, StringComparison.Ordinal);
         Assert.Contains("_TemelOrtaogretim_", basicEducation, StringComparison.Ordinal);
