@@ -693,18 +693,19 @@ internal static class OehsOfficialDocumentFactory
         bool bold,
         double angle)
     {
-        // Center the rotated text by its actual layout slot, not by assuming
-        // that the whole cell height is the rendered text width.
+        // Use a cell-sized layout slot and center the rotated text inside it.
+        // LayoutTransform participates in measurement, unlike RenderTransform,
+        // so the title can be centered reliably in the tall merged cell.
         var block = MakeText(text, fontSize, bold, TextAlignment.Center, Black, new Thickness(0));
         block.TextWrapping = TextWrapping.NoWrap;
-        block.Width = cellHeight;
-        block.Height = cellWidth;
+        block.Width = cellWidth;
+        block.Height = cellHeight;
         block.HorizontalAlignment = HorizontalAlignment.Center;
         block.VerticalAlignment = VerticalAlignment.Center;
-        block.RenderTransformOrigin = new Point(0.5, 0.5);
-        block.RenderTransform = new RotateTransform(angle);
-        FixedPage.SetLeft(block, x + (cellWidth - cellHeight) / 2d);
-        FixedPage.SetTop(block, y + (cellHeight - cellWidth) / 2d);
+        block.VerticalContentAlignment = VerticalAlignment.Center;
+        block.LayoutTransform = new RotateTransform(angle);
+        FixedPage.SetLeft(block, x);
+        FixedPage.SetTop(block, y);
         page.Children.Add(block);
     }
 
