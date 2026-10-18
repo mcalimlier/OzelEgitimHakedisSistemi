@@ -66,11 +66,13 @@ public sealed class ProgressPaymentIcmalServiceTests
     }
 
     [Fact]
-    public void BasicE21_November2026_ShouldCarryOctoberDeductionFromSourceExample()
+    public void BasicNovember2026_ShouldUseOctoberMonthlyColumnDespiteBrokenSourceE21Formula()
     {
-        // Source workbook: Temel Eğitim, November 2026. The previous-month
-        // deduction is İcmal Verileri!AC4 = 24,104.02472 TL (October), in AB:AL.
-        // E4 is the selected period; E5 is the payment date and must not drive this lookup.
+        // Latest source workbook: the selected period is November 2026 (E4),
+        // and the October monthly column is İcmal Verileri!AC4 = 24,104.02472 TL.
+        // The workbook's E21 formula itself is defective (it uses E5/K17 and AN:AX)
+        // and its cached value is zero. This test preserves OEHS's intended behavior
+        // from the monthly macro layout; it is NOT a claim that literal source E21 matches.
         var october = History(1, new DateOnly(2026, 10, 31), 24104.02472m) with
         {
             Input = new ProgressPaymentInput(
