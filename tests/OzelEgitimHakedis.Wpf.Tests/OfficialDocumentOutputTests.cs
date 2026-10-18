@@ -223,6 +223,25 @@ public sealed class OfficialDocumentOutputTests
                 ApproverRole: "TEST MÜDÜR");
             var outputs = OehsOfficialDocumentFactory.BuildSeparate(context);
             Assert.Equal(4, outputs.Count);
+            Assert.Equal(
+                new[]
+                {
+                    OehsOfficialDocumentKind.HakedisRaporu,
+                    OehsOfficialDocumentKind.HizmetIsleriHakedisRaporu,
+                    OehsOfficialDocumentKind.KabulTutanagi,
+                    OehsOfficialDocumentKind.HakedisIcmali
+                }.OrderBy(kind => kind),
+                outputs.Select(output => output.Kind).OrderBy(kind => kind));
+
+            // Every official output must be a single A4 portrait page; a valid
+            // first report must not hide a missing, duplicated, or oversized sibling.
+            foreach (var output in outputs)
+            {
+                Assert.Single(output.Document.Pages);
+                var page = Assert.IsType<FixedPage>(output.Document.Pages[0].Child);
+                Assert.True(page.Width > 0 && page.Height > page.Width,
+                    $"{output.Kind} must use a portrait page, got {page.Width} x {page.Height}.");
+            }
 
             // Verify that the test PDFs use the same previous/current period data
             // as the application report services rather than empty hard-coded history.
