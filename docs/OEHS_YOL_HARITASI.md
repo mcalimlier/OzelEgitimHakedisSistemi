@@ -437,3 +437,13 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 4. Aynı hakediş kaydından dört PDF üretip dönem, tutar, hat, yüklenici, imza ve sayfa yerleşimini tek kabul matrisiyle karşılaştır.
 5. Yalnızca kanıtlanmış davranış farklarına kod değişikliği yap; her değişiklikten sonra test ve CI sonucunu kaydet.
 6. Ana dala birleştirme/yayınlama yapma; bunun için açık kullanıcı onayı gerekir.
+
+
+## CI doğrulaması — 2026-10-18 (son kaynak notu)
+
+- Kaynak Excel inceleme notu commit'i: `24dc7ee18517a80ed9dc513fa810d1f968160f97`.
+- Push CI #1668: **başarılı** — https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39136818987
+- PR CI #1669: **başarılı** — https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39136822715
+- İki çalışma da aynı commit SHA üzerinde tamamlandı; build job'ı başarılı olarak raporlandı.
+- Bu CI sonucu, Windows derleme/test iş akışının otomatik kapısını doğrular. Excel masaüstü/VBA çalıştırması, kaynak Excel ile gerçek PDF çıktılarının birebir eşleşmesi ve kullanıcı arayüzü görsel kabulü hâlâ ayrı kapılardır.
+- Bu aşamada hesaplama davranışı değiştirilmedi; kaynak XLSM'ler değiştirilmedi. Özel Eğitim Kasım/Aralık aylık başlık kusuru ve Temel/Ortaöğretim E21 kaynak formül tutarsızlığı açık risk olarak kalır.
