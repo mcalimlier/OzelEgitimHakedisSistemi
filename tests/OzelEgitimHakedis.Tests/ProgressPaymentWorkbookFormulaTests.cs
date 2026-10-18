@@ -59,9 +59,10 @@ public sealed class ProgressPaymentWorkbookFormulaTests
         Assert.Equal(-0.948m, current.Calculation.StampTax);
         Assert.Equal(0m, ProgressPaymentReportService.CalculateReportStampTax(
             current.Calculation, current.Input.ProgramType));
-        Assert.Equal(-12m, ProgressPaymentReportService.CalculateReportTotalDeductions(
+        // A negative price difference does not create a negative manually entered guarantee.
+        Assert.Equal(0m, ProgressPaymentReportService.CalculateReportTotalDeductions(
             current.Calculation, current.Input.ProgramType));
-        Assert.Equal(-88m, ProgressPaymentReportService.CalculateReportNetPayable(current, totals));
+        Assert.Equal(-100m, ProgressPaymentReportService.CalculateReportNetPayable(current, totals));
     }
 
     [Fact]
