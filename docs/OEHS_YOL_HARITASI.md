@@ -505,3 +505,11 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - Rapor geçmişi ve aylık hakediş sıra önerisi servislerinde eksik kimliklerin önceki kayıtlarla eşleşmesini engelleyen korumalar eklendi. Aylık sıra önerisi için iki ek regresyon testi mevcut; CI run `39138903059` ve takip eden test commit'leri son kontrol anında sürüyordu.
 - Güncel XLSM kaynak paritesi hâlâ doğrulanmış değil. Temel Eğitim ek teminat/damga vergisi, D6/D8/D10/D11 ve D28/net ödeme farkları açık risk. Genel ilerleme %90 altında ve oran artırılmadı.
 - Sıradaki adım: yeni kimlik testlerinin CI sonucunu doğrula; ardından güncel workbook hücrelerinden ayrı, doğru etiketli golden-master fixture'ları oluşturmak için Excel/VBA yürütme sonuçlarını elde et. Ana dala birleştirme/yayınlama yapılmadı.
+
+## Devam notu — 18.10.2026, güncel Özel Eğitim kaynak vektörleri
+
+- Güncel Özel Eğitim XLSM'sinin `Hesaplama` satır 4–6 değerlerinden üç yeni hücre bazlı regresyon testi eklendi: taşıma/rehber neti, KDV/tevkifat, ek teminat, damga vergisi, kesinti toplamı, brüt ve net tutar.
+- Eski kaynak dosya adları kullanan vektörler `Legacy` olarak yeniden adlandırıldı; güncel yetkili XLSM'lerin kanıtı gibi sunulmuyor.
+- Yeni güncel Özel Eğitim vektörlerinin CI run'ı `39139111316` son kontrol anında sürüyordu. Başarı durumu görülmeden testler geçer sayılmayacak.
+- Temel Eğitim için aynı düzeyde güncel golden-master paritesi hâlâ kapalı değil: T4:T6 ek teminat hücreleri sabit, U damga vergisi T'yi matraha ekliyor; OEHS davranışıyla farkın iş anlamı belirlenmeli.
+- Genel ilerleme %90 altında. Sıradaki adım: güncel Özel Eğitim vektörlerini CI'da doğrula; ardından Temel Eğitim'in güncel formülleri için kaynakla uyumlu test ve karar kapısını sürdür. Ana dala birleştirme/yayınlama yapılmadı.
