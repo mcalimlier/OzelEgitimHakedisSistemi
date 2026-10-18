@@ -44,6 +44,58 @@ public sealed class PdfFileNameTests
         Assert.True(sanitized.Length <= 80);
     }
 
+    [Theory]
+    [InlineData("CON .txt", "_CON .txt")]
+    [InlineData("con...log", "_con...log")]
+    [InlineData("COM¹", "_COM¹")]
+    [InlineData("LPT³.csv", "_LPT³.csv")]
+    public void SanitizeFileName_ShouldProtectWindowsDeviceNamesWithPaddingAndExtensions(
+        string input,
+        string expected)
+    {
+        Assert.Equal(expected, OehsFileNameService.SanitizeFileName(input));
+    }
+
+    [Theory]
+    [InlineData(null, "Yok")]
+    [InlineData("", "Yok")]
+    [InlineData("   ", "Yok")]
+    [InlineData("..", "Yok")]
+    public void SanitizeFileName_ShouldUseFallbackForEmptyOrTraversalValues(
+        string? input,
+        string expected)
+    {
+        Assert.Equal(expected, OehsFileNameService.SanitizeFileName(input, "Yok"));
+    }
+
+    [Fact]
+    public void BuildProgressPdfFileName_ShouldSeparateProgramAndUseMonthlyDateForProgramReports()
+    {
+        var specialEducation = OehsFileNameService.BuildProgressPdfFileName(
+            "123", "01", 3, new DateOnly(2026, 11, 30),
+            OzelEgitimHakedis.Core.Models.TransportationProgramType.SpecialEducation);
+        var basicEducation = OehsFileNameService.BuildProgressPdfFileName(
+            "123", "01", 3, new DateOnly(2026, 11, 30),
+            OzelEgitimHakedis.Core.Models.TransportationProgramType.BasicAndSecondaryEducation);
+
+        Assert.Contains("_OzelEgitim_", specialEducation, StringComparison.Ordinal);
+        Assert.Contains("_TemelOrtaogretim_", basicEducation, StringComparison.Ordinal);
+        Assert.EndsWith("_2026-11.pdf", specialEducation, StringComparison.Ordinal);
+        Assert.EndsWith("_2026-11.pdf", basicEducation, StringComparison.Ordinal);
+        Assert.NotEqual(specialEducation, basicEducation);
+    }
+
+    [Fact]
+    public void BuildProgressPdfFileName_ShouldRejectNonPositiveProgressPaymentNumbers()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            OehsFileNameService.BuildProgressPdfFileName(
+                "123", "01", 0, new DateOnly(2026, 11, 30)));
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            OehsFileNameService.BuildProgressPdfFileName(
+                "123", "01", -1, new DateOnly(2026, 11, 30)));
+    }
+
     [Fact]
     public void BuildProgressPdfFileName_ShouldSanitizeInvalidCharacters()
     {
