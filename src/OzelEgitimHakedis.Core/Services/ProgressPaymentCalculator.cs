@@ -117,8 +117,11 @@ public sealed class ProgressPaymentCalculator
         var invoiceAmountAfterWithholding =
             transportInvoiceAmount + guideInvoiceAmount;
 
-        // Excel AD:
-        // AD = (K*9.48/1000) + (T*9.48/1000)
+        // Special Education Excel AD = (K*9.48/1000) + (T*9.48/1000), where T is guide net amount.
+        // Current Basic/Secondary Excel U also adds its T-cell amount to K for stamp tax;
+        // however its T4:T6 are literal 1500 values, while OEHS calculates AdditionalGuarantee
+        // from a 6% rate. That source mismatch is documented and remains a decision/Excel-runtime
+        // acceptance blocker; this shared calculation is not asserted as Basic workbook parity.
         var transportStampTax = transportNetAmount * constants.StampTaxRate;
         var guideStampTax = guideNetAmount * constants.StampTaxRate;
         // Damga vergisi bir kesintidir; negatif fiyat farkı negatif vergi/kredi oluşturamaz.
