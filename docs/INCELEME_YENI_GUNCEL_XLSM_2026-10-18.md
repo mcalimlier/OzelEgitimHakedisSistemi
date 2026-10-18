@@ -196,3 +196,14 @@ Kaynak makro karşılaştırması: Temel Eğitim KesintiToplamlariniAktar, döne
 Temel Eğitim örnek dosyasında seçili dönem Kasım 2026'dır. İlk hat satırında `İcmal Verileri!AB4:AL4` kesinti serisi Eylül–Temmuz olarak tutuluyor; `AC4` Ekim ayı kesintisi olarak 24.104,02472 TL'dir. Mevcut `Hakediş İcmali!E21` formülü `Anasayfa!E5` ve `AN:AX` aralığı yüzünden önceki kesintiyi sıfıra düşürebilir. Kaynak düzenine göre amaçlanan ay eşlemesi `Anasayfa!E4` + `AB3:AL3` olsaydı Ekim için 24.104,02472 TL bulunurdu.
 
 Bu, teorik bir isim farkı değil, yaklaşık 24.104,02 TL'lik olası belge farkıdır. Ancak düzeltilmiş formül OEHS'ye uygulanmadan önce kaynak sahibinin/uzmanın “önceki ay kesintisi aktarılmalı” kuralını onaylaması gerekir. Bu turda resmî hesap koduna müdahale edilmedi.
+
+
+### Temel Eğitim E21 için kontrollü düzeltme kopyası ve hesaplama testi
+
+Kullanıcı onayıyla kaynak dosyanın üzerine yazılmadı; ayrı bir inceleme kopyasında yalnızca `Hakediş İcmali!E21` formülü OOXML düzeyinde değiştirildi. Yeni formül, seçili dönemi `Anasayfa!E4` üzerinden alır, önceki ayı `Anasayfa!I5:I14` listesinde bulur, önceki ay kesintisini `İcmal Verileri!AB3:AL3` başlıkları içinde arar ve `A4:AM56` tablosundaki doğru sütunu seçer.
+
+Ek bir anahtar uyuşmazlığı da doğrulandı: `Anasayfa!K17`, `B17:K17` birleştirilmiş hücre aralığının parçasıdır; gerçek değer B17'deki hat açıklamasıdır. Buna karşılık `İcmal Verileri!A4:A56` sayısal hat kimlikleri içerir ve `Anasayfa!K16` örnek dosyada `1` değeridir. E21'in VLOOKUP anahtarı bu nedenle `K16` olarak düzeltildi; K17 kullanılırsa IFERROR sıfırı gerçek kesintiyi gizleyebilir.
+
+Doğrulama: LibreOffice 25.2 ile izole inceleme kopyası yeniden hesaplandı. `Anasayfa!E4 = Kasım 2026`, `Anasayfa!K16 = 1` ve `İcmal Verileri!AC4 = 24.104,02472 TL` iken düzeltilmiş E21 de `24.104,02472 TL` verdi. VBA proje ikili dosyası bayt düzeyinde korundu ve ZIP içindeki tüm dosya girdileri korundu. Bu test Excel masaüstü kabul testinin yerine geçmez; nihai kullanım öncesinde Excel'de aynı örnekle doğrulama yapılmalıdır.
+
+İnceleme kopyası: `Temel_Egitim_E21_Duzeltilmis_Inceleme_Kopyasi.xlsm`. Kaynak dosya değişmeden kalmıştır.
