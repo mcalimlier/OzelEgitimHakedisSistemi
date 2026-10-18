@@ -614,9 +614,17 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 
 ## 18.10.2026 — Geçici Hesap Tutucu (geçici denetim aracı)
 
-- Hakediş Oluştur ekranındaki hesaplama düğmelerinin yanına **GEÇİCİ HESAP TUTUCU** eklendi.
-- Araç son hesaplanan hakediş kaydının girdi anlık görüntüsünü; değişken harfi/açıklaması, uygulanan formül, formülde kullanılan sayılar ve sonuç biçiminde alt alta gösterir. Taşıma, rehber, KDV, tevkifat, damga vergisi, kesinti toplamı ve net ödeme adımlarını listeler.
+- **GEÇİCİ HESAP TUTUCU**, Hakediş Oluştur ekranından kaldırılarak Ayarlar altında ayrı bir buton ve bağımsız denetim sayfasına taşındı.
+- Hakediş giriş alanlarında her TextBox değişikliğinde canlı taslak güncellenir; girilen ham değerler ve temel taşıma/rehber aritmetiği değişken açıklaması, formül, kullanılan sayılar ve ara sonuç olarak alt alta görünür. Bu ilk canlı görünüm teşhis amaçlıdır; resmî hesap motorunun tüm vergi/tevkifat/yuvarlama adımlarının yerine geçtiği iddia edilmez.
 - Döküm açıkça bir denetim aracı olarak işaretlenir; kaynak Excel/VBA paritesi iddiasında bulunmaz.
 - **Bilinen kural farkını görünür kılma:** Döküm, mevcut OEHS formülünün ek kesin teminatı fiyat farkının %6'sından türettiğini ve bu davranışın kullanıcı tarafından açıklanan kuralla uyuşmadığını uyarı olarak gösterir. Kullanıcının doğruladığı kural: ek kesin teminat elle girilir; kesin teminat bu girilen tutarın %6'sıdır. Bu nedenle teminat hesabı ayrı kod/model/test çalışması gerektirir.
 - Doğrulama: XAML ve C# değişiklikleri dalda kaydedildi; bu commit için Windows CI ve görsel çalışma zamanı testi henüz teyit edilmedi. Buton ve döküm derleme/test sonucu görülmeden kabul edilmiş sayılmaz.
 - Geçici araç, hesaplama kuralları ve Excel/VBA ile dört PDF'nin karşılaştırması kapanıp kullanıcı onayı alındıktan sonra kaldırılacak.
+
+
+### 18.10.2026 — Canlı hesap tutucu ve ayrı ekran
+
+- Buton Hakediş Oluştur ekranından kaldırıldı; Ayarlar altında yer alıyor ve bağımsız Geçici Hesap Tutucu sayfasını açıyor.
+- Girdi alanları değiştikçe canlı ham değerler ve temel aritmetik otomatik yenileniyor. Taslak, resmî hesap motoru/Excel VBA ile tam eşdeğer olduğu iddiasında bulunmuyor; sonraki adım gerçek hesap zincirini doğrulanmış motor sonuçlarıyla satır satır bağlamak.
+- Teminat farkı görünür uyarı olarak korunuyor: kullanıcı kuralı elle girilen ek kesin teminatın %6'sı; mevcut OEHS formülü fiyat farkından türetiyor. Bu kural sessizce değiştirilmedi.
+- Önceki Windows CI run `39144629991` başarılıydı (önceki commit). Bu arayüz değişikliğinin CI sonucu bekleniyor.
