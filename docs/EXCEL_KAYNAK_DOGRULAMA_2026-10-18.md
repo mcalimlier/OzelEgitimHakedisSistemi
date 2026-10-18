@@ -32,13 +32,23 @@ Her iki kaynak dosyada D11 formülü `=IF(D7<0,H2-ABS(D7),H2+D7)` biçimindedir;
 
 Bu örnekler formülün mevcut önbellekli aritmetiğini doğrular; görünen “C - D” açıklamasının yanlış olduğunu tek başına kanıtlamaz. H2, D7 ve D11'in gerçek iş anlamı ile D28/AG net ödeme zinciri Excel masaüstünde aynı örneklerle birlikte kontrol edilmelidir. Kodda veya kaynak XLSM'de değişiklik yapılmadı.
 
-## 5. Temel/Ortaöğretim — Ek kesin teminat (T sütunu) ile mevcut hesap motoru
+## 5. Ek kesin teminat / kesin teminat — kullanıcı tarafından doğrulanan alan anlamları
 
-Güncel `Temel Eğitim Taşıma Ödemes Programı En Güncel(1).xlsm` dosyasının `Hesaplama Bilgileri` sayfasında T4:T6 hücreleri sırasıyla sabit `1500` değerleridir; hücrelerde `I*6%` formülü bulunmuyor. Buna karşılık OEHS hesap motoru ek kesin teminatı fiyat farkının %6'sı olarak hesaplıyor ve eski/transkribe edilmiş test vektörleri de bu davranışı bekliyor. Özel Eğitim dosyasında ise `Hesaplama!AC4` hücresinin formülü açıkça `=(I4*6/100)+R4*6/100` biçiminde.
+Kullanıcının doğruladığı iş kuralı iki program için de aynıdır:
+- **Ek kesin teminat tutarı elle girilir.**
+- **Kesin teminat tutarı, elle girilen ek kesin teminat tutarının %6'sıdır.**
 
-Aynı satırlarda `U4` damga vergisi formülü `=(K4*9.48/1000)+T4*9.48/1000` biçimindedir; yani kaynak formül T sütunundaki ek kesin teminat tutarını damga vergisi matrahına ekliyor. OEHS hesap motoru damga vergisini Temel/Ortaöğretim için yalnızca K tutarından hesaplıyor. Örnek satırda K4=220.490 ve T4=1.500 olduğundan kaynak U4=2.104,4652; yalnız K üzerinden hesaplanan tutar 2.090,2452 olur. Aradaki 14,22 TL fark, T sütununun kaynakta gerçek hesap zincirine dahil edildiğini gösteriyor.
+Önceki sürümde Temel Eğitim `Hesaplama Bilgileri!T4:T6` hücrelerindeki 1.500 TL değerleri ile OEHS'nin fiyat farkının %6'sını hesaplaması, aynı iş alanının doğrudan karşılaştırması gibi sunulmuştu. Bu yorum alan semantiğini doğru ayırmadığından geri çekilmiştir. Aynı şekilde Özel Eğitim `Hesaplama!AC4` formülü `=(I4*6/100)+R4*6/100` tek başına hangi iş alanına karşılık geldiğini kanıtlamaz.
 
-**Sonuç:** Temel/Ortaöğretim için hem %6 ek teminat üretimi hem de bu tutarın damga vergisi hesabına katılması, güncel kaynak XLSM ile eşdeğer kabul edilemez. T4:T6 sabitlerinin kaynağı ve bu tutarların resmi ödeme hesabındaki anlamı VBA/form giriş akışı ve Excel masaüstü senaryosuyla belirlenmeli. Bu karar alınmadan resmi hesap davranışı değiştirilmedi; mevcut kod yorumundaki yanlış “kaynak formülü birebir” iddiası kaldırılarak uyuşmazlık açıkça belirtildi.
+**Statik olarak gözlenenler; henüz alan eşlemesiyle doğrulanmadı:**
+- Temel Eğitim `T4:T6` değerleri 1.500; `U4=(K4*9.48/1000)+T4*9.48/1000` biçiminde.
+- Özel Eğitim `AC4` formülü `=(I4*6/100)+R4*6/100` biçiminde.
+- Bu hücrelerin kullanıcı giriş alanı, ek kesin teminat tutarı veya kesin teminat tutarı olarak nasıl etiketlendiği; kullanıcı formu/VBA üzerinden nereden doldurulduğu ve diğer hesaplara nasıl aktarıldığı ayrıca izlenmeli.
+- OEHS'nin mevcut hesap motorunda fiyat farkı üzerinden yapılan %6 hesabının, kullanıcının tanımladığı **elle girilen ek kesin teminatın %6'sı** kuralını gerçekten uygulayıp uygulamadığı kod ve model alanları üzerinden doğrulanmalı.
+
+Bu nedenle eski satır bazlı tutar farkları doğru iş kuralının kanıtı sayılmaz. Kaynak XLSM'ler değiştirilmedi ve Excel/VBA masaüstü kabulü yapılmadı.
+
+**Doğrulama adımları:** Her iki programda alan başlıklarını ve kullanıcı giriş akışını izle; girilen bir ek kesin teminat örneğinin %6 sonucunu kesin teminat alanında kontrol et; damga vergisi/kesinti/net zincirini ve dört PDF'yi aynı hakediş bağlamında doğrula. Bu eşlemeden önce hesap davranışını resmî doğru olarak işaretleme.
 
 ## 6. Hakediş Raporu D6/D8/D10/D11 — formül ve önbellek aritmetiği uyuşmazlığı
 
@@ -73,11 +83,11 @@ Bu testler faydalı eski regresyon vektörleri olarak korunuyor, fakat adları v
 
 Bu testler eski vektörleri güncel kaynak gibi sunan durumu düzeltmek için eklenen ilk güncel kaynak kapsamıdır. Windows CI run `39139111316` bu üç güncel Özel Eğitim vektörünü de içeren test çözümünde başarılı oldu: 214 Core testi ve 4 WPF testi geçti; PDF smoke ve EXE publish adımları da başarılı. Bu, kaynak hücrelerinden transkribe edilen hesap zincirinin OEHS ile eşleştiğini gösterir; Excel masaüstü/VBA çalıştırması değildir. Temel Eğitim için benzer golden-master vektörü henüz parite sayılmaz; ek teminat T sütunu ve damga vergisi U sütunu farkı açık karar kapısıdır.
 
-## 9. Temel Eğitim güncel satır 4 — açık uyuşmazlığı koruyan test
+## 9. Temel Eğitim güncel satır 4 — kaynak hücrelerini koruyan test
 
-`tests/OzelEgitimHakedis.Tests/CurrentBasicWorkbookDiscrepancyTests.cs` güncel Temel Eğitim satır 4'te OEHS'nin halen ürettiği sonuç ile güncel XLSM hücrelerinin farklı olduğunu açıkça test eder. Kaynakta K=220.490, L=22.049, M=11.024,5, T=1.500 (sabit), U=2.104,4652, V=20.628,9652, W=221.910,0348. OEHS'de aynı G/H/I/J girdileri K, KDV, tevkifat ve brüt tutarı eşleştiriyor; ancak %6 hesabıyla ek teminatı 90 TL, yalnız K üzerinden damga vergisini 2.090,2452 TL hesaplıyor. Bu nedenle kesinti/net sonuçları kaynakla farklı kalıyor.
+`CurrentBasicWorkbookDiscrepancyTests.cs` güncel Temel Eğitim satır 4'te OEHS çıktısı ile kaynak XLSM'de statik gözlenen K/KDV/tevkifat/brüt/teminat ve net değerlerini ayrı ayrı kaydeder. Ancak önceki test açıklaması, kaynak `T4=1.500` değerini OEHS'nin %6 hesapladığı alanla aynı alan olarak yorumluyordu. Kullanıcının alan anlamlarını açıklaması sonrasında bu yorum geçerli kabul edilmemelidir.
 
-Bu test bir parite başarı testi değil, çözülmemiş farkın sessizce kaybolmamasını sağlayan **bilinen uyuşmazlık korumasıdır**. T4'ün neden sabit olduğu ve beklenen resmi davranış Excel/VBA ile doğrulanmadan hesap motoru değiştirilmemelidir. Windows CI run `39139237528` bu bilinen-fark testini de içeren çözümde başarılı oldu: **215 Core + 4 WPF testi geçti**, PDF smoke ve Windows EXE publish adımları da başarılı. Test, güncel kaynakla parite sağlandığını değil, bilinen farkın kodda açıkça görünür kaldığını doğrular.
+Test hâlâ mevcut kodun belirli bir girdi için ürettiği aritmetik sonucu korur; **iş kuralı paritesi testi değildir**. Testin beklenen değerleri, ek kesin teminat (elle girilen) ve kesin teminat (girilen değerin %6'sı) alanları kaynak form/VBA zinciriyle eşleştirildikten sonra yeniden düzenlenmelidir. Windows CI'nin başarılı olması yalnızca mevcut testlerin derlenip çalıştığını gösterir; iş kuralının doğru olduğunu veya Excel/VBA ile eşleştiğini kanıtlamaz.
 
 ## 10. Güncel Temel Eğitim fark testi — CI sonucu
 
