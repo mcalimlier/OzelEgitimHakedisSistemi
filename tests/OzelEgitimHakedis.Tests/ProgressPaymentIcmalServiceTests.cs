@@ -17,6 +17,20 @@ public sealed class ProgressPaymentIcmalServiceTests
     }
 
     [Fact]
+    public void BuildPeriods_ShouldPreserveFullSeptemberThroughJulyCalendarOrder()
+    {
+        var periods = ProgressPaymentIcmalService.BuildPeriods(new DateOnly(2026, 11, 30));
+
+        var expected = Enumerable.Range(0, 11)
+            .Select(index => new DateOnly(2026, 9, 1).AddMonths(index))
+            .ToArray();
+
+        Assert.Equal(expected, periods);
+        Assert.Equal(new DateOnly(2026, 11, 1), periods[2]);
+        Assert.Equal(new DateOnly(2026, 12, 1), periods[3]);
+    }
+
+    [Fact]
     public void FindPreviousDeduction_ShouldUseImmediatePreviousPaymentOnly()
     {
         var older = History(1, new DateOnly(2026, 9, 30), 100m);
