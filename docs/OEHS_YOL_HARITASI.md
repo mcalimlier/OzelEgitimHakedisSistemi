@@ -568,3 +568,11 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - Yerel smoke artefaktının 8 PDF'si metin/sayfa ölçüsüyle yeniden tarandı: **8/8 tek sayfa A4 portre**, güzergâh, tarih ve imza adları tümünde bulundu. Üç belge türünde yüklenici adı bulundu; **Hakediş İcmali smoke çıktısında yüklenici adı görünmüyor**. Bu, kaynak Excel icmal şablonuyla karşılaştırılmadan hata sayılmayacak; ancak yüklenici alanı kabul matrisi için açık kontrol maddesi.
 - Gerçek Excel kaynak PDF'leri mevcut çalışma alanında yok; LibreOffice veya sentetik smoke PDF'leri Excel/VBA kabulü yerine geçmez. Temel Eğitim T/U, iki programın D28-net farkı, E21 ve Özel Eğitim ay başlığı kusuru karar kaydında açık.
 - Genel proje yaklaşık **%81**; %90 değil. Sonraki adım: kaynak Excel ile dört PDF'nin aynı hakediş üzerinde tutar/dönem/yüklenici/hat/imza/sayfa karşılaştırması için Excel masaüstü çıktısı elde etmek; ana dala birleştirme/yayınlama yok.
+
+## Devam notu — 18.10.2026, Temel/Ortaöğretim PDF tutarlılığı
+
+- Temel/Ortaöğretim için de dört PDF'nin güzergâh kimliği, rapor dönemleri, kabul tutanağı hizmet aralığı ve icmal Eylül/Ekim satırlarını denetleyen paralel testler eklendi. Programlar aynı kontrol yapısını kullanıyor; hesaplama kuralları birleştirilmedi.
+- Windows CI run `39140779156` **başarılı**: **216/216 Core + 4/4 WPF**; tam çözüm/WPF derlemesi, UI sözleşme kontrolleri, PDF smoke ve Windows EXE publish geçti.
+- Smoke PDF'lerinin 8/8'i tek sayfa A4 portre; bütün belgelerde güzergâh, tarih ve imza isimleri metin kontrolünden geçti. Kaynak XLSM icmal sayfalarının görünür hücrelerinde yüklenici başlığı yok; bu nedenle smoke icmalinde yüklenici adının görünmemesi tek başına hata sayılmadı.
+- Excel/VBA masaüstü çalışma ortamı bu yürütme ortamında mevcut değil; `oletools` kurulumu da ağ/DNS erişimi olmadığı için yapılamadı. LibreOffice yeniden hesaplaması ve sentetik PDF'ler Excel VBA sonucu yerine geçmez.
+- **Genel proje yaklaşık %81; %90 hedefi tamamlanmadı.** Bir sonraki gerçek ilerleme kaynağı yeni test sayısı değil, iki kaynak XLSM için gerçek Excel/VBA hücre sonuçları ve aynı hakedişin dört Excel/OEHS PDF'si karşılaştırmasıdır. Ana dala birleştirme/yayınlama yok.
