@@ -5162,7 +5162,11 @@ public partial class MainWindow : Window
             "Asgari ücret desteği (etkin): " + M(minimumWageSupport) + " TL",
             "Denetim cezası: " + Raw(InspectionPenaltyTextBox) + " TL",
             "Sözleşme bedeli: " + (selectedContract is null ? Raw(ContractAmountTextBox) : M(selectedContract.ContractAmount)) + " TL",
-            "Ek kesin teminat (Temel/Ortaöğretim elle giriş): " + Raw(ManualAdditionalGuaranteeTextBox) + " TL",
+            "Ek kesin teminat manuel giriş: " + (selectedProgram == TransportationProgramType.BasicOrSecondary
+                ? Raw(ManualAdditionalGuaranteeTextBox) + " TL"
+                : selectedProgram == TransportationProgramType.SpecialEducation
+                    ? "Özel Eğitimde kullanılmıyor; AC formülle hesaplanır"
+                    : "Program seçilince belirlenir"),
             "",
             "2) KAYNAK FORMÜLLERİ VE CANLI ARA DEĞERLER",
             "K — Taşıma neti = G × H + I − J = " + (issues.Count == 0
@@ -5172,7 +5176,9 @@ public partial class MainWindow : Window
                 ? "T — Rehber neti = P × Q + R − S = " + (issues.Count == 0
                     ? N(p) + " × " + M(q) + " + " + M(r) + " − " + M(s) + " = " + M(guideNet) + " TL"
                     : "Hesap bekliyor (eksik/geçersiz giriş)")
-                : "T — Rehber neti = Bu programda rehber kalemi yok; 0,00 TL",
+                : selectedProgram == TransportationProgramType.BasicOrSecondary
+                    ? "T — Rehber neti = Bu programda rehber kalemi yok; 0,00 TL"
+                    : "T — Rehber neti = Program seçimi bekleniyor",
             "AC — Ek kesin teminat = " + (issues.Count == 0 ? guaranteeDisplay : "Hesap bekliyor (eksik/geçersiz giriş)"),
             "AD — Damga vergisi matrahı: " + (selectedProgram == TransportationProgramType.BasicOrSecondary
                 ? "(K + elle girilen ek kesin teminat) × damga vergisi oranı"
