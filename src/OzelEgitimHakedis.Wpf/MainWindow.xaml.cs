@@ -4996,7 +4996,7 @@ public partial class MainWindow : Window
             throw new ArgumentOutOfRangeException(nameof(ManualAdditionalGuaranteeTextBox),
                 "Temel/Ortaöğretim için ek kesin teminat tutarını sıfır veya daha büyük geçerli bir tutar olarak girin.");
 
-        return value * _calculationConstants.AdditionalGuaranteeRate;
+        return value;
     }
 
     private void ConfigureLiveCalculationTrace()
