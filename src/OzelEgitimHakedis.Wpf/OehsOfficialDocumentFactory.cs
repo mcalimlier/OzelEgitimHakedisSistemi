@@ -197,8 +197,7 @@ internal static class OehsOfficialDocumentFactory
             ("l)", "Asgari Ücret Destek Tutarı Kesintisi", c.Calculation.Deductions.MinimumWageSupport, 29)
         };
         var deductionsHeight = deductions.Sum(d => d.Height);
-        // Keep the section title inside the tall left-side merged cell,
-        // rotated vertically and centered across the full deductions section.
+        // Keep the section title vertically oriented and centered in the merged left cell.
         AddCell(page, "", x, y, 165, deductionsHeight, 9, false, TextAlignment.Center, White, new Thickness(0));
         AddRotatedText(page, "KESİNTİLER VE MAHSUPLAR", x, y, 165, deductionsHeight, 12, true, -90);
 
@@ -694,12 +693,14 @@ internal static class OehsOfficialDocumentFactory
         bool bold,
         double angle)
     {
-        // Store the unrotated control dimensions in swapped order so its visual
-        // bounds after rotation exactly fit the target merged cell.
+        // Center the rotated text by its actual layout slot, not by assuming
+        // that the whole cell height is the rendered text width.
         var block = MakeText(text, fontSize, bold, TextAlignment.Center, Black, new Thickness(0));
         block.TextWrapping = TextWrapping.NoWrap;
         block.Width = cellHeight;
         block.Height = cellWidth;
+        block.HorizontalAlignment = HorizontalAlignment.Center;
+        block.VerticalAlignment = VerticalAlignment.Center;
         block.RenderTransformOrigin = new Point(0.5, 0.5);
         block.RenderTransform = new RotateTransform(angle);
         FixedPage.SetLeft(block, x + (cellWidth - cellHeight) / 2d);
