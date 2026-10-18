@@ -119,11 +119,11 @@ public sealed class ExcelSourceParityTests
 
 
     [Fact]
-    public void BasicOrSecondary_LegacyWorkbookRow5Vector_VatExempt_ShouldMatchRecordedCells()
+    public void BasicOrSecondary_LegacyWorkbookRow5Vector_ShouldUseCurrentGuaranteeRule()
     {
-        // Legacy source: 03-Temel Eğitim Taşıma Ödeme.xlsm, Hesaplama Bilgileri row 5. This is not the latest authoritative upload.
-        // Legacy source cells: G=13, H=6545, I=3659.2, K=88744.2,
-        // T=219.552, U=841.295016, V=1060.847016, W=87683.352984.
+        // Legacy source: 03-Temel Eğitim Taşıma Ödeme.xlsm, Hesaplama Bilgileri row 5. Not the latest authoritative upload.
+        // Legacy transport cells: G=13, H=6545, I=3659.2, K=88744.2, T=219.552.
+        // Legacy U/V used a different stamp-tax base; current authoritative Basic rule includes manual T in the base.
         var input = new ProgressPaymentInput(
             WorkDays: 13, DailyPrice: 6545m, DiscountAmount: 0m,
             PriceDifference: 3659.2m, ContractAmount: 100000m,
@@ -137,9 +137,9 @@ public sealed class ExcelSourceParityTests
         Assert.Equal(0m, result.TransportWithholding); // M
         Assert.Equal(88744.2m, result.GrossAmount); // O
         Assert.Equal(219.552m, result.AdditionalGuarantee); // T
-        Assert.Equal(841.295016m, result.StampTax); // U
-        Assert.Equal(1060.847016m, result.TotalDeductions); // V
-        Assert.Equal(87683.352984m, result.NetPayable); // W
+        Assert.Equal(843.37636896m, result.StampTax); // Current U = (K+manual T)*0.00948
+        Assert.Equal(1062.92836896m, result.TotalDeductions);
+        Assert.Equal(87681.27163104m, result.NetPayable);
     }
 
     [Fact]
