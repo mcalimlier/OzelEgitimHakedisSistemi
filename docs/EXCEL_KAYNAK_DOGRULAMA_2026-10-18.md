@@ -32,6 +32,12 @@ Her iki kaynak dosyada D11 formülü `=IF(D7<0,H2-ABS(D7),H2+D7)` biçimindedir;
 
 Bu örnekler formülün mevcut önbellekli aritmetiğini doğrular; görünen “C - D” açıklamasının yanlış olduğunu tek başına kanıtlamaz. H2, D7 ve D11'in gerçek iş anlamı ile D28/AG net ödeme zinciri Excel masaüstünde aynı örneklerle birlikte kontrol edilmelidir. Kodda veya kaynak XLSM'de değişiklik yapılmadı.
 
+## 5. Temel/Ortaöğretim — Ek kesin teminat (T sütunu) ile mevcut hesap motoru
+
+Güncel `Temel Eğitim Taşıma Ödemes Programı En Güncel(1).xlsm` dosyasının `Hesaplama Bilgileri` sayfasında T4:T6 hücreleri sırasıyla sabit `1500` değerleridir; hücrelerde `I*6%` formülü bulunmuyor. Buna karşılık OEHS hesap motoru ek kesin teminatı fiyat farkının %6'sı olarak hesaplıyor ve eski/transkribe edilmiş test vektörleri de bu davranışı bekliyor. Özel Eğitim dosyasında ise `Hesaplama!AC4` hücresinin formülü açıkça `=(I4*6/100)+R4*6/100` biçiminde.
+
+**Sonuç:** Temel/Ortaöğretim için %6 hesaplama davranışı, güncel kaynak XLSM ile eşdeğer kabul edilemez. T4:T6 sabitlerinin kullanıcı girdisi, eski hesaplamadan kalma örnek değer veya başka bir aktarım sonucu olup olmadığı VBA/form giriş akışı ve Excel masaüstü senaryosuyla belirlenmeli. Bu karar alınmadan resmi hesap davranışı değiştirilmedi; mevcut kod yorumundaki yanlış “kaynak formülü birebir” iddiası kaldırılarak uyuşmazlık açıkça belirtildi.
+
 ## Sonraki doğrulama adımları
 
 1. `AA2` referanslarını formüller, tanımlı adlar, VBA ve sayfa kodlarında aramak.
