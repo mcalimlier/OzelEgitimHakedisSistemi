@@ -91,6 +91,7 @@ public static class ProgressPaymentReportService
         // The official workbook report is route-specific. Never let a different
         // route, contractor, contract, tender, or transport program contribute to
         // the selected route's cumulative cells—even when names/numbers coincide.
+        var currentHasCompleteIdentity = HasCompleteIdentity(current);
         var currentRouteKey = OehsIdentityService.BuildRouteKey(
             current.TenderNumber ?? string.Empty,
             current.RouteNumber ?? string.Empty,
@@ -100,6 +101,8 @@ public static class ProgressPaymentReportService
 
         var previous = payments
             .Where(x => x.Id != current.Id)
+            .Where(_ => currentHasCompleteIdentity)
+            .Where(HasCompleteIdentity)
             .Where(x => string.Equals(
                 OehsIdentityService.BuildRouteKey(
                     x.TenderNumber ?? string.Empty,
@@ -200,6 +203,12 @@ public static class ProgressPaymentReportService
         return FiscalStartYear(candidate.PeriodDate.Value)
                == FiscalStartYear(current.PeriodDate.Value);
     }
+
+    private static bool HasCompleteIdentity(ProgressPaymentHistoryData payment) =>
+        !string.IsNullOrWhiteSpace(payment.TenderNumber) &&
+        !string.IsNullOrWhiteSpace(payment.ContractNumber) &&
+        !string.IsNullOrWhiteSpace(payment.RouteNumber) &&
+        !string.IsNullOrWhiteSpace(OehsIdentityService.NormalizeIdentity(payment.ContractorTaxOrIdentityNumber));
 
     private static bool IsBeforePayment(
         ProgressPaymentHistoryData candidate,
