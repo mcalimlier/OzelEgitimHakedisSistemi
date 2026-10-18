@@ -720,3 +720,12 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 1. İcmal ve rapor formül eşleştirmesinin son CI run'ını kontrol et.
 2. Temel Eğitim ve Özel Eğitim için aynı örnek veriyle dört PDF'yi birlikte görsel incelemeye hazırla.
 3. Çekirdek modül ilerleme tablosunu, her modül için kaynak formül eşleşmesi ve test kanıtıyla güncelle; %90 altındaki modüllerde devam et.
+
+## Devam notu — 2026-10-18, Hakediş Raporu alt bilgi çakışması
+
+- PDF smoke paketi indirildi ve sekiz PDF'nin sayfa/metin sınırları kontrol edildi. Sekiz çıktı da tek sayfa A4; metin kutularının hiçbiri PDF sayfa sınırını aşmıyor.
+- Görsel incelemede Hakediş Raporu alt bilgisindeki “M.Y.H.B.Y. Örnek No :4/10” metninin, dış çerçevenin sol dikey çizgisiyle kesiştiği görüldü.
+- `OehsOfficialDocumentFactory.BuildHakedisRaporu` alt bilgi konumu `footerY: 1050` değerinden `footerY: 1080` değerine taşındı; yeni regresyon testi alt bilgi metninin dış çerçevenin altından başlamasını şart koşuyor.
+- Değişiklik commitleri: `c89fb6bfeaef9f9068a0f34f27f425c86a28769a` (düzeltme), `d869ee2bd37b1361cd0278bc644ab057539bd460` (test).
+- **Doğrulama durumu:** Bu commitler için henüz CI sonucu alınmadı. Windows PDF görsel kabulü de yeni çıktı yeniden üretildikten sonra tekrar edilmeli. Excel/VBA masaüstü kabulü açık.
+- **Sıradaki adım:** PR/Actions durumunu yeniden sorgula; test ve derleme yeşil olduğunda yeni smoke PDF'yi alıp alt bilgiyi yeniden görsel kontrol et. Birleştirme/yayınlama yapılmadı.
