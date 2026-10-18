@@ -259,3 +259,16 @@ OEHS testlerine, Özel Eğitim Kasım 2026 kaynak örneğindeki E21 değerini (1
 - Derlemede kod analiz uyarıları (CA1822, CA1861, CA1014) var; CI'yi düşürmedi ancak teknik borç olarak izlenmeli.
 
 **Sıradaki iş:** PDF artefaktını gerçek görsel kabul kapısından geçirmek; ardından Excel/VBA'daki aylık kesinti aktarım kusurlarını program bazında kaynak sonuçlarıyla eşleştirmek. Kaynak XLSM'ler değiştirilmedi; PR açık/taslak ve ana dala birleştirilmedi.
+
+
+## PDF smoke görsel ön incelemesi — CI #1661 artefaktı
+
+Sekiz PDF artefaktı indirildi ve sayfa boyutu, metin çıkarımı ve düşük çözünürlüklü görsel ön inceleme yapıldı:
+
+- Her iki programın dört belgesi de **1 sayfa, A4 portre** ölçüsünde.
+- Hakediş Raporu, Hizmet İşleri Hakediş Raporu, Hizmet İşleri Kabul Tutanağı ve Hakediş İcmali her iki program için de üretilmiş; örnek çıktı metinlerinde dönem (31.10.2026), hakediş no (2), hat no (1) ve örnek yüklenici bilgileri tutarlı görünüyor.
+- İcmal Eylül 2026–Temmuz 2027 aylarını takvim sırasında gösteriyor; örnek satırlarda Eylül 120 TL, Ekim 110 TL ve genel toplam 230 TL görünüyor. Bu yalnızca sentetik PDF smoke örneğidir, Excel aylık kesinti aktarımını doğrulamaz.
+- Programlar arası metin farkı görüldü: Özel Eğitim Hakediş Raporu KDV etiketinde taşıma + rehber oranlarını, Temel/Ortaöğretim yalnız taşıma oranını gösteriyor; Kabul Tutanağı süre alanı da kaynak program ayrımına uygun olarak birinde “180 İş Günü”, diğerinde “180” biçiminde.
+- Ön incelemede belirgin sayfa taşması veya ikinci sayfaya bölünme görülmedi. Kabul Tutanağı'ndaki paragraf/imza alanları arasında geniş boşluk var; tek başına kusur sayılmadı, kaynak Excel'in yazdırma düzeniyle birebir karşılaştırma gerektiriyor.
+
+**Sınır:** Bu görsel ön inceleme referans Excel PDF'leriyle piksel/piksel karşılaştırma, gerçek kullanıcı verisi kabul testi, fiziksel yazıcı ve imza alanı kullanıcı kabulü değildir. Dolayısıyla PDF görsel kabul kapısı henüz tamamen kapanmış sayılmaz.
