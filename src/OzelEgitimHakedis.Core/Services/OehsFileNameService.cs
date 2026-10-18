@@ -14,7 +14,8 @@ public static class OehsFileNameService
     {
         "CON", "PRN", "AUX", "NUL",
         "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
-        "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
+        "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
+        "COM¹", "COM²", "COM³", "LPT¹", "LPT²", "LPT³"
     };
 
     public static string BuildProgressPdfFileName(
@@ -113,7 +114,9 @@ public static class OehsFileNameService
         if (string.IsNullOrWhiteSpace(sanitized) || sanitized is "." or "..")
             return fallback;
 
-        var deviceStem = sanitized.Split('.', 2)[0];
+        // Windows device names remain reserved even when followed by an extension
+        // or padded with spaces/dots before that extension (for example, "CON .txt").
+        var deviceStem = sanitized.Split('.', 2)[0].TrimEnd('.', ' ');
         if (ReservedWindowsNames.Contains(deviceStem))
             sanitized = "_" + sanitized;
 
