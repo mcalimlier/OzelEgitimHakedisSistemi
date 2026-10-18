@@ -15,10 +15,10 @@ Kapsam: güncel Temel Eğitim ve Özel Eğitim XLSM'leri ile OEHS hesap/rapor zi
 
 **Önceki incelemenin düzeltmesi:** Eski metin, Temel Eğitim `Hesaplama Bilgileri!T4:T6` hücrelerindeki 1.500 değerlerini ve OEHS'nin fiyat farkı üzerinden yaptığı %6 hesabını aynı kalemin doğrudan karşılaştırması olarak ele aldı. Bu çıkarım alanların anlamını doğru ayırmıyordu ve geçerli kabul edilmemelidir. Önceki satır bazlı farklar yalnızca mevcut hücre/kod çıktılarının aritmetik farklarıdır; doğru iş kuralını belirlemez.
 
-**Statik kaynak bulguları — hâlâ alan eşlemesi gerektiriyor:**
-- Temel Eğitim `Hesaplama Bilgileri!T4:T6` değerleri 1.500; `U4=(K4*9.48/1000)+T4*9.48/1000`. T'nin kullanıcı girdisi alanı olup olmadığı, kesin teminatın %6 değerinin hangi hücreye yazıldığı ve bu değerlerin damga vergisi matrahına nasıl girdiği form girişleri/VBA/rapor zinciri üzerinden doğrulanmalı.
-- Özel Eğitim `Hesaplama!AC4` formülü `=(I4*6/100)+R4*6/100` olarak statik incelendi. Bu formülün kullanıcı tarafından girilen ek kesin teminatın %6'sı anlamına gelen alanla eşleşip eşleşmediği hücre etiketleri, kullanıcı girişi ve VBA aktarımıyla doğrulanmalı; formülden tek başına alan adı çıkarılmamalı.
-- OEHS hesaplayıcısında Temel/Ortaöğretim elle girilen tutarı aynen kullanmalı; Özel Eğitimde I/R alanlarının %6'sını toplamalıdır. Temel Eğitim damga vergisi matrahı, kaynak U formülündeki K ve T bileşenlerini içermelidir.
+**Statik kaynak bulguları ve kalan doğrulama:**
+- Temel Eğitim `Hesaplama Bilgileri!T4:T6` hücrelerinde 1.500 örnekleri ve `U4=(K4*9.48/1000)+T4*9.48/1000` formülü statik olarak gözlendi. Kullanıcının güncel açıklamasına göre T tutarı elle girilen ek kesin teminattır; OEHS bu tutarı aynen kullanır ve damga vergisi matrahına K+T olarak dahil eder.
+- Özel Eğitim `Hesaplama!AC4` formülü `=(I4*6/100)+R4*6/100` olarak statik incelendi ve kullanıcı tarafından teyit edildi. İskonto alanları J/S bu formüle dahil değildir.
+- Kod ve regresyon testleri bu iki program kuralına göre güncellendi. VBA'daki alan aktarım zinciri, gerçek Excel masaüstü hesaplaması ve dört PDF'nin örneklerle karşılaştırılması hâlâ açık kabul kapılarıdır.
 - Kaynak XLSM'ler değiştirilmedi. Bu kayıt, kaynak dosyaların Excel/VBA masaüstü kabulünden geçmiş olduğu anlamına gelmez.
 
 **Sonraki doğrulama:**
