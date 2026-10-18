@@ -202,7 +202,7 @@ internal static class ExcelDocumentExporter
         return sb.ToString();
     }
 
-    private static int StyleFor(string value) => value.Contains('₺') ? 5 : 4;
+    private static int StyleFor(string value) => value.Contains('₺', StringComparison.Ordinal) ? 5 : 4;
 
     private static string Cell(string reference, string value, int style)
     {
