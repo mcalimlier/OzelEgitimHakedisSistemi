@@ -552,3 +552,11 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - Windows CI run `39139722422` üzerinde **216 Core + 4 WPF testi geçti**, tam çözüm/WPF derlemesi, PDF smoke ve Windows EXE publish başarılı.
 - Kaynakta iki programın D28 neti ile hesaplama sayfası neti arasındaki farkları koruyan testler var; bunlar resmi sonuç tercihini çözmüyor, yalnızca uyuşmazlığın görünürlüğünü sağlıyor.
 - Genel ilerleme %90 altında. Gerçek Excel/VBA sonuçları olmadan hesap motoru veya kaynak formüllerinde değişiklik yapılmadı. Sıradaki adım, masaüstü kabul kontrol listesini gerçek Excel'de yürütüp aynı hücre ve PDF değerlerini kaydetmek; ana dala birleştirme/yayınlama yok.
+
+## Devam notu — 18.10.2026, açık Excel kararlarının tek kaydı
+
+- docs/EXCEL_KARAR_GEREKTIREN_UYUSMAZLIKLAR.md eklendi. Temel Eğitim T/U, iki programda D28 ile W/AG neti, Temel Eğitim E21 ve Özel Eğitim ay başlığı kusuru için kaynak kanıtı, seçenekler ve kabul öncesi gerekli hücre/PDF kayıtları tek yerde toplandı.
+- Bu kayıt yeni bir iş kuralı seçmez. Kod ve kaynak XLSM davranışı değiştirilmedi; kullanıcı kararı ve gerçek Excel/VBA sonucu bekleyen konular açık bırakıldı.
+- Güncel test zemini: 216 Core + 4 WPF testi başarılı run 39139722422; sonraki doküman güncellemeleri için CI run'ları ayrıca takip edilecek.
+- Genel ilerleme yaklaşık %81. %90'a ulaşmak için artık yalnızca test kapsamı değil, Excel'in kendi rapor/hesap sayfası arasındaki çelişkilerin gerçek Excel/VBA çalıştırmasıyla çözümlenmesi ve dört PDF'nin aynı gerçek hakedişle kabulü gerekiyor.
+- Sıradaki adım: karar kaydı ve yol haritası commit'lerinin CI sonucunu doğrula; Excel masaüstü sonuçları elde edilene kadar finansal hesap davranışını tahminle değiştirme. Ana dala birleştirme/yayınlama yok.
