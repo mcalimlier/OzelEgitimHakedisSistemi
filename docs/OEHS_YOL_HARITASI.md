@@ -777,3 +777,18 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - Özel Eğitim rapor zinciri: H2, K ve T kaynak alanlarının toplamı; D7, I ve R fiyat farklarının toplamı; D11 negatif dalı korunur; D12 taşıma ve rehber KDV toplamıdır; D15 Hesaplama!AD; D28 rapor D13/D26 yuvarlama zinciridir. Hesaplama!W4=T4+V4, AG4=AF4−AE4, AC4=(I4*6/100)+(R4*6/100), AD4=(K4*9.48/1000)+(T4*9.48/1000) ayrı formüllerdir.
 - Bu tarama yalnızca kaynak formül yapısını doğrular; workbook'un Excel masaüstünde yeniden hesaplandığı veya VBA makrolarının çalıştırıldığı anlamına gelmez. Gerçek örnek tutarlarıyla dört PDF'nin uçtan uca kabulü hâlâ açık.
 - Sıradaki adım: yeni kod değişikliği yapmadan önce Excel masaüstünde her programı ayrı yeniden hesaplatıp D28, hesaplama neti ve aylık icmal toplamlarını kaydet; sonra OEHS çıktılarıyla karşılaştır. Birleştirme/yayınlama yapılmadı.
+
+
+## Devam notu — 2026-10-18, güncel head CI ve kabul kontrol listesi
+
+- PR #3 güncel head `5d5787043777dd3c9c480145eeeb4ff08e7d8022` olarak doğrulandı; hedef dal `feature/wpf-contract-entry-v0.5`. PR açık, taslak ve birleştirilmemiş durumda.
+- Güncel head için Windows CI run **1990** / ID `39155578763` tamamlandı ve başarılı sonuçlandı. Bu, otomatik Windows derleme/test iş akışı kanıtıdır; Excel masaüstü/VBA çalıştırması veya etkileşimli kullanıcı kabulü değildir.
+- Kaynak formül incelemesindeki program ayrımı korunuyor: Temel Eğitim ek kesin teminat elle girilir; Özel Eğitim ek kesin teminat `(I4*6/100)+(R4*6/100)` formülündedir. Damga vergisi Temel Eğitim'de K ve manuel T, Özel Eğitim'de K ve T bileşenleri üzerinden ayrı hesaplanır.
+- **Kabul kontrol listesi (henüz tamamlanmış sayılmaz):**
+  1. Her iki XLSM dosyasını Excel masaüstünde ayrı aç, tam yeniden hesaplama yap ve ilgili VBA akışını çalıştır.
+  2. Temel Eğitim için E4 dönemini, E21 sonucunu, Hesaplama Bilgileri W4/U4'ü ve İcmal Verileri AB4:AM4 değerlerini kaydet; E5/TODAY() değerini dönem yerine kullanma.
+  3. Özel Eğitim için Hesaplama!AC4/AD4/AG4 ve İcmal Verileri AB4:AM4 değerlerini ayrı kaydet; Temel Eğitim hücre anlamlarıyla eşleştirme.
+  4. Her programın dört PDF'sini üret; tutar, dönem, yüklenici, hat, imza alanları ve A4 tek sayfa yerleşimini birbiriyle ve Excel örneğiyle karşılaştır.
+  5. Her fark için kaynak hücre/formül, Excel sonucu, OEHS sonucu ve regresyon testi kanıtını yaz; kaynak belirsizliğinde ödeme davranışını sessizce değiştirme.
+- **Doğrulama sınırı:** CI başarılı; Excel/VBA gerçek hesap kabulü ve kullanıcının Visual Studio üzerinde etkileşimli görsel kabulü hâlâ açık. Ana dala birleştirme veya yayınlama yapılmadı.
+- **Sıradaki adım:** Kullanıcıyla Excel masaüstünde Temel Eğitim ve Özel Eğitim örneklerini ayrı ayrı çalıştırıp dört PDF'lik kabul listesini doldurmak.
