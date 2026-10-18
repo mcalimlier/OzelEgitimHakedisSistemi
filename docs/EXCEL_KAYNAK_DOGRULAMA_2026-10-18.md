@@ -77,7 +77,13 @@ Bu testler eski vektörleri güncel kaynak gibi sunan durumu düzeltmek için ek
 
 `tests/OzelEgitimHakedis.Tests/CurrentBasicWorkbookDiscrepancyTests.cs` güncel Temel Eğitim satır 4'te OEHS'nin halen ürettiği sonuç ile güncel XLSM hücrelerinin farklı olduğunu açıkça test eder. Kaynakta K=220.490, L=22.049, M=11.024,5, T=1.500 (sabit), U=2.104,4652, V=20.628,9652, W=221.910,0348. OEHS'de aynı G/H/I/J girdileri K, KDV, tevkifat ve brüt tutarı eşleştiriyor; ancak %6 hesabıyla ek teminatı 90 TL, yalnız K üzerinden damga vergisini 2.090,2452 TL hesaplıyor. Bu nedenle kesinti/net sonuçları kaynakla farklı kalıyor.
 
-Bu test bir parite başarı testi değil, çözülmemiş farkın sessizce kaybolmamasını sağlayan **bilinen uyuşmazlık korumasıdır**. T4'ün neden sabit olduğu ve beklenen resmi davranış Excel/VBA ile doğrulanmadan hesap motoru değiştirilmemelidir. Testin Windows CI sonucu bekleniyor.
+Bu test bir parite başarı testi değil, çözülmemiş farkın sessizce kaybolmamasını sağlayan **bilinen uyuşmazlık korumasıdır**. T4'ün neden sabit olduğu ve beklenen resmi davranış Excel/VBA ile doğrulanmadan hesap motoru değiştirilmemelidir. Windows CI run `39139237528` bu bilinen-fark testini de içeren çözümde başarılı oldu: **215 Core + 4 WPF testi geçti**, PDF smoke ve Windows EXE publish adımları da başarılı. Test, güncel kaynakla parite sağlandığını değil, bilinen farkın kodda açıkça görünür kaldığını doğrular.
+
+## 10. Güncel Temel Eğitim fark testi — CI sonucu
+
+`CurrentBasicWorkbookDiscrepancyTests.cs` güncel Temel Eğitim satır 4 için kaynak K/KDV/tevkifat/brüt hücrelerini ve OEHS'nin mevcut ek teminat/damga/kesinti/net sonuçlarını ayrı ayrı kontrol eder. Testin amacı farkı “doğru” ilan etmek değil; kaynak T4=1.500 ve U4'ün T'yi içeren formülüyle OEHS'nin %6/T-matrahı davranışı arasındaki ayrışmayı regresyon halinde görünür tutmaktır.
+
+Windows CI run `39139237528`: **215 Core testi ve 4 WPF testi geçti**; çözüm/WPF derlemesi, PDF smoke ve Windows EXE publish adımları başarılı. Bu, testlerin beklenen bilinen-fark vektörünü koruduğunu kanıtlar; Temel Eğitim hesap davranışının doğru olduğu veya Excel masaüstüyle eşleştiği anlamına gelmez.
 
 ## Sonraki doğrulama adımları
 
