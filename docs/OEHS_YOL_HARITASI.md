@@ -513,3 +513,11 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - Yeni güncel Özel Eğitim vektörlerinin CI run'ı `39139111316` son kontrol anında sürüyordu. Başarı durumu görülmeden testler geçer sayılmayacak.
 - Temel Eğitim için aynı düzeyde güncel golden-master paritesi hâlâ kapalı değil: T4:T6 ek teminat hücreleri sabit, U damga vergisi T'yi matraha ekliyor; OEHS davranışıyla farkın iş anlamı belirlenmeli.
 - Genel ilerleme %90 altında. Sıradaki adım: güncel Özel Eğitim vektörlerini CI'da doğrula; ardından Temel Eğitim'in güncel formülleri için kaynakla uyumlu test ve karar kapısını sürdür. Ana dala birleştirme/yayınlama yapılmadı.
+
+## Devam notu — 18.10.2026, güncel kaynak parity testleri
+
+- Güncel Özel Eğitim XLSM satır 4–6 için üç hesap zinciri testi Windows CI'da başarılı: run `39139111316`, **214 Core + 4 WPF testi geçti**, PDF smoke ve Windows EXE publish adımları başarılı. Bu, ilgili hücre vektörlerinin kodla eşleşmesidir; Excel masaüstü/VBA kabulü değildir.
+- Güncel Temel Eğitim satır 4 için ayrı bir **bilinen fark** testi eklendi: K/KDV/tevkifat/brüt tutarları eşleşirken, kaynak T=1.500 sabit ve U formülünün T'yi matraha katması nedeniyle OEHS'nin ek teminat/damga vergisi/kesinti/net sonucu ayrışıyor. Bu testin CI sonucu bekleniyor; davranış tahminle değiştirilmedi.
+- Eski kaynak vektörleri `Legacy` olarak etiketlendi; güncel yüklemelerle karıştırılmıyor. Kaynak doğrulama belgesinde güncel Özel Eğitim paritesi ile Temel Eğitim açık uyuşmazlığı ayrı kaydedildi.
+- Genel ilerleme %90 altında. Temel Eğitim ek teminat/damga vergisi, D6/D8/D10/D11 ve D28 net farkı ile gerçek Excel/VBA yürütmesi açık kabul kapılarıdır.
+- Sıradaki adım: güncel Temel Eğitim bilinen-fark testinin CI sonucunu doğrula; ardından aynı kayıt için Excel masaüstü çıktısı elde edilmeden resmi hesap davranışını değiştirme. Ana dala birleştirme/yayınlama yapılmadı.
