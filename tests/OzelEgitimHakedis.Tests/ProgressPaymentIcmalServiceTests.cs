@@ -138,6 +138,28 @@ public sealed class ProgressPaymentIcmalServiceTests
     }
 
     [Fact]
+    public void FindPreviousDeduction_ShouldCarryJuneDeductionIntoJulyForBasicProgram()
+    {
+        var june = History(1, new DateOnly(2027, 6, 30), 180m) with
+        {
+            Input = new ProgressPaymentInput(
+                1, 1000m, 0m, 0m, 100000m, false, 0m, 0m, 0m,
+                ProgramType: TransportationProgramType.BasicOrSecondary)
+        };
+        var july = History(2, new DateOnly(2027, 7, 31), 250m) with
+        {
+            Input = new ProgressPaymentInput(
+                1, 1000m, 0m, 0m, 100000m, false, 0m, 0m, 0m,
+                ProgramType: TransportationProgramType.BasicOrSecondary)
+        };
+
+        var result = ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { june, july }, july);
+
+        Assert.Equal(180m, result);
+    }
+
+    [Fact]
     public void BuildPeriods_ShouldKeepSeptemberAsFiscalYearStart()
     {
         var periods = ProgressPaymentIcmalService.BuildPeriods(new DateOnly(2026, 9, 30));
