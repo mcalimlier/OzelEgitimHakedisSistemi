@@ -321,6 +321,32 @@ public sealed class OfficialDocumentOutputTests
             };
             var basicOutputs = OehsOfficialDocumentFactory.BuildSeparate(basicContext);
             Assert.Equal(4, basicOutputs.Count);
+            foreach (var output in basicOutputs)
+            {
+                var outputPage = Assert.IsType<FixedPage>(output.Document.Pages[0].Child);
+                var textBlocks = GetPageText(outputPage);
+
+                // Keep the Basic/Secondary document family isolated but subject
+                // to the same cross-document identity and period acceptance gate.
+                Assert.Contains("Örnek Güzergâh", textBlocks, StringComparison.Ordinal);
+                switch (output.Kind)
+                {
+                    case OehsOfficialDocumentKind.HakedisRaporu:
+                    case OehsOfficialDocumentKind.HizmetIsleriHakedisRaporu:
+                        Assert.Contains("31.10.2026", textBlocks, StringComparison.Ordinal);
+                        Assert.Contains("Örnek Yüklenici", textBlocks, StringComparison.Ordinal);
+                        break;
+                    case OehsOfficialDocumentKind.KabulTutanagi:
+                        Assert.Contains("01.10.2026 / 31.10.2026", textBlocks, StringComparison.Ordinal);
+                        Assert.Contains("Örnek Yüklenici", textBlocks, StringComparison.Ordinal);
+                        break;
+                    case OehsOfficialDocumentKind.HakedisIcmali:
+                        Assert.Contains("Hizmet Alımı İşi Eylül 2026", textBlocks, StringComparison.Ordinal);
+                        Assert.Contains("Hizmet Alımı İşi Ekim 2026", textBlocks, StringComparison.Ordinal);
+                        break;
+                }
+            }
+
             var basicPayment = Assert.Single(
                 basicOutputs.Where(output => output.Kind == OehsOfficialDocumentKind.HakedisRaporu));
             var basicPaymentText = GetPageText(
