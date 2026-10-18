@@ -67,6 +67,20 @@ public sealed class PdfLayoutServiceTests
     }
 
     [Fact]
+    public void FitColumns_ShouldRejectNaNColumnWidth()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => PdfLayoutService.FitColumns(new[] { 100d, double.NaN, 200d }));
+    }
+
+    [Fact]
+    public void FitColumns_ShouldRejectInfiniteColumnWidth()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => PdfLayoutService.FitColumns(new[] { 100d, double.PositiveInfinity, 200d }));
+    }
+
+    [Fact]
     public void FitColumns_ShouldRejectNullInput()
     {
         Assert.Throws<ArgumentNullException>(
