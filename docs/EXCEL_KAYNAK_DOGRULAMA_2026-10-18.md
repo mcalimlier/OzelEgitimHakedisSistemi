@@ -85,6 +85,12 @@ Bu test bir parite başarı testi değil, çözülmemiş farkın sessizce kaybol
 
 Windows CI run `39139237528`: **215 Core testi ve 4 WPF testi geçti**; çözüm/WPF derlemesi, PDF smoke ve Windows EXE publish adımları başarılı. Bu, testlerin beklenen bilinen-fark vektörünü koruduğunu kanıtlar; Temel Eğitim hesap davranışının doğru olduğu veya Excel masaüstüyle eşleştiği anlamına gelmez.
 
+## 11. Güncel Özel Eğitim rapor D28 fark testi
+
+`CurrentXlsmReportNetDiscrepancyTests.cs` güncel Özel Eğitim satır 4'ün hesaplama sayfası neti ile rapor neti arasındaki farkı OEHS rapor servisinde de görünür tutar: hesaplama `AG4=95.527,1346528`, kaynak `Hakediş Raporu!D28=98.907,13`; OEHS rapor servisi iki ondalığa yuvarlayarak 95.527,13 TL üretir. Test, D28 sonucuyla eşitlik iddiasında bulunmaz; bu farkı karar verilene kadar korur.
+
+Windows CI run `39139686716` başarılı: **216 Core + 4 WPF testi geçti**, PDF smoke ve Windows EXE publish adımları başarılı. Bu test de bilinen uyuşmazlık korumasıdır; kaynak formülünün beklenen resmî sonuç olduğunu veya OEHS'nin rapor netiyle parite sağladığını kanıtlamaz.
+
 ## Sonraki doğrulama adımları
 
 1. `AA2` referanslarını formüller, tanımlı adlar, VBA ve sayfa kodlarında aramak.
