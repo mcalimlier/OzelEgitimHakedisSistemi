@@ -61,6 +61,12 @@ Ek çapraz kontrol: Her iki orijinal XLSM'nin **ayrı, dönüştürülmüş XLSX
 
 **Karar:** Bu farkı sessizce OEHS'ye taşımayın veya mevcut kodu tahminle değiştirmeyin. Excel masaüstünde aynı hat/ay için K/T, aylık D:N aktarım hücreleri, D6, D7, D8, D10, D11, Hesaplama sayfası neti, D28 ve makro kontrol sonucu birlikte kaydedilmeli. D11'in ve resmî net ödemenin beklenen iş anlamı ancak bu zincir doğrulandıktan sonra kesinleştirilebilir.
 
+## 7. Mevcut regresyon vektörlerinin kaynak sürümü
+
+`tests/OzelEgitimHakedis.Tests/ExcelSourceParityTests.cs` içindeki bazı testler kaynak olarak açıkça önceki dosya adlarını kullanıyor: `03-Temel Eğitim Taşıma Ödeme.xlsm` ve `02-Özel Eğitim Hakediş Ödeme.xlsm`. Örneğin eski Temel Eğitim row 5 vektöründe G=13, H=6545, I=3659,2 ve K=88.744,2; güncel yüklenen Temel Eğitim çalışma kitabının `Hesaplama Bilgileri` satır 5 değerleri ise farklıdır. Güncel Özel Eğitim `Hesaplama` satır 4–6 değerleri de bu eski vektörlerle aynı değildir.
+
+Bu testler faydalı eski regresyon vektörleri olarak korunuyor, fakat adları ve açıklamaları **legacy** olacak şekilde düzeltildi. Artık en son yetkili XLSM'lerle doğrulanmış golden-master testi gibi yorumlanmamalıdır. Güncel dosyalardan çıkarılan değerler ve çözülememiş farklar bu belgedeki ayrı başlıklarda kayıtlı; güncel workbook hücreleriyle yeni parity fixture'ları ancak formül/VBA davranışı doğrulandıktan sonra eklenmeli.
+
 ## Sonraki doğrulama adımları
 
 1. `AA2` referanslarını formüller, tanımlı adlar, VBA ve sayfa kodlarında aramak.
