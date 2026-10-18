@@ -792,7 +792,7 @@
                                                 </Border>
                                                 <Border x:Name="ProgressValidationBanner" Visibility="Collapsed" Background="#FFF1F1" BorderBrush="#E53935" BorderThickness="1.5" CornerRadius="9" Padding="8,7" Margin="4.5,6,0,0"><StackPanel><TextBlock Text="HESAPLAMA GİRDİLERİNİ KONTROL EDİN" Foreground="#C62828" FontSize="11.5" FontWeight="Bold"/><TextBlock x:Name="ProgressValidationMessageTextBlock" Foreground="#8E1B1B" FontSize="11.5" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,3,0,0"/></StackPanel></Border><StackPanel Orientation="Horizontal" Margin="4.5,6,0,0">
                                                     <Button x:Name="CalculateProgressButton" Content="HAKEDİŞİ HESAPLA" Click="CalculateProgressButton_Click" Style="{StaticResource ModernButton}" MinWidth="245"/>
-                                                    <Button x:Name="TemporaryCalculationTraceButton" Content="GEÇİCİ HESAP TUTUCU" Click="TemporaryCalculationTraceButton_Click" Style="{StaticResource SecondaryButton}" MinWidth="210" Margin="8,0,0,0" ToolTip="Son hesaplamanın girdi, formül, ara değer ve sonuç dökümünü açar."/>
+                                                    
                                                     <Button x:Name="CancelProgressEditButton" Content="DÜZENLEME İPTAL" Click="CancelProgressEditButton_Click" Style="{StaticResource SecondaryButton}" MinWidth="170" Margin="8,0,0,0" Visibility="Collapsed"/>
                                                     <Button x:Name="EditCurrentProgressButton" Content="KAYITLI HAKEDİŞİ DÜZENLE" Click="EditCurrentProgressButton_Click" Style="{StaticResource SecondaryButton}" MinWidth="255" Margin="8,0,0,0"/>
                                                 </StackPanel>
@@ -1475,11 +1475,29 @@
 
 </Grid>
 
+            <Grid x:Name="CalculationTracePanel" Visibility="Collapsed">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                        <TextBlock Text="GEÇİCİ HESAP TUTUCU" Style="{StaticResource PageTitle}"/>
+                        <TextBlock Text="CANLI DENETİM • Her giriş değiştiğinde yenilenir. Resmî Excel/VBA doğrulaması yerine geçmez." Style="{StaticResource PageSubtitle}"/>
+                        <TextBlock Text="KRİTİK TEMİNAT FARKI: Ek kesin teminat tutarı elle girilir; kesin teminat tutarı bu girilen değerin %6'sıdır. OEHS mevcut hesap zinciri fiyat farkından türetmektedir." Foreground="#A12622" FontWeight="Bold" TextWrapping="Wrap" Margin="0,5,0,8"/>
+                    </StackPanel>
+                    <TextBox x:Name="CalculationTraceLiveTextBox" IsReadOnly="True" AcceptsReturn="True" AcceptsTab="True" TextWrapping="NoWrap" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" FontSize="13" Padding="12" Background="White" Foreground="#172B3A"/>
+                </DockPanel>
+            </Grid>
+
             <Grid x:Name="SettingsPanel" Visibility="Collapsed">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0">
                     <StackPanel>
                         <TextBlock Text="AYARLAR" Style="{StaticResource PageTitle}"/>
                         <TextBlock Text="OEHS uygulama tercihleri ve hesaplama yapılandırması." Style="{StaticResource PageSubtitle}"/>
+                        <Border Style="{StaticResource Card}" Padding="14" Margin="0,10,0,10">
+                            <StackPanel>
+                                <TextBlock Text="DENETİM / UZMAN İNCELEMESİ" Style="{StaticResource CardTitle}"/>
+                                <TextBlock Text="Hakediş formundaki her değişiklik burada canlı izlenir. Girdi, temel formül ve hesaplanabilen ara değerler geçici kontrol amacı taşır." Style="{StaticResource CardSubtitle}" TextWrapping="Wrap" Margin="0,4,0,10"/>
+                                <Button x:Name="TemporaryCalculationTraceButton" Content="GEÇİCİ HESAP TUTUCU'YU AÇ" Tag="Trace" Click="NavigationButton_Click" Style="{StaticResource ModernButton}" Width="300" Height="40" HorizontalAlignment="Left" ToolTip="Canlı denetim sayfasını açar; hakediş alanları değiştikçe döküm güncellenir."/>
+                            </StackPanel>
+                        </Border>
                         <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
                             <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,8,0"><StackPanel>
                                 <TextBlock Text="UYGULAMA" Style="{StaticResource CardTitle}"/>
