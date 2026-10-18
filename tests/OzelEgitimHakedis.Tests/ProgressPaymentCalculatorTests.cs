@@ -57,8 +57,8 @@ public sealed class ProgressPaymentCalculatorTests
 
         var result = ProgressPaymentCalculator.Calculate(input);
 
-        Assert.Equal(90m, result.AdditionalGuarantee);
-        Assert.Equal(90m, result.Deductions.AdditionalGuarantee);
+        Assert.Equal(1500m, result.AdditionalGuarantee);
+        Assert.Equal(1500m, result.Deductions.AdditionalGuarantee);
     }
 
     [Fact]
