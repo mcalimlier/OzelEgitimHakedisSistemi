@@ -47,5 +47,27 @@ public sealed class CurrentBasicWorkbookDiscrepancyTests
         Assert.NotEqual(2104.4652m, result.StampTax);
         Assert.NotEqual(20628.9652m, result.TotalDeductions);
         Assert.NotEqual(221910.0348m, result.NetPayable);
+
+        var current = new ProgressPaymentHistoryData(
+            Id: Guid.NewGuid(),
+            CreatedAt: new DateTime(2026, 10, 31, 12, 0, 0, DateTimeKind.Utc),
+            Input: input,
+            Calculation: result,
+            ProgressPaymentNumber: 1,
+            PeriodDate: new DateOnly(2026, 10, 31),
+            RouteNumber: "1",
+            RouteName: "Örnek Güzergâh",
+            WorkName: "Örnek Güzergâh",
+            ContractorName: "Örnek Yüklenici",
+            TenderNumber: "TEST-IHALE",
+            ContractNumber: "TEST-SOZ",
+            ContractorTaxOrIdentityNumber: "12345678901");
+        var reportTotals = ProgressPaymentReportService.Calculate(current, new[] { current });
+        var reportNet = ProgressPaymentReportService.CalculateReportNetPayable(current, reportTotals);
+
+        // Latest source Hakediş Raporu!D28 = 223,410.03, while OEHS's
+        // report service currently yields 223,334.25 for this source-derived row.
+        Assert.Equal(223334.25m, reportNet);
+        Assert.NotEqual(223410.03m, reportNet);
     }
 }
