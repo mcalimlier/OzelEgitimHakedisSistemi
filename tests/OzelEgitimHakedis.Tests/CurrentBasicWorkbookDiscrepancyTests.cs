@@ -8,7 +8,7 @@ namespace OzelEgitimHakedis.Tests;
 /// Explicitly records a known mismatch between the latest Basic/Secondary XLSM
 /// row 4 and the current calculator. This is a blocker, not a parity-success test.
 /// </summary>
-public sealed class CurrentBasicWorkbookDiscrepancyTests
+public sealed class CurrentBasicWorkbookParityTests
 {
     [Fact]
     public void CurrentBasicRows5And6_ShouldMatchCalculationSheetAndKeepReportGapVisible()
