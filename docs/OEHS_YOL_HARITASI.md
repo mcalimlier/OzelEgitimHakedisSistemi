@@ -447,3 +447,13 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - İki çalışma da aynı commit SHA üzerinde tamamlandı; build job'ı başarılı olarak raporlandı.
 - Bu CI sonucu, Windows derleme/test iş akışının otomatik kapısını doğrular. Excel masaüstü/VBA çalıştırması, kaynak Excel ile gerçek PDF çıktılarının birebir eşleşmesi ve kullanıcı arayüzü görsel kabulü hâlâ ayrı kapılardır.
 - Bu aşamada hesaplama davranışı değiştirilmedi; kaynak XLSM'ler değiştirilmedi. Özel Eğitim Kasım/Aralık aylık başlık kusuru ve Temel/Ortaöğretim E21 kaynak formül tutarsızlığı açık risk olarak kalır.
+
+## Devam notu — 18.10.2026, icmal kimlik güvenliği ve D11 kaynak kanıtı
+
+- İcmal önceki kesinti eşleştirmesinde eksik kimlik alanlarının boş birleşik anahtarda birbirine eşleşmesini önleyen koruma eklendi. İhale no, sözleşme no, hat no ve yüklenici VKN/TCKN alanlarından biri eksikse önceki kesinti devralınmaz; VKN/TCKN yalnızca noktalama işaretlerinden oluşup normalizasyonda boş kalıyorsa da eşleşme yapılmaz.
+- Regresyon testleri her zorunlu kimlik alanının eksik olması, boş/boşluk ihale numarası ve normalizasyonda boş kalan yüklenici kimliği senaryolarını kapsıyor.
+- İlk Windows CI denemesinde test dosyasındaki `InlineData` öznitelikleri CLS uyumluluğu derleme hatası oluşturdu. Teori testleri ayrı `Fact` kontrollerine çevrildi. **Düzeltilmiş kod commit'i `fd82cd0b04cf892a4c2a3474a976a26726932fc0` için CI run `39137915002` üzerinde çözüm derlemesi, WPF derlemesi, UI sözleşme kontrolleri, test derlemeleri, otomatik testler ve PDF smoke üretimi başarılı; Windows EXE yayımlama adımı son kontrol anında sürüyordu.** Nihai run sonucu ayrıca kontrol edilmelidir.
+- Kaynak Excel D11 inceleme notuna gerçek önbellekli örnekler eklendi: Temel/Ortaöğretim H2=220.490, D7=1.500, D11=221.990; Özel Eğitim H2=93.211,64, D7=3.380, D11=96.591,64. Her ikisi mevcut formülün H2+D7 hesabıyla uyumlu; görünür “C - D” açıklamasının iş anlamı ise Excel masaüstü doğrulaması gerektiriyor.
+- Kaynak XLSM dosyaları değiştirilmedi; resmî hesap davranışı hakkında varsayımsal değişiklik yapılmadı. PR #3 birleştirilmedi.
+- Genel ilerleme hâlâ %90 altında. Başlıca kapanış kapıları: iki XLSM için Excel masaüstünde gerçek VBA/aylık aktarım paritesi, D11/AG-D28 anlamının doğrulanması ve aynı gerçek hakediş verisinden üretilen dört PDF'nin kaynak Excel çıktılarıyla birlikte kabulü.
+- Sonraki adım: CI run `39137915002` nihai sonucunu kontrol et; ardından Özel Eğitim/Temel Eğitim aylık aktarım ve dört PDF karşılaştırma kapılarını kanıtla kapatmaya devam et.
