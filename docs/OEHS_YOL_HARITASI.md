@@ -397,8 +397,8 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 
 ### Güncel doğrulama zemini
 - Aktif dal: `feature/official-payment-document-templates`.
-- İncelenen HEAD: `8e3cb401ea0fe4ab1e9b263e9d1c97e9c24af8a8`.
-- Windows CI run `39135102040`: **başarılı**. Bu sonuç mevcut çözüm derlemesi, otomatik testler ve PDF smoke hattını doğrular; kaynak Excel masaüstü eşdeğerliği değildir.
+- İncelenen HEAD: `d368efa1d2c8342da4474cf17f2a5231b61caed7` (PR #3 dalının doğrulanmış başı).
+- Windows CI run `39139910348`: **başarılı**. Son kod/test commit'i `2c9c28fc28cadbbdee1dd181139c9639b419e26b` için run `39139722422` da başarılıdır: **216/216 Core + 4/4 WPF testi**, çözüm/WPF derlemesi, PDF smoke ve Windows EXE publish geçti. Bu sonuç kaynak Excel masaüstü/VBA eşdeğerliği değildir.
 - PR #3 açık/taslak; birleştirilmedi. Orijinal XLSM dosyalarında değişiklik yapılmadı.
 - Aşağıdaki oranlar teknik olgunluk için yaklaşık planlama göstergesidir; hesaplama doğruluğunun aynı yüzdeyle kanıtlandığı anlamına gelmez.
 
@@ -407,28 +407,28 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 | Çekirdek | Tahmini ilerleme | Kanıt / kalan kapı |
 |---|---:|---|
 | Dönem ve Eylül–Temmuz sıralaması | %90 | 11 aylık sıra regresyonu var; kaynak Excel'in hatalı ay sütunlarıyla eşitlik iddiası yok. |
-| Önceki ay kesintisi / icmal | %80 | Program, ihale, sözleşme, hat ve yüklenici kimliği izolasyonu testleri var; çok dönemli Excel paritesi eksik. |
+| Önceki ay kesintisi / icmal | %80 | Eksik kimliklerde yanlış kesinti taşınmasını engelleyen testler var; kaynak E21 ve çok dönemli Excel paritesi eksik. |
 | Temel/Ortaöğretim aylık aktarımı | %80 | E21 inceleme kopyası LibreOffice ile 24.104,02472 TL örneğini veriyor; Excel masaüstü kabulü bekliyor. |
 | Özel Eğitim aylık aktarımı | %65 | E21 saklı değeri 10.580,582128 TL; AN:AX başlıklarında Kasım atlanıp Aralık iki kez görünüyor. VBA davranışının Excel içinde uçtan uca doğrulanması açık. |
-| Hesaplama motoru ve kaynak formül paritesi | %75 | Kaynak hücrelerden aktarılan birden fazla regresyon vektörü var; tüm hesap zinciri iki program için doğrulanmadı. |
-| Kimlik ve kayıt eşleştirme | %80 | Farklı İKN, sözleşme, yüklenici ve programda kesinti taşınmamasına yönelik testler mevcut; çok hatlı/eksik kimlik senaryoları genişletilmeli. |
+| Hesaplama motoru ve kaynak formül paritesi | %78 | Güncel Özel Eğitim satır 4–6 testleri geçiyor; Temel Eğitim T/U ve iki programın D28/net zinciri bilinen fark olarak testleniyor, resmî parite kapanmadı. |
+| Kimlik ve kayıt eşleştirme | %88 | İcmal, rapor geçmişi ve sıra önerisinde eksik/normalizasyonda boş kimlik korumaları eklendi; 216 Core testinde otomatik doğrulandı. Gerçek çok hatlı kullanıcı kabulü açık. |
 | Dört resmî PDF üretimi | %85 | İki program için sekiz smoke PDF üretildi ve ilk görsel/metin incelemesi yapıldı; kaynak Excel çıktılarıyla eşdeğerlik açık. |
 | PDF alan ve tutar tutarlılığı | %75 | Örneklerde dönem, hat ve yüklenici temel kontrolleri mevcut; farklı kayıt senaryolarında dört belge birlikte kabul edilmedi. |
 | WPF arayüzü / görsel kabul | %70 | Derleme ve otomatik arayüz sözleşmesi testleri başarılı; Visual Studio'da gerçek kullanıcı görsel testi bekliyor. |
 | Testler, CI ve paketleme | %90 | Son Windows CI başarılı; kaynak Excel paritesi ve masaüstü Excel/VBA doğrulaması CI kapsamı dışında. |
-| Kaynak izlenebilirliği ve karar kayıtları | %85 | Güncel XLSM envanteri, formül bulguları ve riskler belgeli; bazı VBA davranışlarının Excel'de yürütülmesi açık. |
+| Kaynak izlenebilirliği ve karar kayıtları | %90 | Güncel ve legacy test vektörleri ayrıldı; formül çelişkileri sayısallaştırıldı; Excel masaüstü kabul kontrol listesi hazır. Gerçek VBA yürütmesi hâlâ açık. |
 
 ### Genel proje ilerlemesi
 
 | İş paketi | Tahmini ilerleme | Açık ana konu |
 |---|---:|---|
-| Kaynak XLSM envanteri ve ilk formül incelemesi | %85 | `Anasayfa!AA2` önbellek `#VALUE!` ve formül/nesne bağlantısının Excel'de yeniden hesaplanması. |
+| Kaynak XLSM envanteri ve ilk formül incelemesi | %88 | Envanter, formül farkları, legacy/current test vektörleri ve masaüstü kabul listesi hazır; `Anasayfa!AA2` bağlantısı ve Excel yeniden hesaplama hâlâ açık. |
 | VBA yordamlarının statik incelenmesi | %80 | Aktarım farkları belgelendi: Özel Eğitim sabit sütun eşlemesi, Temel Eğitim dinamik başlık araması; gerçek Excel yürütmesi eksik. |
-| Çekirdek hesap ve icmal | %75 | E21/ay başlığı/önceki dönem toplamları için örnek bazlı parite ve karar kapıları. |
+| Çekirdek hesap ve icmal | %78 | Güncel Özel Eğitim satır 4–6 kod paritesi geçti; Temel Eğitim T/U, E21 ve D28/net ödeme çelişkileri gerçek Excel/VBA kararı bekliyor. |
 | Dört PDF şablonu ve üretim hattı | %80 | Smoke test geçiyor; kaynak Excel çıktısıyla aynı kayıt üzerinden karşılaştırmalı kabul eksik. |
 | WPF iş akışı ve kayıt yönetimi | %75 | Otomatik testler var; Visual Studio görsel ve gerçek kullanım senaryoları bekliyor. |
 | CI, test ve Windows paketleme | %90 | Son run başarılı; yalnız otomasyonun kapsadığı davranışlar için geçerlidir. |
-| Genel proje | **yaklaşık %80** | Kaynak Excel ile resmî hesap eşdeğerliği ve dört PDF'nin uçtan uca kabulü tamamlanmadan üretime hazır kabul edilmemeli. |
+| Genel proje | **yaklaşık %81** | Kimlik korumaları ve güncel Özel Eğitim kaynak testleri doğrulandı; ancak Temel Eğitim hesap zinciri, D28/net farkları, gerçek Excel/VBA ve dört PDF'nin aynı gerçek hakedişle kabulü açık. Üretime hazır değil. |
 
 ### Sıradaki işler — öncelik sırasıyla
 1. Özel Eğitim VBA aktarım yordamlarını ve sabit ay/sütun eşlemesini hücre sonuçlarıyla doğrula; Kasım/Aralık başlık farkını tahminle düzeltme.
