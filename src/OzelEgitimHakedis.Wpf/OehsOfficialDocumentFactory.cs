@@ -450,6 +450,14 @@ internal static class OehsOfficialDocumentFactory
             var difference = isLookupMonth
                 ? monthPayments.Sum(ProgressPaymentReportService.CalculateWorkbookPriceDifference)
                 : 0m;
+            if (isLookupMonth && c.ProgramType == TransportationProgramType.BasicOrSecondary)
+            {
+                // In the current Basic workbook, D6:D16's second lookup uses AB:AL,
+                // which the transfer macro fills with monthly V deduction totals.
+                // Mirror that formula result; Special Education's same-position
+                // columns are guide price differences, so its branch remains I+R only.
+                difference += monthPayments.Sum(payment => payment.Calculation.TotalDeductions);
+            }
             sumService += service;
             sumDifference += difference;
             var values = new[]
