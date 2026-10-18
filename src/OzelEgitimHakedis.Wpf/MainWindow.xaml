@@ -188,6 +188,12 @@
                                 <TextBlock Text="AYARLAR" FontSize="11.5" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
+                        <Button x:Name="NavTemporaryCalculationTrace" Style="{StaticResource NavButton}" Tag="Trace" Click="NavigationButton_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8EF;" FontSize="15" Width="42"/>
+                                <TextBlock Text="GEÇİCİ HESAP TUTUCU" FontSize="10.5" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
                     </StackPanel>
                     <Border Grid.Row="1" Margin="11.5,6,11.5,8" Padding="8.5,7" CornerRadius="9" Background="#082845" BorderBrush="#73581E" BorderThickness="1">
                         <StackPanel>
@@ -1484,9 +1490,9 @@
                     <StackPanel DockPanel.Dock="Top" Margin="0,0,0,10">
                         <TextBlock Text="GEÇİCİ HESAP TUTUCU" Style="{StaticResource PageTitle}"/>
                         <TextBlock Text="CANLI DENETİM • Her giriş değiştiğinde yenilenir. Resmî Excel/VBA doğrulaması yerine geçmez." Style="{StaticResource PageSubtitle}"/>
-                        <TextBlock Text="KRİTİK TEMİNAT FARKI: Ek kesin teminat tutarı elle girilir; kesin teminat tutarı bu girilen değerin %6'sıdır. OEHS mevcut hesap zinciri fiyat farkından türetmektedir." Foreground="#A12622" FontWeight="Bold" TextWrapping="Wrap" Margin="0,5,0,8"/>
+                        <TextBlock Text="Her giriş değiştiğinde kaynak formüller, ara değerler, kesintiler ve net ödeme aynı hesaplama çekirdeğinden yenilenir. Eksik/geçersiz girdide eski sonuç gösterilmez; Excel/VBA kabulü ayrıca doğrulanır." Foreground="{StaticResource Text600Brush}" TextWrapping="Wrap" Margin="0,5,0,8"/>
                     </StackPanel>
-                    <TextBox x:Name="CalculationTraceLiveTextBox" IsReadOnly="True" AcceptsReturn="True" AcceptsTab="True" TextWrapping="NoWrap" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" FontSize="13" Padding="12" Background="White" Foreground="#172B3A"/>
+                    <TextBox x:Name="CalculationTraceLiveTextBox" IsReadOnly="True" AcceptsReturn="True" AcceptsTab="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" FontFamily="Consolas" FontSize="12" Padding="12" Background="White" Foreground="#172B3A"/>
                 </DockPanel>
             </Grid>
 
@@ -1495,13 +1501,6 @@
                     <StackPanel>
                         <TextBlock Text="AYARLAR" Style="{StaticResource PageTitle}"/>
                         <TextBlock Text="OEHS uygulama tercihleri ve hesaplama yapılandırması." Style="{StaticResource PageSubtitle}"/>
-                        <Border Style="{StaticResource Card}" Padding="14" Margin="0,10,0,10">
-                            <StackPanel>
-                                <TextBlock Text="DENETİM / UZMAN İNCELEMESİ" Style="{StaticResource CardTitle}"/>
-                                <TextBlock Text="Hakediş formundaki her değişiklik burada canlı izlenir. Girdi, temel formül ve hesaplanabilen ara değerler geçici kontrol amacı taşır." Style="{StaticResource CardSubtitle}" TextWrapping="Wrap" Margin="0,4,0,10"/>
-                                <Button x:Name="TemporaryCalculationTraceButton" Content="GEÇİCİ HESAP TUTUCU'YU AÇ" Tag="Trace" Click="NavigationButton_Click" Style="{StaticResource ModernButton}" Width="300" Height="40" HorizontalAlignment="Left" ToolTip="Canlı denetim sayfasını açar; hakediş alanları değiştikçe döküm güncellenir."/>
-                            </StackPanel>
-                        </Border>
                         <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
                             <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,8,0"><StackPanel>
                                 <TextBlock Text="UYGULAMA" Style="{StaticResource CardTitle}"/>
