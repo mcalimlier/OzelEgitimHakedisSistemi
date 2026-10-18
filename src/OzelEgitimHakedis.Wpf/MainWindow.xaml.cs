@@ -5055,7 +5055,7 @@ public partial class MainWindow : Window
             "Bu iki programın teminat kuralları bilerek ayrı tutulur. Kesin teminatın %6 hesaplaması ekranda ayrıca izlenecektir.",
             "",
             "Ek kesin teminat (programa göre) = " + (selectedProgram == TransportationProgramType.BasicOrSecondary
-                ? "elle girilen tutar = " + M(manualGuarantee) + " TL"
+                ? "elle girilen ek kesin teminat = " + M(manualGuarantee) + " TL; kesin teminat (%6) = " + M(manualGuarantee * _calculationConstants.AdditionalGuaranteeRate) + " TL"
                 : "(I × %6) + (R × %6) = (" + M(i) + " × 0,06) + (" + M(r) + " × 0,06) = " + M(specialGuarantee) + " TL"),
             "",
             "4) KONTROL SINIRLARI",
