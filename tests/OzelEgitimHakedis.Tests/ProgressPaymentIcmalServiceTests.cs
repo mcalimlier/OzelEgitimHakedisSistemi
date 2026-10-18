@@ -267,6 +267,69 @@ public sealed class ProgressPaymentIcmalServiceTests
         Assert.Equal(200m, result);
     }
 
+    [Fact]
+    public void FindPreviousDeduction_ShouldNotCarryAcrossTenderNumbers()
+    {
+        var previous = History(1, new DateOnly(2026, 10, 31), 200m) with
+        {
+            TenderNumber = "OTHER-TENDER"
+        };
+        var current = History(2, new DateOnly(2026, 11, 30), 300m) with
+        {
+            TenderNumber = "TENDER"
+        };
+
+        Assert.Equal(0m, ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { previous, current }, current));
+    }
+
+    [Fact]
+    public void FindPreviousDeduction_ShouldNotCarryAcrossContractNumbers()
+    {
+        var previous = History(1, new DateOnly(2026, 10, 31), 200m) with
+        {
+            ContractNumber = "OTHER-CONTRACT"
+        };
+        var current = History(2, new DateOnly(2026, 11, 30), 300m) with
+        {
+            ContractNumber = "SOZ"
+        };
+
+        Assert.Equal(0m, ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { previous, current }, current));
+    }
+
+    [Fact]
+    public void FindPreviousDeduction_ShouldNotCarryAcrossContractorIdentityNumbers()
+    {
+        var previous = History(1, new DateOnly(2026, 10, 31), 200m) with
+        {
+            ContractorTaxOrIdentityNumber = "99999999999"
+        };
+        var current = History(2, new DateOnly(2026, 11, 30), 300m) with
+        {
+            ContractorTaxOrIdentityNumber = "12345678901"
+        };
+
+        Assert.Equal(0m, ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { previous, current }, current));
+    }
+
+    [Fact]
+    public void FindPreviousDeduction_ShouldNotCarryAcrossProgramEvenWhenOtherIdentityFieldsMatch()
+    {
+        var previous = History(1, new DateOnly(2026, 10, 31), 200m) with
+        {
+            Input = new ProgressPaymentInput(
+                1, 1000m, 0m, 0m, 100000m, false, 0m, 0m, 0m,
+                ProgramType: TransportationProgramType.BasicOrSecondary)
+        };
+        var current = History(2, new DateOnly(2026, 11, 30), 300m);
+
+        Assert.Equal(0m, ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { previous, current }, current));
+    }
+
     private static ProgressPaymentHistoryData History(
         int number,
         DateOnly period,
