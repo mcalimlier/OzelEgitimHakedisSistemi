@@ -33,6 +33,22 @@ public sealed class ProgressPaymentIcmalIdentityCompletenessTests
             new[] { incompletePrevious, current }, current));
     }
 
+    [Fact]
+    public void FindPreviousDeduction_ShouldNotMatchIdentityNumberThatNormalizesToEmpty()
+    {
+        var previous = History(1, new DateOnly(2026, 10, 31), 200m) with
+        {
+            ContractorTaxOrIdentityNumber = "----"
+        };
+        var current = History(2, new DateOnly(2026, 11, 30), 300m) with
+        {
+            ContractorTaxOrIdentityNumber = "----"
+        };
+
+        Assert.Equal(0m, ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { previous, current }, current));
+    }
+
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
