@@ -522,6 +522,7 @@ public partial class MainWindow : Window
 
         PopulateCalculationConstantsPanel();
         CalculationConstantsReasonTextBox.Clear();
+        RefreshCalculationTraceLive();
         MessageBox.Show("Sabitler kaydedildi. Yeni hesaplamalar güncel sabitleri kullanacak; geçmiş hakedişler yalnızca açık düzeltme/yeniden hesaplama işleminde değişir.",
             "OEHS — Sabitler Kaydedildi", MessageBoxButton.OK, MessageBoxImage.Information);
     }
