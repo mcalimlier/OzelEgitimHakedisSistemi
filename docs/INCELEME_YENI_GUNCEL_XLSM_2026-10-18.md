@@ -207,3 +207,18 @@ Ek bir anahtar uyuşmazlığı da doğrulandı: `Anasayfa!K17`, `B17:K17` birle�
 Doğrulama: LibreOffice 25.2 ile izole inceleme kopyası yeniden hesaplandı. `Anasayfa!E4 = Kasım 2026`, `Anasayfa!K16 = 1` ve `İcmal Verileri!AC4 = 24.104,02472 TL` iken düzeltilmiş E21 de `24.104,02472 TL` verdi. VBA proje ikili dosyası bayt düzeyinde korundu ve ZIP içindeki tüm dosya girdileri korundu. Bu test Excel masaüstü kabul testinin yerine geçmez; nihai kullanım öncesinde Excel'de aynı örnekle doğrulama yapılmalıdır.
 
 İnceleme kopyası: `Temel_Egitim_E21_Duzeltilmis_Inceleme_Kopyasi.xlsm`. Kaynak dosya değişmeden kalmıştır.
+
+
+## 2026-10-18 takip doğrulaması — Özel Eğitim E21
+
+En güncel yükleme yeniden açılarak formül metni ile saklanan sonuçlar karşılaştırıldı:
+
+- `Anasayfa!E5` = `Kasım 2026`; `I6:I15` ay listesi Eylül 2026–Haziran 2027 aralığını içeriyor.
+- `Hakediş İcmali!E21` kaynak formülü, önceki ayı `Anasayfa!E5` üzerinden bulup `İcmal Verileri!AN3:AX3` başlıklarında arıyor.
+- Kaydedilmiş E21 sonucu `10.580,582128 TL`; bu değer `İcmal Verileri!AO4` (Ekim 2026) ile aynı.
+- Kesinti başlıklarında `AN3=I6` (Eylül), `AO3=I7` (Ekim), `AP3=I9` (Aralık), `AQ3=I9` (Aralık) bağlantısı var. Böylece Kasım başlığı `I8` atlanmış, Aralık başlığı iki sütunda tekrarlanmış.
+- `İcmal Verileri!O4` formülü ay eşleştirmesinde `I5:I14`, toplam indeksinde ise `I6:I15` kullanıyor. Kaynak formül davranışı farklı dönem örnekleriyle doğrulanmadan değiştirilmemeli.
+
+OEHS testlerine, Özel Eğitim Kasım 2026 kaynak örneğindeki E21 değerini (10.580,582128 TL) önceki ay geçmişinden taşıyan ayrı bir regresyon testi eklendi. Bu ekleme yalnızca test kodudur; resmî hesaplama formülü veya kaynak XLSM değiştirilmemiştir. Yeni commit: `90bcde2b5edddcd098a3ca873287308b79110ff3`.
+
+**Doğrulama sınırı:** Bu test henüz çalıştırılmış değildir. Son commit için GitHub birleşik durum sorgusu ve PR tetiklemeli workflow sorgusu sonuç döndürmedi; CI başarısı iddia edilemez. Excel masaüstü ve dört PDF görsel kabul testleri açık kalır.
