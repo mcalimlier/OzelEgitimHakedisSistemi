@@ -583,3 +583,10 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - Düzeltilmiş commit `cb61333ad549ea60e2b1083931009a52a2755cd5` için Windows CI run `39141119613` başarılı: **217/217 Core + 4/4 WPF testi**; çözüm/WPF derlemesi, PDF smoke ve Windows EXE publish geçti.
 - Temel Eğitim satır 4, 5 ve 6 için kaynak T=1.500 sabiti / U damga vergisi ile OEHS'nin fiyat farkına bağlı %6 teminat / damga hesabı farkları sayısallaştırıldı. Net farkları sırasıyla **1.424,22 TL; 1.424,16 TL; 1.424,10 TL**. Kaynak davranışı ile OEHS arasında parite yok; testler bu farkı saklamıyor.
 - Genel proje yaklaşık **%81** ve %90 hedefi tamamlanmadı. Gerçek Excel/VBA sonucu olmadan bu farkın resmî hesap kuralı seçilemez. Sıradaki adım: kaynak XLSM masaüstü kabul kapısını çözmek; ardından aynı gerçek hakedişin dört Excel/OEHS PDF'sini birlikte karşılaştırmak. PR #3 taslak/açık, ana dala birleştirme yok.
+
+## Devam notu — 18.10.2026, üç hatlı D28/hesap neti taraması
+
+- Güncel iki XLSM'nin seçili hat anahtarını (Temel Eğitim K16, Özel Eğitim K17) 1–3 yaparak ayrı LibreOffice kopyalarında rapor D28 ile hesaplama W/AG değerleri karşılaştırıldı. İki programda da D28 ile hesaplama sayfası neti farkının fiyat farkı tutarına yakın olduğu üç ayrı hat örneğinde görüldü; küsurat artıkları da kaydedildi: `docs/EXCEL_KARAR_GEREKTIREN_UYUSMAZLIKLAR.md`.
+- Bu inceleme kaynak XLSM'nin formül sonuçlarını LibreOffice ile yeniden hesaplamaya dayanır; VBA makroları yürütülmediği ve Excel masaüstü bulunmadığı için resmî Excel kabulü değildir. Finansal davranış değiştirilmedi.
+- Son kod/test commit'i `cb61333ad549ea60e2b1083931009a52a2755cd5` Windows CI run `39141119613` üzerinde başarılı: **217 Core + 4 WPF testi**, derlemeler, PDF smoke ve EXE publish geçti.
+- Genel ilerleme yaklaşık **%81**. Kaynak Excel'in VBA/aktarım sonuçları ve dört PDF'nin aynı gerçek hakedişle Excel'e karşılaştırması hâlâ %90 önündeki ana kapılar. PR #3 açık taslak, ana dala birleştirme/yayınlama yok.
