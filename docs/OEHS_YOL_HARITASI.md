@@ -661,3 +661,16 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 5. Ana dal birleştirilmesin; mevcut PR açık kalsın.
 
 **İlerleme:** Genel hedef hâlâ en az %90. Canlı hesap tutucu uygulama değişiklikleri yapıldı; yeni CI ve görsel kabul tamamlanmadan çekirdek tamamlandı sayılmayacak.
+
+
+## Devam notu — 18.10.2026, Temel Eğitim D7–D28 kaynak formülünün uygulanması
+
+- Kullanıcı, çalışan Temel Eğitim XLSM'sindeki formül ve sonuçların kaynak kabul edilmesini; Temel Eğitim ile Özel Eğitim hesaplarının birbirine kıyaslanmamasını netleştirdi.
+- Güncel Temel Eğitim dosyasında Hakediş Raporu!H2 = seçili satırın K sütunu; D7 = I sütunundaki fiyat farkı; D11 = IF(D7<0,H2-ABS(D7),H2+D7); D12 = KDV; D13=D11+D12; D26=SUM(D14:F25); D28=ROUND(D13,2)-ROUND(D26,2).
+- Bu nedenle Temel Eğitim'in resmî rapor neti için D7 fiyat farkı H2/K değerine ikinci kez eklenir. Hesaplama sayfası W4=O4-V4 ayrı bir formül zinciridir; W4 ile D28 eşitlenmeye zorlanmaz.
+- Core hesaplayıcı Temel Eğitim için rapor neti ayarlamasını PriceDifference ile ekleyecek şekilde güncellendi; Temel Eğitim Hakediş Raporu damga vergisi matrahı D15 formülüne uygun K+I olarak değiştirildi. Özel Eğitim hesaplama dalı değiştirilmedi.
+- Regresyon testi, Temel Eğitim D7-D28 zincirinde damga vergisi ve net tutarı kapsayacak şekilde güncellendi.
+- Kod commit'i: bb48df35566c7d652265f3cd4ba95c6ef87878ae; test commit'i: 52f63f2f77dfe77a0a39bb60ab3200f9738e04c2.
+- Windows CI run 39150330372 / run 1910 kuyrukta; sonuç henüz doğrulanmadı. Derleme/test başarısı iddia edilmez.
+- Açık risk: Kaynak Hakediş Raporu D28 zinciri ile Hesaplama Bilgileri W4 zinciri farklıdır; bu farklılık kaynak davranışı olarak korunur. VBA makrolarının gerçek Excel masaüstünde yürütülmesi ve dört PDF'nin aynı hakedişle görsel kabulü hâlâ bekliyor.
+- Sıradaki adım: CI run 1910 sonucunu kontrol et; başarısızsa test çıktısına göre düzelt. Başarılıysa Temel Eğitim için gerçek Excel örnek verisiyle D7/D11/D15/D26/D28 regresyonunu sürdür; Özel Eğitim'e dokunma. Ana dala birleştirme/yayınlama yok.
