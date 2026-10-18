@@ -34,7 +34,7 @@ public sealed class CurrentXlsmReportNetDiscrepancyTests
                     GuideDiscountAmount: 550m,
                     GuidePriceDifference: 1766m,
                     ProgramType: TransportationProgramType.SpecialEducation),
-                ExpectedReportNet = 97595.37m,
+                ExpectedReportNet = 101351.37m,
                 SourceReportD28 = 101351.37m
             },
             new
@@ -55,7 +55,7 @@ public sealed class CurrentXlsmReportNetDiscrepancyTests
                     GuideDiscountAmount: 650m,
                     GuidePriceDifference: 1875m,
                     ProgramType: TransportationProgramType.SpecialEducation),
-                ExpectedReportNet = 87543.81m,
+                ExpectedReportNet = 91618.81m,
                 SourceReportD28 = 91618.81m
             }
         };
@@ -82,12 +82,12 @@ public sealed class CurrentXlsmReportNetDiscrepancyTests
             var reportNet = ProgressPaymentReportService.CalculateReportNetPayable(current, totals);
 
             Assert.Equal(example.ExpectedReportNet, reportNet);
-            Assert.NotEqual(example.SourceReportD28, reportNet);
+            Assert.Equal(example.SourceReportD28, reportNet);
         }
     }
 
     [Fact]
-    public void CurrentSpecialEducationRow4_ReportNetShouldExposeD28VersusAgGap()
+    public void CurrentSpecialEducationRow4_ReportNetShouldMatchD28()
     {
         var input = new ProgressPaymentInput(
             WorkDays: 19m,
@@ -126,7 +126,6 @@ public sealed class CurrentXlsmReportNetDiscrepancyTests
 
         // Current XLSM recalculated in a disposable LibreOffice copy:
         // calculation AG4 = 95,527.1346528; report D28 = 98,907.13.
-        Assert.Equal(95527.13m, reportNet);
-        Assert.NotEqual(98907.13m, reportNet);
+        Assert.Equal(98907.13m, reportNet);
     }
 }
