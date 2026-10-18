@@ -4994,13 +4994,22 @@ public partial class MainWindow : Window
             WorkDaysTextBox, DailyPriceTextBox, GuideWorkDaysTextBox, GuideDailyPriceTextBox,
             DiscountTextBox, GuideDiscountTextBox, PriceDifferenceTextBox, GuidePriceDifferenceTextBox,
             TaxDebtTextBox, SocialSecurityDebtTextBox, MinimumWageSupportTextBox, InspectionPenaltyTextBox,
-            ContractAmountTextBox, ProgressNumberTextBox
+            ContractAmountTextBox, ProgressNumberTextBox, ManualAdditionalGuaranteeTextBox
         })
             textBox.TextChanged += (_, _) => RefreshCalculationTraceLive();
 
+        ProgressTenderListBox.SelectionChanged += (_, _) => RefreshCalculationTraceLive();
+        ProgressRouteComboBox.SelectionChanged += (_, _) => RefreshCalculationTraceLive();
         ProgressPeriodMonthComboBox.SelectionChanged += (_, _) => RefreshCalculationTraceLive();
         VatExemptCheckBox.Checked += (_, _) => RefreshCalculationTraceLive();
         VatExemptCheckBox.Unchecked += (_, _) => RefreshCalculationTraceLive();
+        MinimumWageSupportEnabledCheckBox.Checked += (_, _) => RefreshCalculationTraceLive();
+        MinimumWageSupportEnabledCheckBox.Unchecked += (_, _) => RefreshCalculationTraceLive();
+        MultiRoutePaymentGrid.CellEditEnding += (_, _) =>
+            Dispatcher.BeginInvoke(new Action(RefreshCalculationTraceLive));
+        MultiRoutePaymentGrid.RowEditEnding += (_, _) =>
+            Dispatcher.BeginInvoke(new Action(RefreshCalculationTraceLive));
+
         RefreshCalculationTraceLive();
     }
 
@@ -5010,71 +5019,233 @@ public partial class MainWindow : Window
             return;
 
         var culture = CultureInfo.CurrentCulture;
-        decimal V(TextBox box) => TryParseDecimal(box.Text, out var value) ? value : 0m;
         string N(decimal value) => value.ToString("N4", culture);
         string M(decimal value) => value.ToString("N2", culture);
         string Raw(TextBox box) => string.IsNullOrWhiteSpace(box.Text) ? "(boş)" : box.Text.Trim();
+        var issues = new List<string>();
 
-        var g = V(WorkDaysTextBox);
-        var h = V(DailyPriceTextBox);
-        var i = V(PriceDifferenceTextBox);
-        var j = V(DiscountTextBox);
-        var p = V(GuideWorkDaysTextBox);
-        var q = V(GuideDailyPriceTextBox);
-        var r = V(GuidePriceDifferenceTextBox);
-        var s = V(GuideDiscountTextBox);
-        var manualGuarantee = V(ManualAdditionalGuaranteeTextBox);
-        var selectedProgram = (ProgressTenderListBox.SelectedItem as ContractDraftData)?.ProgramType ?? TransportationProgramType.SpecialEducation;
-        var specialGuarantee = i * _calculationConstants.AdditionalGuaranteeRate + r * _calculationConstants.AdditionalGuaranteeRate;
+        var selectedContract = IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment) &&
+                               _editingArchiveSnapshot is not null
+            ? _editingArchiveSnapshot.Contract
+            : ProgressTenderListBox.SelectedItem as ContractDraftData;
+        var selectedProgram = selectedContract?.ProgramType;
+        var hasGuide = selectedContract is not null && HasGuideStaff(selectedContract.ProgramType);
+        var selectedRouteName = (ProgressRouteComboBox.SelectedItem as RouteDraft)?.Name ?? "Seçilmedi";
+
+        if (selectedContract is null)
+            issues.Add("Önce ihale/program seçin.");
+
+        if (!TryParseWorkDays(WorkDaysTextBox.Text, out var g) || g < 0m)
+        {
+            g = 0m;
+            issues.Add("Taşıma iş günü eksik veya geçersiz.");
+        }
+
+        if (!TryParseDecimal(DailyPriceTextBox.Text, out var h) || h < 0m)
+        {
+            h = 0m;
+            issues.Add("Taşıma günlük fiyatı eksik veya geçersiz.");
+        }
+
+        if (!TryParseDecimalOrZero(PriceDifferenceTextBox.Text, out var i))
+        {
+            i = 0m;
+            issues.Add("Taşıma fiyat farkı geçersiz.");
+        }
+
+        if (!TryParseDecimalOrZero(DiscountTextBox.Text, out var j) || j < 0m)
+        {
+            j = 0m;
+            issues.Add("Taşıma iskontosu geçersiz.");
+        }
+
+        decimal p = 0m, q = 0m, r = 0m, s = 0m;
+        if (hasGuide)
+        {
+            if (!TryParseWorkDays(GuideWorkDaysTextBox.Text, out p) || p < 0m)
+            {
+                p = 0m;
+                issues.Add("Rehber iş günü eksik veya geçersiz.");
+            }
+            if (!TryParseDecimal(GuideDailyPriceTextBox.Text, out q) || q < 0m)
+            {
+                q = 0m;
+                issues.Add("Rehber günlük fiyatı eksik veya geçersiz.");
+            }
+            if (!TryParseDecimalOrZero(GuidePriceDifferenceTextBox.Text, out r))
+            {
+                r = 0m;
+                issues.Add("Rehber fiyat farkı geçersiz.");
+            }
+            if (!TryParseDecimalOrZero(GuideDiscountTextBox.Text, out s) || s < 0m)
+            {
+                s = 0m;
+                issues.Add("Rehber iskontosu geçersiz.");
+            }
+        }
+
+        decimal taxDebt = 0m, socialSecurityDebt = 0m, minimumWageSupport = 0m, inspectionPenalty = 0m;
+        if (!TryParseDecimalOrZero(TaxDebtTextBox.Text, out taxDebt) || taxDebt < 0m)
+        {
+            taxDebt = 0m;
+            issues.Add("Vergi borcu geçersiz.");
+        }
+        if (!TryParseDecimalOrZero(SocialSecurityDebtTextBox.Text, out socialSecurityDebt) || socialSecurityDebt < 0m)
+        {
+            socialSecurityDebt = 0m;
+            issues.Add("SGK borcu geçersiz.");
+        }
+        if (!TryParseDecimalOrZero(MinimumWageSupportTextBox.Text, out minimumWageSupport) || minimumWageSupport < 0m)
+        {
+            minimumWageSupport = 0m;
+            issues.Add("Asgari ücret desteği geçersiz.");
+        }
+        if (!TryParseDecimalOrZero(InspectionPenaltyTextBox.Text, out inspectionPenalty) || inspectionPenalty < 0m)
+        {
+            inspectionPenalty = 0m;
+            issues.Add("Denetim cezası geçersiz.");
+        }
+
+        decimal manualGuarantee = 0m;
+        if (selectedProgram == TransportationProgramType.BasicOrSecondary &&
+            (!TryParseDecimal(ManualAdditionalGuaranteeTextBox.Text, out manualGuarantee) || manualGuarantee < 0m))
+        {
+            manualGuarantee = 0m;
+            issues.Add("Temel/Ortaöğretim ek kesin teminatı geçersiz; elle girilen tutarı kontrol edin.");
+        }
+
+        if (selectedProgram == TransportationProgramType.BasicOrSecondary &&
+            MinimumWageSupportEnabledCheckBox.IsChecked != true)
+            minimumWageSupport = 0m;
+
         var transportService = g * h;
         var transportNet = transportService + i - j;
         var guideService = p * q;
         var guideNet = guideService + r - s;
+        var guaranteeRate = _calculationConstants.AdditionalGuaranteeRate;
+        var specialGuarantee = i * guaranteeRate + r * guaranteeRate;
+        var guaranteeDisplay = selectedProgram == TransportationProgramType.BasicOrSecondary
+            ? "elle girilen ek kesin teminat = " + M(manualGuarantee) + " TL (aynen kullanılır)"
+            : selectedProgram == TransportationProgramType.SpecialEducation
+                ? "(I × " + (guaranteeRate * 100m).ToString("0.##", culture) + "%) + (R × "
+                  + (guaranteeRate * 100m).ToString("0.##", culture) + "%) = "
+                  + M(specialGuarantee) + " TL"
+                : "Program seçilince hesaplanır.";
 
         var lines = new List<string>
         {
-            "OEHS — GEÇİCİ HESAP TUTUCU / CANLI TASLAK",
+            "OEHS — GEÇİCİ HESAP TUTUCU / CANLI HESAPLAMA İZİ",
             "Son güncelleme: " + DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss", culture),
-            "Durum: Bu sayfa form alanları değiştikçe otomatik güncellenir.",
-            "UYARI: Aşağıdaki temel aritmetik teşhis içindir; resmî hesap motorunun tüm vergi/tevkifat/yuvarlama adımlarının veya Excel/VBA paritesinin yerine geçmez.",
-            "",
-            "1) GÜNCEL FORM GİRDİLERİ",
-            "G (Taşıma iş günü) = " + Raw(WorkDaysTextBox),
-            "H (Taşıma günlük fiyat) = " + Raw(DailyPriceTextBox) + " TL",
-            "I (Taşıma fiyat farkı) = " + Raw(PriceDifferenceTextBox) + " TL",
-            "J (Taşıma iskontosu) = " + Raw(DiscountTextBox) + " TL",
-            "P (Rehber iş günü) = " + Raw(GuideWorkDaysTextBox),
-            "Q (Rehber günlük fiyat) = " + Raw(GuideDailyPriceTextBox) + " TL",
-            "R (Rehber fiyat farkı) = " + Raw(GuidePriceDifferenceTextBox) + " TL",
-            "S (Rehber iskontosu) = " + Raw(GuideDiscountTextBox) + " TL",
-            "Vergi borcu = " + Raw(TaxDebtTextBox) + " TL",
-            "SGK borcu = " + Raw(SocialSecurityDebtTextBox) + " TL",
-            "Asgari ücret desteği = " + Raw(MinimumWageSupportTextBox) + " TL",
-            "Denetim cezası = " + Raw(InspectionPenaltyTextBox) + " TL",
-            "Sözleşme bedeli = " + Raw(ContractAmountTextBox) + " TL",
-            "Hakediş no = " + Raw(ProgressNumberTextBox),
-            "Dönem = " + ProgressPeriodMonthComboBox.Text,
-            "KDV muaf = " + (VatExemptCheckBox.IsChecked == true ? "Evet" : "Hayır"),
-            "",
-            "2) CANLI ARİTMETİK İZİ (ön hesap; resmî yuvarlama ayrıca doğrulanmalı)",
-            "Taşıma hizmeti = G × H = " + N(g) + " × " + M(h) + " = " + M(transportService) + " TL",
-            "Taşıma net ara değeri = (G × H) + I − J = (" + N(g) + " × " + M(h) + ") + " + M(i) + " − " + M(j) + " = " + M(transportNet) + " TL",
-            "Rehber hizmeti = P × Q = " + N(p) + " × " + M(q) + " = " + M(guideService) + " TL",
-            "Rehber net ara değeri = (P × Q) + R − S = (" + N(p) + " × " + M(q) + ") + " + M(r) + " − " + M(s) + " = " + M(guideNet) + " TL",
-            "",
-            "3) TEMİNAT — UZMAN İNCELEMESİNE AÇIK KRİTİK FARK",
-            "Temel/Ortaöğretim kuralı: Ek kesin teminat tutarı elle girilir; kesin teminat tutarı bu girilen tutarın %6'sıdır.",
-            "Özel Eğitim kuralı: Ek kesin teminat = (I × %6) + (R × %6); Excel formülüne göre hesaplanır.",
-            "Bu iki programın teminat kuralları bilerek ayrı tutulur. Kesin teminatın %6 hesaplaması ekranda ayrıca izlenecektir.",
-            "",
-            "Ek kesin teminat (programa göre) = " + (selectedProgram == TransportationProgramType.BasicOrSecondary
-                ? "elle girilen ek kesin teminat = " + M(manualGuarantee) + " TL; kesin teminat (%6) = " + M(manualGuarantee * _calculationConstants.AdditionalGuaranteeRate) + " TL"
-                : "(I × %6) + (R × %6) = (" + M(i) + " × 0,06) + (" + M(r) + " × 0,06) = " + M(specialGuarantee) + " TL"),
-            "",
-            "4) KONTROL SINIRLARI",
-            "Boş veya geçersiz sayısal girişler bu teşhis aritmetiğinde 0 gibi görünür; ham metin yukarıda korunur. Geçersiz girişleri ayrıca düzeltin.",
-            "Bir sonraki adım: Excel'deki ilgili hücre/VBA zincirini alan alan eşleştirmek ve canlı izdeki adımları doğrulanmış hesap motoruna bağlamak."
+            "Program: " + (selectedProgram?.ToString() ?? "Seçilmedi"),
+            "İhale: " + (selectedContract?.TenderNumber ?? "Seçilmedi"),
+            "Hat: " + selectedRouteName,
+            "Dönem: " + ((ProgressPeriodMonthComboBox.SelectedItem as ProgressPaymentMonthOption)?.PeriodDate.ToString("MMMM yyyy", culture) ?? "Seçilmedi"),
+            "KDV muafiyeti: " + (selectedContract?.VatExempt == true ? "Evet" : "Hayır"),
+            "Girdi durumu: " + (issues.Count == 0 ? "Ön hesaplamaya uygun" : "HESAPLAMA BEKLEMEDE — eski sonuç gösterilmiyor"),
+            ""
         };
+
+        lines.AddRange(new[]
+        {
+            "1) GİRDİLER (ham metin korunur)",
+            "G — Taşıma iş günü: " + Raw(WorkDaysTextBox),
+            "H — Taşıma günlük fiyat: " + Raw(DailyPriceTextBox) + " TL",
+            "I — Taşıma fiyat farkı: " + Raw(PriceDifferenceTextBox) + " TL",
+            "J — Taşıma iskontosu: " + Raw(DiscountTextBox) + " TL",
+            "P — Rehber iş günü: " + (hasGuide ? Raw(GuideWorkDaysTextBox) : "Bu programda kullanılmıyor"),
+            "Q — Rehber günlük fiyat: " + (hasGuide ? Raw(GuideDailyPriceTextBox) + " TL" : "Bu programda kullanılmıyor"),
+            "R — Rehber fiyat farkı: " + (hasGuide ? Raw(GuidePriceDifferenceTextBox) + " TL" : "Bu programda kullanılmıyor"),
+            "S — Rehber iskontosu: " + (hasGuide ? Raw(GuideDiscountTextBox) + " TL" : "Bu programda kullanılmıyor"),
+            "Vergi borcu: " + Raw(TaxDebtTextBox) + " TL",
+            "SGK borcu: " + Raw(SocialSecurityDebtTextBox) + " TL",
+            "Asgari ücret desteği (etkin): " + M(minimumWageSupport) + " TL",
+            "Denetim cezası: " + Raw(InspectionPenaltyTextBox) + " TL",
+            "Sözleşme bedeli: " + (selectedContract is null ? Raw(ContractAmountTextBox) : M(selectedContract.ContractAmount)) + " TL",
+            "Ek kesin teminat (Temel/Ortaöğretim elle giriş): " + Raw(ManualAdditionalGuaranteeTextBox) + " TL",
+            "",
+            "2) KAYNAK FORMÜLLERİ VE CANLI ARA DEĞERLER",
+            "K — Taşıma neti = G × H + I − J = " + N(g) + " × " + M(h) + " + " + M(i) + " − " + M(j) + " = " + M(transportNet) + " TL",
+            hasGuide
+                ? "T — Rehber neti = P × Q + R − S = " + N(p) + " × " + M(q) + " + " + M(r) + " − " + M(s) + " = " + M(guideNet) + " TL"
+                : "T — Rehber neti = Bu programda rehber kalemi yok; 0,00 TL",
+            "AC — Ek kesin teminat = " + guaranteeDisplay,
+            "AD — Damga vergisi matrahı: " + (selectedProgram == TransportationProgramType.BasicOrSecondary
+                ? "(K + elle girilen ek kesin teminat) × damga vergisi oranı"
+                : "K × damga vergisi oranı + T × damga vergisi oranı"),
+            ""
+        });
+
+        if (issues.Count > 0)
+        {
+            lines.Add("3) EKSİK / GEÇERSİZ GİRDİLER");
+            lines.AddRange(issues.Select(x => "• " + x));
+            lines.Add("");
+            lines.Add("Vergi, tevkifat, damga vergisi, toplam kesinti ve net ödeme için sonuç üretilmedi. Eksik alanlar tamamlandığında bu iz kendiliğinden yenilenir.");
+        }
+        else if (selectedContract is not null)
+        {
+            try
+            {
+                var input = new ProgressPaymentInput(
+                    g, h, j, i, selectedContract.ContractAmount, selectedContract.VatExempt,
+                    taxDebt, socialSecurityDebt, minimumWageSupport, inspectionPenalty,
+                    p, q, s, r, selectedContract.ProgramType, manualGuarantee);
+                var result = ProgressPaymentCalculator.Calculate(input, _calculationConstants);
+                var constants = result.AppliedConstants ?? _calculationConstants;
+                var vatLabel = selectedContract.VatExempt ? "KDV muaf" : "KDV dahil";
+                var effectiveTransportVat = constants.TransportVatRate;
+                var effectiveGuideVat = constants.GuideVatRate;
+                var effectiveTransportWithholding = constants.TransportWithholdingShare;
+                var effectiveGuideWithholding = constants.GuideWithholdingShare;
+
+                lines.AddRange(new[]
+                {
+                    "3) TÜM HESAPLAMA ADIMLARI — ÇEKİRDEK HESAPLAYICI SONUCU",
+                    "Taşıma KDV (L) = K × " + (effectiveTransportVat * 100m).ToString("0.##", culture) + "% = " + M(result.TransportVat) + " TL",
+                    "Taşıma tevkifat (M) = L × " + (effectiveTransportWithholding * 100m).ToString("0.##", culture) + "% = " + M(result.TransportWithholding) + " TL",
+                    "Taşıma fatura ara toplamı (N) = K + M = " + M(result.TransportNetAmount + result.TransportWithholding) + " TL",
+                    "Taşıma brüt (O) = K + L = " + M(result.TransportGrossAmount) + " TL",
+                    "Rehber KDV (U) = T × " + (effectiveGuideVat * 100m).ToString("0.##", culture) + "% = " + M(result.GuideVat) + " TL",
+                    "Rehber tevkifat (V) = U × " + (effectiveGuideWithholding * 100m).ToString("0.##", culture) + "% = " + M(result.GuideWithholding) + " TL",
+                    "Rehber fatura ara toplamı (W) = T + V = " + M(result.GuideNetAmount + result.GuideWithholding) + " TL",
+                    "Rehber brüt (X) = T + U = " + M(result.GuideGrossAmount) + " TL",
+                    "AD — Damga vergisi = " + (selectedProgram == TransportationProgramType.BasicOrSecondary
+                        ? "(K + elle girilen ek kesin teminat) × oran = " + M(result.StampTax) + " TL"
+                        : "(K + T) × oran = " + M(result.StampTax) + " TL"),
+                    "AE — Toplam kesintiler = tevkifat + vergi borcu + denetim cezası + SGK + asgari ücret desteği + AC + AD = " + M(result.TotalDeductions) + " TL",
+                    "AF — Brüt toplam = O + X = " + M(result.GrossAmount) + " TL",
+                    "AG — NET ÖDEME = AF − AE = " + M(result.GrossAmount) + " − " + M(result.TotalDeductions) + " = " + M(result.NetPayable) + " TL",
+                    "",
+                    "4) AYRINTILI KESİNTİ DÖKÜMÜ",
+                    "Taşıma tevkifatı: " + M(result.TransportWithholding) + " TL",
+                    "Rehber tevkifatı: " + M(result.GuideWithholding) + " TL",
+                    "Vergi borcu: " + M(result.Deductions.TaxDebt) + " TL",
+                    "Denetim cezası: " + M(result.Deductions.InspectionPenalty) + " TL",
+                    "SGK borcu: " + M(result.Deductions.SocialSecurityDebt) + " TL",
+                    "Asgari ücret desteği: " + M(result.Deductions.MinimumWageSupport) + " TL",
+                    "Ek kesin teminat: " + M(result.Deductions.AdditionalGuarantee) + " TL",
+                    "Damga vergisi: " + M(result.Deductions.StampTax) + " TL",
+                    "KDV durumu: " + vatLabel,
+                    "",
+                    "Not: Tüm değerler aynı hesaplayıcıdan anlık üretilir; Excel/VBA masaüstü ve dört PDF ile birebir kabul testi ayrıca yapılmalıdır."
+                });
+            }
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+            {
+                lines.Add("HESAPLAMA HATASI: " + ex.Message);
+                lines.Add("Bu durumda sonuçlar geçerli kabul edilmez.");
+            }
+        }
+
+        if (_multiRoutePaymentRows.Count > 0)
+        {
+            lines.Add("");
+            lines.Add("5) ÇOKLU HAT GİRİŞİ");
+            lines.Add("Tablodaki hücre değişiklikleri de bu iz güncellemesini tetikler. Hat bazlı resmi sonuçlar, satırların kaydedilmesi/çekirdek hesaplanması ile doğrulanır.");
+            foreach (var row in _multiRoutePaymentRows)
+                lines.Add("Hat " + row.RouteNumber + " — " + row.RouteName + ": ek kesin teminat elle giriş = "
+                    + M(row.ManualAdditionalGuarantee) + " TL");
+        }
 
         CalculationTraceLiveTextBox.Text = string.Join(Environment.NewLine, lines);
     }
