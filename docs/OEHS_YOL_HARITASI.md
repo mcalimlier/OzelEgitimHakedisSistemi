@@ -538,3 +538,10 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - Güncel Özel Eğitim satır 4–6 testleri geçti; güncel Temel Eğitim satır 4 fark testi de bilinen uyuşmazlığı koruyarak geçti. Bunlar Excel masaüstü/VBA kabulü yerine geçmez.
 - Genel proje ilerlemesi %90 altında. Başlıca kapanış kapıları: gerçek Excel/VBA yürütmesi; Temel Eğitim T/U; D6/D8/D10/D11 zinciri; D28 ile hesaplama sayfası net farkı; kaynak Excel ve OEHS dört PDF'nin aynı gerçek hakedişte karşılaştırılması.
 - Sıradaki adım: son belge commit'inin CI sonucunu doğrula; sonra gerçek Excel/VBA çıktısı olmadan hesap davranışını değiştirmeden kalan kabul kapılarını sürdür. PR #3 açık/taslak kalacak; ana dala birleştirme/yayınlama yapılmayacak.
+
+## Devam notu — 18.10.2026, rapor net uyuşmazlıklarının regresyon koruması
+
+- Güncel Özel Eğitim rapor neti farkı için test eklendi: hesaplama sayfası AG4=95.527,1346528 iken kaynak Hakediş Raporu D28=98.907,13; OEHS rapor servisi 95.527,13 TL üretir. Windows CI run `39139686716` başarılı: **216 Core + 4 WPF testi geçti**, PDF smoke ve EXE publish başarılı.
+- Temel Eğitim satır 4 bilinen-fark testi de kaynak hesaplama sayfası W4 ile OEHS sonuçlarının ayrışmasını ve D28 farkını açıkça koruyor. Bu son test genişletmesinin CI run'ı `39139722422` son kontrol anında sürüyordu.
+- Bu testler kaynak uyuşmazlıklarını gizlememek içindir; parite başarısı sayılmaz. İki kaynak XLSM'nin hesaplama sayfası ile rapor D28 tutarları bile mevcut önbellek/LibreOffice hesaplarında farklı; gerçek Excel/VBA çıktısı ve iş kararı gerekli.
+- Genel ilerleme %90 altında; oran yükseltilmedi. Sıradaki adım: Temel Eğitim rapor fark testinin nihai CI sonucunu doğrula, sonra masaüstü kabul kontrol listesindeki Excel/VBA sonuçlarıyla bu karar kapılarını kapat. Ana dala birleştirme/yayınlama yok.
