@@ -231,6 +231,25 @@ public sealed class OfficialDocumentOutputTests
             var paymentPage = Assert.IsType<FixedPage>(paymentOutput.Document.Pages[0].Child);
             var paymentText = GetPageText(paymentPage);
 
+            // Regression guard: the rotated deductions heading must share the
+            // center of the full-height merged cell, without changing its font or angle.
+            var deductionsCell = Assert.Single(paymentPage.Children.OfType<Border>()
+                .Where(border => Math.Abs(border.Width - 165d) < 0.01 && border.Height > 300d));
+            var deductionsTitle = Assert.Single(paymentPage.Children.OfType<TextBlock>()
+                .Where(block => block.Text == "KESİNTİLER VE MAHSUPLAR"));
+            Assert.IsType<RotateTransform>(deductionsTitle.RenderTransform);
+            Assert.Equal(-90d, ((RotateTransform)deductionsTitle.RenderTransform).Angle);
+            Assert.Equal(deductionsCell.Width, deductionsTitle.Height, 2);
+            Assert.Equal(deductionsCell.Height, deductionsTitle.Width, 2);
+            Assert.Equal(
+                FixedPage.GetLeft(deductionsCell) + deductionsCell.Width / 2d,
+                FixedPage.GetLeft(deductionsTitle) + deductionsTitle.Width / 2d,
+                2);
+            Assert.Equal(
+                FixedPage.GetTop(deductionsCell) + deductionsCell.Height / 2d,
+                FixedPage.GetTop(deductionsTitle) + deductionsTitle.Height / 2d,
+                2);
+
             // Excel D6 = prior + current monthly K+T, less current I+R.
             // D7 contains only the current month's raw I+R.
             // With two 100 TL base periods, 20 TL previous F and 10 TL current F:
