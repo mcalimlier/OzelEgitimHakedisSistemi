@@ -130,7 +130,8 @@ public sealed class ProgressPaymentCalculator
         var guideStampTax = input.ProgramType == TransportationProgramType.BasicOrSecondary
             ? 0m
             : guideNetAmount * constants.StampTaxRate;
-        // Damga vergisi bir kesintidir; negatif fiyat farkı negatif vergi/kredi oluşturamaz.
+        // Hesaplama sayfası kaynak formülü negatif değerleri aynen korur.
+        // Temel Eğitim raporundaki D15 için negatif matrahın sıfırlanması ayrı rapor formülüdür.
         var stampTax = transportStampTax + guideStampTax;
 
         // Program-specific source rules confirmed by the user after checking the workbooks:
