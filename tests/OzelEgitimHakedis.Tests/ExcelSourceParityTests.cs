@@ -119,7 +119,7 @@ public sealed class ExcelSourceParityTests
     public void BasicOrSecondary_LegacyWorkbookRow5Vector_VatExempt_ShouldMatchRecordedCells()
     {
         // Legacy source: 03-Temel Eğitim Taşıma Ödeme.xlsm, Hesaplama Bilgileri row 5. This is not the latest authoritative upload.
-        // Source cells: G=13, H=6545, I=3659.2, K=88744.2,
+        // Legacy source cells: G=13, H=6545, I=3659.2, K=88744.2,
         // T=219.552, U=841.295016, V=1060.847016, W=87683.352984.
         var input = new ProgressPaymentInput(
             WorkDays: 13, DailyPrice: 6545m, DiscountAmount: 0m,
