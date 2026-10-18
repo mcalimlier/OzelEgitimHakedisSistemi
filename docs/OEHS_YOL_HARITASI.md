@@ -758,3 +758,12 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - Özel Eğitim dosyasında Anasayfa!E3=19, E4=30 ve E5="Kasım 2026". Temel Eğitim'deki E4/E5 anlamlarıyla karıştırılmamalı. Özel Eğitim İcmal Verileri satır 4'te AB4:AD4=1530 ve AM4 formülü =IF(Anasayfa!$E$4="Eylül",0,SUM(AB4:AL4)); bu farklı yapı ayrıca korunmalı.
 - Bu değerler çalışma kitabının kayıtlı önbellek değerleridir; Excel masaüstünde VBA'yı yeniden çalıştırarak güncel hesaplama üretildiği anlamına gelmez. Gerçek Excel/VBA karşılaştırması ve Visual Studio kullanıcı kabul testi açık.
 - **Sıradaki adım:** Her program için ayrı örnek veri setiyle dört PDF'yi üret; yukarıdaki kaynak hücreleri, hakediş raporu D28 ve icmal toplamını Excel'in yeniden hesaplanmış sonucu ile karşılaştırıp sonuçları kabul listesine yaz.
+
+
+## Devam notu — 2026-10-18, güncel dal CI kapanışı
+
+- PR #3 güncel durumu yeniden kontrol edildi: head `773309948c65f3ad791bd6fdc9818529a4333070`, hedef dal `feature/wpf-contract-entry-v0.5`; PR taslak, açık ve birleştirilmemiş durumda.
+- Güncel head için Windows CI run **1986** / ID `39154418844` tamamlandı ve başarılı sonuçlandı. Run'ın `build` işi `success`.
+- Bu, mevcut dalın son commit'i için otomatik Windows CI kanıtıdır; gerçek Microsoft Excel masaüstünde VBA'nın çalıştırılması, gerçek kullanıcı örneğiyle tutar karşılaştırması ve Visual Studio'da etkileşimli görsel kabulün yerine geçmez.
+- Çekirdek kapsam tahmini en az %90 seviyesinde tutuluyor; kapanış durumu test kanıtı ve kullanıcı kabulüyle ayrı değerlendirilmeli. Sonraki somut adım, Excel masaüstünde iki program için ayrı örnekleri yeniden hesaplatmak ve her örneğin dört PDF'sini tutar/dönem/yüklenici/hat/imza/sayfa düzeni bakımından birlikte karşılaştırmak.
+- Ana dala birleştirme veya yayınlama yapılmadı.
