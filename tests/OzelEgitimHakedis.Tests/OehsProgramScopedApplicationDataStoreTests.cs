@@ -54,6 +54,50 @@ public sealed class OehsProgramScopedApplicationDataStoreTests
     }
 
     [Fact]
+    public void Save_ShouldRestorePreviousProgramFile_WhenSecondPartitionCommitFails()
+    {
+        var root = Directory.CreateTempSubdirectory("oehs-program-store-rollback-");
+        try
+        {
+            var store = new OehsProgramScopedApplicationDataStore(root.FullName);
+            var originalContract = Contract(TransportationProgramType.SpecialEducation, "Q1");
+            store.Save(new OehsApplicationData(
+                originalContract,
+                new[] { Route(TransportationProgramType.SpecialEducation, "Q1"),
+                        Route(TransportationProgramType.BasicOrSecondary, "Q1") },
+                new[] { Contractor(TransportationProgramType.SpecialEducation),
+                        Contractor(TransportationProgramType.BasicOrSecondary) },
+                Array.Empty<ProgressPaymentHistoryData>(),
+                new[] { originalContract, Contract(TransportationProgramType.BasicOrSecondary, "Q1") }));
+
+            var specialPath = Path.Combine(root.FullName, "oehs-special-education.json");
+            var basicPath = Path.Combine(root.FullName, "oehs-basic-secondary.json");
+            var originalSpecialContent = File.ReadAllText(specialPath);
+            var savedBasicPath = Path.Combine(root.FullName, "basic-original.json");
+            File.Move(basicPath, savedBasicPath);
+            Directory.CreateDirectory(basicPath);
+
+            var changedContract = originalContract with { WorkName = "Changed work" };
+            Assert.Throws<OehsApplicationDataStoreException>(() => store.Save(new OehsApplicationData(
+                changedContract,
+                new[] { Route(TransportationProgramType.SpecialEducation, "Q1"),
+                        Route(TransportationProgramType.BasicOrSecondary, "Q1") },
+                new[] { Contractor(TransportationProgramType.SpecialEducation),
+                        Contractor(TransportationProgramType.BasicOrSecondary) },
+                Array.Empty<ProgressPaymentHistoryData>(),
+                new[] { changedContract, Contract(TransportationProgramType.BasicOrSecondary, "Q1") })));
+
+            Assert.Equal(originalSpecialContent, File.ReadAllText(specialPath));
+            Assert.True(File.Exists(savedBasicPath));
+            Assert.True(Directory.Exists(basicPath));
+        }
+        finally
+        {
+            root.Delete(recursive: true);
+        }
+    }
+
+    [Fact]
     public void Load_ShouldNotImportLegacyDataIntoTheFreshSchema()
     {
         var root = Directory.CreateTempSubdirectory("oehs-program-migration-");
