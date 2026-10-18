@@ -120,11 +120,6 @@ public sealed class ProgressPaymentCalculator
         var invoiceAmountAfterWithholding =
             transportInvoiceAmount + guideInvoiceAmount;
 
-        // Special Education Excel AD = (K*9.48/1000) + (T*9.48/1000), where T is guide net amount.
-        // Current Basic/Secondary Excel U also adds its T-cell amount to K for stamp tax;
-        // however its T4:T6 are literal 1500 values, while OEHS calculates AdditionalGuarantee
-        // from a 6% rate. That source mismatch is documented and remains a decision/Excel-runtime
-        // acceptance blocker; this shared calculation is not asserted as Basic workbook parity.
         // Basic/Secondary Excel U = (K*9.48/1000) + (T*9.48/1000):
         // the manually entered additional-guarantee amount is part of the stamp-tax base.
         // Special Education Excel AD = (K*9.48/1000) + (T*9.48/1000), where T is guide net amount.
