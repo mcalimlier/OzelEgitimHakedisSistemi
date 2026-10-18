@@ -421,10 +421,15 @@ internal static class OehsOfficialDocumentFactory
                             p.PeriodDate.Value.Year == month.Year &&
                             p.PeriodDate.Value.Month == month.Month)
                 .ToArray();
-            var service = ProgressPaymentIcmalService.IsMonthInWorkbookLookupRange(month)
+            // July is a valid lookup month for Basic/Secondary but remains a
+            // zero placeholder in the current Special Education workbook.
+            var isLookupMonth = ProgressPaymentIcmalService.IsMonthInWorkbookLookupRange(
+                month,
+                c.ProgramType);
+            var service = isLookupMonth
                 ? monthPayments.Sum(ProgressPaymentReportService.CalculateWorkbookMonthlyPaymentAmount)
                 : 0m;
-            var difference = ProgressPaymentIcmalService.IsMonthInWorkbookLookupRange(month)
+            var difference = isLookupMonth
                 ? monthPayments.Sum(ProgressPaymentReportService.CalculateWorkbookPriceDifference)
                 : 0m;
             sumService += service;
