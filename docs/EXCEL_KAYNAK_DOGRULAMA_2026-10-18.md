@@ -26,6 +26,12 @@ Kaynak formül; dönem seçimi için `Anasayfa!E5` ve `I5:I14`, hat seçimi içi
 
 Her iki kaynak dosyada D11 formülü `=IF(D7<0,H2-ABS(D7),H2+D7)` biçimindedir; görünür satır açıklaması ise “Bu Hakedişin Tutarı (C - D)” der. Formülün iş anlamı, H2 hücresinin kaynağı ve D7 fiyat farkı işaretinin etkisi, örnek Excel/VBA sonuçlarıyla doğrulanmadan yeniden yazılmamalıdır.
 
+Önbellekli hücre değerleri bu farkı somutlaştırıyor:
+- **Temel/Ortaöğretim:** H2 = 220.490; D7 = 1.500; D11 = 221.990. Kaydedilmiş sonuç, D7 pozitifken H2 + D7 hesabıyla uyumlu.
+- **Özel Eğitim:** H2 = 93.211,64; D7 = 3.380; D11 = 96.591,64. Kaydedilmiş sonuç yine H2 + D7 hesabıyla uyumlu.
+
+Bu örnekler formülün mevcut önbellekli aritmetiğini doğrular; görünen “C - D” açıklamasının yanlış olduğunu tek başına kanıtlamaz. H2, D7 ve D11'in gerçek iş anlamı ile D28/AG net ödeme zinciri Excel masaüstünde aynı örneklerle birlikte kontrol edilmelidir. Kodda veya kaynak XLSM'de değişiklik yapılmadı.
+
 ## Sonraki doğrulama adımları
 
 1. `AA2` referanslarını formüller, tanımlı adlar, VBA ve sayfa kodlarında aramak.
