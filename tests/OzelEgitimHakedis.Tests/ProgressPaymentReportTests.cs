@@ -357,4 +357,44 @@ public sealed class ProgressPaymentReportTests
         Assert.Equal(110m, totals.CurrentTotal);
     }
 
+
+    [Fact]
+    public void ReportTotals_ShouldNormalizeIdentityFieldsWhenMatchingHistory()
+    {
+        var previous = History(
+            1,
+            new DateOnly(2026, 10, 31),
+            new DateTime(2026, 10, 31),
+            100m,
+            5m) with
+        {
+            TenderNumber = " TENDER ",
+            ContractNumber = " soz ",
+            RouteNumber = " 1 ",
+            ContractorTaxOrIdentityNumber = "123-456-789-01"
+        };
+        var current = History(
+            2,
+            new DateOnly(2026, 11, 30),
+            new DateTime(2026, 11, 30),
+            150m,
+            10m) with
+        {
+            TenderNumber = "tender",
+            ContractNumber = "SOZ",
+            RouteNumber = "1",
+            ContractorTaxOrIdentityNumber = "12345678901"
+        };
+
+        var totals = ProgressPaymentReportService.Calculate(
+            current,
+            new[] { previous, current });
+
+        Assert.Equal(255m, totals.CumulativeServiceAmount);
+        Assert.Equal(10m, totals.CumulativePriceDifference);
+        Assert.Equal(265m, totals.CumulativeTotal);
+        Assert.Equal(105m, totals.PreviousTotal);
+        Assert.Equal(160m, totals.CurrentTotal);
+    }
+
 }
