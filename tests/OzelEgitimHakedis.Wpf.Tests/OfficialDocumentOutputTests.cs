@@ -393,7 +393,7 @@ public sealed class OfficialDocumentOutputTests
             Assert.Contains("Hizmet Alımı İşi Temmuz 2027", basicJulyIcmalText, StringComparison.Ordinal);
             Assert.Contains("₺110,00", basicJulyIcmalText, StringComparison.Ordinal);
             Assert.Contains("₺15,04", basicJulyIcmalText, StringComparison.Ordinal);
-            Assert.Contains("₺120,00", basicJulyIcmalText, StringComparison.Ordinal);
+            Assert.Contains("₺125,04", basicJulyIcmalText, StringComparison.Ordinal);
 
             var basicPayment = Assert.Single(
                 basicOutputs.Where(output => output.Kind == OehsOfficialDocumentKind.HakedisRaporu));
