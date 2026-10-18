@@ -32,7 +32,11 @@ Kapsam: güncel Temel Eğitim ve Özel Eğitim XLSM'leri ile OEHS hesap/rapor zi
 **Güncel kaynak kanıtı**
 - Temel Eğitim: Hesaplama Bilgileri!W4=221.910,0348; Hakediş Raporu!D28=223.410,03; fark 1.500 TL.
 - Özel Eğitim: Hesaplama!AG4=95.527,1346528; Hakediş Raporu!D28=98.907,13; fark 3.380 TL.
-- Fark, ilgili satırın D7 fiyat farkına eşit.
+- Fark, ilgili satırın D7 fiyat farkına yakın; LibreOffice ile yeniden hesaplanan kopyada D28 iki ondalığa gösterildiği için küçük küsurat farkları var.
+- Seçili hatı K16/K17 üzerinden 1, 2 ve 3 olarak değiştirdiğim ayrı LibreOffice kopyalarında D28-W/AG farkları:
+  - Temel Eğitim: satır 4 `1.499,9952` TL; satır 5 `1.500,98848` TL; satır 6 `1.501,97756` TL. Fiyat farkları sırasıyla 1.500 / 1.501 / 1.502 TL.
+  - Özel Eğitim: satır 4 `3.379,9953472` TL; satır 5 `3.755,9964312` TL; satır 6 `4.075,009606` TL. Taşıma + rehber fiyat farkları sırasıyla 3.380 / 3.756 / 4.075 TL.
+- Bu çoklu hat incelemesi formül zincirinin tekrar eden örüntüsünü güçlendiriyor; yine de Excel masaüstü/VBA çıktısı değil. Makroların aktarım ve rapor değerleriyle son doğrulama açık.
 - D11 formülü IF(D7<0,H2-ABS(D7),H2+D7); D8=D6+D7; makro kontrolü D8-D10=D11 eşitliğini arıyor. D6 aylık D:N toplamına, VBA ise K(+T) aylık aktarımına dayanıyor.
 
 **Karar gerektiren soru:** Resmî ödenecek tutar olarak hesaplama sayfası W/AG neti mi, Hakediş Raporu D28 mi esas alınacak; kaynak workbook içindeki çift fiyat farkı etkisi nasıl yorumlanacak?
