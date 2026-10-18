@@ -433,13 +433,13 @@ public sealed class OfficialDocumentOutputTests
             var icmalText = GetPageText(Assert.IsType<FixedPage>(icmalOutput.Document.Pages[0].Child));
             Assert.Contains("Hizmet Alımı İşi Eylül 2026", icmalText, StringComparison.Ordinal);
             Assert.Contains("Hizmet Alımı İşi Ekim 2026", icmalText, StringComparison.Ordinal);
-            Assert.Contains("₺100,00", icmalText, StringComparison.Ordinal); // September contract-price work
-            Assert.Contains("₺100,00", icmalText, StringComparison.Ordinal); // October contract-price work, excluding I/R
+            Assert.Contains("₺120,00", icmalText, StringComparison.Ordinal); // September K+T includes I/R
+            Assert.Contains("₺110,00", icmalText, StringComparison.Ordinal); // October K+T includes I/R
             Assert.Contains("₺10,00", icmalText, StringComparison.Ordinal);  // raw current-period I+R
             Assert.Contains("₺20,00", icmalText, StringComparison.Ordinal);  // raw prior-period I+R
             Assert.Contains("₺30,00", icmalText, StringComparison.Ordinal);  // cumulative raw I+R
-            Assert.Contains("₺200,00", icmalText, StringComparison.Ordinal); // cumulative contract-price work
-            Assert.Contains("₺230,00", icmalText, StringComparison.Ordinal); // summary total after cumulative raw I+R
+            Assert.Contains("₺230,00", icmalText, StringComparison.Ordinal); // cumulative K+T monthly transfers
+            Assert.Contains("₺260,00", icmalText, StringComparison.Ordinal); // summary total after cumulative raw I+R
 
             // The source Excel Hakediş Raporu contains signature drawings; all four
             // PDF templates therefore use the configured signatories.
