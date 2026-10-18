@@ -90,3 +90,11 @@ Her program için Excel masaüstünde:
 - dört resmî PDF (Hakediş Raporu, Hizmet İşleri Hakediş Raporu, Kabul Tutanağı, Hakediş İcmali) ve aynı hakediş bağlamındaki OEHS PDF'leri.
 
 Bu kanıtlar gelmeden genel ilerleme %90 olarak işaretlenmeyecek. PR #3 birleştirilmez ve kaynak XLSM'ler değiştirilmez.
+
+
+### 18.10.2026 — Program bazlı ek kesin teminat kuralı düzeltmesi
+
+- Kullanıcının kaynak Excel üzerinde yaptığı doğrulamaya göre Temel/Ortaöğretim programında ek kesin teminat elle girilir; kesin teminat tutarı bu elle girilen ek kesin teminatın %6'sıdır.
+- Özel Eğitim programında ek kesin teminat Excel formülüyle `=(I4*6/100)+R4*6/100` olarak hesaplanır.
+- OEHS hesaplayıcısı bu iki programı ayrı kuralla işler. Temel/Ortaöğretim için tek hat girişine elle tutar alanı, çoklu hat tablosuna hat bazlı elle tutar sütunu eklendi.
+- Testler eklendi: Temel programda manuel tutar ve Özel Eğitimde I/R %6 formülü. Windows CI sonucu bekleniyor; henüz başarı iddiası yok.
