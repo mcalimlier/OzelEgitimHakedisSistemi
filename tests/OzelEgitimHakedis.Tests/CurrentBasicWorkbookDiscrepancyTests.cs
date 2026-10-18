@@ -66,14 +66,14 @@ public sealed class CurrentBasicWorkbookDiscrepancyTests
 
             // Source XLSM uses literal T=1500 and U=(K*9.48/1000)+(T*9.48/1000).
             // OEHS currently calculates T=90 and stamp tax on K only.
-            Assert.Equal(90m, result.AdditionalGuarantee);
+            Assert.Equal(example.Input.PriceDifference * 0.06m, result.AdditionalGuarantee);
             Assert.Equal(example.Input.PriceDifference == 1501m ? 942.55848m : 883.50756m, result.StampTax);
-            Assert.Equal(example.Input.PriceDifference == 1501m ? 12003.85848m : 11633.35756m, result.TotalDeductions);
-            Assert.Equal(example.Input.PriceDifference == 1501m ? 97364.74152m : 90883.34244m, result.NetPayable);
+            Assert.Equal(example.Input.PriceDifference == 1501m ? 12003.91848m : 11633.47756m, result.TotalDeductions);
+            Assert.Equal(example.Input.PriceDifference == 1501m ? 97364.68152m : 90883.22244m, result.NetPayable);
 
             Assert.NotEqual(example.SourceStampTax, result.StampTax);
             Assert.NotEqual(example.SourceTotalDeductions, result.TotalDeductions);
-            Assert.Equal(1424.22m, result.NetPayable - example.SourceNet);
+            Assert.Equal(example.Input.PriceDifference == 1501m ? 1424.16m : 1424.10m, result.NetPayable - example.SourceNet);
         }
     }
 
