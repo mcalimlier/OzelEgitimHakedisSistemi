@@ -610,3 +610,13 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - `docs/EXCEL_MASAUSTU_KABUL_LISTESI.md` eklendi. Her iki program için gerçek Excel/VBA öncesi/sonrası hücre kaydı, E21/aylık aktarım senaryoları, D6/D7/D8/D10/D11/D28 ve W/AG karşılaştırması, ayrıca dört PDF'nin aynı hakediş bağlamında birlikte kabulü için çalıştırılabilir kontrol listesi hazırlandı.
 - Özel Eğitim satır 5–6 fark test verileri kaynak satırlarıyla uyumlu hat numaralarıyla düzeltildi; kod/test commit'i `e5ef6e9053796cf62193431540a13aecdbc4ad37`. Windows CI run `39142471871` kontrol sırasında **in_progress**; sonucu henüz başarılı diye işaretlenmedi.
 - Genel ilerleme **yaklaşık %81**; %90'a ulaşılmadı. Kritik kalan engel test kodu sayısı değil, gerçek Excel/VBA çıktısının alınması ve dört kaynak PDF'nin aynı hakediş için karşılaştırılması. PR #3 açık/taslak ve birleştirilmemiş durumda; ana dala yayınlama yok.
+
+
+## 18.10.2026 — Geçici Hesap Tutucu (geçici denetim aracı)
+
+- Hakediş Oluştur ekranındaki hesaplama düğmelerinin yanına **GEÇİCİ HESAP TUTUCU** eklendi.
+- Araç son hesaplanan hakediş kaydının girdi anlık görüntüsünü; değişken harfi/açıklaması, uygulanan formül, formülde kullanılan sayılar ve sonuç biçiminde alt alta gösterir. Taşıma, rehber, KDV, tevkifat, damga vergisi, kesinti toplamı ve net ödeme adımlarını listeler.
+- Döküm açıkça bir denetim aracı olarak işaretlenir; kaynak Excel/VBA paritesi iddiasında bulunmaz.
+- **Bilinen kural farkını görünür kılma:** Döküm, mevcut OEHS formülünün ek kesin teminatı fiyat farkının %6'sından türettiğini ve bu davranışın kullanıcı tarafından açıklanan kuralla uyuşmadığını uyarı olarak gösterir. Kullanıcının doğruladığı kural: ek kesin teminat elle girilir; kesin teminat bu girilen tutarın %6'sıdır. Bu nedenle teminat hesabı ayrı kod/model/test çalışması gerektirir.
+- Doğrulama: XAML ve C# değişiklikleri dalda kaydedildi; bu commit için Windows CI ve görsel çalışma zamanı testi henüz teyit edilmedi. Buton ve döküm derleme/test sonucu görülmeden kabul edilmiş sayılmaz.
+- Geçici araç, hesaplama kuralları ve Excel/VBA ile dört PDF'nin karşılaştırması kapanıp kullanıcı onayı alındıktan sonra kaldırılacak.
