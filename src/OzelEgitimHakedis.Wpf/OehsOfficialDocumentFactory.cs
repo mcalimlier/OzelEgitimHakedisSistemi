@@ -441,8 +441,11 @@ internal static class OehsOfficialDocumentFactory
             var isLookupMonth = ProgressPaymentIcmalService.IsMonthInWorkbookLookupRange(
                 month,
                 c.ProgramType);
+            // The source transfer macro writes K for Basic and K+T for Special
+            // into the monthly amount columns. Those values already include I/R.
+            // The icmal then adds the separate raw I/R price-difference column again.
             var service = isLookupMonth
-                ? monthPayments.Sum(ProgressPaymentReportService.CalculateWorkbookMonthlyPaymentAmount)
+                ? monthPayments.Sum(ProgressPaymentReportService.CalculateWorkbookMonthlyPaymentTotal)
                 : 0m;
             var difference = isLookupMonth
                 ? monthPayments.Sum(ProgressPaymentReportService.CalculateWorkbookPriceDifference)
