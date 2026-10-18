@@ -207,6 +207,17 @@ public sealed class ProgressPaymentIcmalServiceTests
         Assert.Equal(420m, result);
     }
 
+    [Fact]
+    public void MonthLookupRange_ShouldKeepJulyProgramSpecificAndExcludeAugust()
+    {
+        Assert.True(ProgressPaymentIcmalService.IsMonthInWorkbookLookupRange(
+            new DateOnly(2027, 7, 1), TransportationProgramType.BasicOrSecondary));
+        Assert.False(ProgressPaymentIcmalService.IsMonthInWorkbookLookupRange(
+            new DateOnly(2027, 8, 1), TransportationProgramType.BasicOrSecondary));
+        Assert.False(ProgressPaymentIcmalService.IsMonthInWorkbookLookupRange(
+            new DateOnly(2027, 7, 1), TransportationProgramType.SpecialEducation));
+    }
+
     private static ProgressPaymentHistoryData History(
         int number,
         DateOnly period,
