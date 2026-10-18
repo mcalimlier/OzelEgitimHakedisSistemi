@@ -164,3 +164,14 @@ Orijinal XLSM dosyaları değiştirilmeden, geçici kopyalar LibreOffice başsı
 Bu örneklerde `D8 - D10 = D11` zinciri LibreOffice yeniden hesaplamasında eşit çıktı. Bu, formülün tüm aylar ve tüm senaryolar için doğrulandığı anlamına gelmez; Excel masaüstünde, özellikle Eylül başlangıcı, Haziran/Temmuz sınırı ve boş ay kayıtlarıyla aynı kontrol tekrarlanmalı.
 
 Aynı yeniden hesaplama kopyalarında `Anasayfa!AA2` `#VALUE!` olarak kaldı. Hücredeki saklı değer/formül tipi ve bağlı çizim/ad tanımları incelenmeli; bu alanın hata göstermesinin zararsız olduğu varsayılmamalı.
+
+
+## Çizim/şekil üzerindeki makro bağlantıları (OnAction)
+
+`xl/drawings/drawing*.xml` dosyalarındaki şekil `macro` nitelikleri de tarandı:
+
+- **Özel Eğitim / drawing1.xml:** `KesintiBilgileriniAktarAktar`, `TumFiyatFarkiAktarimlari`, `HakedişToplamlariniAktar`, `SayfaYazdir`, `AyVerileriniSil`, `HesapKontrol`.
+- **Temel Eğitim / drawing1.xml:** `HakedisTutarlariniAySutununaAktar`, `KesintiToplamlariniAktar`, `TasimaFiyatFarkiAktar`, `HesapKontrol`, `SayfaYazdir`, `AyVerileriniSil`.
+- **Temel Eğitim / drawing3.xml:** `Login_Form_Open` ve `All_Pages.Print_All_Pages_Names`.
+
+Bu eşleştirme, ilgili şekillerin XML'de hangi yordam adlarına bağlı olduğunu doğrular; Excel içindeki buton tıklamasıyla çalışma testi yerine geçmez. Özel Eğitim'de rehber personel fiyat farkı yordamı, ana fiyat farkı aktarım yordamı içinden çağrılıyor; ayrı bir şekil makrosu olarak görünmüyor.
