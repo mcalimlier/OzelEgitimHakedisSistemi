@@ -67,6 +67,12 @@ Ek çapraz kontrol: Her iki orijinal XLSM'nin **ayrı, dönüştürülmüş XLSX
 
 Bu testler faydalı eski regresyon vektörleri olarak korunuyor, fakat adları ve açıklamaları **legacy** olacak şekilde düzeltildi. Artık en son yetkili XLSM'lerle doğrulanmış golden-master testi gibi yorumlanmamalıdır. Güncel dosyalardan çıkarılan değerler ve çözülememiş farklar bu belgedeki ayrı başlıklarda kayıtlı; güncel workbook hücreleriyle yeni parity fixture'ları ancak formül/VBA davranışı doğrulandıktan sonra eklenmeli.
 
+## 8. Güncel Özel Eğitim satır 4–6 için yeni regresyon vektörleri
+
+`tests/OzelEgitimHakedis.Tests/CurrentXlsmSourceParityTests.cs` dosyasına güncel yüklenen Özel Eğitim XLSM'sinin `Hesaplama` satır 4, 5 ve 6 hücrelerinden çıkarılan üç ayrı hesap testi eklendi. Bu satırlarda taşıma/rehber neti, ek teminat, damga vergisi, toplam kesinti, brüt ve net tutarların kodla eşleşmesi bekleniyor. Kaynak değerleri önce LibreOffice ile yeniden hesaplatılan **ayrı XLSX inceleme kopyasından** da okundu; bu, Excel/VBA masaüstü çalıştırması değildir.
+
+Bu testler eski vektörleri güncel kaynak gibi sunan durumu düzeltmek için eklenen ilk güncel kaynak kapsamıdır. CI sonucu alınmadan testlerin başarılı olduğu söylenmez. Temel Eğitim için benzer golden-master vektörü henüz parite sayılmaz; ek teminat T sütunu ve damga vergisi U sütunu farkı açık karar kapısıdır.
+
 ## Sonraki doğrulama adımları
 
 1. `AA2` referanslarını formüller, tanımlı adlar, VBA ve sayfa kodlarında aramak.
