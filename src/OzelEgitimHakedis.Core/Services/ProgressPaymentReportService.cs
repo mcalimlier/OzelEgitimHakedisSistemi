@@ -152,7 +152,8 @@ public static class ProgressPaymentReportService
     /// </summary>
     public static decimal CalculateReportStampTax(
         ProgressPaymentCalculation calculation,
-        TransportationProgramType programType)
+        TransportationProgramType programType,
+        decimal? rawTransportPriceDifference = null)
     {
         ArgumentNullException.ThrowIfNull(calculation);
 
@@ -164,7 +165,7 @@ public static class ProgressPaymentReportService
             return calculation.StampTax;
 
         var reportBase = calculation.TransportNetAmount
-                         + calculation.PriceDifferenceExcludingVat;
+                         + (rawTransportPriceDifference ?? calculation.PriceDifferenceExcludingVat);
         var stampTaxRate = calculation.AppliedConstants?.StampTaxRate
                            ?? ProgressPaymentCalculator.StampTaxRate;
         return reportBase < 0m ? 0m : reportBase * stampTaxRate;
@@ -172,13 +173,14 @@ public static class ProgressPaymentReportService
 
     public static decimal CalculateReportTotalDeductions(
         ProgressPaymentCalculation calculation,
-        TransportationProgramType programType)
+        TransportationProgramType programType,
+        decimal? rawTransportPriceDifference = null)
     {
         ArgumentNullException.ThrowIfNull(calculation);
 
         return calculation.TotalDeductions
                - calculation.StampTax
-               + CalculateReportStampTax(calculation, programType);
+               + CalculateReportStampTax(calculation, programType, rawTransportPriceDifference);
     }
 
     public static decimal CalculateReportNetPayable(
@@ -195,7 +197,8 @@ public static class ProgressPaymentReportService
             reportGross += reportTotals.CurrentPriceDifference;
         var reportDeductions = CalculateReportTotalDeductions(
             current.Calculation,
-            current.Input.ProgramType);
+            current.Input.ProgramType,
+            current.Input.PriceDifference);
 
         return decimal.Round(reportGross, 2, MidpointRounding.AwayFromZero)
                - decimal.Round(reportDeductions, 2, MidpointRounding.AwayFromZero);
