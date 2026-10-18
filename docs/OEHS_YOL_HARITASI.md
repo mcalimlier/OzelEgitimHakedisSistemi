@@ -521,3 +521,11 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - Eski kaynak vektörleri `Legacy` olarak etiketlendi; güncel yüklemelerle karıştırılmıyor. Kaynak doğrulama belgesinde güncel Özel Eğitim paritesi ile Temel Eğitim açık uyuşmazlığı ayrı kaydedildi.
 - Genel ilerleme %90 altında. Temel Eğitim ek teminat/damga vergisi, D6/D8/D10/D11 ve D28 net farkı ile gerçek Excel/VBA yürütmesi açık kabul kapılarıdır.
 - Sıradaki adım: güncel Temel Eğitim bilinen-fark testinin CI sonucunu doğrula; ardından aynı kayıt için Excel masaüstü çıktısı elde edilmeden resmi hesap davranışını değiştirme. Ana dala birleştirme/yayınlama yapılmadı.
+
+## Devam notu — 18.10.2026, Temel Eğitim bilinen-fark testinin doğrulanması
+
+- Güncel Temel Eğitim satır 4 için bilinen-fark testi Windows CI run `39139237528` üzerinde başarılı oldu. Run'da **215 Core + 4 WPF testi geçti**, çözüm/WPF derlemesi, PDF smoke ve Windows EXE publish adımları başarılı.
+- Test, OEHS'nin mevcut davranışını kaynak parite başarısı olarak sunmuyor; kaynak K/KDV/tevkifat/brüt tutarlarını ve ayrışan ek teminat/damga/kesinti/net sonuçlarını açıkça kaydediyor. Resmî hesap davranışı değiştirilmedi.
+- Güncel Özel Eğitim satır 4–6 vektörleri de run `39139111316` içinde 214 Core + 4 WPF testiyle geçti. Eski workbook vektörleri `Legacy` olarak yeniden adlandırıldı.
+- Genel ilerleme hâlâ %90 altında. Gerçek Excel/VBA çalıştırması, Temel Eğitim ek teminatın anlamı ve D28/hesaplama neti farkı çözülmeden finansal parite tamamlanmış sayılamaz.
+- Sıradaki adım: legacy test yeniden adlandırma ve son kaynak notu commit'lerinin CI sonuçlarını doğrula; sonra kalan kaynak Excel karar kapılarına devam et. Ana dala birleştirme/yayınlama yapılmadı.
