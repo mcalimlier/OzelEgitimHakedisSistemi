@@ -792,3 +792,19 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
   5. Her fark için kaynak hücre/formül, Excel sonucu, OEHS sonucu ve regresyon testi kanıtını yaz; kaynak belirsizliğinde ödeme davranışını sessizce değiştirme.
 - **Doğrulama sınırı:** CI başarılı; Excel/VBA gerçek hesap kabulü ve kullanıcının Visual Studio üzerinde etkileşimli görsel kabulü hâlâ açık. Ana dala birleştirme veya yayınlama yapılmadı.
 - **Sıradaki adım:** Kullanıcıyla Excel masaüstünde Temel Eğitim ve Özel Eğitim örneklerini ayrı ayrı çalıştırıp dört PDF'lik kabul listesini doldurmak.
+
+
+## Devam notu — 2026-10-18, çalışma burada durduruldu
+
+- Kullanıcı yorulduğunu belirtti; bu oturumda yeni kod değişikliği, birleştirme veya yayınlama yapılmadan çalışma durduruldu.
+- Çekirdek modüller için son tahminler: WPF %90, veri/arşiv %90, Özel Eğitim hesaplama %92, Temel Eğitim hesaplama %92, formül/rapor motoru %92, dört PDF/icmal %90, test/CI/dağıtım %95; genel tahmin %91,6. Bunlar mühendislik tahminidir, kullanıcı kabulünün tamamlandığı anlamına gelmez.
+- PR #3 açık, taslak ve birleştirilmemiş durumda. Son bilinen head `c765773a1605afe491b206dc1667c249ff7153db`; bu commit için CI sonucu son kontrolde henüz görünmüyordu. Daha önceki head için Windows CI run 1990 başarılıydı.
+- Yarın tekrar ele alınacak kabul testleri:
+  1. Temel Eğitim XLSM dosyasını Excel masaüstünde yeniden hesaplat ve VBA akışını kontrol et.
+  2. Özel Eğitim XLSM dosyasını ayrı yeniden hesaplat ve VBA akışını kontrol et.
+  3. Her programın kaynak hesaplama hücreleri ile aylık icmal sonuçlarını kaydet.
+  4. Her program için dört PDF üret: Hakediş Raporu, Hizmet İşleri Hakediş Raporu, Hizmet İşleri Kabul Tutanağı, Hakediş İcmali.
+  5. Her dört PDF'nin tutar, dönem, yüklenici, hat ve imza bilgilerini aynı programın Excel sonucu ile karşılaştır.
+  6. A4 tek sayfa yerleşimini ve her farkı kaynak formül, Excel sonucu, OEHS sonucu ve test kanıtıyla doğrula.
+- Program kuralları ayrı tutulacak: Temel Eğitim ek kesin teminat elle girilir; Özel Eğitim ek kesin teminat `(I4*6/100)+(R4*6/100)` formülüyle hesaplanır.
+- Birleştirme/yayınlama yapılmadı. Sıradaki adım: yarın önce güncel PR head ve CI durumunu yeniden doğrula, sonra kabul kontrol listesine geç.
