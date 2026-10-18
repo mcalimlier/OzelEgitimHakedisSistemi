@@ -628,3 +628,10 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - Girdi alanları değiştikçe canlı ham değerler ve temel aritmetik otomatik yenileniyor. Taslak, resmî hesap motoru/Excel VBA ile tam eşdeğer olduğu iddiasında bulunmuyor; sonraki adım gerçek hesap zincirini doğrulanmış motor sonuçlarıyla satır satır bağlamak.
 - Teminat farkı görünür uyarı olarak korunuyor: kullanıcı kuralı elle girilen ek kesin teminatın %6'sı; mevcut OEHS formülü fiyat farkından türetiyor. Bu kural sessizce değiştirilmedi.
 - Önceki Windows CI run `39144629991` başarılıydı (önceki commit). Bu arayüz değişikliğinin CI sonucu bekleniyor.
+
+
+### 18.10.2026 — Teminat kuralı alan eşlemesi
+
+- Kaynak Excel kullanıcı tarafından doğrulandı: Temel/Ortaöğretim ek kesin teminat elle girilir; kesin teminat = girilen ek kesin teminat × %6. Özel Eğitim ek kesin teminat formülü `=(I4*6/100)+R4*6/100`.
+- Core hesaplayıcı program türüne göre ayrıldı; Temel/Ortaöğretim manuel ek teminatı kullanır, Özel Eğitim I/R fiyat farklarını %6 ile hesaplar. Girdi modeline `ManualAdditionalGuarantee` eklendi; tek/çoklu hat girişleri ve testler güncellendi.
+- Son commit için Windows CI ve görsel kabul bekleniyor. Dal/PR açık tutuluyor; ana dala birleştirme yapılmadı.
