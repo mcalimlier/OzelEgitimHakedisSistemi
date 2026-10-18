@@ -426,11 +426,9 @@ internal static class OehsOfficialDocumentFactory
         y += 50;
 
         var periods = ProgressPaymentIcmalService.BuildPeriods(c.PeriodDate ?? c.GeneratedDate);
-        decimal sumService = 0m;
-        decimal sumDifference = 0m;
-        for (var index = 0; index < periods.Count; index++)
+        var icmalRows = new List<(DateOnly Month, decimal Service, decimal Difference)>();
+        foreach (var month in periods)
         {
-            var month = periods[index];
             var monthPayments = c.Payments
                 .Where(p => p.PeriodDate.HasValue &&
                             p.PeriodDate.Value.Year == month.Year &&
@@ -443,7 +441,6 @@ internal static class OehsOfficialDocumentFactory
                 c.ProgramType);
             // The source transfer macro writes K for Basic and K+T for Special
             // into the monthly amount columns. Those values already include I/R.
-            // The icmal then adds the separate raw I/R price-difference column again.
             var service = isLookupMonth
                 ? monthPayments.Sum(ProgressPaymentReportService.CalculateWorkbookMonthlyPaymentTotal)
                 : 0m;
@@ -452,22 +449,32 @@ internal static class OehsOfficialDocumentFactory
                 : 0m;
             if (isLookupMonth && c.ProgramType == TransportationProgramType.BasicOrSecondary)
             {
-                // In the current Basic workbook, D6:D16's second lookup uses AB:AL,
-                // which the transfer macro fills with monthly V deduction totals.
-                // Mirror that formula result; Special Education's same-position
-                // columns are guide price differences, so its branch remains I+R only.
+                // Basic D6:D16 adds AB:AL monthly V deductions to the raw I value.
+                // Special Education's same-position columns contain guide I/R values instead.
                 difference += monthPayments.Sum(payment => payment.Calculation.TotalDeductions);
             }
-            sumService += service;
-            sumDifference += difference;
-            var values = new[]
-            {
-                (index + 1).ToString(Turkish),
-                "Hizmet Alımı İşi " + month.ToString("MMMM yyyy", Turkish),
-                FormatLira(service),
-                FormatLira(difference),
-                FormatLira(service + difference)
-            };
+
+            // B6:B16 in each source workbook compacts only positive monthly amount
+            // cells into consecutive rows; later empty months remain blank.
+            if (service > 0m)
+                icmalRows.Add((month, service, difference));
+        }
+
+        var sumService = icmalRows.Sum(row => row.Service);
+        var sumDifference = icmalRows.Sum(row => row.Difference);
+        for (var index = 0; index < periods.Count; index++)
+        {
+            var values = index < icmalRows.Count
+                ? new[]
+                {
+                    (index + 1).ToString(Turkish),
+                    "Hizmet Alımı İşi " + icmalRows[index].Month.ToString("MMMM yyyy", Turkish),
+                    FormatLira(icmalRows[index].Service),
+                    FormatLira(icmalRows[index].Difference),
+                    FormatLira(icmalRows[index].Service + icmalRows[index].Difference)
+                }
+                : new[] { (index + 1).ToString(Turkish), "", "", "", "" };
+
             xx = x;
             for (var col = 0; col < widths.Length; col++)
             {
