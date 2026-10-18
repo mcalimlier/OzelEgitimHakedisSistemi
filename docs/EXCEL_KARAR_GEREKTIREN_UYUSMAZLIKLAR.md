@@ -13,6 +13,11 @@ Kapsam: güncel Temel Eğitim ve Özel Eğitim XLSM'leri ile OEHS hesap/rapor zi
 - Satır 4: K=220.490; T=1.500; U=2.104,4652; V=20.628,9652; W=221.910,0348.
 - OEHS aynı girdiyle T=90 (I'nin %6'sı), damga=2.090,2452; toplam kesinti=19.204,7452; net=223.334,2548. Bu fark için CurrentBasicWorkbookDiscrepancyTests regresyon koruması mevcut.
 
+- Aynı kaynak satırlarının 5 ve 6 vektörleri de kapsama alındı (LibreOffice ile yeniden hesaplanmış kopya, Excel/VBA masaüstü kabulü değil):
+  - Satır 5 kaynak W=95.940,52152; OEHS net=97.364,68152; fark=1.424,16 TL. Kaynak T=1.500 ve U=956,77848; OEHS T=90,06 ve U=942,55848.
+  - Satır 6 kaynak W=89.459,12244; OEHS net=90.883,22244; fark=1.424,10 TL. Kaynak T=1.500 ve U=897,72756; OEHS T=90,12 ve U=883,50756.
+  - Farkın her satırda sabit 1.424,22 TL olduğu varsayılmamalı: OEHS'nin ek teminatı I*6% hesabıyla fiyat farkı değiştikçe değişiyor. Bu üç vektör iş kuralını seçmez; kaynak XLSM ve OEHS farklı davranışını korur.
+
 **Karar gerektiren soru:** T, her hakediş/hat için elle girilecek tutar mı, kaynak dosyada kalan sabit/örnek veri mi, yoksa eski formülün eksikliği mi?
 
 **Olası yollar**
