@@ -7,7 +7,10 @@ public sealed record ProgressPaymentReportTotals(
     decimal CumulativePriceDifference,
     decimal CumulativeTotal,
     decimal PreviousTotal,
-    decimal CurrentTotal);
+    decimal CurrentTotal)
+{
+    public decimal CurrentPriceDifference { get; init; }
+}
 
 public static class ProgressPaymentReportService
 {
@@ -137,7 +140,10 @@ public static class ProgressPaymentReportService
             currentPriceDifference,
             cumulativeTotal,
             previousTotal,
-            currentTotal);
+            currentTotal)
+        {
+            CurrentPriceDifference = currentPriceDifference
+        };
     }
 
     /// <summary>
@@ -150,13 +156,18 @@ public static class ProgressPaymentReportService
     {
         ArgumentNullException.ThrowIfNull(calculation);
 
-        // Basic/Secondary Hakediş Raporu!D15 uses IF(D11<0,0,D11*9.48/1000),
-        // although the calculation sheet keeps the signed K*9.48/1000 value.
-        // The Special Education report prints the calculation-sheet stamp tax as-is.
-        return programType == TransportationProgramType.BasicOrSecondary &&
-               calculation.TransportNetAmount < 0m
-            ? 0m
-            : calculation.StampTax;
+        // Temel Eğitim Hakediş Raporu D11 = H2 + D7 (K + I).
+        // D15 = IF(D11<0,0,D11*9.48/1000). The calculation-sheet U formula
+        // uses K + manually entered T instead; these are separate workbook formulas.
+        // Özel Eğitim raporu hesaplama sayfasındaki damga vergisini aynen kullanır.
+        if (programType != TransportationProgramType.BasicOrSecondary)
+            return calculation.StampTax;
+
+        var reportBase = calculation.TransportNetAmount
+                         + calculation.PriceDifferenceExcludingVat;
+        var stampTaxRate = calculation.AppliedConstants?.StampTaxRate
+                           ?? ProgressPaymentCalculator.StampTaxRate;
+        return reportBase < 0m ? 0m : reportBase * stampTaxRate;
     }
 
     public static decimal CalculateReportTotalDeductions(
@@ -177,7 +188,11 @@ public static class ProgressPaymentReportService
         ArgumentNullException.ThrowIfNull(current);
         ArgumentNullException.ThrowIfNull(reportTotals);
 
+        // Temel Eğitim D11 = H2 + D7; D13 = D11 + D12.
+        // CurrentTotal maps to H2/K and the raw current price difference maps to D7/I.
         var reportGross = reportTotals.CurrentTotal + current.Calculation.Vat;
+        if (current.Input.ProgramType == TransportationProgramType.BasicOrSecondary)
+            reportGross += reportTotals.CurrentPriceDifference;
         var reportDeductions = CalculateReportTotalDeductions(
             current.Calculation,
             current.Input.ProgramType);
