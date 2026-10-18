@@ -125,17 +125,24 @@ public sealed class ProgressPaymentCalculator
         // however its T4:T6 are literal 1500 values, while OEHS calculates AdditionalGuarantee
         // from a 6% rate. That source mismatch is documented and remains a decision/Excel-runtime
         // acceptance blocker; this shared calculation is not asserted as Basic workbook parity.
-        var transportStampTax = transportNetAmount * constants.StampTaxRate;
-        var guideStampTax = guideNetAmount * constants.StampTaxRate;
+        // Basic/Secondary Excel U = (K*9.48/1000) + (T*9.48/1000):
+        // the manually entered additional-guarantee amount is part of the stamp-tax base.
+        // Special Education Excel AD = (K*9.48/1000) + (T*9.48/1000), where T is guide net amount.
+        var transportStampTax = input.ProgramType == TransportationProgramType.BasicOrSecondary
+            ? (transportNetAmount + input.ManualAdditionalGuarantee) * constants.StampTaxRate
+            : transportNetAmount * constants.StampTaxRate;
+        var guideStampTax = input.ProgramType == TransportationProgramType.BasicOrSecondary
+            ? 0m
+            : guideNetAmount * constants.StampTaxRate;
         // Damga vergisi bir kesintidir; negatif fiyat farkı negatif vergi/kredi oluşturamaz.
         var stampTax = transportStampTax + guideStampTax;
 
         // Program-specific source rules confirmed by the user after checking the workbooks:
-        // Basic/Secondary: additional guarantee is manually entered.
+        // Basic/Secondary: the additional-guarantee amount is manually entered and used as-is.
         // Special Education: AC = I*6% + R*6%; discount fields J/S are not included.
         // Keep the programs separate; do not derive Basic/Secondary from price difference.
         var additionalGuarantee = input.ProgramType == TransportationProgramType.BasicOrSecondary
-            ? input.ManualAdditionalGuarantee * constants.AdditionalGuaranteeRate
+            ? input.ManualAdditionalGuarantee
             : (input.PriceDifference * constants.AdditionalGuaranteeRate)
               + (input.GuidePriceDifference * constants.AdditionalGuaranteeRate);
 
