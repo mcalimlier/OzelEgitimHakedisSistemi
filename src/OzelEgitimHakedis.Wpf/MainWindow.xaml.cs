@@ -1332,7 +1332,7 @@ public partial class MainWindow : Window
             ContractorPhoneTextBox, ContractorEmailTextBox, ContractorBankTextBox, ContractorContactTextBox,
             RouteNumberTextBox, RouteNameTextBox, RouteTransportWorkDaysTextBox,
             RouteGuideWorkDaysTextBox, RouteGuideDailyPriceTextBox,
-            WorkDaysTextBox, DailyPriceTextBox, GuideWorkDaysTextBox, GuideDailyPriceTextBox,
+            WorkDaysTextBox, DailyPriceTextBox, GuideWorkDaysTextBox, GuideDailyPriceTextBox, ManualAdditionalGuaranteeTextBox,
             DiscountTextBox, GuideDiscountTextBox, PriceDifferenceTextBox, GuidePriceDifferenceTextBox,
             TaxDebtTextBox, SocialSecurityDebtTextBox, MinimumWageSupportTextBox, InspectionPenaltyTextBox,
             ProgressNumberTextBox
@@ -4375,7 +4375,8 @@ public partial class MainWindow : Window
                 hasGuide ? row.GuideDailyPrice : 0m,
                 hasGuide ? row.GuideDiscountAmount : 0m,
                 hasGuide ? row.GuidePriceDifference : 0m,
-                contract.ProgramType);
+                contract.ProgramType,
+                row.ManualAdditionalGuarantee);
 
             var calculation = ProgressPaymentCalculator.Calculate(input, _calculationConstants);
             var routeProgressNumber = MonthlyProgressPaymentIdentityService.SuggestNextRouteNumber(
@@ -4635,7 +4636,8 @@ public partial class MainWindow : Window
                 guideDailyPrice,
                 guideDiscount,
                 guidePriceDifference,
-                selectedContract.ProgramType);
+                selectedContract.ProgramType,
+                ParseManualAdditionalGuarantee(selectedContract.ProgramType));
 
             int? progressNumber = null;
             if (int.TryParse(
@@ -5007,6 +5009,9 @@ public partial class MainWindow : Window
         var q = V(GuideDailyPriceTextBox);
         var r = V(GuidePriceDifferenceTextBox);
         var s = V(GuideDiscountTextBox);
+        var manualGuarantee = V(ManualAdditionalGuaranteeTextBox);
+        var selectedProgram = (ProgressTenderListBox.SelectedItem as ContractDraftData)?.ProgramType ?? TransportationProgramType.SpecialEducation;
+        var specialGuarantee = i * _calculationConstants.AdditionalGuaranteeRate + r * _calculationConstants.AdditionalGuaranteeRate;
         var transportService = g * h;
         var transportNet = transportService + i - j;
         var guideService = p * q;
@@ -5044,9 +5049,13 @@ public partial class MainWindow : Window
             "Rehber net ara değeri = (P × Q) + R − S = (" + N(p) + " × " + M(q) + ") + " + M(r) + " − " + M(s) + " = " + M(guideNet) + " TL",
             "",
             "3) TEMİNAT — UZMAN İNCELEMESİNE AÇIK KRİTİK FARK",
-            "Doğrulanmış kullanıcı kuralı: Ek kesin teminat tutarı elle girilir; kesin teminat tutarı bu girilen değerin %6'sıdır.",
-            "Mevcut OEHS formülü: (I × %6) + (R × %6) — teminat fiyat farkından türetilmektedir. Bu, elle giriş kuralıyla aynı değildir.",
-            "Mevcut giriş ekranında elle girilen ek kesin teminat alanı yoktur. Alan eşlemesi kaynak Excel/VBA ile doğrulanana kadar teminat satırı resmî olarak doğru kabul edilmemelidir.",
+            "Temel/Ortaöğretim kuralı: Ek kesin teminat tutarı elle girilir; kesin teminat tutarı bu girilen tutarın %6'sıdır.",
+            "Özel Eğitim kuralı: Ek kesin teminat = (I × %6) + (R × %6); Excel formülüne göre hesaplanır.",
+            "Bu iki programın teminat kuralları bilerek ayrı tutulur. Kesin teminatın %6 hesaplaması ekranda ayrıca izlenecektir.",
+            "",
+            "Ek kesin teminat (programa göre) = " + (selectedProgram == TransportationProgramType.BasicOrSecondary
+                ? "elle girilen tutar = " + M(manualGuarantee) + " TL"
+                : "(I × %6) + (R × %6) = (" + M(i) + " × 0,06) + (" + M(r) + " × 0,06) = " + M(specialGuarantee) + " TL"),
             "",
             "4) KONTROL SINIRLARI",
             "Boş veya geçersiz sayısal girişler bu teşhis aritmetiğinde 0 gibi görünür; ham metin yukarıda korunur. Geçersiz girişleri ayrıca düzeltin.",
@@ -7684,6 +7693,7 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         }
 
         public decimal InspectionPenalty { get; set; }
+        public decimal ManualAdditionalGuarantee { get; set; }
 
         private void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
