@@ -131,6 +131,7 @@ internal static class OehsOfficialDocumentFactory
 
     private static FixedPage BuildHakedisRaporu(OehsOfficialDocumentContext c)
     {
+        var rawTransportPriceDifference = FindCurrentRawTransportPriceDifference(c);
         var page = NewPage();
         const double x = 67;
         const double w = 659;
@@ -170,7 +171,7 @@ internal static class OehsOfficialDocumentFactory
             ("D", "Bir Önceki Hakedişlerin Toplam Tutarı", c.ReportTotals.PreviousTotal, White, 29),
             ("E", "Bu Hakedişin Tutarı ( C - D )", c.ReportTotals.CurrentTotal, White, 29),
             ("F", BuildVatRateLabel(c.Calculation, c.ProgramType), c.Calculation.Vat, White, 29),
-            ("G", "Tahakkuk Tutarı", c.ReportTotals.CurrentTotal + c.Calculation.Vat, TotalGray, 32)
+            ("G", "Tahakkuk Tutarı", c.ReportTotals.CurrentTotal + c.ReportTotals.CurrentPriceDifference + c.Calculation.Vat, TotalGray, 32)
         };
         foreach (var row in summaryRows)
         {
@@ -184,7 +185,7 @@ internal static class OehsOfficialDocumentFactory
         var deductions = new (string Key, string Label, decimal Value, double Height)[]
         {
             ("a)", "Gelir / Kurumlar Vergisi ( E x % .. )", 0m, 29),
-            ("b)", BuildStampTaxLabel(c.Calculation), ProgressPaymentReportService.CalculateReportStampTax(c.Calculation, c.ProgramType), 29),
+            ("b)", BuildStampTaxLabel(c.Calculation), ProgressPaymentReportService.CalculateReportStampTax(c.Calculation, c.ProgramType, rawTransportPriceDifference), 29),
             ("c)", BuildWithholdingLabel(c.Calculation, c.ProgramType), c.Calculation.Withholding, 29),
             ("d)", "Sosyal Sigortalar Kurumu Kesintisi", c.Calculation.Deductions.SocialSecurityDebt, 29),
             ("e)", "İdare Makinesi Kiraları", 0m, 29),
@@ -211,7 +212,7 @@ internal static class OehsOfficialDocumentFactory
 
         AddCell(page, "H", x, y, 53, 28, 10, true, TextAlignment.Center, TotalGray);
         AddCell(page, "Kesintiler ve Mahsuplar Toplamı", x + 53, y, 356, 28, 10, true, TextAlignment.Left, TotalGray);
-        AddCell(page, FormatMoney(ProgressPaymentReportService.CalculateReportTotalDeductions(c.Calculation, c.ProgramType)), x + 409, y, w - 409, 28, 10, true, TextAlignment.Right, TotalGray, new Thickness(3, 2, 8, 2));
+        AddCell(page, FormatMoney(ProgressPaymentReportService.CalculateReportTotalDeductions(c.Calculation, c.ProgramType, rawTransportPriceDifference)), x + 409, y, w - 409, 28, 10, true, TextAlignment.Right, TotalGray, new Thickness(3, 2, 8, 2));
         y += 28;
         AddCell(page, "I", x, y, 53, 28, 10, true, TextAlignment.Center, TotalGray);
         AddCell(page, "Yükleniciye Ödenecek Tutar  ( G - H )", x + 53, y, 356, 28, 10, true, TextAlignment.Left, TotalGray);
@@ -225,6 +226,18 @@ internal static class OehsOfficialDocumentFactory
             leftX: 115, leftWidth: 205, rightX: 435, rightWidth: 200,
             nameOffset: 34, roleOffset: 53, dateOffset: 72, directorOffset: 108, titleOffset: 126, footerY: 1050);
         return page;
+    }
+
+    private static decimal FindCurrentRawTransportPriceDifference(OehsOfficialDocumentContext context)
+    {
+        var currentPayment = context.Payments
+            .Where(payment => payment.ProgressPaymentNumber == context.ProgressPaymentNumber)
+            .Where(payment => payment.PeriodDate == context.PeriodDate)
+            .OrderByDescending(payment => payment.CreatedAt)
+            .FirstOrDefault();
+
+        return currentPayment?.Input.PriceDifference
+               ?? context.Calculation.PriceDifferenceExcludingVat;
     }
 
     private static FixedPage BuildHizmetIsleriHakedisRaporu(OehsOfficialDocumentContext c)
