@@ -112,6 +112,18 @@ VBA projesinin CFB/OLE akışı ve MS-OVBA sıkıştırılmış kaynak akışlar
 - Kod değişikliği: **bu turda yapılmadı**; yeni kaynaklardan kesin sonuç çıkarmadan hesap davranışı değiştirilmedi.
 
 
+## Karar kaydı — aylık icmal takvim sırası
+
+Kullanıcı kararı (18.10.2026): Eylül–Temmuz takvim sırası korunacak; Excel'deki ay başlığı kusuru belgelenecek; gerçek Excel/VBA sonuçlarıyla karşılaştırma yapılmadan resmî hesap davranışı değiştirilmeyecek.
+
+Özel Eğitim kaynak dosyasında gözlenen örnek:
+- `Anasayfa!E5` seçili dönemi Kasım 2026 gösteriyor.
+- `İcmal Verileri!AN3` Eylül, `AO3` Ekim, `AP3` ve `AQ3` ise ikisi de Aralık başlığına bağlı; Kasım başlığı bu dizide atlanmış.
+- `Hakediş İcmali!E21` önbellek sonucu 10.580,582128 TL; bu, `İcmal Verileri!AO4` Ekim değeriyle eşleşiyor. Bu tek örnek Aralık ve takip eden ayların sütun eşlemesini doğrulamaz.
+- Temel Eğitim ayrı bir düzen kullanır: `Anasayfa!E4` dönem seçimi ve `İcmal Verileri!AB:AL` aylık kesinti sütunları. Programlar tek bir ay sütunu şemasına zorlanmayacak.
+
+Uygulama sınırı: Bu aşamada kaynak XLSM dosyaları ve hesap davranışı değiştirilmedi. OEHS'nin Eylül–Temmuz dönem dizisinin sırasını bütünüyle doğrulayan regresyon testi eklendi; bu test henüz çalıştırılmadı. Kaynakta hatalı başlık görüldüğü için bir ay değerini yeniden etiketlemek veya taşımak için Excel masaüstünde makroları çalıştırıp Kasım, Aralık ve sonraki ayların hücre sonuçlarını karşılaştırmak gerekir.
+
 ## CI tetikleyicisi — 18.10.2026 devam incelemesi
 
 PR #3 hedef dalı `feature/wpf-contract-entry-v0.5`. Windows workflow dosyasının başlık dalındaki `pull_request.branches` listesinde başlangıçta yalnızca `main` vardı; listeye hedef dal eklendi. Değişiklik commit'i: `9d7d413692f22b2bb719bfaa5e9b4c6e0c6ada91`.
