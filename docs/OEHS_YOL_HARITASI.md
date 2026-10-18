@@ -767,3 +767,13 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - Bu, mevcut dalın son commit'i için otomatik Windows CI kanıtıdır; gerçek Microsoft Excel masaüstünde VBA'nın çalıştırılması, gerçek kullanıcı örneğiyle tutar karşılaştırması ve Visual Studio'da etkileşimli görsel kabulün yerine geçmez.
 - Çekirdek kapsam tahmini en az %90 seviyesinde tutuluyor; kapanış durumu test kanıtı ve kullanıcı kabulüyle ayrı değerlendirilmeli. Sonraki somut adım, Excel masaüstünde iki program için ayrı örnekleri yeniden hesaplatmak ve her örneğin dört PDF'sini tutar/dönem/yüklenici/hat/imza/sayfa düzeni bakımından birlikte karşılaştırmak.
 - Ana dala birleştirme veya yayınlama yapılmadı.
+
+
+## Devam notu — 2026-10-18, yol haritası commit'i CI doğrulaması
+
+- Güncel PR #3 head'i `fda2998b518ab262ca2ea09c3cc32274e9417231` olarak yeniden kontrol edildi; hedef dal `feature/wpf-contract-entry-v0.5`, durum açık/taslak/birleştirilmemiş.
+- Bu head için Windows CI run **1988** / ID `39154750907` tamamlandı; `build` işi `success`. Böylece bir önceki yol haritası güncellemesi de otomatik Windows CI ile doğrulandı.
+- İki XLSM dosyası yeniden salt okunur incelendi. Temel Eğitim rapor zinciri: D11 kaynak formülü IF(D7<0,H2-ABS(D7),H2+D7), D13=D11+D12, D15=IF(D11<0,0,D11*9.48/1000), D28=ROUND(D13,2)-ROUND(D26,2). Hesaplama Bilgileri W4=O4−V4 ve U4=(K4*9.48/1000)+T4*9.48/1000 olarak ayrı kalır.
+- Özel Eğitim rapor zinciri: H2, K ve T kaynak alanlarının toplamı; D7, I ve R fiyat farklarının toplamı; D11 negatif dalı korunur; D12 taşıma ve rehber KDV toplamıdır; D15 Hesaplama!AD; D28 rapor D13/D26 yuvarlama zinciridir. Hesaplama!W4=T4+V4, AG4=AF4−AE4, AC4=(I4*6/100)+(R4*6/100), AD4=(K4*9.48/1000)+(T4*9.48/1000) ayrı formüllerdir.
+- Bu tarama yalnızca kaynak formül yapısını doğrular; workbook'un Excel masaüstünde yeniden hesaplandığı veya VBA makrolarının çalıştırıldığı anlamına gelmez. Gerçek örnek tutarlarıyla dört PDF'nin uçtan uca kabulü hâlâ açık.
+- Sıradaki adım: yeni kod değişikliği yapmadan önce Excel masaüstünde her programı ayrı yeniden hesaplatıp D28, hesaplama neti ve aylık icmal toplamlarını kaydet; sonra OEHS çıktılarıyla karşılaştır. Birleştirme/yayınlama yapılmadı.
