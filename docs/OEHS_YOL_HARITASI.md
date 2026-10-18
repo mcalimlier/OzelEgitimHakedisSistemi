@@ -545,3 +545,10 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - Temel Eğitim satır 4 bilinen-fark testi de kaynak hesaplama sayfası W4 ile OEHS sonuçlarının ayrışmasını ve D28 farkını açıkça koruyor. Bu son test genişletmesinin CI run'ı `39139722422` son kontrol anında sürüyordu.
 - Bu testler kaynak uyuşmazlıklarını gizlememek içindir; parite başarısı sayılmaz. İki kaynak XLSM'nin hesaplama sayfası ile rapor D28 tutarları bile mevcut önbellek/LibreOffice hesaplarında farklı; gerçek Excel/VBA çıktısı ve iş kararı gerekli.
 - Genel ilerleme %90 altında; oran yükseltilmedi. Sıradaki adım: Temel Eğitim rapor fark testinin nihai CI sonucunu doğrula, sonra masaüstü kabul kontrol listesindeki Excel/VBA sonuçlarıyla bu karar kapılarını kapat. Ana dala birleştirme/yayınlama yok.
+
+## Devam notu — 18.10.2026, Temel Eğitim resmî rapor net testi
+
+- Temel Eğitim güncel satır 4 fark testi genişletildi: yalnız Hesaplama sayfası W4 değil, OEHS'nin resmî rapor servis neti de kaynak D28 ile karşılaştırılıyor. Kaynak D28=223.410,03 TL; OEHS rapor servisi=223.334,25 TL. Fark, ek teminat/damga vergisi ve rapor D11 zinciri karar kapıları kapanmadan giderilmiş sayılmıyor.
+- Windows CI run `39139722422` üzerinde **216 Core + 4 WPF testi geçti**, tam çözüm/WPF derlemesi, PDF smoke ve Windows EXE publish başarılı.
+- Kaynakta iki programın D28 neti ile hesaplama sayfası neti arasındaki farkları koruyan testler var; bunlar resmi sonuç tercihini çözmüyor, yalnızca uyuşmazlığın görünürlüğünü sağlıyor.
+- Genel ilerleme %90 altında. Gerçek Excel/VBA sonuçları olmadan hesap motoru veya kaynak formüllerinde değişiklik yapılmadı. Sıradaki adım, masaüstü kabul kontrol listesini gerçek Excel'de yürütüp aynı hücre ve PDF değerlerini kaydetmek; ana dala birleştirme/yayınlama yok.
