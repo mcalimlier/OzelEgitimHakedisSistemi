@@ -28,14 +28,15 @@ public sealed class CurrentBasicWorkbookDiscrepancyTests
                     SocialSecurityDebt: 1500m,
                     MinimumWageSupport: 1500m,
                     InspectionPenalty: 1500m,
-                    ProgramType: TransportationProgramType.BasicOrSecondary),
+                    ProgramType: TransportationProgramType.BasicOrSecondary,
+                    ManualAdditionalGuarantee: 1500m),
                 SourceTransportNet = 99426m,
                 SourceGross = 109368.6m,
                 SourceStampTax = 956.77848m,
                 SourceTotalDeductions = 13428.07848m,
                 SourceNet = 95940.52152m,
                 SourceReportD28 = 97441.51m,
-                ExpectedReportNet = 97364.68m
+                ExpectedReportNet = 95940.52m
             },
             new
             {
@@ -57,7 +58,7 @@ public sealed class CurrentBasicWorkbookDiscrepancyTests
                 SourceTotalDeductions = 13057.57756m,
                 SourceNet = 89459.12244m,
                 SourceReportD28 = 90961.10m,
-                ExpectedReportNet = 90883.22m
+                ExpectedReportNet = 89459.12m
             }
         };
 
@@ -68,16 +69,11 @@ public sealed class CurrentBasicWorkbookDiscrepancyTests
             Assert.Equal(example.SourceTransportNet, result.TransportNetAmount);
             Assert.Equal(example.SourceGross, result.GrossAmount);
 
-            // Source XLSM uses literal T=1500 and U=(K*9.48/1000)+(T*9.48/1000).
-            // OEHS currently calculates T=90 and stamp tax on K only.
-            Assert.Equal(example.Input.PriceDifference * 0.06m, result.AdditionalGuarantee);
-            Assert.Equal(example.Input.PriceDifference == 1501m ? 942.55848m : 883.50756m, result.StampTax);
-            Assert.Equal(example.Input.PriceDifference == 1501m ? 12003.91848m : 11633.47756m, result.TotalDeductions);
-            Assert.Equal(example.Input.PriceDifference == 1501m ? 97364.68152m : 90883.22244m, result.NetPayable);
-
-            Assert.NotEqual(example.SourceStampTax, result.StampTax);
-            Assert.NotEqual(example.SourceTotalDeductions, result.TotalDeductions);
-            Assert.Equal(example.Input.PriceDifference == 1501m ? 1424.16m : 1424.10m, result.NetPayable - example.SourceNet);
+            // Current workbook: T is manually entered as 1500; U=(K*9.48/1000)+(T*9.48/1000).
+            Assert.Equal(1500m, result.AdditionalGuarantee);
+            Assert.Equal(example.SourceStampTax, result.StampTax);
+            Assert.Equal(example.SourceTotalDeductions, result.TotalDeductions);
+            Assert.Equal(example.SourceNet, result.NetPayable);
 
             var current = new ProgressPaymentHistoryData(
                 Id: Guid.NewGuid(),
@@ -115,7 +111,8 @@ public sealed class CurrentBasicWorkbookDiscrepancyTests
             SocialSecurityDebt: 1500m,
             MinimumWageSupport: 1500m,
             InspectionPenalty: 1500m,
-            ProgramType: TransportationProgramType.BasicOrSecondary);
+            ProgramType: TransportationProgramType.BasicOrSecondary,
+            ManualAdditionalGuarantee: 1500m);
 
         var result = ProgressPaymentCalculator.Calculate(input);
 
@@ -127,17 +124,11 @@ public sealed class CurrentBasicWorkbookDiscrepancyTests
         Assert.Equal(11024.5m, result.TransportWithholding);
         Assert.Equal(242539m, result.GrossAmount);
 
-        // OEHS currently derives T from I*6% and calculates stamp tax on K alone.
-        // The source uses a literal T=1500 and includes T in U's stamp-tax formula.
-        Assert.Equal(90m, result.AdditionalGuarantee);
-        Assert.Equal(2090.2452m, result.StampTax);
-        Assert.Equal(19204.7452m, result.TotalDeductions);
-        Assert.Equal(223334.2548m, result.NetPayable);
-
-        Assert.NotEqual(1500m, result.AdditionalGuarantee);
-        Assert.NotEqual(2104.4652m, result.StampTax);
-        Assert.NotEqual(20628.9652m, result.TotalDeductions);
-        Assert.NotEqual(221910.0348m, result.NetPayable);
+        // The manually entered T=1500 is used as-is and included in the source stamp-tax base.
+        Assert.Equal(1500m, result.AdditionalGuarantee);
+        Assert.Equal(2104.4652m, result.StampTax);
+        Assert.Equal(20628.9652m, result.TotalDeductions);
+        Assert.Equal(221910.0348m, result.NetPayable);
 
         var current = new ProgressPaymentHistoryData(
             Id: Guid.NewGuid(),
@@ -156,9 +147,9 @@ public sealed class CurrentBasicWorkbookDiscrepancyTests
         var reportTotals = ProgressPaymentReportService.Calculate(current, new[] { current });
         var reportNet = ProgressPaymentReportService.CalculateReportNetPayable(current, reportTotals);
 
-        // Latest source Hakediş Raporu!D28 = 223,410.03, while OEHS's
-        // report service currently yields 223,334.25 for this source-derived row.
-        Assert.Equal(223334.25m, reportNet);
+        // Hesaplama Bilgileri!W4 rounds to 221,910.03; Hakediş Raporu!D28 remains 223,410.03.
+        // This unresolved source-report discrepancy is preserved, not silently normalized.
+        Assert.Equal(221910.03m, reportNet);
         Assert.NotEqual(223410.03m, reportNet);
     }
 }
