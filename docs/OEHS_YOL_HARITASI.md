@@ -699,3 +699,24 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 2. Hakediş Raporu'nun dört PDF içindeki tutarlarının aynı örnek için D28 ile eşleştiğini doğrula.
 3. Temel Eğitim ve Özel Eğitim için ayrı ayrı tam uçtan uca örnekler çalıştır; sonrasında arşiv/önceki kesinti/aylık icmal zincirlerini kontrol et.
 4. Tüm çekirdeklerde en az %90 hedefini, başarılı CI ve uçtan uca test kanıtı oluşmadan tamamlandı sayma.
+
+
+## Devam notu — 18.10.2026, İcmal aktarım formülleri ve son CI
+
+### Kaynak Excel formüllerine göre tamamlanan eşleştirmeler
+- Temel Eğitim hesaplama neti W=O−V olarak kaldı; Özel Eğitim hesaplama neti AG=AF−AE olarak kaldı. Hakediş Raporu D28, her programın kendi D11/D13/D15/D26 zinciri üzerinden ayrıca hesaplanıyor.
+- Hakediş Raporu PDF'sinde tahakkuk satırı D13 = D11 + D12, damga vergisi ve kesinti toplamı aynı programın kaynak hücreleriyle eşleşiyor. Temel Eğitim rapor D15'i K+ham I matrahından, negatif matrahda sıfır; Özel Eğitim rapor D15'i hesaplama sayfasındaki AD değerinden alıyor.
+- İcmal aktarım makroları kaynak dosyalardan kontrol edildi. Temel Eğitim makrosu aylık tutar sütununa K, fiyat farkı sütununa I, AB:AL sütunlarına aylık V kesintisini yazıyor. Özel Eğitim makrosu aylık tutar sütununa K+T, ayrı fiyat farkı sütunlarına I ve R yazıyor.
+- Bu nedenle İcmal PDF'sinde aylık C sütunu Temel Eğitim için K, Özel Eğitim için K+T; D sütunu Temel Eğitim için I+V, Özel Eğitim için I+R; E sütunu C+D olarak hesaplanıyor. Pozitif aylık tutarı olmayan dönemler kaynak B6:B16 formüllerindeki gibi boş bırakılıyor ve pozitif dönemler takvim sırasıyla sıkıştırılıyor.
+- İcmal toplam satırı, kaynak E17/E23/E25 zinciri gibi aylık satırların toplamından önceki ve mevcut hakediş kesintilerini çıkarıyor. Önceki ay kesintisi program türüne göre kendi aylık kesinti zincirinden alınıyor.
+- Kabul Tutanağı hizmet dönemi sözleşmenin başlangıç ve bitiş tarihleriyle sınırlandırılıyor. Dört belge tek A4 sayfa çıktısı olarak üretilmeye devam ediyor.
+
+### Son doğrulama
+- Windows CI run 1969 / ID 39152255956 başarılı: Core testleri 221/221; WPF çıktı testleri 4/4; sekiz PDF smoke çıktısı üretildi ve kontrol edildi; Windows EXE ve izole test paketi yayınlama adımları başarılı.
+- Başarılı commit: 70c2ef3f9d0455e1727ab8cca162118c106264eb. Ana dala birleştirme veya yayınlama yapılmadı.
+- Gerçek Excel masaüstü/VBA ile tekrar çalıştırma ve dört PDF'nin tutar/dönem/yüklenici/hat/imza/sayfa düzeni açısından görsel kabulü hâlâ sonraki aşamada. Otomatik PDF smoke, görsel kabulün yerine geçmez.
+
+### Sıradaki adım
+1. İcmal ve rapor formül eşleştirmesinin son CI run'ını kontrol et.
+2. Temel Eğitim ve Özel Eğitim için aynı örnek veriyle dört PDF'yi birlikte görsel incelemeye hazırla.
+3. Çekirdek modül ilerleme tablosunu, her modül için kaynak formül eşleşmesi ve test kanıtıyla güncelle; %90 altındaki modüllerde devam et.
