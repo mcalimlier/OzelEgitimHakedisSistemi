@@ -739,3 +739,12 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - **Açık kabul işleri:** Sekiz çıktının bu smoke örnekleriyle yapılan incelemesi yalnızca yerleşim/sayfa sınırı kontrolüdür; gerçek Excel/VBA örnek tutarlarıyla karşılaştırma ve dört belgenin tutar, dönem, yüklenici, hat ve imza bilgilerinin uzman görsel kabulü hâlâ yapılmalı.
 - PR #3 açık/merge edilmemiş durumda; ana dala birleştirme veya yayınlama yapılmadı.
 - **Sıradaki adım:** Visual Studio'da kullanıcıyla gerçek Excel örnek verilerini girerek Temel Eğitim ve Özel Eğitim için dört belgeyi birlikte karşılaştır; farkları kaynak hücre ve testle kaydet.
+
+
+## Devam notu — 2026-10-18, dokümantasyon CI kapanışı ve Excel örneği kontrolü
+
+- Yol haritası güncellemesi commit'i `a934655427f89f7b4c5ff954ef5f3c06728e137b` için Windows CI run 1982 / ID 39154040266 da başarılı tamamlandı. Bu run'da tam çözüm/WPF derleme, test derlemeleri, çözüm testleri, PDF smoke üretimi ve Windows EXE publish adımları başarılı.
+- İki güncel XLSM dosyası salt okunur açılarak mevcut örnek hücreleri kontrol edildi. Temel Eğitim'de Anasayfa!E4 = “Kasım 2026”, Anasayfa!E5 = TODAY() sonucu; İcmal Verileri!AB4:AL4 içeriği aylık tutar/kesinti zincirine ait. Bu kaynak kusurunu uygulama davranışına sessizce kopyalamama kararı korunuyor.
+- Özel Eğitim dosyasında Anasayfa!E3=19 ve E4=30 gibi sayısal iş günü girişleri var; aynı adreslerin Temel Eğitim'deki anlamıyla karıştırılmaması gerektiği doğrulandı. Programlara özel hücre eşlemesi korunmalı.
+- Excel'deki örnek hücreler tek başına dört PDF'nin uçtan uca kabulünü tamamlamıyor. Gerçek örnek verilerin UI'ye aktarılması ve PDF'lerin Excel çıktılarıyla satır satır karşılaştırılması hâlâ kullanıcı/Windows masaüstü kabul adımıdır.
+- **Sıradaki adım:** Visual Studio'da her program için kendi Excel örneğiyle ayrı kabul koşusu yap; her koşuda dört PDF'nin dönem, yüklenici, hat, imza ve hesaplanan tutarlarını karşılaştır. PR açık ve birleştirilmemiş durumda.
