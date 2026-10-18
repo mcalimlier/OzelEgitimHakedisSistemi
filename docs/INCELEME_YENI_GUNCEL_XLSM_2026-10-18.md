@@ -112,6 +112,12 @@ VBA projesinin CFB/OLE akışı ve MS-OVBA sıkıştırılmış kaynak akışlar
 - Kod değişikliği: **bu turda yapılmadı**; yeni kaynaklardan kesin sonuç çıkarmadan hesap davranışı değiştirilmedi.
 
 
+## Takvim sırası regresyon kapsamı — devam
+
+`ProgressPaymentIcmalServiceTests` içine `BuildPeriods_ShouldPreserveFullSeptemberThroughJulyCalendarOrder` testi eklendi. Test, Eylül 2026–Temmuz 2027 arasındaki 11 ayın sıra ve başlangıç tarihlerini beklenen takvim dizisiyle karşılaştırıyor. Bu test kaynak Excel'in hatalı sütun başlıklarını düzeltmez ve aylık tutar eşlemesini doğruladığı iddiasında değildir; yalnızca OEHS dönem dizisinin takvim sırasını korumasını güvence altına almayı hedefler.
+
+Test ve Windows çözümü bu oturumda çalıştırılamadı. Güncel commit için CI durum sorgusu boş döndü; bu, başarısızlık değil, sonuç bulunmadığı anlamına gelir. Sonuç görülene kadar doğrulanmamış olarak işaretli kalacaktır.
+
 ## Karar kaydı — aylık icmal takvim sırası
 
 Kullanıcı kararı (18.10.2026): Eylül–Temmuz takvim sırası korunacak; Excel'deki ay başlığı kusuru belgelenecek; gerçek Excel/VBA sonuçlarıyla karşılaştırma yapılmadan resmî hesap davranışı değiştirilmeyecek.
