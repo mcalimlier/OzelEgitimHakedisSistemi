@@ -481,3 +481,11 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - OEHS Temel/Ortaöğretim damga vergisi hesaplaması şu anda K üzerinden ilerliyor ve ek teminatı %6 ile üretiyor. Bu nedenle güncel XLSM ile kaynak eşdeğerliği doğrulanmış değil. Fark kaynak doğrulama belgesine eklendi; resmi hesap davranışı kararsızken değiştirilmedi.
 - Bu bulgu genel ilerlemeyi %90'a yaklaştıran bir kapanış değildir; tersine, kaynakla hesap paritesi için çözülmesi gereken somut bir risk daha belirledi. Gerçek Excel/VBA çalıştırması ve iş kuralı kararı gerekli.
 - Sıradaki adım: Temel Eğitim T4:T6'nin neden sabit olduğunu ve U4 damga vergisi zincirinin beklenen davranışını gerçek Excel/VBA örneğinde doğrula; ardından OEHS hesabını hücre bazında karşılaştır. Ana dala birleştirme yapılmadı.
+
+## Devam notu — 18.10.2026, resmî rapor neti ile hesaplama sayfası neti
+
+- Aynı önbellekli örneklerde resmî rapor D28 ile hesaplama sayfası neti farklı: Temel Eğitim `W4=221.910,0348` ve `D28=223.410,03` (fark 1.500 TL); Özel Eğitim `AG4=95.527,1346528` ve `D28=98.907,13` (fark 3.380 TL). Her iki fark da rapordaki D7 fiyat farkına eşit.
+- Bu, kaynak XLSM'nin kendi iki çıktı zinciri arasında çelişki olduğunu gösteriyor. OEHS'nin hesaplama sayfasına yakın net tutarı üretmesi, resmî Hakediş Raporu D28 ile eşitlik anlamına gelmiyor. Beklenen resmî sonuç Excel masaüstü/VBA ile aynı örnekte doğrulanmalı; kaynak formül veya uygulama tahminle değiştirilmedi.
+- Son doğrulanmış Windows CI run `39138196772` başarılı: 207 Core testi, 4 WPF testi, tam çözüm/WPF derlemesi, PDF smoke ve EXE publish adımları geçti. Daha sonraki yalnızca belge/kod açıklaması değişikliklerinin CI çalışmaları ayrıca izleniyor.
+- Genel proje hâlâ %90 altında; hesap eşdeğerliği için temel riskler artık açıkça sayısallaştırıldı: Temel Eğitim ek teminat ve damga vergisi, D6/D8/D10/D11 aktarım zinciri ve iki programda D28 ile hesaplama sayfası neti farkı.
+- Sıradaki adım: Excel masaüstünde her iki program için aynı kayıtla hesaplama sayfası netini ve D28'i karşılaştır; kullanıcı tarafından onaylanmış beklenen değer olmadan resmi ödeme davranışını değiştirme. Ana dala birleştirme/yayınlama yapılmadı.
