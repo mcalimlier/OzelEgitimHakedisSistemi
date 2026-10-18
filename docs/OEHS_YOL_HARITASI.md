@@ -529,3 +529,12 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - Güncel Özel Eğitim satır 4–6 vektörleri de run `39139111316` içinde 214 Core + 4 WPF testiyle geçti. Eski workbook vektörleri `Legacy` olarak yeniden adlandırıldı.
 - Genel ilerleme hâlâ %90 altında. Gerçek Excel/VBA çalıştırması, Temel Eğitim ek teminatın anlamı ve D28/hesaplama neti farkı çözülmeden finansal parite tamamlanmış sayılamaz.
 - Sıradaki adım: legacy test yeniden adlandırma ve son kaynak notu commit'lerinin CI sonuçlarını doğrula; sonra kalan kaynak Excel karar kapılarına devam et. Ana dala birleştirme/yayınlama yapılmadı.
+
+## Devam notu — 18.10.2026, Excel masaüstü kabul hazırlığı ve son CI
+
+- `docs/EXCEL_MASAUSTU_KABUL_KONTROL_LISTESI.md` oluşturuldu. İki güncel XLSM için güvenli deneme kopyası, Kasım 2026 E21/aylık aktarım, Temel Eğitim T/U damga-teminat zinciri, D6/D7/D8/D10/D11/D28 karşılaştırması ve dört resmî PDF'nin birlikte kontrolü adım adım kaydedildi. `AyVerileriniSil` makrosunun tüm ayları etkileyebildiği için kontrol listesinde özellikle çalıştırılmaması yazıyor.
+- Temel Eğitim E21 testi yeniden adlandırılıp açıklaması düzeltildi: E21'in kaynak formülü ve önbellek sonucu 0; OEHS testi ise AB:AM aylık makro düzenine göre AC4'ün taşınmasını bekliyor. Bu, literal Excel E21 paritesi değil, belgelenmiş bir kaynak-formül/aktarım uyuşmazlığıdır.
+- Son kod/test commit'i için Windows CI run `39139469760` başarılı: **215 Core + 4 WPF testi geçti**, tam çözüm ve WPF derlemesi, PDF smoke ve Windows EXE publish başarılı.
+- Güncel Özel Eğitim satır 4–6 testleri geçti; güncel Temel Eğitim satır 4 fark testi de bilinen uyuşmazlığı koruyarak geçti. Bunlar Excel masaüstü/VBA kabulü yerine geçmez.
+- Genel proje ilerlemesi %90 altında. Başlıca kapanış kapıları: gerçek Excel/VBA yürütmesi; Temel Eğitim T/U; D6/D8/D10/D11 zinciri; D28 ile hesaplama sayfası net farkı; kaynak Excel ve OEHS dört PDF'nin aynı gerçek hakedişte karşılaştırılması.
+- Sıradaki adım: son belge commit'inin CI sonucunu doğrula; sonra gerçek Excel/VBA çıktısı olmadan hesap davranışını değiştirmeden kalan kabul kapılarını sürdür. PR #3 açık/taslak kalacak; ana dala birleştirme/yayınlama yapılmayacak.
