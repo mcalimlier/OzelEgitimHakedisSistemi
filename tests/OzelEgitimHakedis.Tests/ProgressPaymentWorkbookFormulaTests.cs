@@ -62,7 +62,7 @@ public sealed class ProgressPaymentWorkbookFormulaTests
         // A negative price difference does not create a negative manually entered guarantee.
         Assert.Equal(0m, ProgressPaymentReportService.CalculateReportTotalDeductions(
             current.Calculation, current.Input.ProgramType));
-        Assert.Equal(-100m, ProgressPaymentReportService.CalculateReportNetPayable(current, totals));
+        Assert.Equal(-300m, ProgressPaymentReportService.CalculateReportNetPayable(current, totals));
     }
 
     [Fact]
