@@ -145,7 +145,7 @@ public sealed class ArchiveDisplayServiceTests
 
         Assert.Equal("v02", rows
             .Select(x => x.RevisionText)
-            .Where(x => x.StartsWith("v", StringComparison.OrdinalIgnoreCase))
+            .Where(x => x.StartsWith('v'))
             .Last());
         Assert.Equal("GEÇERSİZ", rows[^1].RevisionText);
     }
