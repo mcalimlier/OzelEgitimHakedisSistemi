@@ -175,3 +175,13 @@ Aynı yeniden hesaplama kopyalarında `Anasayfa!AA2` `#VALUE!` olarak kaldı. H�
 - **Temel Eğitim / drawing3.xml:** `Login_Form_Open` ve `All_Pages.Print_All_Pages_Names`.
 
 Bu eşleştirme, ilgili şekillerin XML'de hangi yordam adlarına bağlı olduğunu doğrular; Excel içindeki buton tıklamasıyla çalışma testi yerine geçmez. Özel Eğitim'de rehber personel fiyat farkı yordamı, ana fiyat farkı aktarım yordamı içinden çağrılıyor; ayrı bir şekil makrosu olarak görünmüyor.
+
+
+## Kritik programlar arası tutarsızlık — Hakediş İcmali!E21
+
+- Özel Eğitim `Hakediş İcmali!E21` önceki kesinti formülünde `Anasayfa!E5` dönem alanını kullanıyor. Bu dosyada E5 seçilen ödeme dönemidir; formül `I6:I15` ay listesiyle eşleşiyor.
+- Temel Eğitim `Hakediş İcmali!E21` de `Anasayfa!E5` referansını kullanıyor; ancak Temel Eğitim dosyasında E5 `=TODAY()` hakediş tarihidir, ödeme dönemi E4'tür. Bu nedenle tarih değeri ay metinleriyle eşleşmez ve formülün `IFERROR(...,0)` dalı önceki dönem kesintisini sıfıra indirebilir.
+- Temel Eğitim'in `Worksheet_Change` yordamı ve diğer aktarım makroları dönem alanı olarak E4'ü kullanıyor. Bu, E21'deki E5 başvurusunun diğer kaynaklarla çeliştiğini gösteriyor.
+- OEHS mevcut kodu her iki programda da önceki ayın `TotalDeductions` değerini arşiv kayıtlarından bulup aktarabiliyor. Dolayısıyla Temel Eğitim için kaynak Excel'in saklı/formül sonucu ile OEHS arasında fark oluşabilir.
+
+**Karar gerektiren nokta:** Temel Eğitim E21 formülü Excel'de gerçekten E5'e bağlı kaldığı için sıfır sonucu mu esas alınacak, yoksa E4'e çevrilerek amaçlanan önceki ay kesintisi mi uygulanacak? Bu fark resmî ödeme tutarını değiştirebileceğinden kodda sessizce değiştirilmedi. Uzman/iş sahibi onayı ve Excel masaüstünde aynı örnekle sonuç doğrulaması gerekli.
