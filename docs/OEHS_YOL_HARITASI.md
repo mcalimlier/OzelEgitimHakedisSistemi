@@ -497,3 +497,11 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - Orijinal XLSM'lere dokunmadan iki ayrı XLSX inceleme kopyası LibreOffice ile yeniden hesaplatıldı. D6/D7/D8/D10/D11/D28 ve Temel Eğitim U4/W4 ile Özel Eğitim AC/AD/AE/AF/AG değerleri aynı kaldı. Bu, formül çelişkilerinin yalnızca eski önbellek değerleri olma ihtimalini azaltır; VBA çalıştırması veya Excel masaüstü kabulü değildir.
 - Genel ilerleme %90 altında. Kimlik güvenliği kod tarafında güçlendirildi; kaynak Excel'in kendi net ödeme ve ek teminat zincirlerindeki uyuşmazlıklar çözülmeden genel oran yükseltilmedi.
 - Sıradaki adım: güncel CI run'ının nihai durumunu ve test sayısını doğrula; kaynak XLSM formül/aktarım çelişkilerini Excel masaüstü ve gerçek VBA yürütmesiyle kapatmadan resmi hesap davranışını değiştirme.
+
+## Devam notu — 18.10.2026, test vektörlerinin kaynak sürümü denetimi
+
+- `ExcelSourceParityTests.cs` içindeki eski hesap örneklerinin bir kısmı güncel yüklemelerden değil, dosya adları açıkça eski olan `02-Özel Eğitim Hakediş Ödeme.xlsm` ve `03-Temel Eğitim Taşıma Ödeme.xlsm` kaynaklarından geliyor. Güncel Temel Eğitim satır 4–6 ve Özel Eğitim satır 4–6 değerleri bu vektörlerden farklı.
+- Eski test vektörleri silinmedi; yöntem adları ve açıklamaları `Legacy` olarak değiştirildi. Bunlar geçmiş regresyonları korur, fakat güncel yetkili XLSM'lerle parite kanıtı sayılmaz. Bu düzeltme kaynak doğrulama notuna da kaydedildi.
+- Rapor geçmişi ve aylık hakediş sıra önerisi servislerinde eksik kimliklerin önceki kayıtlarla eşleşmesini engelleyen korumalar eklendi. Aylık sıra önerisi için iki ek regresyon testi mevcut; CI run `39138903059` ve takip eden test commit'leri son kontrol anında sürüyordu.
+- Güncel XLSM kaynak paritesi hâlâ doğrulanmış değil. Temel Eğitim ek teminat/damga vergisi, D6/D8/D10/D11 ve D28/net ödeme farkları açık risk. Genel ilerleme %90 altında ve oran artırılmadı.
+- Sıradaki adım: yeni kimlik testlerinin CI sonucunu doğrula; ardından güncel workbook hücrelerinden ayrı, doğru etiketli golden-master fixture'ları oluşturmak için Excel/VBA yürütme sonuçlarını elde et. Ana dala birleştirme/yayınlama yapılmadı.
