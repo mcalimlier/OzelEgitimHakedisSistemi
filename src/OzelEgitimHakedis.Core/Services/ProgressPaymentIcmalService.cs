@@ -98,5 +98,5 @@ public static class ProgressPaymentIcmalService
         !string.IsNullOrWhiteSpace(payment.TenderNumber) &&
         !string.IsNullOrWhiteSpace(payment.ContractNumber) &&
         !string.IsNullOrWhiteSpace(payment.RouteNumber) &&
-        !string.IsNullOrWhiteSpace(payment.ContractorTaxOrIdentityNumber);
+        !string.IsNullOrWhiteSpace(OehsIdentityService.NormalizeIdentity(payment.ContractorTaxOrIdentityNumber));
 }
