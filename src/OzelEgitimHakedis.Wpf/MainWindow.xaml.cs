@@ -765,7 +765,7 @@ public partial class MainWindow : Window
         if (string.IsNullOrWhiteSpace(key))
             return null;
 
-        var separator = key.IndexOf('|');
+        var separator = key.IndexOf('|', StringComparison.Ordinal);
         if (separator < 0 || !Enum.TryParse<TransportationProgramType>(key[..separator], out var programType))
             return FindContractor(key);
 
