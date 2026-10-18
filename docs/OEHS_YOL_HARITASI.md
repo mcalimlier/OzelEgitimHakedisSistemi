@@ -474,3 +474,10 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - Kod açıklaması ve belge değişikliklerinin Windows CI kontrolleri geçti: `39138174112` ve `39138196772` başarılı; her iki run'da 207 Core + 4 WPF testi, PDF smoke ve EXE publish adımları başarılı.
 - Kaynak XLSM ile gerçek hesap paritesi için yeni bir kritik açık konu belirlendi; genel ilerleme oranı artırılmadı. %90 hedefine ulaşılmış değil.
 - Sıradaki adım: Excel/VBA ortamında aynı örnek üzerinde D6/D7/D8/D10/D11 ile aylık aktarım sütunlarını yeniden hesaplatıp gerçek sonuçları kaydet; ardından OEHS rapor zincirini bu sonuçlarla karşılaştır. Ana dala birleştirme/yayınlama yok.
+
+## Devam notu — 18.10.2026, Temel Eğitim damga vergisi zinciri
+
+- Ek kesin teminat uyuşmazlığının etkisi yalnızca teminat tutarıyla sınırlı değil: güncel Temel Eğitim `Hesaplama Bilgileri!U4` formülü `(K4*9,48/1000)+(T4*9,48/1000)` kullanıyor. Önbellekli K4=220.490 ve T4=1.500 değerlerinde kaynak U4=2.104,4652 TL; yalnız K üzerinden hesap 2.090,2452 TL olur (14,22 TL fark).
+- OEHS Temel/Ortaöğretim damga vergisi hesaplaması şu anda K üzerinden ilerliyor ve ek teminatı %6 ile üretiyor. Bu nedenle güncel XLSM ile kaynak eşdeğerliği doğrulanmış değil. Fark kaynak doğrulama belgesine eklendi; resmi hesap davranışı kararsızken değiştirilmedi.
+- Bu bulgu genel ilerlemeyi %90'a yaklaştıran bir kapanış değildir; tersine, kaynakla hesap paritesi için çözülmesi gereken somut bir risk daha belirledi. Gerçek Excel/VBA çalıştırması ve iş kuralı kararı gerekli.
+- Sıradaki adım: Temel Eğitim T4:T6'nin neden sabit olduğunu ve U4 damga vergisi zincirinin beklenen davranışını gerçek Excel/VBA örneğinde doğrula; ardından OEHS hesabını hücre bazında karşılaştır. Ana dala birleştirme yapılmadı.
