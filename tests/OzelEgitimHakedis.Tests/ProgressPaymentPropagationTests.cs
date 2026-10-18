@@ -254,6 +254,44 @@ public sealed class ProgressPaymentPropagationTests
     }
 
     [Fact]
+    public void RouteChange_ShouldNotPropagateAcrossTransportationPrograms()
+    {
+        var oldRoute = Route(1000m) with
+        {
+            ProgramType = TransportationProgramType.SpecialEducation,
+            ContractNumber = "SOZ-01"
+        };
+        var newRoute = oldRoute with { DailyPrice = 1500m };
+        var special = History(new ProgressPaymentInput(
+            10, 1000m, 0m, 0m, 100000m, false, 0m, 0m, 0m));
+        var basicInput = special.Input with
+        {
+            ProgramType = TransportationProgramType.BasicOrSecondary,
+            DailyPrice = 2500m,
+            GuideWorkDays = 0,
+            GuideDailyPrice = 0m
+        };
+        var basic = special with
+        {
+            Id = Guid.NewGuid(),
+            Input = basicInput,
+            Calculation = ProgressPaymentCalculator.Calculate(basicInput)
+        };
+
+        var updated = ProgressPaymentPropagationService.RecalculateForRouteChange(
+            new[] { special, basic },
+            oldRoute,
+            newRoute,
+            Contractor());
+
+        Assert.Equal(1500m, updated[0].Input.DailyPrice);
+        Assert.Equal(TransportationProgramType.SpecialEducation, updated[0].Input.ProgramType);
+        Assert.Equal(2500m, updated[1].Input.DailyPrice);
+        Assert.Equal(TransportationProgramType.BasicOrSecondary, updated[1].Input.ProgramType);
+        Assert.Equal(basic.Calculation, updated[1].Calculation);
+    }
+
+    [Fact]
     public void RouteChange_ShouldRecalculateWithCurrentSavedCalculationConstants()
     {
         var oldRoute = Route(1000m);
