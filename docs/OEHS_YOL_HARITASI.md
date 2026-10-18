@@ -489,3 +489,11 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - Son doğrulanmış Windows CI run `39138196772` başarılı: 207 Core testi, 4 WPF testi, tam çözüm/WPF derlemesi, PDF smoke ve EXE publish adımları geçti. Daha sonraki yalnızca belge/kod açıklaması değişikliklerinin CI çalışmaları ayrıca izleniyor.
 - Genel proje hâlâ %90 altında; hesap eşdeğerliği için temel riskler artık açıkça sayısallaştırıldı: Temel Eğitim ek teminat ve damga vergisi, D6/D8/D10/D11 aktarım zinciri ve iki programda D28 ile hesaplama sayfası neti farkı.
 - Sıradaki adım: Excel masaüstünde her iki program için aynı kayıtla hesaplama sayfası netini ve D28'i karşılaştır; kullanıcı tarafından onaylanmış beklenen değer olmadan resmi ödeme davranışını değiştirme. Ana dala birleştirme/yayınlama yapılmadı.
+
+## Devam notu — 18.10.2026, rapor geçmişi kimlik koruması ve LO çapraz kontrolü
+
+- `ProgressPaymentReportService.Calculate` artık eksik ihale/sözleşme/hat/yüklenici kimliği olan kayıtları geçmiş toplamlarla eşleştirmiyor; VKN/TCKN normalizasyonda boş kalıyorsa da önceki tutarlar taşınmıyor. İki yeni regresyon testi eklendi.
+- Windows CI run `39138690916` üzerinde tam çözüm/WPF derlemesi ve otomatik test adımı başarılı; PDF smoke ve EXE publish adımları da başarılı tamamlanma aşamasında. Test logundaki sayısal sonuçlar son durum kontrolünde kaydedilecek.
+- Orijinal XLSM'lere dokunmadan iki ayrı XLSX inceleme kopyası LibreOffice ile yeniden hesaplatıldı. D6/D7/D8/D10/D11/D28 ve Temel Eğitim U4/W4 ile Özel Eğitim AC/AD/AE/AF/AG değerleri aynı kaldı. Bu, formül çelişkilerinin yalnızca eski önbellek değerleri olma ihtimalini azaltır; VBA çalıştırması veya Excel masaüstü kabulü değildir.
+- Genel ilerleme %90 altında. Kimlik güvenliği kod tarafında güçlendirildi; kaynak Excel'in kendi net ödeme ve ek teminat zincirlerindeki uyuşmazlıklar çözülmeden genel oran yükseltilmedi.
+- Sıradaki adım: güncel CI run'ının nihai durumunu ve test sayısını doğrula; kaynak XLSM formül/aktarım çelişkilerini Excel masaüstü ve gerçek VBA yürütmesiyle kapatmadan resmi hesap davranışını değiştirme.
