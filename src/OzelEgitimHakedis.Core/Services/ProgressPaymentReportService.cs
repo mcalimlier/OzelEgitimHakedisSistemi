@@ -124,8 +124,8 @@ public static class ProgressPaymentReportService
         // D7 = yalnızca mevcut ayın ham I+R fiyat farkı.
         // D8 = D6 + D7 = önceki toplamlar + mevcut ayın K+T tutarı.
         // D10 = önceki aylara ait toplam K+T.
-        // D11 = IF(D7<0,H2-ABS(D7),H2+D7)-D7; her iki dal da cebirsel olarak H2'ye,
-        // yani mevcut satırın K+T tutarına sadeleşir.
+        // D11 = IF(D7<0,H2-ABS(D7),H2+D7); iki dal da H2+D7 sonucunu verir.
+        // D11 bu nedenle H2'ye eşitlenmez; ham fiyat farkı D7 rapor zincirine ayrıca girer.
         // Gelecek aylardaki olası önceden girilmiş değerleri rapora katmamak için
         // yalnızca seçili aya kadar olan uygulama geçmişini topluyoruz.
         var currentMonthlyTotal = CalculateWorkbookMonthlyPaymentTotal(current);
