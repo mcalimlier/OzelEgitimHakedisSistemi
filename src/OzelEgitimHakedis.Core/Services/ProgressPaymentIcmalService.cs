@@ -64,15 +64,23 @@ public static class ProgressPaymentIcmalService
 
         var previousMonth = current.PeriodDate.Value.AddMonths(-1);
 
+        var currentRouteKey = OehsIdentityService.BuildRouteKey(
+            current.TenderNumber ?? string.Empty,
+            current.RouteNumber ?? string.Empty,
+            current.ContractorTaxOrIdentityNumber ?? string.Empty,
+            current.ContractNumber ?? string.Empty,
+            current.Input.ProgramType);
+
         return payments
             .Where(x => x.Id != current.Id)
-            .Where(x => x.Input.ProgramType == current.Input.ProgramType)
-            .Where(x => string.Equals(x.TenderNumber, current.TenderNumber, StringComparison.OrdinalIgnoreCase))
-            .Where(x => string.Equals(x.ContractNumber, current.ContractNumber, StringComparison.OrdinalIgnoreCase))
-            .Where(x => string.Equals(x.RouteNumber, current.RouteNumber, StringComparison.OrdinalIgnoreCase))
             .Where(x => string.Equals(
-                OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
-                OehsIdentityService.NormalizeIdentity(current.ContractorTaxOrIdentityNumber),
+                OehsIdentityService.BuildRouteKey(
+                    x.TenderNumber ?? string.Empty,
+                    x.RouteNumber ?? string.Empty,
+                    x.ContractorTaxOrIdentityNumber ?? string.Empty,
+                    x.ContractNumber ?? string.Empty,
+                    x.Input.ProgramType),
+                currentRouteKey,
                 StringComparison.Ordinal))
             .Where(x => x.PeriodDate.HasValue)
             .Where(x => x.PeriodDate!.Value.Year == previousMonth.Year
