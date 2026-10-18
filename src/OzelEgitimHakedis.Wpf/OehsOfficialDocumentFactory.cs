@@ -357,7 +357,9 @@ internal static class OehsOfficialDocumentFactory
         AddText(page, "HİZMET İŞLERİ KABUL TUTANAĞI", x, 40, w, 22, 15, true, TextAlignment.Center);
 
         var servicePeriod = ProgressPaymentAcceptancePeriodService.BuildServicePeriod(
-            c.PeriodDate ?? c.GeneratedDate);
+            c.PeriodDate ?? c.GeneratedDate,
+            c.ContractStartDate,
+            c.ContractEndDate);
         var endDate = c.ContractEndDate;
         var rows = new (string Label, string Value, double Height)[]
         {
