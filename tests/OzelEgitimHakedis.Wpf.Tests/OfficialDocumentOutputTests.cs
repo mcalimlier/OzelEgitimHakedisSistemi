@@ -352,9 +352,9 @@ public sealed class OfficialDocumentOutputTests
                     StringComparison.Ordinal)));
             Assert.Contains("TEST MEMUR TEST DÜZENLEYEN", acceptanceNarrative.Text, StringComparison.Ordinal);
             Assert.Contains("TEST ŞUBE MÜDÜRÜ TEST KONTROL EDEN", acceptanceNarrative.Text, StringComparison.Ordinal);
-            Assert.Contains("01.10.2026 / 31.10.2026", acceptanceNarrative.Text);
-            Assert.DoesNotContain("Aşkın KESKİNBALTA", acceptanceNarrative.Text);
-            Assert.DoesNotContain("Halil ÖZENÇ", acceptanceNarrative.Text);
+            Assert.Contains("01.10.2026 / 31.10.2026", acceptanceNarrative.Text, StringComparison.Ordinal);
+            Assert.DoesNotContain("Aşkın KESKİNBALTA", acceptanceNarrative.Text, StringComparison.Ordinal);
+            Assert.DoesNotContain("Halil ÖZENÇ", acceptanceNarrative.Text, StringComparison.Ordinal);
 
             var icmalOutput = Assert.Single(
                 outputs.Where(output => output.Kind == OehsOfficialDocumentKind.HakedisIcmali));
