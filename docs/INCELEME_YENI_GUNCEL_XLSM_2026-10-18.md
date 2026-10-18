@@ -185,3 +185,10 @@ Bu eşleştirme, ilgili şekillerin XML'de hangi yordam adlarına bağlı olduğ
 - OEHS mevcut kodu her iki programda da önceki ayın `TotalDeductions` değerini arşiv kayıtlarından bulup aktarabiliyor. Dolayısıyla Temel Eğitim için kaynak Excel'in saklı/formül sonucu ile OEHS arasında fark oluşabilir.
 
 **Karar gerektiren nokta:** Temel Eğitim E21 formülü Excel'de gerçekten E5'e bağlı kaldığı için sıfır sonucu mu esas alınacak, yoksa E4'e çevrilerek amaçlanan önceki ay kesintisi mi uygulanacak? Bu fark resmî ödeme tutarını değiştirebileceğinden kodda sessizce değiştirilmedi. Uzman/iş sahibi onayı ve Excel masaüstünde aynı örnekle sonuç doğrulaması gerekli.
+
+
+### E21 tutar farkı için somut örnek
+
+Temel Eğitim örnek dosyasında seçili dönem Kasım 2026'dır. İlk hat satırında `İcmal Verileri!AB4:AL4` kesinti serisi Eylül–Temmuz olarak tutuluyor; `AC4` Ekim ayı kesintisi olarak 24.104,02472 TL'dir. Mevcut `Hakediş İcmali!E21` formülü `Anasayfa!E5` ve `AN:AX` aralığı yüzünden önceki kesintiyi sıfıra düşürebilir. Kaynak düzenine göre amaçlanan ay eşlemesi `Anasayfa!E4` + `AB3:AL3` olsaydı Ekim için 24.104,02472 TL bulunurdu.
+
+Bu, teorik bir isim farkı değil, yaklaşık 24.104,02 TL'lik olası belge farkıdır. Ancak düzeltilmiş formül OEHS'ye uygulanmadan önce kaynak sahibinin/uzmanın “önceki ay kesintisi aktarılmalı” kuralını onaylaması gerekir. Bu turda resmî hesap koduna müdahale edilmedi.
