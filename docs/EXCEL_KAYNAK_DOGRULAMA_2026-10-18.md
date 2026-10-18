@@ -36,3 +36,10 @@ Her iki kaynak dosyada D11 formülü `=IF(D7<0,H2-ABS(D7),H2+D7)` biçimindedir;
 ## Doğrulama sınırı
 
 Bu belge statik XML incelemesini ve bir inceleme kopyasındaki LibreOffice formül sonucunu kaydeder. VBA çalışma zamanı testi, Excel masaüstü kabulü veya kaynak Excel ile OEHS arasında uçtan uca eşdeğerlik iddiası değildir.
+
+
+## Ek statik tarama — AA2 referansları
+
+2026-10-18'deki ek taramada, iki XLSM'nin çalışma sayfası XML'lerinde `Anasayfa!AA2` hücresine doğrudan başvuran formül bulunmadı; `workbook.xml` tanımlı adlarında da AA2 referansı görülmedi. VBA ikili dosyasında yapılan basit metin taramasında da açık `AA2` dizgesi bulunmadı.
+
+Bu sonuç, AA2'nin kesin olarak kullanılmadığını kanıtlamaz: VBA derlenmiş/akışlara bölünmüş kaynak içerdiğinden basit dizge araması tam VBA kaynak incelemesinin yerine geçmez. Bu yüzden AA2, şu aşamada **düşük öncelikli ama kapatılmamış** risk olarak kalır; kullanıcıya görünen bir hata olmadığı ve tam VBA referans incelemesiyle doğrulandığı varsayılmaz.
