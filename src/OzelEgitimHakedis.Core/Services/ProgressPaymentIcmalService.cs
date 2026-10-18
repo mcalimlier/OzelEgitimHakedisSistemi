@@ -24,7 +24,19 @@ public static class ProgressPaymentIcmalService
     /// source workbook's current C/D month formulas.
     /// </summary>
     public static bool IsMonthInWorkbookLookupRange(DateOnly month) =>
-        month.Month >= 9 || month.Month <= 6;
+        IsMonthInWorkbookLookupRange(month, TransportationProgramType.SpecialEducation);
+
+    /// <summary>
+    /// Basic/Secondary uses a dynamically searched month header in its icmal
+    /// transfer macros, so July is a valid period there. Special Education's
+    /// current C/D lookup range ends in June and treats July as a zero placeholder.
+    /// </summary>
+    public static bool IsMonthInWorkbookLookupRange(
+        DateOnly month,
+        TransportationProgramType programType) =>
+        programType == TransportationProgramType.BasicOrSecondary
+            ? month.Month >= 9 || month.Month <= 7
+            : month.Month >= 9 || month.Month <= 6;
 
     /// <summary>
     /// Returns the prior calendar month's deduction from payment dates.
@@ -39,7 +51,7 @@ public static class ProgressPaymentIcmalService
         ArgumentNullException.ThrowIfNull(current);
 
         if (!current.PeriodDate.HasValue ||
-            !IsMonthInWorkbookLookupRange(current.PeriodDate.Value))
+            !IsMonthInWorkbookLookupRange(current.PeriodDate.Value, current.Input.ProgramType))
         {
             return 0m;
         }
