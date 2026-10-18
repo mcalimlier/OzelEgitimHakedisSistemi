@@ -576,3 +576,10 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - Smoke PDF'lerinin 8/8'i tek sayfa A4 portre; bütün belgelerde güzergâh, tarih ve imza isimleri metin kontrolünden geçti. Kaynak XLSM icmal sayfalarının görünür hücrelerinde yüklenici başlığı yok; bu nedenle smoke icmalinde yüklenici adının görünmemesi tek başına hata sayılmadı.
 - Excel/VBA masaüstü çalışma ortamı bu yürütme ortamında mevcut değil; `oletools` kurulumu da ağ/DNS erişimi olmadığı için yapılamadı. LibreOffice yeniden hesaplaması ve sentetik PDF'ler Excel VBA sonucu yerine geçmez.
 - **Genel proje yaklaşık %81; %90 hedefi tamamlanmadı.** Bir sonraki gerçek ilerleme kaynağı yeni test sayısı değil, iki kaynak XLSM için gerçek Excel/VBA hücre sonuçları ve aynı hakedişin dört Excel/OEHS PDF'si karşılaştırmasıdır. Ana dala birleştirme/yayınlama yok.
+
+## Devam notu — 18.10.2026, Temel Eğitim 3 satırlı fark testi
+
+- İlk genişletilmiş test CI'da başarısız oldu: ek teminatı her satırda sabit 90 TL varsaymıştım; test çıktısı satır 5'te 90,06 TL olduğunu gösterdi. Kaynak/servis formülünü yeniden kontrol edip beklentiyi düzelttim; ürün hesaplama kodunu değiştirmedim.
+- Düzeltilmiş commit `cb61333ad549ea60e2b1083931009a52a2755cd5` için Windows CI run `39141119613` başarılı: **217/217 Core + 4/4 WPF testi**; çözüm/WPF derlemesi, PDF smoke ve Windows EXE publish geçti.
+- Temel Eğitim satır 4, 5 ve 6 için kaynak T=1.500 sabiti / U damga vergisi ile OEHS'nin fiyat farkına bağlı %6 teminat / damga hesabı farkları sayısallaştırıldı. Net farkları sırasıyla **1.424,22 TL; 1.424,16 TL; 1.424,10 TL**. Kaynak davranışı ile OEHS arasında parite yok; testler bu farkı saklamıyor.
+- Genel proje yaklaşık **%81** ve %90 hedefi tamamlanmadı. Gerçek Excel/VBA sonucu olmadan bu farkın resmî hesap kuralı seçilemez. Sıradaki adım: kaynak XLSM masaüstü kabul kapısını çözmek; ardından aynı gerçek hakedişin dört Excel/OEHS PDF'sini birlikte karşılaştırmak. PR #3 taslak/açık, ana dala birleştirme yok.
