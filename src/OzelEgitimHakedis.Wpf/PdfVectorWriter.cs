@@ -264,7 +264,7 @@ public static class PdfVectorWriter
             : Math.Max(fontSize * 1.18, font.GetHeight());
 
         var lines = block.TextWrapping == TextWrapping.NoWrap
-            ? text.Replace("\r", string.Empty).Split('\n')
+            ? text.Replace("\r", string.Empty, StringComparison.Ordinal).Split('\n')
                 .Select(line => new WrappedLine(line, IsLastLineOfParagraph: true))
                 .ToList()
             : WrapText(gfx, text, font, Math.Max(1, rect.Width));
@@ -327,7 +327,7 @@ public static class PdfVectorWriter
     private static List<WrappedLine> WrapText(XGraphics gfx, string text, XFont font, double width)
     {
         var result = new List<WrappedLine>();
-        foreach (var paragraph in text.Replace("\r", string.Empty).Split('\n'))
+        foreach (var paragraph in text.Replace("\r", string.Empty, StringComparison.Ordinal).Split('\n'))
         {
             if (paragraph.Length == 0)
             {
