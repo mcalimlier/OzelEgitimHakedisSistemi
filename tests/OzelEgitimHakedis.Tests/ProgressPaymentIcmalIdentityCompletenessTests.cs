@@ -9,7 +9,10 @@ public sealed class ProgressPaymentIcmalIdentityCompletenessTests
     [Fact]
     public void FindPreviousDeduction_ShouldReturnZeroWhenCurrentIdentityIsIncomplete()
     {
-        var previous = History(1, new DateOnly(2026, 10, 31), 200m);
+        var previous = History(1, new DateOnly(2026, 10, 31), 200m) with
+        {
+            ContractorTaxOrIdentityNumber = ""
+        };
         var current = History(2, new DateOnly(2026, 11, 30), 300m) with
         {
             ContractorTaxOrIdentityNumber = ""
