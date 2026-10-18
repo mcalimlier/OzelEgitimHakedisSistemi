@@ -5,8 +5,8 @@ using Xunit;
 namespace OzelEgitimHakedis.Tests;
 
 /// <summary>
-/// Explicitly records a known mismatch between the latest Basic/Secondary XLSM
-/// row 4 and the current calculator. This is a blocker, not a parity-success test.
+/// Regression vectors for the latest Basic/Secondary XLSM. Calculation-sheet
+/// W4 and report D28 are separate workbook formula chains and are asserted separately.
 /// </summary>
 public sealed class CurrentBasicWorkbookParityTests
 {
