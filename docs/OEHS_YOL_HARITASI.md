@@ -635,3 +635,28 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - Kaynak Excel kullanıcı tarafından doğrulandı: Temel/Ortaöğretim ek kesin teminat elle girilir; kesin teminat = girilen ek kesin teminat × %6. Özel Eğitim ek kesin teminat formülü `=(I4*6/100)+R4*6/100`.
 - Core hesaplayıcı program türüne göre ayrıldı; Temel/Ortaöğretim manuel ek teminatı kullanır, Özel Eğitim I/R fiyat farklarını %6 ile hesaplar. Girdi modeline `ManualAdditionalGuarantee` eklendi; tek/çoklu hat girişleri ve testler güncellendi.
 - Son commit için Windows CI ve görsel kabul bekleniyor. Dal/PR açık tutuluyor; ana dala birleştirme yapılmadı.
+
+
+## Devam notu — canlı hesap tutucu ve program bazlı teminat (2026-10-18)
+
+### Yapılanlar
+- Sol menüde **GEÇİCİ HESAP TUTUCU**, **AYARLAR'ın hemen altına** bağımsız bir ekran olarak taşındı; Ayarlar panelinin içine gömülü değil.
+- Canlı iz; giriş ham değerlerini, K/T ara değerlerini, AC ek kesin teminatı, L/M/N/O ve U/V/W/X adımlarını, damga vergisini, toplam KDV/tevkifatı, toplam kesintiyi, brütü ve AG net ödemeyi gösterir.
+- Giriş kutuları, program/ihale/hat/dönem seçimleri, KDV ve asgari ücret desteği seçenekleri ile çoklu-hat hücre düzenlemeleri canlı yenilemeyi tetikler.
+- Eksik/geçersiz zorunlu alanlarda nihai sonuç üretilmez; önceki hesap sonucu güncelmiş gibi tutulmaz.
+- Temel/Ortaöğretim ek kesin teminatı elle girilen tutarı aynen kullanır; damga vergisi matrahı kaynak U formülündeki K+T zincirine göre hesaplanır. Özel Eğitim AC formülü I ve R'nin onaylı oranla %6 hesabını korur.
+- Regresyon testleri bu iş kuralına göre güncellendi; eski workbook testlerinde Temel Eğitim için elle girilen tutar açıkça fixture'a verildi.
+
+### Doğrulama
+- Önceki CI çalışmasında derleme ve statik UI kontrolleri geçti; test aşamasında 5 eski Temel Eğitim beklentisi başarısız oldu. Bu testler yeni doğrulanmış kaynak kuralına göre güncellendi.
+- Güncel kod/test commit'i `b79075139df0032f7eae7fe18e6b7dbc4c0c66cc` için Windows CI yeniden çalışıyor; son test sonucu henüz doğrulanmış değil.
+- Excel masaüstü/VBA kabulü ve dört PDF'nin kaynak örnekleriyle görsel karşılaştırması yapılmış sayılmaz.
+
+### Açık riskler ve sıradaki adım
+1. Güncel Windows CI'nin derleme ve test sonucunu kontrol et; başarısızsa gerçek hata çıktısına göre düzelt ve yeniden çalıştır.
+2. Canlı hesap tutucuyu Visual Studio/WPF üzerinde açıp Temel Eğitim ve Özel Eğitim örneklerinde her alan değişikliğinin iz ve sonuçları anında güncellediğini görsel olarak doğrula.
+3. Dört PDF'yi aynı örnek hakedişlerle tutar, dönem, yüklenici, hat, imza ve sayfa düzeni açısından birlikte karşılaştır.
+4. Hakediş Raporu D28 ile hesaplama sayfası W/AG arasındaki fark için iş sahibi kararını al; kaynak Excel çelişkisi varsayımla kapatılmasın.
+5. Ana dal birleştirilmesin; mevcut PR açık kalsın.
+
+**İlerleme:** Genel hedef hâlâ en az %90. Canlı hesap tutucu uygulama değişiklikleri yapıldı; yeni CI ve görsel kabul tamamlanmadan çekirdek tamamlandı sayılmayacak.
