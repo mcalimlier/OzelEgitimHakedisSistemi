@@ -239,6 +239,8 @@ public sealed class OfficialDocumentOutputTests
                 .Where(block => block.Text == "KESİNTİLER VE MAHSUPLAR"));
             Assert.IsType<RotateTransform>(deductionsTitle.RenderTransform);
             Assert.Equal(-90d, ((RotateTransform)deductionsTitle.RenderTransform).Angle);
+            Assert.Equal(VerticalAlignment.Center, deductionsTitle.VerticalAlignment);
+            Assert.Equal(TextAlignment.Center, deductionsTitle.TextAlignment);
             Assert.Equal(deductionsCell.Width, deductionsTitle.Height, 2);
             Assert.Equal(deductionsCell.Height, deductionsTitle.Width, 2);
             Assert.Equal(
