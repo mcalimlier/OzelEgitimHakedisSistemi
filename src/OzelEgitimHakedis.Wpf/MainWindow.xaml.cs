@@ -88,6 +88,7 @@ public partial class MainWindow : Window
         MinimumWageSupportTextBox.Text = "0";
         SetMinimumWageSupportInputMode(null);
         InspectionPenaltyTextBox.Text = "0";
+        ManualAdditionalGuaranteeTextBox.Text = "0";
         DiscountTextBox.Text = "0";
         GuideWorkDaysTextBox.Text = "0";
         GuideDailyPriceTextBox.Text = "0";
@@ -4351,7 +4352,7 @@ public partial class MainWindow : Window
 
             if (row.WorkDays < 0 || row.DailyPrice < 0m || row.DiscountAmount < 0m ||
                 row.TaxDebt < 0m || row.SocialSecurityDebt < 0m ||
-                row.MinimumWageSupport < 0m || row.InspectionPenalty < 0m ||
+                row.MinimumWageSupport < 0m || row.InspectionPenalty < 0m || row.ManualAdditionalGuarantee < 0m ||
                 (hasGuide && (row.GuideWorkDays < 0 || row.GuideDailyPrice < 0m || row.GuideDiscountAmount < 0m)))
             {
                 errors.Add($"Hat {route.RouteNumber}: gün, günlük fiyat, iskonto ve kesinti alanları negatif olamaz. Fiyat farkı işaretli olabilir.");
@@ -6396,6 +6397,14 @@ public partial class MainWindow : Window
 
     private void UpdateProgressRouteDefaults()
     {
+        var selectedProgram = (ProgressTenderListBox.SelectedItem as ContractDraftData)?.ProgramType
+            ?? TransportationProgramType.SpecialEducation;
+        ManualAdditionalGuaranteeTextBox.IsEnabled = selectedProgram == TransportationProgramType.BasicOrSecondary;
+        ManualAdditionalGuaranteeLabel.Text = selectedProgram == TransportationProgramType.BasicOrSecondary
+            ? "Ek Kesin Teminat (elle)" : "Ek Kesin Teminat (formül)";
+        GuaranteeRuleHintTextBlock.Text = selectedProgram == TransportationProgramType.BasicOrSecondary
+            ? "Temel/Ortaöğretim: elle giriş; kesin teminat = girilen tutarın %6'sı"
+            : "Özel Eğitim: (I × %6) + (R × %6)";
         var selectedRoutes = ProgressRouteComboBox.SelectedItems.OfType<RouteDraft>().ToArray();
         if (selectedRoutes.Length > 1)
         {
