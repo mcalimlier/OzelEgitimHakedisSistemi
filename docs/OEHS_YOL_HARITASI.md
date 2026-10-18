@@ -604,3 +604,9 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - Windows CI run `39141832492` başarılı: **218/218 Core + 4/4 WPF**; tam çözüm ve WPF derlemeleri, PDF smoke üretimi ve Windows EXE publish geçti.
 - Yeni karar kaydı bu farkları ve LibreOffice kopyasıyla sınırlı kanıt niteliğini belirtiyor. Kaynak Excel/VBA masaüstü kabulü olmadan resmî ödeme davranışı değiştirilmedi.
 - Genel ilerleme yaklaşık **%81**; %90 değil. Kod/test güveni artmış olsa da kalan kritik işler gerçek Excel/VBA yürütmesi, Temel Eğitim T/U ve D28-D11 zincirinin kararının verilmesi, Özel Eğitim icmal ay başlıklarının doğrulanması ve aynı hakediş için iki programın dört PDF'sinin birlikte karşılaştırılmasıdır. PR #3 açık taslak, ana dala birleştirme/yayınlama yok.
+
+## Devam notu — 18.10.2026, Excel masaüstü kabul listesi
+
+- `docs/EXCEL_MASAUSTU_KABUL_LISTESI.md` eklendi. Her iki program için gerçek Excel/VBA öncesi/sonrası hücre kaydı, E21/aylık aktarım senaryoları, D6/D7/D8/D10/D11/D28 ve W/AG karşılaştırması, ayrıca dört PDF'nin aynı hakediş bağlamında birlikte kabulü için çalıştırılabilir kontrol listesi hazırlandı.
+- Özel Eğitim satır 5–6 fark test verileri kaynak satırlarıyla uyumlu hat numaralarıyla düzeltildi; kod/test commit'i `e5ef6e9053796cf62193431540a13aecdbc4ad37`. Windows CI run `39142471871` kontrol sırasında **in_progress**; sonucu henüz başarılı diye işaretlenmedi.
+- Genel ilerleme **yaklaşık %81**; %90'a ulaşılmadı. Kritik kalan engel test kodu sayısı değil, gerçek Excel/VBA çıktısının alınması ve dört kaynak PDF'nin aynı hakediş için karşılaştırılması. PR #3 açık/taslak ve birleştirilmemiş durumda; ana dala yayınlama yok.
