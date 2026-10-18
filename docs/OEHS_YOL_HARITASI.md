@@ -422,7 +422,7 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 
 | İş paketi | Tahmini ilerleme | Açık ana konu |
 |---|---:|---|
-| Kaynak XLSM envanteri ve ilk formül incelemesi | %88 | Envanter, formül farkları, legacy/current test vektörleri ve masaüstü kabul listesi hazır; `Anasayfa!AA2` bağlantısı ve Excel yeniden hesaplama hâlâ açık. |
+| Kaynak XLSM envanteri ve ilk formül incelemesi | %90 | Envanter, formül farkları, legacy/current test vektörleri ve masaüstü kabul listesi hazır. `Anasayfa!AA2` bir formül sonucu değil, doğrudan `#VALUE!` sabiti; doğrudan formül/ad referansı bulunmadı, olası nesne bağlantısı düşük öncelikli açık risk. |
 | VBA yordamlarının statik incelenmesi | %80 | Aktarım farkları belgelendi: Özel Eğitim sabit sütun eşlemesi, Temel Eğitim dinamik başlık araması; gerçek Excel yürütmesi eksik. |
 | Çekirdek hesap ve icmal | %78 | Güncel Özel Eğitim satır 4–6 kod paritesi geçti; Temel Eğitim T/U, E21 ve D28/net ödeme çelişkileri gerçek Excel/VBA kararı bekliyor. |
 | Dört PDF şablonu ve üretim hattı | %80 | Smoke test geçiyor; kaynak Excel çıktısıyla aynı kayıt üzerinden karşılaştırmalı kabul eksik. |
