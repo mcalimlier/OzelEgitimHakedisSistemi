@@ -83,7 +83,7 @@ public sealed class OehsProgramScopedApplicationDataStore
         }
     }
 
-    private OehsApplicationData CreatePartition(
+    private static OehsApplicationData CreatePartition(
         OehsApplicationData source,
         IReadOnlyList<ContractDraftData> contracts,
         TransportationProgramType programType)
