@@ -87,6 +87,7 @@ public static class MonthlyProgressPaymentIdentityService
         var priorPositivePayments = history
             .Where(x => x.PeriodDate.HasValue && x.PeriodDate.Value < monthStart)
             .Where(x => x.Input.ProgramType == programType)
+            .Where(HasCompleteRouteIdentity)
             .Where(x => string.Equals(
                 OehsIdentityService.BuildRouteKey(
                     x.TenderNumber ?? string.Empty,
@@ -100,6 +101,12 @@ public static class MonthlyProgressPaymentIdentityService
 
         return checked(priorPositivePayments + 1);
     }
+
+    private static bool HasCompleteRouteIdentity(ProgressPaymentHistoryData payment) =>
+        !string.IsNullOrWhiteSpace(payment.TenderNumber) &&
+        !string.IsNullOrWhiteSpace(payment.ContractNumber) &&
+        !string.IsNullOrWhiteSpace(payment.RouteNumber) &&
+        !string.IsNullOrWhiteSpace(OehsIdentityService.NormalizeIdentity(payment.ContractorTaxOrIdentityNumber));
 
     private static string[] NormalizeRouteNumbers(IEnumerable<string> routeNumbers) =>
         routeNumbers
