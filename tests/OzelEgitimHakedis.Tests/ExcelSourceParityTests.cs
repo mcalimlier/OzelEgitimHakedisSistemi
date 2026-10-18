@@ -5,14 +5,14 @@ using Xunit;
 namespace OzelEgitimHakedis.Tests;
 
 /// <summary>
-/// Reference vectors transcribed from populated source workbook rows and
-/// independently recalculated workbook copies. These are regression fixtures;
-/// they do not replace desktop Excel/VBA acceptance.
+/// Legacy reference vectors from earlier workbook versions and independently
+/// recalculated copies. They are regression fixtures, not golden-master vectors
+/// for the latest XLSM files currently designated as authoritative sources.
 /// </summary>
 public sealed class ExcelSourceParityTests
 {
     [Fact]
-    public void BasicOrSecondary_ExcelRow8_ShouldMatchTransportCalculationChain()
+    public void BasicOrSecondary_LegacyRow8Vector_ShouldMatchTransportCalculationChain()
     {
         var input = new ProgressPaymentInput(
             WorkDays: 13,
@@ -44,7 +44,7 @@ public sealed class ExcelSourceParityTests
     }
 
     [Fact]
-    public void SpecialEducation_ExcelRow4_VatExempt_ShouldMatchTransportAndGuideChains()
+    public void SpecialEducation_LegacyRow4Vector_VatExempt_ShouldMatchTransportAndGuideChains()
     {
         var input = new ProgressPaymentInput(
             WorkDays: 22,
@@ -77,7 +77,7 @@ public sealed class ExcelSourceParityTests
     }
 
     [Fact]
-    public void SpecialEducation_ExcelRow4WithVatAndDiscounts_ShouldMatchRecalculatedCopy()
+    public void SpecialEducation_LegacyRow4VectorWithVatAndDiscounts_ShouldMatchRecalculatedCopy()
     {
         // Test-only workbook copy: E4 changed to "Hayır", J4=100 and S4=50.
         // The source XLSM uploaded by the user is never modified.
@@ -116,9 +116,9 @@ public sealed class ExcelSourceParityTests
 
 
     [Fact]
-    public void BasicOrSecondary_ExcelRow5_VatExempt_ShouldMatchSourceCells()
+    public void BasicOrSecondary_LegacyWorkbookRow5Vector_VatExempt_ShouldMatchRecordedCells()
     {
-        // Source: 03-Temel Eğitim Taşıma Ödeme.xlsm, Hesaplama Bilgileri row 5.
+        // Legacy source: 03-Temel Eğitim Taşıma Ödeme.xlsm, Hesaplama Bilgileri row 5. This is not the latest authoritative upload.
         // Source cells: G=13, H=6545, I=3659.2, K=88744.2,
         // T=219.552, U=841.295016, V=1060.847016, W=87683.352984.
         var input = new ProgressPaymentInput(
@@ -139,9 +139,9 @@ public sealed class ExcelSourceParityTests
     }
 
     [Fact]
-    public void SpecialEducation_ExcelRow5_VatExempt_ShouldMatchSourceCells()
+    public void SpecialEducation_LegacyWorkbookRow5Vector_VatExempt_ShouldMatchRecordedCells()
     {
-        // Source: 02-Özel Eğitim Hakediş Ödeme.xlsm, Hesaplama row 5.
+        // Legacy source: 02-Özel Eğitim Hakediş Ödeme.xlsm, Hesaplama row 5. This is not the latest authoritative upload.
         // K=42813.848, T=40874.70, AC=68.75088, AD=793.36743504,
         // AE=862.11831504, AF=83688.548, AG=82826.42968496.
         var input = new ProgressPaymentInput(
@@ -163,9 +163,9 @@ public sealed class ExcelSourceParityTests
     }
 
     [Fact]
-    public void SpecialEducation_ExcelRow6_VatExempt_ShouldMatchSourceCells()
+    public void SpecialEducation_LegacyWorkbookRow6Vector_VatExempt_ShouldMatchRecordedCells()
     {
-        // Source: 02-Özel Eğitim Hakediş Ödeme.xlsm, Hesaplama row 6.
+        // Legacy source: 02-Özel Eğitim Hakediş Ödeme.xlsm, Hesaplama row 6. This is not the latest authoritative upload.
         // K=49369.2946, T=40874.70, AC=79.277676, AD=855.513068808,
         // AE=934.790744808, AF=90243.9946, AG=89309.203855192.
         var input = new ProgressPaymentInput(
