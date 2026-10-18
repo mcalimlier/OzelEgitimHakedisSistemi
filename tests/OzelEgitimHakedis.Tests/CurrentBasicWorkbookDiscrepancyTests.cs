@@ -11,6 +11,73 @@ namespace OzelEgitimHakedis.Tests;
 public sealed class CurrentBasicWorkbookDiscrepancyTests
 {
     [Fact]
+    public void CurrentBasicRows5And6_ShouldRepeatTheSourceGuaranteeStampAndNetGap()
+    {
+        var examples = new[]
+        {
+            new
+            {
+                Input = new ProgressPaymentInput(
+                    WorkDays: 15m,
+                    DailyPrice: 6545m,
+                    DiscountAmount: 250m,
+                    PriceDifference: 1501m,
+                    ContractAmount: 100000m,
+                    IsVatExempt: false,
+                    TaxDebt: 1500m,
+                    SocialSecurityDebt: 1500m,
+                    MinimumWageSupport: 1500m,
+                    InspectionPenalty: 1500m,
+                    ProgramType: TransportationProgramType.BasicOrSecondary),
+                SourceTransportNet = 99426m,
+                SourceGross = 109368.6m,
+                SourceStampTax = 956.77848m,
+                SourceTotalDeductions = 13428.07848m,
+                SourceNet = 95940.52152m
+            },
+            new
+            {
+                Input = new ProgressPaymentInput(
+                    WorkDays: 15m,
+                    DailyPrice: 6135m,
+                    DiscountAmount: 330m,
+                    PriceDifference: 1502m,
+                    ContractAmount: 100000m,
+                    IsVatExempt: false,
+                    TaxDebt: 1500m,
+                    SocialSecurityDebt: 1500m,
+                    MinimumWageSupport: 1500m,
+                    InspectionPenalty: 1500m,
+                    ProgramType: TransportationProgramType.BasicOrSecondary),
+                SourceTransportNet = 93197m,
+                SourceGross = 102516.7m,
+                SourceStampTax = 897.72756m,
+                SourceTotalDeductions = 13057.57756m,
+                SourceNet = 89459.12244m
+            }
+        };
+
+        foreach (var example in examples)
+        {
+            var result = ProgressPaymentCalculator.Calculate(example.Input);
+
+            Assert.Equal(example.SourceTransportNet, result.TransportNetAmount);
+            Assert.Equal(example.SourceGross, result.GrossAmount);
+
+            // Source XLSM uses literal T=1500 and U=(K*9.48/1000)+(T*9.48/1000).
+            // OEHS currently calculates T=90 and stamp tax on K only.
+            Assert.Equal(90m, result.AdditionalGuarantee);
+            Assert.Equal(example.Input.PriceDifference == 1501m ? 942.55848m : 883.50756m, result.StampTax);
+            Assert.Equal(example.Input.PriceDifference == 1501m ? 12003.85848m : 11633.35756m, result.TotalDeductions);
+            Assert.Equal(example.Input.PriceDifference == 1501m ? 97364.74152m : 90883.34244m, result.NetPayable);
+
+            Assert.NotEqual(example.SourceStampTax, result.StampTax);
+            Assert.NotEqual(example.SourceTotalDeductions, result.TotalDeductions);
+            Assert.Equal(1424.22m, result.NetPayable - example.SourceNet);
+        }
+    }
+
+    [Fact]
     public void CurrentBasicRow4_ShouldKeepGuaranteeAndStampTaxGapVisibleUntilDecision()
     {
         var input = new ProgressPaymentInput(
