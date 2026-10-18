@@ -729,3 +729,13 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - Değişiklik commitleri: `c89fb6bfeaef9f9068a0f34f27f425c86a28769a` (düzeltme), `d869ee2bd37b1361cd0278bc644ab057539bd460` (test).
 - **Doğrulama durumu:** Bu commitler için henüz CI sonucu alınmadı. Windows PDF görsel kabulü de yeni çıktı yeniden üretildikten sonra tekrar edilmeli. Excel/VBA masaüstü kabulü açık.
 - **Sıradaki adım:** PR/Actions durumunu yeniden sorgula; test ve derleme yeşil olduğunda yeni smoke PDF'yi alıp alt bilgiyi yeniden görsel kontrol et. Birleştirme/yayınlama yapılmadı.
+
+
+## Devam notu — 2026-10-18, alt bilgi düzeltmesi CI ve PDF görsel kontrolü
+
+- Windows CI run 1980 / ID 39153732605, commit `3a244e6d9d9da5ae8ed1fbb408722f52636d6140` için başarılı tamamlandı. Tam çözüm/WPF derlemesi, test derlemeleri, çözüm testleri, PDF smoke üretimi ve Windows EXE yayımlama adımı başarılı.
+- Yeni `OEHS-PDF-Smoke-Review` artifact'ı (ID 12145769414) indirildi. Sekiz PDF'nin tamamı tek sayfa A4 olarak doğrulandı; sayfa boyutları 595.276 × 841.890 pt ve metin sınırları sayfa dışına taşmıyor.
+- `01_Hakedis_Raporu.pdf` görsel olarak yeniden incelendi: “M.Y.H.B.Y. Örnek No :4/10” artık dış çerçevenin altında, çerçeve çizgisi metni kesmiyor. Footer düzeltmesi ve regresyon testi CI'dan geçti.
+- **Açık kabul işleri:** Sekiz çıktının bu smoke örnekleriyle yapılan incelemesi yalnızca yerleşim/sayfa sınırı kontrolüdür; gerçek Excel/VBA örnek tutarlarıyla karşılaştırma ve dört belgenin tutar, dönem, yüklenici, hat ve imza bilgilerinin uzman görsel kabulü hâlâ yapılmalı.
+- PR #3 açık/merge edilmemiş durumda; ana dala birleştirme veya yayınlama yapılmadı.
+- **Sıradaki adım:** Visual Studio'da kullanıcıyla gerçek Excel örnek verilerini girerek Temel Eğitim ve Özel Eğitim için dört belgeyi birlikte karşılaştır; farkları kaynak hücre ve testle kaydet.
