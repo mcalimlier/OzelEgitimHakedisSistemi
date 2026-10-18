@@ -190,11 +190,12 @@ public static class ProgressPaymentReportService
         ArgumentNullException.ThrowIfNull(current);
         ArgumentNullException.ThrowIfNull(reportTotals);
 
-        // Temel Eğitim D11 = H2 + D7; D13 = D11 + D12.
-        // CurrentTotal maps to H2/K and the raw current price difference maps to D7/I.
-        var reportGross = reportTotals.CurrentTotal + current.Calculation.Vat;
-        if (current.Input.ProgramType == TransportationProgramType.BasicOrSecondary)
-            reportGross += reportTotals.CurrentPriceDifference;
+        // Her iki kaynak Excel'de Hakediş Raporu D13 zinciri, H2 tutarına
+        // D7 fiyat farkını ekler ve D12 KDV'yi dahil eder. Hesaplama sayfası
+        // netinden farklı olabilen bu rapor zinciri iki program için de uygulanır.
+        var reportGross = reportTotals.CurrentTotal
+                          + reportTotals.CurrentPriceDifference
+                          + current.Calculation.Vat;
         var reportDeductions = CalculateReportTotalDeductions(
             current.Calculation,
             current.Input.ProgramType,
