@@ -86,6 +86,38 @@ public sealed class PdfFileNameTests
     }
 
     [Fact]
+    public void BuildProgressPdfFileNameForContractor_ShouldIncludeStableContractorIdentityPart()
+    {
+        var first = OehsFileNameService.BuildProgressPdfFileNameForContractor(
+            "123", "Örnek Taşımacılık", "12345678901", "01", 2,
+            new DateOnly(2026, 11, 30));
+        var sameIdentityDifferentDisplayName = OehsFileNameService.BuildProgressPdfFileNameForContractor(
+            "123", "Örnek Taşımacılık Ltd.", "12345678901", "01", 2,
+            new DateOnly(2026, 11, 30));
+        var otherIdentity = OehsFileNameService.BuildProgressPdfFileNameForContractor(
+            "123", "Örnek Taşımacılık", "10987654321", "01", 2,
+            new DateOnly(2026, 11, 30));
+
+        Assert.Contains("Yuklenici-", first, StringComparison.Ordinal);
+        Assert.Equal(first, sameIdentityDifferentDisplayName);
+        Assert.NotEqual(first, otherIdentity);
+    }
+
+    [Fact]
+    public void BuildProgressPdfFileName_ShouldIncludeBatchRoutesAndUseMonthlyDate()
+    {
+        var name = OehsFileNameService.BuildProgressPdfFileName(
+            "123", "SOZ-02", "01", 2, new DateOnly(2026, 11, 30),
+            OzelEgitimHakedis.Core.Models.TransportationProgramType.BasicOrSecondary,
+            "01,02,03");
+
+        Assert.Contains("_Hatlar-01,02,03_", name, StringComparison.Ordinal);
+        Assert.Contains("_TemelOrtaogretim_", name, StringComparison.Ordinal);
+        Assert.EndsWith("_2026-11.pdf", name, StringComparison.Ordinal);
+        Assert.DoesNotContain("/", name, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void BuildProgressPdfFileName_ShouldRejectNonPositiveProgressPaymentNumbers()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() =>
