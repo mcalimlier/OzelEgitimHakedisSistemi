@@ -5,27 +5,28 @@ Kapsam: güncel Temel Eğitim ve Özel Eğitim XLSM'leri ile OEHS hesap/rapor zi
 
 **Kural:** Aşağıdaki başlıklarda kod veya kaynak XLSM davranışı karar alınmadan değiştirilmez. Örnek değerler orijinal dosyaların salt okunur incelenmesinden ve ayrı LibreOffice XLSX kopyalarının formül yeniden hesaplamasından alınmıştır. Bu sonuçlar gerçek Excel/VBA masaüstü kabulü değildir.
 
-## Karar 1 — Temel Eğitim ek kesin teminat ve damga vergisi
+## Karar 1 — Ek kesin teminat / kesin teminat alanlarının anlamı (iki program)
 
-**Güncel kaynak kanıtı**
-- Hesaplama Bilgileri!T4:T6: sabit 1.500 değerleri, I*6% formülü yok.
-- U4=(K4*9.48/1000)+T4*9.48/1000: damga vergisi matrahına T dahil.
-- Satır 4: K=220.490; T=1.500; U=2.104,4652; V=20.628,9652; W=221.910,0348.
-- OEHS aynı girdiyle T=90 (I'nin %6'sı), damga=2.090,2452; toplam kesinti=19.204,7452; net=223.334,2548. Bu fark için CurrentBasicWorkbookDiscrepancyTests regresyon koruması mevcut.
+**Kullanıcının doğruladığı iş kuralı (öncelikli):**
+- Hem Temel/Ortaöğretim hem Özel Eğitim programında **ek kesin teminat tutarı kullanıcı tarafından elle girilir**.
+- **Kesin teminat tutarı**, girilen ek kesin teminat tutarının **%6'sı** olarak bulunur.
+- Ek kesin teminatı fiyat farkının %6'sı olarak otomatik üretmek veya her hakedişte sabit 1.500 TL varsaymak doğru değildir.
+- Bu alan anlamları Temel/Ortaöğretim ve Özel Eğitim için ayrı ayrı doğrulanmalı; ortak iş kuralı olsa da Excel hücre eşlemesi ve belgeye aktarım zinciri program bazında test edilmelidir.
 
-- Aynı kaynak satırlarının 5 ve 6 vektörleri de kapsama alındı (LibreOffice ile yeniden hesaplanmış kopya, Excel/VBA masaüstü kabulü değil):
-  - Satır 5 kaynak W=95.940,52152; OEHS net=97.364,68152; fark=1.424,16 TL. Kaynak T=1.500 ve U=956,77848; OEHS T=90,06 ve U=942,55848.
-  - Satır 6 kaynak W=89.459,12244; OEHS net=90.883,22244; fark=1.424,10 TL. Kaynak T=1.500 ve U=897,72756; OEHS T=90,12 ve U=883,50756.
-  - Farkın her satırda sabit 1.424,22 TL olduğu varsayılmamalı: OEHS'nin ek teminatı I*6% hesabıyla fiyat farkı değiştikçe değişiyor. Bu üç vektör iş kuralını seçmez; kaynak XLSM ve OEHS farklı davranışını korur.
+**Önceki incelemenin düzeltmesi:** Eski metin, Temel Eğitim `Hesaplama Bilgileri!T4:T6` hücrelerindeki 1.500 değerlerini ve OEHS'nin fiyat farkı üzerinden yaptığı %6 hesabını aynı kalemin doğrudan karşılaştırması olarak ele aldı. Bu çıkarım alanların anlamını doğru ayırmıyordu ve geçerli kabul edilmemelidir. Önceki satır bazlı farklar yalnızca mevcut hücre/kod çıktılarının aritmetik farklarıdır; doğru iş kuralını belirlemez.
 
-**Karar gerektiren soru:** T, her hakediş/hat için elle girilecek tutar mı, kaynak dosyada kalan sabit/örnek veri mi, yoksa eski formülün eksikliği mi?
+**Statik kaynak bulguları — hâlâ alan eşlemesi gerektiriyor:**
+- Temel Eğitim `Hesaplama Bilgileri!T4:T6` değerleri 1.500; `U4=(K4*9.48/1000)+T4*9.48/1000`. T'nin kullanıcı girdisi alanı olup olmadığı, kesin teminatın %6 değerinin hangi hücreye yazıldığı ve bu değerlerin damga vergisi matrahına nasıl girdiği form girişleri/VBA/rapor zinciri üzerinden doğrulanmalı.
+- Özel Eğitim `Hesaplama!AC4` formülü `=(I4*6/100)+R4*6/100` olarak statik incelendi. Bu formülün kullanıcı tarafından girilen ek kesin teminatın %6'sı anlamına gelen alanla eşleşip eşleşmediği hücre etiketleri, kullanıcı girişi ve VBA aktarımıyla doğrulanmalı; formülden tek başına alan adı çıkarılmamalı.
+- Mevcut OEHS hesap motorunun fiyat farkını temel alan %6 hesabı, kullanıcının açıkladığı alan semantiğiyle uyumlu olduğu kanıtlanmış değildir. Kod davranışı, giriş modeli ve testler kaynak alan eşlemesi tamamlanmadan resmî doğru kabul edilmemeli.
+- Kaynak XLSM'ler değiştirilmedi. Bu kayıt, kaynak dosyaların Excel/VBA masaüstü kabulünden geçmiş olduğu anlamına gelmez.
 
-**Olası yollar**
-1. T'yi açık kullanıcı girdisi olarak modelle ve Basic için damga vergisine T'yi dahil et.
-2. T'nin aslında %6 hesaplanması gerekiyorsa kaynak XLSM/VBA'nın neden formül üretmediğini kanıtla; ardından kullanıcı onayıyla iki sistemi eşleştir.
-3. T değerleri örnek/stale veri ise gerçek çalışma örneğiyle yeni beklenen değerleri doğrula.
+**Sonraki doğrulama:**
+1. Her iki programda kullanıcı giriş ekranı/formu, ilgili sütun başlıkları, hücre formülleri ve VBA'da ek kesin teminat alanının nereden alındığını izle.
+2. Elle girilen örnek bir ek kesin teminat değeri için kesin teminatın tam %6'sını hesapla; sonuç hücrelerini, damga vergisi/kesinti/net zincirini ve dört PDF'yi kontrol et.
+3. Mevcut OEHS kodu ve testlerinin aynı alan semantiğini uygulayıp uygulamadığını incele; değişiklik gerekiyorsa iki program için ayrı regresyon testleri ekle.
+4. Excel masaüstü/VBA çalıştırması mümkün değilse bu kabul kapısını açık bırak; LibreOffice/statik incelemeyi onun yerine geçmiş gibi gösterme.
 
-Şu an hiçbir seçenek seçilmedi.
 
 ## Karar 2 — Hakediş Raporu D28 ile hesaplama sayfası neti
 
