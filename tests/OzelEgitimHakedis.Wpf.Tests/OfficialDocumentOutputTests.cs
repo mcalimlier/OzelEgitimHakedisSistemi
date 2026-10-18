@@ -370,6 +370,7 @@ public sealed class OfficialDocumentOutputTests
             var basicJulyContext = basicContext with
             {
                 PeriodDate = new DateOnly(2027, 7, 31),
+                ContractEndDate = new DateOnly(2027, 7, 31),
                 Payments = new[] { julyPayment },
                 ReportTotals = basicJulyTotals,
                 ReportNetPayable = ProgressPaymentReportService.CalculateReportNetPayable(
