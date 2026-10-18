@@ -378,6 +378,26 @@ public sealed class OfficialDocumentOutputTests
                 var outputPage = Assert.IsType<FixedPage>(output.Document.Pages[0].Child);
                 var textBlocks = GetPageText(outputPage);
 
+                // Cross-document consistency guard: all four outputs must refer to
+                // the same route/work, even though their financial layouts differ.
+                Assert.Contains("Örnek Güzergâh", textBlocks, StringComparison.Ordinal);
+                switch (output.Kind)
+                {
+                    case OehsOfficialDocumentKind.HakedisRaporu:
+                    case OehsOfficialDocumentKind.HizmetIsleriHakedisRaporu:
+                        Assert.Contains("31.10.2026", textBlocks, StringComparison.Ordinal);
+                        Assert.Contains("Örnek Yüklenici", textBlocks, StringComparison.Ordinal);
+                        break;
+                    case OehsOfficialDocumentKind.KabulTutanagi:
+                        Assert.Contains("01.10.2026 / 31.10.2026", textBlocks, StringComparison.Ordinal);
+                        Assert.Contains("Örnek Yüklenici", textBlocks, StringComparison.Ordinal);
+                        break;
+                    case OehsOfficialDocumentKind.HakedisIcmali:
+                        Assert.Contains("Hizmet Alımı İşi Eylül 2026", textBlocks, StringComparison.Ordinal);
+                        Assert.Contains("Hizmet Alımı İşi Ekim 2026", textBlocks, StringComparison.Ordinal);
+                        break;
+                }
+
                 Assert.Contains("TEST DÜZENLEYEN", textBlocks, StringComparison.Ordinal);
                 Assert.Contains("TEST MEMUR", textBlocks, StringComparison.Ordinal);
                 Assert.Contains("TEST KONTROL EDEN", textBlocks, StringComparison.Ordinal);
