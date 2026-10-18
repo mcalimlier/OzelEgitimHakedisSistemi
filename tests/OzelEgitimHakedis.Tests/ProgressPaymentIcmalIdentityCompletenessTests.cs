@@ -6,19 +6,21 @@ namespace OzelEgitimHakedis.Tests;
 
 public sealed class ProgressPaymentIcmalIdentityCompletenessTests
 {
-    [Theory]
-    [InlineData("TenderNumber")]
-    [InlineData("ContractNumber")]
-    [InlineData("RouteNumber")]
-    [InlineData("ContractorTaxOrIdentityNumber")]
-    public void FindPreviousDeduction_ShouldReturnZeroWhenBothRecordsShareAnIncompleteIdentity(string field)
-    {
-        var previous = WithBlankIdentity(History(1, new DateOnly(2026, 10, 31), 200m), field);
-        var current = WithBlankIdentity(History(2, new DateOnly(2026, 11, 30), 300m), field);
+    [Fact]
+    public void FindPreviousDeduction_ShouldNotCarryWhenTenderNumberIsMissing() =>
+        AssertIncompleteIdentityDoesNotCarry("TenderNumber");
 
-        Assert.Equal(0m, ProgressPaymentIcmalService.FindPreviousDeduction(
-            new[] { previous, current }, current));
-    }
+    [Fact]
+    public void FindPreviousDeduction_ShouldNotCarryWhenContractNumberIsMissing() =>
+        AssertIncompleteIdentityDoesNotCarry("ContractNumber");
+
+    [Fact]
+    public void FindPreviousDeduction_ShouldNotCarryWhenRouteNumberIsMissing() =>
+        AssertIncompleteIdentityDoesNotCarry("RouteNumber");
+
+    [Fact]
+    public void FindPreviousDeduction_ShouldNotCarryWhenContractorIdentityIsMissing() =>
+        AssertIncompleteIdentityDoesNotCarry("ContractorTaxOrIdentityNumber");
 
     [Fact]
     public void FindPreviousDeduction_ShouldIgnorePreviousRecordWithIncompleteIdentity()
@@ -49,19 +51,30 @@ public sealed class ProgressPaymentIcmalIdentityCompletenessTests
             new[] { previous, current }, current));
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void FindPreviousDeduction_ShouldNotMatchBlankTenderIdentity(string tenderNumber)
+    [Fact]
+    public void FindPreviousDeduction_ShouldNotMatchEmptyTenderIdentity()
     {
-        var incompletePrevious = History(1, new DateOnly(2026, 10, 31), 200m) with
-        {
-            TenderNumber = tenderNumber
-        };
+        var incompletePrevious = History(1, new DateOnly(2026, 10, 31), 200m) with { TenderNumber = "" };
         var current = History(2, new DateOnly(2026, 11, 30), 300m);
-
         Assert.Equal(0m, ProgressPaymentIcmalService.FindPreviousDeduction(
             new[] { incompletePrevious, current }, current));
+    }
+
+    [Fact]
+    public void FindPreviousDeduction_ShouldNotMatchWhitespaceTenderIdentity()
+    {
+        var incompletePrevious = History(1, new DateOnly(2026, 10, 31), 200m) with { TenderNumber = "   " };
+        var current = History(2, new DateOnly(2026, 11, 30), 300m);
+        Assert.Equal(0m, ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { incompletePrevious, current }, current));
+    }
+
+    private static void AssertIncompleteIdentityDoesNotCarry(string field)
+    {
+        var previous = WithBlankIdentity(History(1, new DateOnly(2026, 10, 31), 200m), field);
+        var current = WithBlankIdentity(History(2, new DateOnly(2026, 11, 30), 300m), field);
+        Assert.Equal(0m, ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { previous, current }, current));
     }
 
     private static ProgressPaymentHistoryData WithBlankIdentity(
