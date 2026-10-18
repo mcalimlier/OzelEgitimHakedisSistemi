@@ -397,4 +397,46 @@ public sealed class ProgressPaymentReportTests
         Assert.Equal(160m, totals.CurrentTotal);
     }
 
+
+    [Fact]
+    public void ReportTotals_ShouldNotCarryPreviousAmountsWhenCurrentIdentityIsIncomplete()
+    {
+        var previous = History(
+            1, new DateOnly(2026, 10, 31), new DateTime(2026, 10, 31), 100m, 25m) with
+        {
+            ContractorTaxOrIdentityNumber = ""
+        };
+        var current = History(
+            2, new DateOnly(2026, 11, 30), new DateTime(2026, 11, 30), 100m, 10m) with
+        {
+            ContractorTaxOrIdentityNumber = ""
+        };
+
+        var totals = ProgressPaymentReportService.Calculate(current, new[] { previous, current });
+
+        Assert.Equal(0m, totals.PreviousTotal);
+        Assert.Equal(110m, totals.CurrentTotal);
+        Assert.Equal(110m, totals.CumulativeTotal);
+    }
+
+    [Fact]
+    public void ReportTotals_ShouldNotCarryPreviousAmountsWhenIdentityNormalizesToEmpty()
+    {
+        var previous = History(
+            1, new DateOnly(2026, 10, 31), new DateTime(2026, 10, 31), 100m, 25m) with
+        {
+            ContractorTaxOrIdentityNumber = "----"
+        };
+        var current = History(
+            2, new DateOnly(2026, 11, 30), new DateTime(2026, 11, 30), 100m, 10m) with
+        {
+            ContractorTaxOrIdentityNumber = "----"
+        };
+
+        var totals = ProgressPaymentReportService.Calculate(current, new[] { previous, current });
+
+        Assert.Equal(0m, totals.PreviousTotal);
+        Assert.Equal(110m, totals.CurrentTotal);
+        Assert.Equal(110m, totals.CumulativeTotal);
+    }
 }
