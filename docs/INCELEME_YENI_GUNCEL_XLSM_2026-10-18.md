@@ -150,3 +150,17 @@ Her iki makrodaki `AyVerileriniSil`, seçili ay adını yalnızca mesajda kullan
 ### VBA doğrulama sınırı
 
 Kaynak modül gövdelerinin çıkarılması tamamlandı; fakat bu makroların gerçek Excel masaüstünde çalıştırılması, buton bağlantılarının ve şekil/denetim OnAction hedeflerinin tamamının eşleştirilmesi henüz yapılmadı. Dolayısıyla kaynak kodu çözümleme tamamlandı; davranışsal Excel kabul testi bekliyor.
+
+
+## Örnek dosyalarda yeniden hesaplama — LibreOffice ile sınırlı çapraz kontrol
+
+Orijinal XLSM dosyaları değiştirilmeden, geçici kopyalar LibreOffice başsız modunda XLSX'e dönüştürülüp formüller yeniden hesaplatıldı. Bu Excel masaüstü testi değildir; yalnızca ikinci bir hesaplayıcıyla tutarlılık kontrolüdür.
+
+| Kaynak | Seçili dönem | D8 (C) | D10 (önceki toplam) | D11 (E) | C − D | Kontrol |
+|---|---|---:|---:|---:|---:|---|
+| Özel Eğitim | Kasım 2026 | 280.406,66 TL | 183.815,02 TL | 96.591,64 TL | 96.591,64 TL | Eşit |
+| Temel Eğitim | Kasım 2026 | 838.242,00 TL | 616.252,00 TL | 221.990,00 TL | 221.990,00 TL | Eşit |
+
+Bu örneklerde `D8 - D10 = D11` zinciri LibreOffice yeniden hesaplamasında eşit çıktı. Bu, formülün tüm aylar ve tüm senaryolar için doğrulandığı anlamına gelmez; Excel masaüstünde, özellikle Eylül başlangıcı, Haziran/Temmuz sınırı ve boş ay kayıtlarıyla aynı kontrol tekrarlanmalı.
+
+Aynı yeniden hesaplama kopyalarında `Anasayfa!AA2` `#VALUE!` olarak kaldı. Hücredeki saklı değer/formül tipi ve bağlı çizim/ad tanımları incelenmeli; bu alanın hata göstermesinin zararsız olduğu varsayılmamalı.
