@@ -54,7 +54,8 @@ public static class ProgressPaymentIcmalService
         ArgumentNullException.ThrowIfNull(current);
 
         if (!current.PeriodDate.HasValue ||
-            !IsMonthInWorkbookLookupRange(current.PeriodDate.Value, current.Input.ProgramType))
+            !IsMonthInWorkbookLookupRange(current.PeriodDate.Value, current.Input.ProgramType) ||
+            !HasCompleteIdentity(current))
         {
             return 0m;
         }
@@ -73,6 +74,7 @@ public static class ProgressPaymentIcmalService
 
         return payments
             .Where(x => x.Id != current.Id)
+            .Where(HasCompleteIdentity)
             .Where(x => string.Equals(
                 OehsIdentityService.BuildRouteKey(
                     x.TenderNumber ?? string.Empty,
@@ -89,4 +91,12 @@ public static class ProgressPaymentIcmalService
             .Select(x => x.Calculation.TotalDeductions)
             .FirstOrDefault();
     }
+
+    // Missing identity components must not collapse into an empty composite key:
+    // otherwise unrelated incomplete records could inherit a previous deduction.
+    private static bool HasCompleteIdentity(ProgressPaymentHistoryData payment) =>
+        !string.IsNullOrWhiteSpace(payment.TenderNumber) &&
+        !string.IsNullOrWhiteSpace(payment.ContractNumber) &&
+        !string.IsNullOrWhiteSpace(payment.RouteNumber) &&
+        !string.IsNullOrWhiteSpace(payment.ContractorTaxOrIdentityNumber);
 }
