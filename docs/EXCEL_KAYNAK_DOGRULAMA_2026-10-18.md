@@ -71,7 +71,13 @@ Bu testler faydalı eski regresyon vektörleri olarak korunuyor, fakat adları v
 
 `tests/OzelEgitimHakedis.Tests/CurrentXlsmSourceParityTests.cs` dosyasına güncel yüklenen Özel Eğitim XLSM'sinin `Hesaplama` satır 4, 5 ve 6 hücrelerinden çıkarılan üç ayrı hesap testi eklendi. Bu satırlarda taşıma/rehber neti, ek teminat, damga vergisi, toplam kesinti, brüt ve net tutarların kodla eşleşmesi bekleniyor. Kaynak değerleri önce LibreOffice ile yeniden hesaplatılan **ayrı XLSX inceleme kopyasından** da okundu; bu, Excel/VBA masaüstü çalıştırması değildir.
 
-Bu testler eski vektörleri güncel kaynak gibi sunan durumu düzeltmek için eklenen ilk güncel kaynak kapsamıdır. CI sonucu alınmadan testlerin başarılı olduğu söylenmez. Temel Eğitim için benzer golden-master vektörü henüz parite sayılmaz; ek teminat T sütunu ve damga vergisi U sütunu farkı açık karar kapısıdır.
+Bu testler eski vektörleri güncel kaynak gibi sunan durumu düzeltmek için eklenen ilk güncel kaynak kapsamıdır. Windows CI run `39139111316` bu üç güncel Özel Eğitim vektörünü de içeren test çözümünde başarılı oldu: 214 Core testi ve 4 WPF testi geçti; PDF smoke ve EXE publish adımları da başarılı. Bu, kaynak hücrelerinden transkribe edilen hesap zincirinin OEHS ile eşleştiğini gösterir; Excel masaüstü/VBA çalıştırması değildir. Temel Eğitim için benzer golden-master vektörü henüz parite sayılmaz; ek teminat T sütunu ve damga vergisi U sütunu farkı açık karar kapısıdır.
+
+## 9. Temel Eğitim güncel satır 4 — açık uyuşmazlığı koruyan test
+
+`tests/OzelEgitimHakedis.Tests/CurrentBasicWorkbookDiscrepancyTests.cs` güncel Temel Eğitim satır 4'te OEHS'nin halen ürettiği sonuç ile güncel XLSM hücrelerinin farklı olduğunu açıkça test eder. Kaynakta K=220.490, L=22.049, M=11.024,5, T=1.500 (sabit), U=2.104,4652, V=20.628,9652, W=221.910,0348. OEHS'de aynı G/H/I/J girdileri K, KDV, tevkifat ve brüt tutarı eşleştiriyor; ancak %6 hesabıyla ek teminatı 90 TL, yalnız K üzerinden damga vergisini 2.090,2452 TL hesaplıyor. Bu nedenle kesinti/net sonuçları kaynakla farklı kalıyor.
+
+Bu test bir parite başarı testi değil, çözülmemiş farkın sessizce kaybolmamasını sağlayan **bilinen uyuşmazlık korumasıdır**. T4'ün neden sabit olduğu ve beklenen resmi davranış Excel/VBA ile doğrulanmadan hesap motoru değiştirilmemelidir. Testin Windows CI sonucu bekleniyor.
 
 ## Sonraki doğrulama adımları
 
