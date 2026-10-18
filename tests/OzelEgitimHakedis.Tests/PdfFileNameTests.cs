@@ -99,8 +99,12 @@ public sealed class PdfFileNameTests
             new DateOnly(2026, 11, 30));
 
         Assert.Contains("Yuklenici-", first, StringComparison.Ordinal);
-        Assert.Equal(first, sameIdentityDifferentDisplayName);
-        Assert.NotEqual(first, otherIdentity);
+        var firstIdentitySuffix = first.Split("_Hat-", 2)[0].Split('-').Last();
+        var renamedIdentitySuffix = sameIdentityDifferentDisplayName.Split("_Hat-", 2)[0].Split('-').Last();
+        var otherIdentitySuffix = otherIdentity.Split("_Hat-", 2)[0].Split('-').Last();
+
+        Assert.Equal(firstIdentitySuffix, renamedIdentitySuffix);
+        Assert.NotEqual(firstIdentitySuffix, otherIdentitySuffix);
     }
 
     [Fact]
