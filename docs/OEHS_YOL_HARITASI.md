@@ -668,9 +668,34 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - Kullanıcı, çalışan Temel Eğitim XLSM'sindeki formül ve sonuçların kaynak kabul edilmesini; Temel Eğitim ile Özel Eğitim hesaplarının birbirine kıyaslanmamasını netleştirdi.
 - Güncel Temel Eğitim dosyasında Hakediş Raporu!H2 = seçili satırın K sütunu; D7 = I sütunundaki fiyat farkı; D11 = IF(D7<0,H2-ABS(D7),H2+D7); D12 = KDV; D13=D11+D12; D26=SUM(D14:F25); D28=ROUND(D13,2)-ROUND(D26,2).
 - Bu nedenle Temel Eğitim'in resmî rapor neti için D7 fiyat farkı H2/K değerine ikinci kez eklenir. Hesaplama sayfası W4=O4-V4 ayrı bir formül zinciridir; W4 ile D28 eşitlenmeye zorlanmaz.
-- Core hesaplayıcı Temel Eğitim için rapor neti ayarlamasını PriceDifference ile ekleyecek şekilde güncellendi; Temel Eğitim Hakediş Raporu damga vergisi matrahı D15 formülüne uygun K+I olarak değiştirildi. Özel Eğitim hesaplama dalı değiştirilmedi.
-- Regresyon testi, Temel Eğitim D7-D28 zincirinde damga vergisi ve net tutarı kapsayacak şekilde güncellendi.
+- İlk uygulamada rapor farkı hesaplayıcıya eklenmişti; bu yaklaşım düzeltildi. Hesaplayıcı artık yalnızca Hesaplama Bilgileri W / AG zincirini hesaplıyor. Hakediş Raporu D28 zinciri ayrı rapor servisinde uygulanıyor.
+- Temel Eğitim raporunda D11 = K + ham I fiyat farkı, D15 = IF(D11<0,0,D11*9.48/1000), D28 = ROUND(D13,2)-ROUND(D26,2) ayrı ele alınıyor. Hesaplama sayfasındaki U damga vergisi ise K + elle girilen T üzerinden hesaplanıyor.
+- Özel Eğitim raporunda da D28 için raporun ham I+R fiyat farkı, D13 tahakkuk tutarı ve D26 kesinti toplamı zinciri hesaplama sayfasındaki AG'den ayrı uygulanıyor.
+- PDF Hakediş Raporu'nun tahakkuk satırı, damga vergisi ve kesinti toplamı aynı rapor formüllerini kullanacak şekilde eşlendi; hesaplama sayfası neti diğer ekranlarda korunuyor.
+- Kabul Tutanağı hizmet dönemi, sözleşmenin ilk/son ayı kısmi ise sözleşme başlangıç/bitiş tarihleriyle sınırlandırılıyor.
 - Kod commit'i: bb48df35566c7d652265f3cd4ba95c6ef87878ae; test commit'i: 52f63f2f77dfe77a0a39bb60ab3200f9738e04c2.
 - Windows CI run 39150330372 / run 1910 kuyrukta; sonuç henüz doğrulanmadı. Derleme/test başarısı iddia edilmez.
 - Açık risk: Kaynak Hakediş Raporu D28 zinciri ile Hesaplama Bilgileri W4 zinciri farklıdır; bu farklılık kaynak davranışı olarak korunur. VBA makrolarının gerçek Excel masaüstünde yürütülmesi ve dört PDF'nin aynı hakedişle görsel kabulü hâlâ bekliyor.
 - Sıradaki adım: CI run 1910 sonucunu kontrol et; başarısızsa test çıktısına göre düzelt. Başarılıysa Temel Eğitim için gerçek Excel örnek verisiyle D7/D11/D15/D26/D28 regresyonunu sürdür; Özel Eğitim'e dokunma. Ana dala birleştirme/yayınlama yok.
+
+
+## Devam notu — 18.10.2026, tüm hesap ve belge çekirdeklerinde Excel paritesi
+
+### Uygulanan kaynak eşleştirmeleri
+- Hesaplama motoru: Temel Eğitim ve Özel Eğitim kendi Hesaplama sayfası formülleriyle ayrı dallarda kalıyor. Temel Eğitim'de manuel ek kesin teminat ve U = K/T damga vergisi; Özel Eğitim'de AC = I*6% + R*6%, AD = K/T damga vergisi ve rehber KDV/tevkifat zinciri korunuyor.
+- Hakediş Raporu: İki workbook için rapor D28 hesabı hesaplama sayfası W/AG'den ayrıldı. D13 için mevcut hakediş tutarı + ham fiyat farkı + KDV; D26 için rapor kesintileri; D28 için D13 ve D26'nın ayrı ayrı iki ondalığa yuvarlanması uygulanıyor.
+- PDF çıktısı: Hakediş Raporu tahakkuk satırı, damga vergisi ve kesinti toplamı rapor servisiyle aynı kaynak formüllerini kullanıyor. İcmal satırları hesaplama sayfasının aylık hizmet/fiyat farkı/kesinti zincirini kullanmaya devam ediyor.
+- Dönem ve kabul tutanağı: Kabul hizmet dönemi, sözleşme başlangıç/bitiş tarihleriyle kesişen ay aralığına göre sınırlandırılıyor. İcmal ay aralığı ve önceki ay kesintisi program türüne göre ayrılıyor: Temel Eğitim E4 ve AB:AL; Özel Eğitim E5 ve AN:AX davranışı.
+- Testler: Temel Eğitim'in D7/D11/D15/D26/D28 zinciri ve Özel Eğitim'in D28/AG farkı artık her programın kendi kaynak rapor formülüyle karşılaştırılıyor. Bu, iki programın hesaplarının eşit olması gerektiği anlamına gelmiyor.
+
+### Doğrulama durumu
+- Önceki CI run 1920'de 220 Core testinden 215'i geçti; kalan 5 testin eski beklenen değerleri yeni rapor/kalkülasyon ayrımına göre incelendi. Sonraki run 1926'da 219/220 Core testi geçti; tek başarısızlık Temel Eğitim hesaplama sayfası U yerine rapor D15 bekleyen test beklentisiydi ve test kaynak U formülüne göre düzeltildi.
+- Güncel kod/test değişiklikleri: report formülü d133c909e8607637fb4c0a214c0803677fb8b634; Özel Eğitim rapor testleri 2db2af44ce7e4008563ee5dc4587bf1786f91cc3; PDF rapor eşlemesi 61b67080bbb1f784378a95056d2b9309d9648ba0; kabul dönemi testi 3febd22dc57057d24c22f0928cec4cb576dcd5a5; test açıklaması 0e73cda740629e010a337711c100167e4fc59067; son hesaplama yorumu a65be40310e593a7257ed2ce18eb14fc3079fcdf.
+- Son görülen Windows CI run 1938 (39151099677) bu not yazılırken çalışıyor; yeni değişikliklerin başarılı olduğu henüz söylenemez.
+- Gerçek Excel masaüstü/VBA yürütmesi ve dört PDF'nin aynı gerçek örnek üzerinde görsel kabulü tamamlanmadı. Ana dala birleştirme/yayınlama yapılmadı.
+
+### Sıradaki adım
+1. Güncel CI testlerini sonuçlandır; başarısız testleri yalnızca ilgili programın kaynak hücreleriyle düzelt.
+2. Hakediş Raporu'nun dört PDF içindeki tutarlarının aynı örnek için D28 ile eşleştiğini doğrula.
+3. Temel Eğitim ve Özel Eğitim için ayrı ayrı tam uçtan uca örnekler çalıştır; sonrasında arşiv/önceki kesinti/aylık icmal zincirlerini kontrol et.
+4. Tüm çekirdeklerde en az %90 hedefini, başarılı CI ve uçtan uca test kanıtı oluşmadan tamamlandı sayma.
