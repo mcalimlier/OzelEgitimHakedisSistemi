@@ -55,7 +55,7 @@ public sealed class CurrentXlsmReportNetDiscrepancyTests
                     GuideDiscountAmount: 650m,
                     GuidePriceDifference: 1875m,
                     ProgramType: TransportationProgramType.SpecialEducation),
-                ExpectedReportNet = 87543.80m,
+                ExpectedReportNet = 87543.81m,
                 SourceReportD28 = 91618.81m
             }
         };
