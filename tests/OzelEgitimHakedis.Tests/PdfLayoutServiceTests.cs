@@ -52,13 +52,18 @@ public sealed class PdfLayoutServiceTests
         Assert.Equal(PdfLayoutService.SafeContentWidth, fitted.Sum(), precision: 6);
     }
 
-    [Theory]
-    [InlineData(0d)]
-    [InlineData(-1d)]
-    public void FitColumns_ShouldRejectNonPositiveColumnWidths(double invalidWidth)
+    [Fact]
+    public void FitColumns_ShouldRejectZeroColumnWidth()
     {
         Assert.Throws<ArgumentOutOfRangeException>(
-            () => PdfLayoutService.FitColumns(new[] { 100d, invalidWidth, 200d }));
+            () => PdfLayoutService.FitColumns(new[] { 100d, 0d, 200d }));
+    }
+
+    [Fact]
+    public void FitColumns_ShouldRejectNegativeColumnWidth()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => PdfLayoutService.FitColumns(new[] { 100d, -1d, 200d }));
     }
 
     [Fact]
