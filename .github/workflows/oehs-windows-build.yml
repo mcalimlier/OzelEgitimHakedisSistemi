@@ -10,6 +10,7 @@ on:
   pull_request:
     branches:
       - main
+      - feature/wpf-contract-entry-v0.5
 
 jobs:
   build:
