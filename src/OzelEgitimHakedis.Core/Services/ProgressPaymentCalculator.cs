@@ -120,11 +120,13 @@ public sealed class ProgressPaymentCalculator
         var invoiceAmountAfterWithholding =
             transportInvoiceAmount + guideInvoiceAmount;
 
-        // Basic/Secondary Excel U = (K*9.48/1000) + (T*9.48/1000):
-        // the manually entered additional-guarantee amount is part of the stamp-tax base.
-        // Special Education Excel AD = (K*9.48/1000) + (T*9.48/1000), where T is guide net amount.
+        // Temel Eğitim'in resmî Hakediş Raporu:
+        // D11 = H2 + D7 (H2=K, D7=I); D15 = D11 * 9.48/1000.
+        // Bu nedenle rapor damga vergisi matrahı K+I'dır.
+        // Hesaplama Bilgileri!U4 ayrı olarak K+T kullanır; rapor neti D28 ise D11-D26 zincirini izler.
+        // Özel Eğitim damga vergisi kendi kaynak formülüne göre taşıma ve rehber netlerini kullanır.
         var transportStampTax = input.ProgramType == TransportationProgramType.BasicOrSecondary
-            ? (transportNetAmount + input.ManualAdditionalGuarantee) * constants.StampTaxRate
+            ? (transportNetAmount + input.PriceDifference) * constants.StampTaxRate
             : transportNetAmount * constants.StampTaxRate;
         var guideStampTax = input.ProgramType == TransportationProgramType.BasicOrSecondary
             ? 0m
@@ -156,7 +158,16 @@ public sealed class ProgressPaymentCalculator
         var transportGrossAmount = transportNetAmount + transportVat;
         var guideGrossAmount = guideNetAmount + guideVat;
         var grossAmount = transportGrossAmount + guideGrossAmount;
-        var netPayable = grossAmount - totalDeductions;
+
+        // Temel Eğitim Hakediş Raporu D11 = IF(D7<0,H2-ABS(D7),H2+D7).
+        // H2 zaten Hesaplama Bilgileri!K değeridir; D7 ise I fiyat farkıdır.
+        // Bu rapor zincirinde fiyat farkı K'ya ikinci kez eklenir. W4=O4-V4 farklı
+        // bir zincirdir; resmî rapor neti D28 için D11-D26 davranışı korunur.
+        var basicReportPriceDifferenceAdjustment =
+            input.ProgramType == TransportationProgramType.BasicOrSecondary
+                ? input.PriceDifference
+                : 0m;
+        var netPayable = grossAmount + basicReportPriceDifferenceAdjustment - totalDeductions;
 
         var deductions = new DeductionBreakdown(
             withholding,
