@@ -59,8 +59,12 @@ public sealed class ProgressPaymentCalculatorTests
 
         Assert.Equal(1500m, result.AdditionalGuarantee);
         Assert.Equal(1500m, result.Deductions.AdditionalGuarantee);
-        // Temel Eğitim kaynak U formülü damga vergisi matrahına elle girilen T tutarını da ekler.
-        Assert.Equal(15.3576m, result.StampTax);
+        // Temel Eğitim Hakediş Raporu D11=H2+D7; D15 damga vergisini D11 üzerinden hesaplar.
+        // K=120, D7=I=20 olduğundan rapor damga vergisi matrahı 140 TL'dir.
+        Assert.Equal(1.3272m, result.StampTax);
+        Assert.Equal(1507.3272m, result.TotalDeductions);
+        // D28 = D13-D26; rapor zincirinde fiyat farkı D7, H2'nin üzerine yeniden eklenir.
+        Assert.Equal(-1355.3272m, result.NetPayable);
     }
 
     [Fact]
