@@ -12,6 +12,81 @@ namespace OzelEgitimHakedis.Tests;
 public sealed class CurrentXlsmReportNetDiscrepancyTests
 {
     [Fact]
+    public void CurrentSpecialEducationRows5And6_ShouldKeepD28VersusAgGapVisible()
+    {
+        var examples = new[]
+        {
+            new
+            {
+                Input = new ProgressPaymentInput(
+                    WorkDays: 19m,
+                    DailyPrice: 2704.96m,
+                    DiscountAmount: 250m,
+                    PriceDifference: 1990m,
+                    ContractAmount: 100000m,
+                    IsVatExempt: false,
+                    TaxDebt: 0m,
+                    SocialSecurityDebt: 0m,
+                    MinimumWageSupport: 0m,
+                    InspectionPenalty: 0m,
+                    GuideWorkDays: 30m,
+                    GuideDailyPrice: 1362.49m,
+                    GuideDiscountAmount: 550m,
+                    GuidePriceDifference: 1766m,
+                    ProgramType: TransportationProgramType.SpecialEducation),
+                ExpectedReportNet = 97595.37m,
+                SourceReportD28 = 101351.37m
+            },
+            new
+            {
+                Input = new ProgressPaymentInput(
+                    WorkDays: 19m,
+                    DailyPrice: 2191.25m,
+                    DiscountAmount: 350m,
+                    PriceDifference: 2200m,
+                    ContractAmount: 100000m,
+                    IsVatExempt: false,
+                    TaxDebt: 0m,
+                    SocialSecurityDebt: 0m,
+                    MinimumWageSupport: 0m,
+                    InspectionPenalty: 0m,
+                    GuideWorkDays: 30m,
+                    GuideDailyPrice: 1362.49m,
+                    GuideDiscountAmount: 650m,
+                    GuidePriceDifference: 1875m,
+                    ProgramType: TransportationProgramType.SpecialEducation),
+                ExpectedReportNet = 87543.80m,
+                SourceReportD28 = 91618.81m
+            }
+        };
+
+        foreach (var example in examples)
+        {
+            var calculation = ProgressPaymentCalculator.Calculate(example.Input);
+            var current = new ProgressPaymentHistoryData(
+                Id: Guid.NewGuid(),
+                CreatedAt: new DateTime(2026, 10, 31, 12, 0, 0, DateTimeKind.Utc),
+                Input: example.Input,
+                Calculation: calculation,
+                ProgressPaymentNumber: 1,
+                PeriodDate: new DateOnly(2026, 10, 31),
+                RouteNumber: "1",
+                RouteName: "Örnek Güzergâh",
+                WorkName: "Örnek Güzergâh",
+                ContractorName: "Örnek Yüklenici",
+                TenderNumber: "TEST-IHALE",
+                ContractNumber: "TEST-SOZ",
+                ContractorTaxOrIdentityNumber: "12345678901");
+
+            var totals = ProgressPaymentReportService.Calculate(current, new[] { current });
+            var reportNet = ProgressPaymentReportService.CalculateReportNetPayable(current, totals);
+
+            Assert.Equal(example.ExpectedReportNet, reportNet);
+            Assert.NotEqual(example.SourceReportD28, reportNet);
+        }
+    }
+
+    [Fact]
     public void CurrentSpecialEducationRow4_ReportNetShouldExposeD28VersusAgGap()
     {
         var input = new ProgressPaymentInput(
