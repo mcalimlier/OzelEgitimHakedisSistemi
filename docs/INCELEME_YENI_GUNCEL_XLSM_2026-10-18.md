@@ -246,3 +246,16 @@ En güncel yükleme yeniden açılarak formül metni ile saklanan sonuçlar kar�
 OEHS testlerine, Özel Eğitim Kasım 2026 kaynak örneğindeki E21 değerini (10.580,582128 TL) önceki ay geçmişinden taşıyan ayrı bir regresyon testi eklendi. Bu ekleme yalnızca test kodudur; resmî hesaplama formülü veya kaynak XLSM değiştirilmemiştir. Yeni commit: `90bcde2b5edddcd098a3ca873287308b79110ff3`.
 
 **Doğrulama sınırı:** Bu test henüz çalıştırılmış değildir. Son commit için GitHub birleşik durum sorgusu ve PR tetiklemeli workflow sorgusu sonuç döndürmedi; CI başarısı iddia edilemez. Excel masaüstü ve dört PDF görsel kabul testleri açık kalır.
+
+
+## Devam doğrulaması — GitHub Actions #1661 (2026-10-18)
+
+- PR #3 dalının commit'i `e9706d77cb231738de727a26e938bd34d6db29cd` için Windows CI tamamlandı: **başarılı**.
+- Tam çözüm derlemesi, WPF derlemesi ve statik UI/roadmap kontrolleri geçti.
+- `OzelEgitimHakedis.Tests`: **199/199 geçti**, başarısız 0, atlanan 0.
+- `OzelEgitimHakedis.Wpf.Tests`: **4/4 geçti**, başarısız 0, atlanan 0.
+- Sekiz adet A4 PDF smoke dosyası (her program türü için dört belge) üretildi ve `OEHS-PDF-Smoke-Review` artefaktına yüklendi. Bu CI adımı dosyaların üretilip yüklenmesini kanıtlar; bu oturumda artefakt PDF'leri görsel olarak açılıp referans Excel çıktılarıyla yan yana incelenmiş değildir.
+- Windows x64 self-contained EXE yayımlama adımı geçti. PR tetiklemesinde EXE/arkadaş deneme paketi artefakt yükleme adımları koşul gereği atlandı; bu CI başarısızlığı değildir.
+- Derlemede kod analiz uyarıları (CA1822, CA1861, CA1014) var; CI'yi düşürmedi ancak teknik borç olarak izlenmeli.
+
+**Sıradaki iş:** PDF artefaktını gerçek görsel kabul kapısından geçirmek; ardından Excel/VBA'daki aylık kesinti aktarım kusurlarını program bazında kaynak sonuçlarıyla eşleştirmek. Kaynak XLSM'ler değiştirilmedi; PR açık/taslak ve ana dala birleştirilmedi.
