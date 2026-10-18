@@ -38,6 +38,18 @@ Güncel `Temel Eğitim Taşıma Ödemes Programı En Güncel(1).xlsm` dosyasın�
 
 **Sonuç:** Temel/Ortaöğretim için %6 hesaplama davranışı, güncel kaynak XLSM ile eşdeğer kabul edilemez. T4:T6 sabitlerinin kullanıcı girdisi, eski hesaplamadan kalma örnek değer veya başka bir aktarım sonucu olup olmadığı VBA/form giriş akışı ve Excel masaüstü senaryosuyla belirlenmeli. Bu karar alınmadan resmi hesap davranışı değiştirilmedi; mevcut kod yorumundaki yanlış “kaynak formülü birebir” iddiası kaldırılarak uyuşmazlık açıkça belirtildi.
 
+## 6. Hakediş Raporu D6/D8/D10/D11 — formül ve önbellek aritmetiği uyuşmazlığı
+
+İki güncel XLSM'de D6 dizi formülü `SUM(VLOOKUP(...,{4,5,...,14},FALSE))` ile `İcmal Verileri` aylık D:N sütunlarını topluyor. D7 mevcut fiyat farkını, D8 ise `D6+D7` değerini alıyor. D10 önceki dönem toplamına, D11 ise `IF(D7<0,H2-ABS(D7),H2+D7)` formülüne bağlı.
+
+Dosyaların önbellekli örneklerinde:
+- **Temel/Ortaöğretim:** D6=836.742; D7=1.500; D8=838.242; D10=616.252; H2=220.490; D11=221.990. Dolayısıyla D6-D10=220.490=H2; D8-D10=221.990=D11.
+- **Özel Eğitim:** D6=277.026,66; D7=3.380; D8=280.406,66; D10=183.815,02; H2=93.211,64; D11=96.591,64. Dolayısıyla D6-D10=93.211,64=H2; D8-D10=96.591,64=D11.
+
+D6 formülü aylık K(+T) toplamını kullanıyor ve kaynak aktarım yordamları da K(+T) değerini aylık sütunlara yazıyor. K/T formülleri mevcut fiyat farkını içerdiğinden, D6'nın D10'dan farkı H2'ye eşitken D8/D11'e ayrıca D7 eklenmesi, aynı fiyat farkının iki kez sayılıyor olabileceği yönünde **ciddi bir kaynak zinciri çelişkisi** oluşturuyor. Önbellekli değerler güncel formülün Excel'de yeniden hesaplanmış sonucunu kanıtlamaz; dosyalar tam yeniden hesaplama istiyor.
+
+**Karar:** Bu farkı sessizce OEHS'ye taşımayın veya mevcut kodu tahminle değiştirmeyin. Excel masaüstünde aynı hat/ay için K/T, aylık D:N aktarım hücreleri, D6, D7, D8, D10, D11 ve makro kontrol sonucu birlikte kaydedilmeli. D11'in beklenen iş anlamı ancak bu zincir doğrulandıktan sonra kesinleştirilebilir.
+
 ## Sonraki doğrulama adımları
 
 1. `AA2` referanslarını formüller, tanımlı adlar, VBA ve sayfa kodlarında aramak.
