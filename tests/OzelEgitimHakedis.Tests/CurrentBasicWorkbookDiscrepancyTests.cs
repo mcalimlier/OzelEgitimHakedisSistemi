@@ -36,7 +36,7 @@ public sealed class CurrentBasicWorkbookDiscrepancyTests
                 SourceTotalDeductions = 13428.07848m,
                 SourceNet = 95940.52152m,
                 SourceReportD28 = 97441.51m,
-                ExpectedReportNet = 95940.52m
+                ExpectedReportNet = 97441.51m
             },
             new
             {
@@ -59,7 +59,7 @@ public sealed class CurrentBasicWorkbookDiscrepancyTests
                 SourceTotalDeductions = 13057.57756m,
                 SourceNet = 89459.12244m,
                 SourceReportD28 = 90961.10m,
-                ExpectedReportNet = 89459.12m
+                ExpectedReportNet = 90961.10m
             }
         };
 
@@ -94,12 +94,12 @@ public sealed class CurrentBasicWorkbookDiscrepancyTests
             var reportNet = ProgressPaymentReportService.CalculateReportNetPayable(current, reportTotals);
 
             Assert.Equal(example.ExpectedReportNet, reportNet);
-            Assert.NotEqual(example.SourceReportD28, reportNet);
+            Assert.Equal(example.SourceReportD28, reportNet);
         }
     }
 
     [Fact]
-    public void CurrentBasicRow4_ShouldMatchCalculationSheetAndKeepReportGapVisible()
+    public void CurrentBasicRow4_ShouldMatchCalculationSheetAndReportD28()
     {
         var input = new ProgressPaymentInput(
             WorkDays: 15m,
@@ -148,9 +148,7 @@ public sealed class CurrentBasicWorkbookDiscrepancyTests
         var reportTotals = ProgressPaymentReportService.Calculate(current, new[] { current });
         var reportNet = ProgressPaymentReportService.CalculateReportNetPayable(current, reportTotals);
 
-        // Hesaplama Bilgileri!W4 rounds to 221,910.03; Hakediş Raporu!D28 remains 223,410.03.
-        // This unresolved source-report discrepancy is preserved, not silently normalized.
-        Assert.Equal(221910.03m, reportNet);
-        Assert.NotEqual(223410.03m, reportNet);
+        // Hakediş Raporu D11=K+I, D13=D11+D12, D28=D13-D26.
+        Assert.Equal(223410.03m, reportNet);
     }
 }
