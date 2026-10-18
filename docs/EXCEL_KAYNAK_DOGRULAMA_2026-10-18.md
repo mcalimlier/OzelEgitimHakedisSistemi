@@ -83,7 +83,7 @@ Bu test bir parite başarı testi değil, çözülmemiş farkın sessizce kaybol
 
 `CurrentBasicWorkbookDiscrepancyTests.cs` güncel Temel Eğitim satır 4 için kaynak K/KDV/tevkifat/brüt hücrelerini ve OEHS'nin mevcut ek teminat/damga/kesinti/net sonuçlarını ayrı ayrı kontrol eder. Testin amacı farkı “doğru” ilan etmek değil; kaynak T4=1.500 ve U4'ün T'yi içeren formülüyle OEHS'nin %6/T-matrahı davranışı arasındaki ayrışmayı regresyon halinde görünür tutmaktır.
 
-Windows CI run `39139237528`: **215 Core testi ve 4 WPF testi geçti**; çözüm/WPF derlemesi, PDF smoke ve Windows EXE publish adımları başarılı. Bu, testlerin beklenen bilinen-fark vektörünü koruduğunu kanıtlar; Temel Eğitim hesap davranışının doğru olduğu veya Excel masaüstüyle eşleştiği anlamına gelmez.
+Windows CI run `39139237528`: **215 Core testi ve 4 WPF testi geçti**; çözüm/WPF derlemesi, PDF smoke ve Windows EXE publish adımları başarılı. Bu, testlerin beklenen bilinen-fark vektörünü koruduğunu kanıtlar; Temel Eğitim hesap davranışının doğru olduğu veya Excel masaüstüyle eşleştiği anlamına gelmez. Sonraki genişletmede resmî rapor neti de eklendi: Windows CI run `39139722422` üzerinde **216 Core + 4 WPF testi geçti**; güncel Temel Eğitim D28=223.410,03 TL ile OEHS rapor servisinin 223.334,25 TL sonucu arasındaki fark da testte korunuyor.
 
 ## 11. Güncel Özel Eğitim rapor D28 fark testi
 
