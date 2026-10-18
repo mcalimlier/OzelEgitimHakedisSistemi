@@ -6,17 +6,15 @@ namespace OzelEgitimHakedis.Tests;
 
 public sealed class ProgressPaymentIcmalIdentityCompletenessTests
 {
-    [Fact]
-    public void FindPreviousDeduction_ShouldReturnZeroWhenCurrentIdentityIsIncomplete()
+    [Theory]
+    [InlineData("TenderNumber")]
+    [InlineData("ContractNumber")]
+    [InlineData("RouteNumber")]
+    [InlineData("ContractorTaxOrIdentityNumber")]
+    public void FindPreviousDeduction_ShouldReturnZeroWhenBothRecordsShareAnIncompleteIdentity(string field)
     {
-        var previous = History(1, new DateOnly(2026, 10, 31), 200m) with
-        {
-            ContractorTaxOrIdentityNumber = ""
-        };
-        var current = History(2, new DateOnly(2026, 11, 30), 300m) with
-        {
-            ContractorTaxOrIdentityNumber = ""
-        };
+        var previous = WithBlankIdentity(History(1, new DateOnly(2026, 10, 31), 200m), field);
+        var current = WithBlankIdentity(History(2, new DateOnly(2026, 11, 30), 300m), field);
 
         Assert.Equal(0m, ProgressPaymentIcmalService.FindPreviousDeduction(
             new[] { previous, current }, current));
@@ -49,6 +47,18 @@ public sealed class ProgressPaymentIcmalIdentityCompletenessTests
         Assert.Equal(0m, ProgressPaymentIcmalService.FindPreviousDeduction(
             new[] { incompletePrevious, current }, current));
     }
+
+    private static ProgressPaymentHistoryData WithBlankIdentity(
+        ProgressPaymentHistoryData payment,
+        string field) =>
+        field switch
+        {
+            "TenderNumber" => payment with { TenderNumber = "" },
+            "ContractNumber" => payment with { ContractNumber = "" },
+            "RouteNumber" => payment with { RouteNumber = "" },
+            "ContractorTaxOrIdentityNumber" => payment with { ContractorTaxOrIdentityNumber = "" },
+            _ => throw new ArgumentOutOfRangeException(nameof(field), field, "Unknown identity field.")
+        };
 
     private static ProgressPaymentHistoryData History(
         int number,
