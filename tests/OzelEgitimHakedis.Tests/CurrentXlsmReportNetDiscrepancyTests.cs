@@ -5,14 +5,14 @@ using Xunit;
 namespace OzelEgitimHakedis.Tests;
 
 /// <summary>
-/// The latest Special Education workbook's report D28 and calculation AG values
-/// differ by the current price difference. Keep that conflict explicit until
-/// desktop Excel/VBA acceptance establishes the intended official result.
+/// The latest Special Education workbook's report D28 and calculation AG use
+/// separate formulas. The report path adds the raw current price difference and
+/// rounds D13 and D26 separately to reproduce D28.
 /// </summary>
-public sealed class CurrentXlsmReportNetDiscrepancyTests
+public sealed class CurrentXlsmReportNetFormulaTests
 {
     [Fact]
-    public void CurrentSpecialEducationRows5And6_ShouldKeepD28VersusAgGapVisible()
+    public void CurrentSpecialEducationRows5And6_ShouldMatchD28Formula()
     {
         var examples = new[]
         {
