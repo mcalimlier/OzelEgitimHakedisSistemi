@@ -5164,11 +5164,15 @@ public partial class MainWindow : Window
             "Ek kesin teminat (Temel/Ortaöğretim elle giriş): " + Raw(ManualAdditionalGuaranteeTextBox) + " TL",
             "",
             "2) KAYNAK FORMÜLLERİ VE CANLI ARA DEĞERLER",
-            "K — Taşıma neti = G × H + I − J = " + N(g) + " × " + M(h) + " + " + M(i) + " − " + M(j) + " = " + M(transportNet) + " TL",
+            "K — Taşıma neti = G × H + I − J = " + (issues.Count == 0
+                ? N(g) + " × " + M(h) + " + " + M(i) + " − " + M(j) + " = " + M(transportNet) + " TL"
+                : "Hesap bekliyor (eksik/geçersiz giriş)"),
             hasGuide
-                ? "T — Rehber neti = P × Q + R − S = " + N(p) + " × " + M(q) + " + " + M(r) + " − " + M(s) + " = " + M(guideNet) + " TL"
+                ? "T — Rehber neti = P × Q + R − S = " + (issues.Count == 0
+                    ? N(p) + " × " + M(q) + " + " + M(r) + " − " + M(s) + " = " + M(guideNet) + " TL"
+                    : "Hesap bekliyor (eksik/geçersiz giriş)")
                 : "T — Rehber neti = Bu programda rehber kalemi yok; 0,00 TL",
-            "AC — Ek kesin teminat = " + guaranteeDisplay,
+            "AC — Ek kesin teminat = " + (issues.Count == 0 ? guaranteeDisplay : "Hesap bekliyor (eksik/geçersiz giriş)"),
             "AD — Damga vergisi matrahı: " + (selectedProgram == TransportationProgramType.BasicOrSecondary
                 ? "(K + elle girilen ek kesin teminat) × damga vergisi oranı"
                 : "K × damga vergisi oranı + T × damga vergisi oranı"),
@@ -5237,14 +5241,44 @@ public partial class MainWindow : Window
             }
         }
 
-        if (_multiRoutePaymentRows.Count > 0)
+        if (_multiRoutePaymentRows.Count > 0 && selectedContract is not null)
         {
             lines.Add("");
-            lines.Add("5) ÇOKLU HAT GİRİŞİ");
-            lines.Add("Tablodaki hücre değişiklikleri de bu iz güncellemesini tetikler. Hat bazlı resmi sonuçlar, satırların kaydedilmesi/çekirdek hesaplanması ile doğrulanır.");
+            lines.Add("5) ÇOKLU HAT — HER SATIRIN CANLI HESABI");
             foreach (var row in _multiRoutePaymentRows)
-                lines.Add("Hat " + row.RouteNumber + " — " + row.RouteName + ": ek kesin teminat elle giriş = "
-                    + M(row.ManualAdditionalGuarantee) + " TL");
+            {
+                try
+                {
+                    var rowInput = new ProgressPaymentInput(
+                        row.WorkDays, row.DailyPrice, row.DiscountAmount, row.PriceDifference,
+                        selectedContract.ContractAmount, selectedContract.VatExempt,
+                        row.TaxDebt, row.SocialSecurityDebt,
+                        selectedProgram == TransportationProgramType.BasicOrSecondary && !row.MinimumWageSupportEnabled
+                            ? 0m : row.MinimumWageSupport,
+                        row.InspectionPenalty,
+                        hasGuide ? row.GuideWorkDays : 0m,
+                        hasGuide ? row.GuideDailyPrice : 0m,
+                        hasGuide ? row.GuideDiscountAmount : 0m,
+                        hasGuide ? row.GuidePriceDifference : 0m,
+                        selectedContract.ProgramType,
+                        row.ManualAdditionalGuarantee);
+                    var rowResult = ProgressPaymentCalculator.Calculate(rowInput, _calculationConstants);
+                    lines.Add("Hat " + row.RouteNumber + " — " + row.RouteName);
+                    lines.Add("  K = G×H+I−J = " + M(row.WorkDays * row.DailyPrice + row.PriceDifference - row.DiscountAmount) + " TL");
+                    lines.Add("  T = P×Q+R−S = " + M(hasGuide
+                        ? row.GuideWorkDays * row.GuideDailyPrice + row.GuidePriceDifference - row.GuideDiscountAmount
+                        : 0m) + " TL");
+                    lines.Add("  AC — Ek kesin teminat = " + M(rowResult.AdditionalGuarantee) + " TL");
+                    lines.Add("  AD — Damga vergisi = " + M(rowResult.StampTax) + " TL");
+                    lines.Add("  AE — Toplam kesinti = " + M(rowResult.TotalDeductions) + " TL");
+                    lines.Add("  AF — Brüt = " + M(rowResult.GrossAmount) + " TL");
+                    lines.Add("  AG — Net ödeme = " + M(rowResult.NetPayable) + " TL");
+                }
+                catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+                {
+                    lines.Add("Hat " + row.RouteNumber + " — " + row.RouteName + ": HESAP HATASI — " + ex.Message);
+                }
+            }
         }
 
         CalculationTraceLiveTextBox.Text = string.Join(Environment.NewLine, lines);
