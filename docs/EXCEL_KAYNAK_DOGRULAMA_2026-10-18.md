@@ -56,6 +56,9 @@ Aynı örneklerde Hakediş Raporu net tutarı ile Hesaplama sayfası net tutarı
 
 Bu, kaynak Excel'in kendi hesaplama sayfası ile resmî Hakediş Raporu net ödeme tutarının önbellekli örneklerde aynı olmadığını gösteriyor. OEHS'nin rapor neti hesaplaması bu örneklerde Hesaplama sayfası zincirine yakın davranabilir; ancak kaynak Excel'in resmî rapor formülü farklı sonuç üretiyor. İki kaynaktan hangisinin beklenen resmi sonuç olduğu kullanıcı/Excel masaüstü kararı gerektiriyor.
 
+
+Ek çapraz kontrol: Her iki orijinal XLSM'nin **ayrı, dönüştürülmüş XLSX kopyası** LibreOffice Calc ile yeniden hesaplatıldı. Kopyalarda D6/D7/D8/D10/D11/D28 ile Temel Eğitim K4/T4/U4/V4/W4 ve Özel Eğitim K4/T4/AC4/AD4/AE4/AF4/AG4 sonuçları yukarıdaki değerlerle aynı kaldı. Orijinal XLSM'lere dokunulmadı. Bu kontrol, çelişkinin yalnızca eski önbellek değeri olma ihtimalini azaltır; LibreOffice VBA makrolarını çalıştırmadığı ve Excel masaüstü motoru olmadığı için gerçek Excel/VBA kabulünün yerine geçmez.
+
 **Karar:** Bu farkı sessizce OEHS'ye taşımayın veya mevcut kodu tahminle değiştirmeyin. Excel masaüstünde aynı hat/ay için K/T, aylık D:N aktarım hücreleri, D6, D7, D8, D10, D11, Hesaplama sayfası neti, D28 ve makro kontrol sonucu birlikte kaydedilmeli. D11'in ve resmî net ödemenin beklenen iş anlamı ancak bu zincir doğrulandıktan sonra kesinleştirilebilir.
 
 ## Sonraki doğrulama adımları
