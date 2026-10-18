@@ -77,6 +77,21 @@ public sealed class ProgressPaymentIcmalServiceTests
     }
 
     [Fact]
+    public void SpecialEducationE21_November2026_ShouldCarryOctoberDeductionFromSourceExample()
+    {
+        // Source workbook: Özel Eğitim, November 2026. Hakediş İcmali!E21
+        // has cached result 10,580.582128 TL, matching İcmal Verileri!AO4
+        // (October 2026). Special Education uses E5 and AN:AX, unlike Basic.
+        var october = History(1, new DateOnly(2026, 10, 31), 10580.582128m);
+        var november = History(2, new DateOnly(2026, 11, 30), 11201.1393472m);
+
+        var result = ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { october, november }, november);
+
+        Assert.Equal(10580.582128m, result);
+    }
+
+    [Fact]
     public void FindPreviousDeduction_ShouldNotCarryAcrossTransportationPrograms()
     {
         var basicPrevious = History(1, new DateOnly(2026, 10, 31), 200m) with
