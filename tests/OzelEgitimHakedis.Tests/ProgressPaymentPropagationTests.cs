@@ -225,6 +225,35 @@ public sealed class ProgressPaymentPropagationTests
 
 
     [Fact]
+    public void RouteChange_ShouldNotPropagateAcrossSiblingContracts()
+    {
+        var oldRoute = Route(1000m) with { ContractNumber = "SOZ-01" };
+        var newRoute = oldRoute with { DailyPrice = 1500m };
+        var linked = History(new ProgressPaymentInput(
+            10, 1000m, 0m, 0m, 100000m, false, 0m, 0m, 0m));
+        var siblingInput = linked.Input with { DailyPrice = 2500m };
+        var sibling = linked with
+        {
+            Id = Guid.NewGuid(),
+            ContractNumber = "SOZ-02",
+            Input = siblingInput,
+            Calculation = ProgressPaymentCalculator.Calculate(siblingInput)
+        };
+
+        var updated = ProgressPaymentPropagationService.RecalculateForRouteChange(
+            new[] { linked, sibling },
+            oldRoute,
+            newRoute,
+            Contractor());
+
+        Assert.Equal(1500m, updated[0].Input.DailyPrice);
+        Assert.Equal("SOZ-01", updated[0].ContractNumber);
+        Assert.Equal(2500m, updated[1].Input.DailyPrice);
+        Assert.Equal("SOZ-02", updated[1].ContractNumber);
+        Assert.Equal(sibling.Calculation, updated[1].Calculation);
+    }
+
+    [Fact]
     public void RouteChange_ShouldRecalculateWithCurrentSavedCalculationConstants()
     {
         var oldRoute = Route(1000m);
