@@ -78,7 +78,7 @@ Bu nedenle D11'in anlamı yalnızca etiketinden türetilmemeli. D6 dizi formül�
 
 ### 4. Önbellek hatası
 
-İki dosyada da `Anasayfa!AA2` hücresinin saklanan sonucu `#VALUE!` olarak okundu. Formül/nesne bağlantısı incelenmeden bu hata zararsız kabul edilmemeli. Çalışma kitapları tam yeniden hesaplama istiyor (`fullCalcOnLoad` ve `forceFullCalc` etkin). Python/openpyxl formülleri çalıştırmaz; LibreOffice sonucu da Excel masaüstüyle aynı sayılmaz. Excel içinde yeniden hesaplama ve kaynak bağlantısı kontrolü açık doğrulama adımıdır.
+İki dosyada da `Anasayfa!AA2` hücresi formül değil, doğrudan `#VALUE!` hata sabiti olarak kayıtlı (`openpyxl` `data_type='e'`, formül alanı `'#VALUE!'`). Çalışma sayfası formülleri ve tanımlı adlar içinde AA2'ye doğrudan başvuru bulunmadı; ham VBA metin taramasında da AA2 bağlantısı bulunamadı. Bu bulgular hücrenin zararsız olduğunu kanıtlamaz, ancak Excel yeniden hesaplamasının hücreyi düzeltmesi beklenmemeli. Hücrenin görsel/nesne bağlantısı ve kullanım amacı statik olarak tam kanıtlanamadı; düşük öncelikli açık risk olarak kaydedilmeli.
 
 ## VBA ikili dosyaları ve çözümleme durumu
 
@@ -187,7 +187,7 @@ Orijinal XLSM dosyaları değiştirilmeden, geçici kopyalar LibreOffice başsı
 
 Bu örneklerde `D8 - D10 = D11` zinciri LibreOffice yeniden hesaplamasında eşit çıktı. Bu, formülün tüm aylar ve tüm senaryolar için doğrulandığı anlamına gelmez; Excel masaüstünde, özellikle Eylül başlangıcı, Haziran/Temmuz sınırı ve boş ay kayıtlarıyla aynı kontrol tekrarlanmalı.
 
-Aynı yeniden hesaplama kopyalarında `Anasayfa!AA2` `#VALUE!` olarak kaldı. Hücredeki saklı değer/formül tipi ve bağlı çizim/ad tanımları incelenmeli; bu alanın hata göstermesinin zararsız olduğu varsayılmamalı.
+Aynı yeniden hesaplama kopyalarında `Anasayfa!AA2` `#VALUE!` olarak kaldı; statik hücre incelemesi bunun önbellekli formül sonucu değil, doğrudan hata sabiti olduğunu doğruladı. Sayfa formülleri/tanımlı adlarda doğrudan başvuru yok; çizim/nesneyle olası görsel bağlantı ve hücrenin kullanım amacı tam doğrulanamadı. Bu konu finansal formül paritesinden daha düşük öncelikli bir açıklık olarak tutuluyor.
 
 
 ## Çizim/şekil üzerindeki makro bağlantıları (OnAction)
