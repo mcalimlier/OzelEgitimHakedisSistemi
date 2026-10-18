@@ -124,11 +124,13 @@ public sealed class ProgressPaymentCalculator
         // Damga vergisi bir kesintidir; negatif fiyat farkı negatif vergi/kredi oluşturamaz.
         var stampTax = transportStampTax + guideStampTax;
 
-        // Kaynak XLSM formülü birebir:
-        // Temel/Ortaöğretim T = I*6%.
-        // Özel Eğitim AC = I*6% + R*6%.
-        // İskontolar J/S bu tabana dahil değildir. Kaynak formülde MAX(0, ...) yoktur;
-        // mevzuat yorumu ayrıca uzman onayına sunulmalı, hesap kodu kaynağı sessizce değiştirmemelidir.
+        // Kaynak doğrulama uyarısı (2026-10-18):
+        // Özel Eğitim AC = I*6% + R*6% formülü mevcut XLSM'de doğrulandı.
+        // Temel/Ortaöğretim'in güncel XLSM'sinde T4:T6 hücreleri sabit 1500
+        // değerleri; T sütununda I*6% formülü yok. Bu nedenle aşağıdaki 6% hesabı
+        // güncel Temel Eğitim XLSM ile doğrulanmış eşdeğerlik değildir; eski/transkribe
+        // edilmiş test vektörleriyle uyumludur ve iş kararı gerektirir.
+        // İskontolar J/S bu tabana dahil değildir. MAX(0, ...) eklenmemiştir.
         var additionalGuarantee =
             (input.PriceDifference * constants.AdditionalGuaranteeRate)
             + (input.GuidePriceDifference * constants.AdditionalGuaranteeRate);
