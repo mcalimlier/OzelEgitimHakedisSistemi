@@ -702,7 +702,6 @@ internal static class OehsOfficialDocumentFactory
         block.Height = cellHeight;
         block.HorizontalAlignment = HorizontalAlignment.Center;
         block.VerticalAlignment = VerticalAlignment.Center;
-        block.VerticalContentAlignment = VerticalAlignment.Center;
         block.LayoutTransform = new RotateTransform(angle);
         FixedPage.SetLeft(block, x);
         FixedPage.SetTop(block, y);
