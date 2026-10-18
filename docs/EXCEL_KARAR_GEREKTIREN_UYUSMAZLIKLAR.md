@@ -7,24 +7,24 @@ Kapsam: güncel Temel Eğitim ve Özel Eğitim XLSM'leri ile OEHS hesap/rapor zi
 
 ## Karar 1 — Ek kesin teminat / kesin teminat alanlarının anlamı (iki program)
 
-**Kullanıcının doğruladığı iş kuralı (öncelikli):**
-- Hem Temel/Ortaöğretim hem Özel Eğitim programında **ek kesin teminat tutarı kullanıcı tarafından elle girilir**.
-- **Kesin teminat tutarı**, girilen ek kesin teminat tutarının **%6'sı** olarak bulunur.
-- Ek kesin teminatı fiyat farkının %6'sı olarak otomatik üretmek veya her hakedişte sabit 1.500 TL varsaymak doğru değildir.
-- Bu alan anlamları Temel/Ortaöğretim ve Özel Eğitim için ayrı ayrı doğrulanmalı; ortak iş kuralı olsa da Excel hücre eşlemesi ve belgeye aktarım zinciri program bazında test edilmelidir.
+**Kullanıcının güncel kaynak Excel kontrolüyle doğruladığı iş kuralları (öncelikli):**
+- **Temel/Ortaöğretim:** Ek kesin teminat tutarı kullanıcı tarafından elle girilir ve hesaplamada girilen tutar aynen kullanılır; bu alana ayrıca %6 uygulanmaz.
+- **Özel Eğitim:** Ek kesin teminat `=(I4*6/100)+R4*6/100` formülüyle hesaplanır; iskonto alanları bu formüle eklenmez.
+- Bu iki programın kuralları ayrı uygulanır. Temel Eğitimde sabit 1.500 TL varsayılmaz; tutar kullanıcı girdisidir.
+- Temel Eğitim damga vergisi formülünde `T` hücresinin ek kesin teminat tutarı olarak kullanıldığı kaynak zinciri de hesaba katılır ve ayrıca test edilir.
 
 **Önceki incelemenin düzeltmesi:** Eski metin, Temel Eğitim `Hesaplama Bilgileri!T4:T6` hücrelerindeki 1.500 değerlerini ve OEHS'nin fiyat farkı üzerinden yaptığı %6 hesabını aynı kalemin doğrudan karşılaştırması olarak ele aldı. Bu çıkarım alanların anlamını doğru ayırmıyordu ve geçerli kabul edilmemelidir. Önceki satır bazlı farklar yalnızca mevcut hücre/kod çıktılarının aritmetik farklarıdır; doğru iş kuralını belirlemez.
 
 **Statik kaynak bulguları — hâlâ alan eşlemesi gerektiriyor:**
 - Temel Eğitim `Hesaplama Bilgileri!T4:T6` değerleri 1.500; `U4=(K4*9.48/1000)+T4*9.48/1000`. T'nin kullanıcı girdisi alanı olup olmadığı, kesin teminatın %6 değerinin hangi hücreye yazıldığı ve bu değerlerin damga vergisi matrahına nasıl girdiği form girişleri/VBA/rapor zinciri üzerinden doğrulanmalı.
 - Özel Eğitim `Hesaplama!AC4` formülü `=(I4*6/100)+R4*6/100` olarak statik incelendi. Bu formülün kullanıcı tarafından girilen ek kesin teminatın %6'sı anlamına gelen alanla eşleşip eşleşmediği hücre etiketleri, kullanıcı girişi ve VBA aktarımıyla doğrulanmalı; formülden tek başına alan adı çıkarılmamalı.
-- Mevcut OEHS hesap motorunun fiyat farkını temel alan %6 hesabı, kullanıcının açıkladığı alan semantiğiyle uyumlu olduğu kanıtlanmış değildir. Kod davranışı, giriş modeli ve testler kaynak alan eşlemesi tamamlanmadan resmî doğru kabul edilmemeli.
+- OEHS hesaplayıcısında Temel/Ortaöğretim elle girilen tutarı aynen kullanmalı; Özel Eğitimde I/R alanlarının %6'sını toplamalıdır. Temel Eğitim damga vergisi matrahı, kaynak U formülündeki K ve T bileşenlerini içermelidir.
 - Kaynak XLSM'ler değiştirilmedi. Bu kayıt, kaynak dosyaların Excel/VBA masaüstü kabulünden geçmiş olduğu anlamına gelmez.
 
 **Sonraki doğrulama:**
-1. Her iki programda kullanıcı giriş ekranı/formu, ilgili sütun başlıkları, hücre formülleri ve VBA'da ek kesin teminat alanının nereden alındığını izle.
-2. Elle girilen örnek bir ek kesin teminat değeri için kesin teminatın tam %6'sını hesapla; sonuç hücrelerini, damga vergisi/kesinti/net zincirini ve dört PDF'yi kontrol et.
-3. Mevcut OEHS kodu ve testlerinin aynı alan semantiğini uygulayıp uygulamadığını incele; değişiklik gerekiyorsa iki program için ayrı regresyon testleri ekle.
+1. Temel Eğitimde örneğin 1.500 TL girildiğinde ek kesin teminat kesintisinin 1.500 TL olarak kaldığını ve damga vergisi matrahının kaynak K+T formülünü izlediğini test et.
+2. Özel Eğitimde örneğin I=100 TL ve R=50 TL iken ek kesin teminatın 9 TL olduğunu; J/S iskontolarının bu formüle katılmadığını test et.
+3. Her iki program için kesinti/net ödeme zincirini ve dört PDF'yi aynı örnek verilerle kontrol et.
 4. Excel masaüstü/VBA çalıştırması mümkün değilse bu kabul kapısını açık bırak; LibreOffice/statik incelemeyi onun yerine geçmiş gibi gösterme.
 
 
@@ -94,7 +94,8 @@ Bu kanıtlar gelmeden genel ilerleme %90 olarak işaretlenmeyecek. PR #3 birleş
 
 ### 18.10.2026 — Program bazlı ek kesin teminat kuralı düzeltmesi
 
-- Kullanıcının kaynak Excel üzerinde yaptığı doğrulamaya göre Temel/Ortaöğretim programında ek kesin teminat elle girilir; kesin teminat tutarı bu elle girilen ek kesin teminatın %6'sıdır.
-- Özel Eğitim programında ek kesin teminat Excel formülüyle `=(I4*6/100)+R4*6/100` olarak hesaplanır.
-- OEHS hesaplayıcısı bu iki programı ayrı kuralla işler. Temel/Ortaöğretim için tek hat girişine elle tutar alanı, çoklu hat tablosuna hat bazlı elle tutar sütunu eklendi.
-- Testler eklendi: Temel programda manuel tutar ve Özel Eğitimde I/R %6 formülü. Windows CI sonucu bekleniyor; henüz başarı iddiası yok.
+- Temel/Ortaöğretim: ek kesin teminat tutarı elle girilir ve hesapta aynen kullanılır; bu tutara ikinci kez %6 uygulanmaz.
+- Özel Eğitim: ek kesin teminat `=(I4*6/100)+R4*6/100` formülüyle hesaplanır.
+- Temel Eğitim damga vergisi zincirinde `U4=(K4*9.48/1000)+T4*9.48/1000` olduğundan elle girilen ek kesin teminat T bileşeniyle matraha katılır.
+- Canlı hesap tutucu için program seçimi, giriş alanları, formül ara değerleri ve nihai kesinti/net ödeme izlenir; eksik/geçersiz girdilerde eski sonuç gösterilmez.
+- Testler güncellendi; Windows CI ve Excel/VBA masaüstü kabulü çalıştırılmadan başarılı kabul edilmeyecek.
