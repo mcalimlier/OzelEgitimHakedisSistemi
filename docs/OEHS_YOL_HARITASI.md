@@ -648,8 +648,9 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - Regresyon testleri bu iş kuralına göre güncellendi; eski workbook testlerinde Temel Eğitim için elle girilen tutar açıkça fixture'a verildi.
 
 ### Doğrulama
-- Önceki CI çalışmasında derleme ve statik UI kontrolleri geçti; test aşamasında 5 eski Temel Eğitim beklentisi başarısız oldu. Bu testler yeni doğrulanmış kaynak kuralına göre güncellendi.
-- Güncel kod/test commit'i `b79075139df0032f7eae7fe18e6b7dbc4c0c66cc` için Windows CI yeniden çalışıyor; son test sonucu henüz doğrulanmış değil.
+- İlk CI denemesinde 5 eski Temel Eğitim beklentisi başarısız oldu. Kaynak anlamı teyit edilerek fixture'lar ve beklenen sonuçlar düzeltildi.
+- Windows CI run **1902** (`569797979b4b89294697668a9036a73e32d78025`) başarılı: tam çözüm/WPF derlemesi, statik UI kontrolleri, **220/220 Core testi**, **4/4 WPF testi**, sekiz PDF smoke çıktısının üretimi ve Windows EXE publish adımları geçti.
+- Sonrasında yalnızca canlı izde program bazlı etiketleri netleştiren küçük bir UI metin düzeltmesi yapıldı. Bu son commit `36466876920cb7013ddfbfe95bd6393b3e4cb64d` için Windows CI run **1904** devam ediyor; son metin değişikliğinin doğrulaması bekleniyor.
 - Excel masaüstü/VBA kabulü ve dört PDF'nin kaynak örnekleriyle görsel karşılaştırması yapılmış sayılmaz.
 
 ### Açık riskler ve sıradaki adım
