@@ -466,3 +466,11 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - Ardından yol haritası güncellemesi için run `39138076733` ve hesap motoru açıklama düzeltmesi için run `39138161192` açıldı; son durumları ayrıca kontrol edilecek.
 - Yeni bulgu, resmî hesap eşdeğerliği riskini artırıyor; bu yüzden genel ilerleme yüzdesi yükseltilmedi. %90 hedefi henüz tamamlanmadı.
 - Sıradaki adım: güncel kaynak XLSM'deki T4:T6 değerlerinin kaynağını VBA ve kullanıcı giriş zincirinde takip et; Temel Eğitim ek teminat davranışını eski test vektörlerinden ayır; ardından her iki programın gerçek Excel sonuçlarıyla karşılaştırmayı sürdür.
+
+## Devam notu — 18.10.2026, D6/D8/D10/D11 kaynak zinciri
+
+- Güncel iki XLSM'nin önbellekli sonuçlarında D6−D10=H2, ancak D8−D10=D11=H2+D7. Özel Eğitim örneğinde H2=93.211,64 ve D7=3.380; Temel Eğitim örneğinde H2=220.490 ve D7=1.500. D6 dizi formülü aylık D:N değerlerini topluyor; VBA aktarımı K(+T) yazıyor ve K(+T) mevcut fiyat farkını içeriyor. Bu, fiyat farkının D8/D11 zincirinde ikinci kez ekleniyor olabileceğine işaret ediyor.
+- Bulgular kaynak doğrulama belgesine yazıldı. Önbellekli hücreler Excel masaüstünde yeniden hesaplanmış makro sonucu değildir; D6/D7/D8/D10/D11 zinciri aynı hat/ay için Excel'de çalıştırılmadan hesap davranışı değiştirilmedi.
+- Kod açıklaması ve belge değişikliklerinin Windows CI kontrolleri geçti: `39138174112` ve `39138196772` başarılı; her iki run'da 207 Core + 4 WPF testi, PDF smoke ve EXE publish adımları başarılı.
+- Kaynak XLSM ile gerçek hesap paritesi için yeni bir kritik açık konu belirlendi; genel ilerleme oranı artırılmadı. %90 hedefine ulaşılmış değil.
+- Sıradaki adım: Excel/VBA ortamında aynı örnek üzerinde D6/D7/D8/D10/D11 ile aylık aktarım sütunlarını yeniden hesaplatıp gerçek sonuçları kaydet; ardından OEHS rapor zincirini bu sonuçlarla karşılaştır. Ana dala birleştirme/yayınlama yok.
