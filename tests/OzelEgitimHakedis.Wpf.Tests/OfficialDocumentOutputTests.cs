@@ -312,6 +312,13 @@ public sealed class OfficialDocumentOutputTests
             Assert.Contains("M.Y.H.B.Y. Örnek No: 5", serviceReportText, StringComparison.Ordinal);
             Assert.DoesNotContain("M.Y.H.B.Y. Örnek No: 4", serviceReportText, StringComparison.Ordinal);
 
+            var specialIcmal = Assert.Single(outputs.Where(output => output.Kind == OehsOfficialDocumentKind.HakedisIcmali));
+            var specialIcmalText = GetPageText(Assert.IsType<FixedPage>(specialIcmal.Document.Pages[0].Child));
+            Assert.Contains("₺140,00", specialIcmalText, StringComparison.Ordinal);
+            Assert.Contains("₺120,00", specialIcmalText, StringComparison.Ordinal);
+            Assert.Contains("₺20,00", specialIcmalText, StringComparison.Ordinal);
+            Assert.Contains("₺10,00", specialIcmalText, StringComparison.Ordinal);
+
             var basicCalculation = ProgressPaymentCalculator.Calculate(
                 input with { ProgramType = TransportationProgramType.BasicOrSecondary },
                 ProgressPaymentCalculationConstants.Defaults);
