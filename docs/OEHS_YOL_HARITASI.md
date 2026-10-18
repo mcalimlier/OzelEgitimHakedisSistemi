@@ -808,3 +808,14 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
   6. A4 tek sayfa yerleşimini ve her farkı kaynak formül, Excel sonucu, OEHS sonucu ve test kanıtıyla doğrula.
 - Program kuralları ayrı tutulacak: Temel Eğitim ek kesin teminat elle girilir; Özel Eğitim ek kesin teminat `(I4*6/100)+(R4*6/100)` formülüyle hesaplanır.
 - Birleştirme/yayınlama yapılmadı. Sıradaki adım: yarın önce güncel PR head ve CI durumunu yeniden doğrula, sonra kabul kontrol listesine geç.
+
+## Devam notu — 2026-10-18, yarın iş yerinde yerel GitHub eşitlemesiyle başlangıç
+
+- İlk adım: GitHub'daki güncel çalışma dalını ve PR #3 head commit'ini yeniden kontrol et; CI durumunu doğrula.
+- Yerel bilgisayarda doğru depo klasörünü aç, **Fetch origin** yap ve etkin dalın `feature/official-payment-document-templates` olduğunu doğrula. Ardından uzak dal ile yerel değişiklikleri karşılaştır; yerel korunması gereken değişiklik varsa üzerine yazma.
+- Çalışma ağacı temiz ve dal doğruysa **Pull** ile GitHub'daki güncel dosyaları yerele indir/güncelle. Pull öncesinde yerel değişiklik varsa önce durumunu incele; gerekirse commit/stash seçeneklerini kullanıcıyla netleştir.
+- Güncel commit SHA'sını, aktif dalı ve CI sonucunu kaydet. Yerel güncelleme tamamlandıktan sonra Visual Studio'da çözümü açıp Rebuild/Test sonuçlarını gözle; başarısızlık varsa hata çıktısını esas al.
+- Sonrasında Temel Eğitim ve Özel Eğitim XLSM dosyalarını ayrı ayrı Excel masaüstünde yeniden hesaplatıp VBA akışlarını kontrol et; kaynak hücreleri kaydet ve her program için dört PDF'nin tutar, dönem, yüklenici, hat, imza ve A4 tek sayfa yerleşimini karşılaştır.
+- PR #3 açık/taslak/birleştirilmemiş tutulacak; ana dala birleştirme veya yayınlama için ayrıca açık onay gerekir.
+- Not: Bu yol haritası kaydı, yerel bilgisayarın güncel olduğunu varsaymaz. Yarın işe başlamadan önce gerçek GitHub head/CI ve yerel Git durumları tekrar doğrulanmalıdır.
+
