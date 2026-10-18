@@ -590,3 +590,10 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - Bu inceleme kaynak XLSM'nin formül sonuçlarını LibreOffice ile yeniden hesaplamaya dayanır; VBA makroları yürütülmediği ve Excel masaüstü bulunmadığı için resmî Excel kabulü değildir. Finansal davranış değiştirilmedi.
 - Son kod/test commit'i `cb61333ad549ea60e2b1083931009a52a2755cd5` Windows CI run `39141119613` üzerinde başarılı: **217 Core + 4 WPF testi**, derlemeler, PDF smoke ve EXE publish geçti.
 - Genel ilerleme yaklaşık **%81**. Kaynak Excel'in VBA/aktarım sonuçları ve dört PDF'nin aynı gerçek hakedişle Excel'e karşılaştırması hâlâ %90 önündeki ana kapılar. PR #3 açık taslak, ana dala birleştirme/yayınlama yok.
+
+## Devam notu — 18.10.2026, Özel Eğitim üç hat D28 regresyonu
+
+- Özel Eğitim'in satır 5 ve 6 için de rapor neti ile kaynak D28 farkını koruyan testler eklendi. Kaynak D28 örnekleri 101.351,37 TL ve 91.618,81 TL; OEHS rapor servisi 97.595,37 TL ve 87.543,81 TL üretiyor. Satır 6'da kaynak AG=87.543,800394 TL iken rapor servisinin bileşen yuvarlaması 87.543,81 TL verdiği için 0,01 TL fark da testte görünür.
+- İlk CI denemesi satır 6 rapor netini 87.543,80 TL beklediği için başarısız oldu; logdaki gerçek servis sonucu 87.543,81 TL olarak düzeltilip yeniden çalıştırıldı. Ürün hesaplama kodu değişmedi.
+- Düzeltilmiş commit `a1d9870f352076780bd8a2730eb01034e21bf915` Windows CI run `39141635477` başarılı: **218/218 Core + 4/4 WPF**, tam çözüm/WPF derlemesi, PDF smoke ve Windows EXE publish geçti.
+- Genel proje yaklaşık **%81**, %90 hedefi tamamlanmadı. Hesap farkları artık üç hat örneğiyle daha iyi tanımlandı; gerçek Excel/VBA çıktısı ve dört PDF'nin aynı hakedişle karşılaştırması hâlâ açık kabul kapıları. PR #3 açık taslak, ana dala birleştirme/yayınlama yok.
