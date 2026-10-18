@@ -397,8 +397,8 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 
 ### Güncel doğrulama zemini
 - Aktif dal: `feature/official-payment-document-templates`.
-- İncelenen HEAD: `d368efa1d2c8342da4474cf17f2a5231b61caed7` (PR #3 dalının doğrulanmış başı).
-- Windows CI run `39139910348`: **başarılı**. Son kod/test commit'i `2c9c28fc28cadbbdee1dd181139c9639b419e26b` için run `39139722422` da başarılıdır: **216/216 Core + 4/4 WPF testi**, çözüm/WPF derlemesi, PDF smoke ve Windows EXE publish geçti. Bu sonuç kaynak Excel masaüstü/VBA eşdeğerliği değildir.
+- İncelenen HEAD: `7ddc7b038ca3525809481a2cb5279edfe180ded3` (PR #3 dalının doğrulanmış başı).
+- Windows CI run `39140280901`: **başarılı**. Son kod/test commit'i `2c9c28fc28cadbbdee1dd181139c9639b419e26b` için run `39139722422` da başarılıdır: **216/216 Core + 4/4 WPF testi**, çözüm/WPF derlemesi, PDF smoke ve Windows EXE publish geçti. Bu sonuç kaynak Excel masaüstü/VBA eşdeğerliği değildir.
 - PR #3 açık/taslak; birleştirilmedi. Orijinal XLSM dosyalarında değişiklik yapılmadı.
 - Aşağıdaki oranlar teknik olgunluk için yaklaşık planlama göstergesidir; hesaplama doğruluğunun aynı yüzdeyle kanıtlandığı anlamına gelmez.
 
