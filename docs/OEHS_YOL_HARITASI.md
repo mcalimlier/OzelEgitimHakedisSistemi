@@ -560,3 +560,11 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - Güncel test zemini: 216 Core + 4 WPF testi başarılı run 39139722422; sonraki doküman güncellemeleri için CI run'ları ayrıca takip edilecek.
 - Genel ilerleme yaklaşık %81. %90'a ulaşmak için artık yalnızca test kapsamı değil, Excel'in kendi rapor/hesap sayfası arasındaki çelişkilerin gerçek Excel/VBA çalıştırmasıyla çözümlenmesi ve dört PDF'nin aynı gerçek hakedişle kabulü gerekiyor.
 - Sıradaki adım: karar kaydı ve yol haritası commit'lerinin CI sonucunu doğrula; Excel masaüstü sonuçları elde edilene kadar finansal hesap davranışını tahminle değiştirme. Ana dala birleştirme/yayınlama yok.
+
+## Devam notu — 18.10.2026, dört PDF çapraz tutarlılık testi
+
+- Kod/test commit'i `af0a70d99102ed0c460efed1d9cd4b82cb7e6f52`; Windows CI run `39140590740` **başarılı**. Test sonucu: **216/216 Core + 4/4 WPF**; çözüm ve WPF derlemesi, UI sözleşme kontrolleri, PDF smoke üretimi ve Windows EXE publish adımları geçti.
+- WPF PDF testine her dört belge için ortak güzergâh kontrolü; Hakediş/Hizmet İşleri raporlarında dönem ve yüklenici, Kabul Tutanağı'nda hizmet dönemi ve yüklenici, İcmal'de Eylül/Ekim başlıkları doğrulamaları eklendi.
+- Yerel smoke artefaktının 8 PDF'si metin/sayfa ölçüsüyle yeniden tarandı: **8/8 tek sayfa A4 portre**, güzergâh, tarih ve imza adları tümünde bulundu. Üç belge türünde yüklenici adı bulundu; **Hakediş İcmali smoke çıktısında yüklenici adı görünmüyor**. Bu, kaynak Excel icmal şablonuyla karşılaştırılmadan hata sayılmayacak; ancak yüklenici alanı kabul matrisi için açık kontrol maddesi.
+- Gerçek Excel kaynak PDF'leri mevcut çalışma alanında yok; LibreOffice veya sentetik smoke PDF'leri Excel/VBA kabulü yerine geçmez. Temel Eğitim T/U, iki programın D28-net farkı, E21 ve Özel Eğitim ay başlığı kusuru karar kaydında açık.
+- Genel proje yaklaşık **%81**; %90 değil. Sonraki adım: kaynak Excel ile dört PDF'nin aynı hakediş üzerinde tutar/dönem/yüklenici/hat/imza/sayfa karşılaştırması için Excel masaüstü çıktısı elde etmek; ana dala birleştirme/yayınlama yok.
