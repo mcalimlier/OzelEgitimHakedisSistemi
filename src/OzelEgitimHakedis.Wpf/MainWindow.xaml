@@ -628,13 +628,45 @@
                                             </StackPanel>
                                             <StackPanel Grid.Column="2" Margin="6.5,0,0,0">
                                                 <TextBlock Text="TANIMLI HATLAR" Style="{StaticResource CardTitle}"/>
-                                                <ListBox x:Name="ProgressRouteComboBox" Height="112" Margin="0,6,0,0" SelectionMode="Extended" SelectionChanged="ProgressRouteComboBox_SelectionChanged" BorderBrush="#D7E2EC" Background="#FFFFFF" ScrollViewer.VerticalScrollBarVisibility="Auto">
-                                                <ListBox.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <CheckBox Content="{Binding DisplayText}" IsChecked="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected, Mode=TwoWay}" Padding="3" />
-                                                    </DataTemplate>
-                                                </ListBox.ItemTemplate>
-                                            </ListBox>
+                                                <ListBox x:Name="ProgressRouteComboBox"
+                                                         Height="112"
+                                                         Margin="0,6,0,0"
+                                                         SelectionMode="Extended"
+                                                         SelectionChanged="ProgressRouteComboBox_SelectionChanged"
+                                                         BorderBrush="#A7B8C8"
+                                                         Background="#FFFFFF"
+                                                         Foreground="#172B3A"
+                                                         ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                                    <ListBox.ItemContainerStyle>
+                                                        <Style TargetType="{x:Type ListBoxItem}">
+                                                            <Setter Property="Foreground" Value="#172B3A"/>
+                                                            <Setter Property="Background" Value="#F1F6FB"/>
+                                                            <Setter Property="BorderBrush" Value="#D4E0EA"/>
+                                                            <Setter Property="BorderThickness" Value="1"/>
+                                                            <Setter Property="Padding" Value="6,4"/>
+                                                            <Setter Property="Margin" Value="2"/>
+                                                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                                            <Style.Triggers>
+                                                                <Trigger Property="IsSelected" Value="True">
+                                                                    <Setter Property="Background" Value="#DCEBFA"/>
+                                                                    <Setter Property="Foreground" Value="#102A43"/>
+                                                                </Trigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </ListBox.ItemContainerStyle>
+                                                    <ListBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <CheckBox Content="{Binding DisplayText}"
+                                                                      Foreground="#172B3A"
+                                                                      FontSize="12"
+                                                                      FontWeight="SemiBold"
+                                                                      IsChecked="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected, Mode=TwoWay}"
+                                                                      Padding="3"
+                                                                      VerticalContentAlignment="Center"/>
+                                                        </DataTemplate>
+                                                    </ListBox.ItemTemplate>
+                                                </ListBox>
                                                 <TextBlock x:Name="ProgressRouteRelationTextBlock" Text="Bir veya daha fazla hat seçin." Foreground="#C5D7E7" FontSize="11.5" TextWrapping="Wrap" Margin="0,4,0,0"/>
                                             </StackPanel>
                                         </Grid>
