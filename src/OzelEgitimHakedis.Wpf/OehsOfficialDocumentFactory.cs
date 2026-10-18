@@ -700,6 +700,10 @@ internal static class OehsOfficialDocumentFactory
         block.TextWrapping = TextWrapping.NoWrap;
         block.Width = cellHeight;
         block.Height = cellWidth;
+        // Center the text line inside the rotated element on both axes:
+        // TextAlignment centers along the long axis; VerticalAlignment centers
+        // the line across the original cell width before the -90° rotation.
+        block.VerticalAlignment = VerticalAlignment.Center;
         block.RenderTransformOrigin = new Point(0.5, 0.5);
         block.RenderTransform = new RotateTransform(angle);
         FixedPage.SetLeft(block, x + (cellWidth - cellHeight) / 2d);
