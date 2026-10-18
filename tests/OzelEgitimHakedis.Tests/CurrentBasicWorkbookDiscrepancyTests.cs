@@ -11,7 +11,7 @@ namespace OzelEgitimHakedis.Tests;
 public sealed class CurrentBasicWorkbookParityTests
 {
     [Fact]
-    public void CurrentBasicRows5And6_ShouldMatchCalculationSheetAndKeepReportGapVisible()
+    public void CurrentBasicRows5And6_ShouldMatchCalculationAndReportCells()
     {
         var examples = new[]
         {
