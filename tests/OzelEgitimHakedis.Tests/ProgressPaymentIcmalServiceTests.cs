@@ -52,6 +52,31 @@ public sealed class ProgressPaymentIcmalServiceTests
     }
 
     [Fact]
+    public void BasicE21_November2026_ShouldCarryOctoberDeductionFromSourceExample()
+    {
+        // Source workbook: Temel Eğitim, November 2026. The previous-month
+        // deduction is İcmal Verileri!AC4 = 24,104.02472 TL (October), in AB:AL.
+        // E4 is the selected period; E5 is the payment date and must not drive this lookup.
+        var october = History(1, new DateOnly(2026, 10, 31), 24104.02472m) with
+        {
+            Input = new ProgressPaymentInput(
+                13, 6545m, 0m, 3659.2m, 100000m, true, 0m, 0m, 0m,
+                ProgramType: TransportationProgramType.BasicOrSecondary)
+        };
+        var november = History(2, new DateOnly(2026, 11, 30), 1060.847016m) with
+        {
+            Input = new ProgressPaymentInput(
+                13, 6545m, 0m, 3659.2m, 100000m, true, 0m, 0m, 0m,
+                ProgramType: TransportationProgramType.BasicOrSecondary)
+        };
+
+        var result = ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { october, november }, november);
+
+        Assert.Equal(24104.02472m, result);
+    }
+
+    [Fact]
     public void FindPreviousDeduction_ShouldNotCarryAcrossTransportationPrograms()
     {
         var basicPrevious = History(1, new DateOnly(2026, 10, 31), 200m) with
