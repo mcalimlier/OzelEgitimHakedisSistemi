@@ -30,8 +30,8 @@ public sealed class PdfFileNameTests
         Assert.Equal("Ihale", OehsFileNameService.SanitizeFileName(".", "Ihale"));
         Assert.Equal("_CON", OehsFileNameService.SanitizeFileName("CON", "Ihale"));
         Assert.Equal("_CON.txt", OehsFileNameService.SanitizeFileName("CON.txt", "Ihale"));
-        Assert.DoesNotContain("/", OehsFileNameService.SanitizeFileName("A/B"));
-        Assert.DoesNotContain("\\", OehsFileNameService.SanitizeFileName("A\\B"));
+        Assert.DoesNotContain("/", OehsFileNameService.SanitizeFileName("A/B"), StringComparison.Ordinal);
+        Assert.DoesNotContain("\\", OehsFileNameService.SanitizeFileName("A\\B"), StringComparison.Ordinal);
     }
 
     [Fact]
