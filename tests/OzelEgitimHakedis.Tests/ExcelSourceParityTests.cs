@@ -25,7 +25,8 @@ public sealed class ExcelSourceParityTests
             SocialSecurityDebt: 0m,
             MinimumWageSupport: 0m,
             InspectionPenalty: 0m,
-            ProgramType: TransportationProgramType.BasicOrSecondary);
+            ProgramType: TransportationProgramType.BasicOrSecondary,
+            ManualAdditionalGuarantee: 94.2618m);
 
         var result = ProgressPaymentCalculator.Calculate(input);
 
@@ -126,7 +127,8 @@ public sealed class ExcelSourceParityTests
             PriceDifference: 3659.2m, ContractAmount: 100000m,
             IsVatExempt: true, TaxDebt: 0m, SocialSecurityDebt: 0m,
             MinimumWageSupport: 0m, InspectionPenalty: 0m,
-            ProgramType: TransportationProgramType.BasicOrSecondary);
+            ProgramType: TransportationProgramType.BasicOrSecondary,
+            ManualAdditionalGuarantee: 219.552m);
         var result = ProgressPaymentCalculator.Calculate(input);
         Assert.Equal(88744.2m, result.TransportNetAmount); // K
         Assert.Equal(0m, result.TransportVat); // L
