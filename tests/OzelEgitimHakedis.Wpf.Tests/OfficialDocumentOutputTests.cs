@@ -245,26 +245,26 @@ public sealed class OfficialDocumentOutputTests
             Assert.Equal("5,00 TL", GetCellTextAt(paymentPage, 476d, 768d));   // H
             Assert.Equal("105,00 TL", GetCellTextAt(paymentPage, 476d, 796d)); // I
             Assert.Equal("Bu Hakedişin Tutarı ( C - D )", GetCellTextAt(paymentPage, 120d, 322d));
-            Assert.Contains("Hakediş No : 2", paymentText);
-            Assert.Contains("KESİNTİLER VE MAHSUPLAR", paymentText);
-            Assert.Contains("KDV (taşıma %10 + rehber %20)", paymentText);
-            Assert.Contains("KDV Tevkifatı (taşıma 5/10; rehber 9/10)", paymentText);
-            Assert.Contains("Damga Vergisi (oran %0,948)", paymentText);
+            Assert.Contains("Hakediş No : 2", paymentText, StringComparison.Ordinal);
+            Assert.Contains("KESİNTİLER VE MAHSUPLAR", paymentText, StringComparison.Ordinal);
+            Assert.Contains("KDV (taşıma %10 + rehber %20)", paymentText, StringComparison.Ordinal);
+            Assert.Contains("KDV Tevkifatı (taşıma 5/10; rehber 9/10)", paymentText, StringComparison.Ordinal);
+            Assert.Contains("Damga Vergisi (oran %0,948)", paymentText, StringComparison.Ordinal);
 
             var serviceReport = Assert.Single(
                 outputs.Where(output => output.Kind == OehsOfficialDocumentKind.HizmetIsleriHakedisRaporu));
             var serviceReportText = GetPageText(
                 Assert.IsType<FixedPage>(serviceReport.Document.Pages[0].Child));
-            Assert.Contains("Örnek Yüklenici", serviceReportText);
-            Assert.Contains("100.000,00 TL", serviceReportText);
-            Assert.Contains("25.08.2026", serviceReportText);
-            Assert.DoesNotContain("TEST-SOZ", serviceReportText);
-            Assert.Contains("180 İş Günü", serviceReportText);
-            Assert.Contains("Tescile Dahil Değil", serviceReportText);
-            Assert.Contains("Avans verilmeyecektir.", serviceReportText);
-            Assert.Contains("Yoktur.", serviceReportText);
-            Assert.Contains("M.Y.H.B.Y. Örnek No: 5", serviceReportText);
-            Assert.DoesNotContain("M.Y.H.B.Y. Örnek No: 4", serviceReportText);
+            Assert.Contains("Örnek Yüklenici", serviceReportText, StringComparison.Ordinal);
+            Assert.Contains("100.000,00 TL", serviceReportText, StringComparison.Ordinal);
+            Assert.Contains("25.08.2026", serviceReportText, StringComparison.Ordinal);
+            Assert.DoesNotContain("TEST-SOZ", serviceReportText, StringComparison.Ordinal);
+            Assert.Contains("180 İş Günü", serviceReportText, StringComparison.Ordinal);
+            Assert.Contains("Tescile Dahil Değil", serviceReportText, StringComparison.Ordinal);
+            Assert.Contains("Avans verilmeyecektir.", serviceReportText, StringComparison.Ordinal);
+            Assert.Contains("Yoktur.", serviceReportText, StringComparison.Ordinal);
+            Assert.Contains("M.Y.H.B.Y. Örnek No: 5", serviceReportText, StringComparison.Ordinal);
+            Assert.DoesNotContain("M.Y.H.B.Y. Örnek No: 4", serviceReportText, StringComparison.Ordinal);
 
             var basicCalculation = ProgressPaymentCalculator.Calculate(
                 input with { ProgramType = TransportationProgramType.BasicOrSecondary },
@@ -280,10 +280,10 @@ public sealed class OfficialDocumentOutputTests
                 basicOutputs.Where(output => output.Kind == OehsOfficialDocumentKind.HakedisRaporu));
             var basicPaymentText = GetPageText(
                 Assert.IsType<FixedPage>(basicPayment.Document.Pages[0].Child));
-            Assert.Contains("KDV (taşıma %10)", basicPaymentText);
-            Assert.DoesNotContain("rehber %0", basicPaymentText);
-            Assert.Contains("KDV Tevkifatı (taşıma 5/10)", basicPaymentText);
-            Assert.DoesNotContain("rehber 0/10", basicPaymentText);
+            Assert.Contains("KDV (taşıma %10)", basicPaymentText, StringComparison.Ordinal);
+            Assert.DoesNotContain("rehber %0", basicPaymentText, StringComparison.Ordinal);
+            Assert.Contains("KDV Tevkifatı (taşıma 5/10)", basicPaymentText, StringComparison.Ordinal);
+            Assert.DoesNotContain("rehber 0/10", basicPaymentText, StringComparison.Ordinal);
 
             var acceptanceOutputForMapping = Assert.Single(
                 outputs.Where(output => output.Kind == OehsOfficialDocumentKind.KabulTutanagi));
@@ -291,13 +291,13 @@ public sealed class OfficialDocumentOutputTests
                 acceptanceOutputForMapping.Document.Pages[0].Child);
             var acceptanceMappingText = GetPageText(acceptanceMappingPage);
             // The source template retains its official label; duration formatting is program-specific.
-            Assert.Contains("Sözleşmeye göre işin süresi (takvim günü)", acceptanceMappingText);
-            Assert.Contains("180 İş Günü", acceptanceMappingText);
-            Assert.Contains("30.06.2027", acceptanceMappingText);
-            Assert.Contains("30 Haziran 2027 Çarşamba", acceptanceMappingText);
-            Assert.DoesNotContain("Tescile Dahil Değil", acceptanceMappingText);
-            Assert.DoesNotContain("Avans verilmeyecektir.", acceptanceMappingText);
-            Assert.DoesNotContain("Yoktur.", acceptanceMappingText);
+            Assert.Contains("Sözleşmeye göre işin süresi (takvim günü)", acceptanceMappingText, StringComparison.Ordinal);
+            Assert.Contains("180 İş Günü", acceptanceMappingText, StringComparison.Ordinal);
+            Assert.Contains("30.06.2027", acceptanceMappingText, StringComparison.Ordinal);
+            Assert.Contains("30 Haziran 2027 Çarşamba", acceptanceMappingText, StringComparison.Ordinal);
+            Assert.DoesNotContain("Tescile Dahil Değil", acceptanceMappingText, StringComparison.Ordinal);
+            Assert.DoesNotContain("Avans verilmeyecektir.", acceptanceMappingText, StringComparison.Ordinal);
+            Assert.DoesNotContain("Yoktur.", acceptanceMappingText, StringComparison.Ordinal);
             var acceptanceNarrative = Assert.Single(acceptanceMappingPage.Children
                 .OfType<TextBlock>()
                 .Where(block => block.Text.StartsWith(
@@ -312,33 +312,33 @@ public sealed class OfficialDocumentOutputTests
             var icmalOutput = Assert.Single(
                 outputs.Where(output => output.Kind == OehsOfficialDocumentKind.HakedisIcmali));
             var icmalText = GetPageText(Assert.IsType<FixedPage>(icmalOutput.Document.Pages[0].Child));
-            Assert.Contains("Hizmet Alımı İşi Eylül 2026", icmalText);
-            Assert.Contains("Hizmet Alımı İşi Ekim 2026", icmalText);
-            Assert.Contains("₺100,00", icmalText); // September contract-price work
-            Assert.Contains("₺100,00", icmalText); // October contract-price work, excluding I/R
-            Assert.Contains("₺10,00", icmalText);  // raw current-period I+R
-            Assert.Contains("₺20,00", icmalText);  // raw prior-period I+R
-            Assert.Contains("₺30,00", icmalText);  // cumulative raw I+R
-            Assert.Contains("₺200,00", icmalText); // cumulative contract-price work
-            Assert.Contains("₺230,00", icmalText); // summary total after cumulative raw I+R
+            Assert.Contains("Hizmet Alımı İşi Eylül 2026", icmalText, StringComparison.Ordinal);
+            Assert.Contains("Hizmet Alımı İşi Ekim 2026", icmalText, StringComparison.Ordinal);
+            Assert.Contains("₺100,00", icmalText, StringComparison.Ordinal); // September contract-price work
+            Assert.Contains("₺100,00", icmalText, StringComparison.Ordinal); // October contract-price work, excluding I/R
+            Assert.Contains("₺10,00", icmalText, StringComparison.Ordinal);  // raw current-period I+R
+            Assert.Contains("₺20,00", icmalText, StringComparison.Ordinal);  // raw prior-period I+R
+            Assert.Contains("₺30,00", icmalText, StringComparison.Ordinal);  // cumulative raw I+R
+            Assert.Contains("₺200,00", icmalText, StringComparison.Ordinal); // cumulative contract-price work
+            Assert.Contains("₺230,00", icmalText, StringComparison.Ordinal); // summary total after cumulative raw I+R
 
             // The source Excel Hakediş Raporu contains signature drawings; all four
             // PDF templates therefore use the configured signatories.
             var contractorReportPage = Assert.IsType<FixedPage>(paymentOutput.Document.Pages[0].Child);
-            Assert.Contains("Örnek Yüklenici", GetPageText(contractorReportPage));
-            Assert.Contains("M.Y.H.B.Y. Örnek No :4/10", GetPageText(contractorReportPage));
+            Assert.Contains("Örnek Yüklenici", GetPageText(contractorReportPage), StringComparison.Ordinal);
+            Assert.Contains("M.Y.H.B.Y. Örnek No :4/10", GetPageText(contractorReportPage), StringComparison.Ordinal);
 
             foreach (var output in outputs)
             {
                 var outputPage = Assert.IsType<FixedPage>(output.Document.Pages[0].Child);
                 var textBlocks = GetPageText(outputPage);
 
-                Assert.Contains("TEST DÜZENLEYEN", textBlocks);
-                Assert.Contains("TEST MEMUR", textBlocks);
-                Assert.Contains("TEST KONTROL EDEN", textBlocks);
-                Assert.Contains("TEST ŞUBE MÜDÜRÜ", textBlocks);
-                Assert.Contains("TEST ONAYLAYAN", textBlocks);
-                Assert.Contains("TEST MÜDÜR", textBlocks);
+                Assert.Contains("TEST DÜZENLEYEN", textBlocks, StringComparison.Ordinal);
+                Assert.Contains("TEST MEMUR", textBlocks, StringComparison.Ordinal);
+                Assert.Contains("TEST KONTROL EDEN", textBlocks, StringComparison.Ordinal);
+                Assert.Contains("TEST ŞUBE MÜDÜRÜ", textBlocks, StringComparison.Ordinal);
+                Assert.Contains("TEST ONAYLAYAN", textBlocks, StringComparison.Ordinal);
+                Assert.Contains("TEST MÜDÜR", textBlocks, StringComparison.Ordinal);
             }
 
             var reportOuterFrame = Assert.Single(contractorReportPage.Children
