@@ -44,28 +44,32 @@ public sealed class PdfFileNameTests
         Assert.True(sanitized.Length <= 80);
     }
 
-    [Theory]
-    [InlineData("CON .txt", "_CON .txt")]
-    [InlineData("con...log", "_con...log")]
-    [InlineData("COM¹", "_COM¹")]
-    [InlineData("LPT³.csv", "_LPT³.csv")]
-    public void SanitizeFileName_ShouldProtectWindowsDeviceNamesWithPaddingAndExtensions(
-        string input,
-        string expected)
+    [Fact]
+    public void SanitizeFileName_ShouldProtectWindowsDeviceNamesWithPaddingAndExtensions()
     {
-        Assert.Equal(expected, OehsFileNameService.SanitizeFileName(input));
+        var cases = new (string Input, string Expected)[]
+        {
+            ("CON .txt", "_CON .txt"),
+            ("con...log", "_con...log"),
+            ("COM¹", "_COM¹"),
+            ("LPT³.csv", "_LPT³.csv")
+        };
+
+        foreach (var item in cases)
+        {
+            Assert.Equal(item.Expected, OehsFileNameService.SanitizeFileName(item.Input));
+        }
     }
 
-    [Theory]
-    [InlineData(null, "Yok")]
-    [InlineData("", "Yok")]
-    [InlineData("   ", "Yok")]
-    [InlineData("..", "Yok")]
-    public void SanitizeFileName_ShouldUseFallbackForEmptyOrTraversalValues(
-        string? input,
-        string expected)
+    [Fact]
+    public void SanitizeFileName_ShouldUseFallbackForEmptyOrTraversalValues()
     {
-        Assert.Equal(expected, OehsFileNameService.SanitizeFileName(input, "Yok"));
+        var cases = new string?[] { null, "", "   ", ".." };
+
+        foreach (var input in cases)
+        {
+            Assert.Equal("Yok", OehsFileNameService.SanitizeFileName(input, "Yok"));
+        }
     }
 
     [Fact]
