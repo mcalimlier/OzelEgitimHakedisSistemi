@@ -436,13 +436,15 @@ public sealed class OfficialDocumentOutputTests
         Assert.Equal(841.8898d, pdf.Pages[0].Height.Point, 1);
     }
 
-    private static string[] GetPageText(FixedPage page) =>
-        page.Children.Cast<UIElement>().SelectMany(element => element switch
-        {
-            TextBlock directText => new[] { directText.Text },
-            Border { Child: TextBlock borderText } => new[] { borderText.Text },
-            _ => Array.Empty<string>()
-        }).ToArray();
+    private static string GetPageText(FixedPage page) =>
+        string.Join(
+            Environment.NewLine,
+            page.Children.Cast<UIElement>().SelectMany(element => element switch
+            {
+                TextBlock directText => new[] { directText.Text },
+                Border { Child: TextBlock borderText } => new[] { borderText.Text },
+                _ => Array.Empty<string>()
+            }));
 
     private static string? GetCellTextAt(FixedPage page, double left, double top) =>
         page.Children.OfType<Border>()
