@@ -40,8 +40,11 @@ public static class ProgressPaymentIcmalService
 
     /// <summary>
     /// Returns the prior calendar month's deduction from payment dates.
-    /// The source workbook's AN3:AX3 header range currently omits November and
-    /// duplicates December; using dates avoids losing a valid November carry-forward.
+    /// The source workbooks use different period/range conventions: Basic/Secondary
+    /// uses Anasayfa!E4 and monthly deductions in İcmal Verileri!AB:AL (confirmed by
+    /// KesintiToplamlariniAktar), while Special Education uses E5 and AN:AX.
+    /// OEHS resolves the equivalent prior-month row from history, scoped by program,
+    /// tender, contract, route, and contractor instead of reusing either workbook's bad lookup.
     /// </summary>
     public static decimal FindPreviousDeduction(
         IEnumerable<ProgressPaymentHistoryData> payments,
