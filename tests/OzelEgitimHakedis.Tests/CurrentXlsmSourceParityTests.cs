@@ -128,8 +128,7 @@ public sealed class CurrentXlsmSourceParityTests
             GuideDailyPrice: 1362.49m,
             GuideDiscountAmount: 800m,
             GuidePriceDifference: 3500m,
-            ProgramType: TransportationProgramType.SpecialEducation,
-            ManualAdditionalGuarantee: 1500m);
+            ProgramType: TransportationProgramType.SpecialEducation);
 
         var result = ProgressPaymentCalculator.Calculate(input);
 
@@ -137,7 +136,7 @@ public sealed class CurrentXlsmSourceParityTests
         Assert.Equal(34037.27m, result.GuideNetAmount);            // T4
         Assert.Equal(11170.454m, result.Vat);                      // L4 + U4
         Assert.Equal(8308.2086m, result.Withholding);              // M4 + V4
-        Assert.Equal(661.8m, result.AdditionalGuarantee);           // AC4 = 6%*(I4+R4), not manual input
+        Assert.Equal(661.8m, result.AdditionalGuarantee);           // AC4 = 6%*(I4+R4)
         Assert.Equal(736.2857196m, result.StampTax);                // AD4
         Assert.Equal(27328.7843196m, result.TotalDeductions);       // AE4
         Assert.Equal(88837.724m, result.GrossAmount);               // AF4
@@ -150,8 +149,7 @@ public sealed class CurrentXlsmSourceParityTests
     {
         // Source: 03-Temel Eğitim Taşıma Ödeme.xlsmdüzeltildi(2).xlsm
         // Hesaplama Bilgileri!T4 = I4*6/100; cached T4 = 441.921.
-        // I4 = 7365.35 in this source vector. Discount J4 and the legacy manual
-        // input do not participate in this formula.
+        // I4 = 7365.35 in this source vector. Discount J4 does not participate in this formula.
         var input = new ProgressPaymentInput(
             WorkDays: 1m,
             DailyPrice: 100m,
@@ -162,8 +160,7 @@ public sealed class CurrentXlsmSourceParityTests
             TaxDebt: 0m,
             SocialSecurityDebt: 0m,
             MinimumWageSupport: 0m,
-            ProgramType: TransportationProgramType.BasicOrSecondary,
-            ManualAdditionalGuarantee: 1500m);
+            ProgramType: TransportationProgramType.BasicOrSecondary);
 
         var result = ProgressPaymentCalculator.Calculate(input);
 
