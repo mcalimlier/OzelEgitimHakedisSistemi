@@ -29,7 +29,18 @@ Sentetik örneklerde görülen program farkları:
 - Özel Eğitim kabul tutanağı süreyi `180 İş Günü` olarak gösteriyor; Temel/Ortaöğretim örneği `180` gösteriyor.
 - Ekim icmal toplamı Özel Eğitim örneğinde 120,00 TL; Temel/Ortaöğretim örneğinde 125,00 TL.
 
-Bunlar sentetik smoke verisinin gözlemleridir; tek başına kaynak Excel'e uygunluğu kanıtlamaz ve otomatik olarak hata sayılmaz.
+Bunlar sentetik smoke verisinin gözlemleridir; tek başına kaynak Excel'e uygunluğu kanıtlamaz ve otomatik olarak hata sayılmaz. İncelemede ayrıca:
+- Hakediş Raporu'ndaki KDV açıklaması Özel Eğitim'de taşıma %10 + rehber %20, Temel/Ortaöğretim'de yalnızca taşıma %10 olarak üretiliyor.
+- Sentetik örnekte damga vergisi tutarı Özel Eğitim'de 1,00 TL, Temel/Ortaöğretim'de 1,04 TL.
+- Bu farklar programların ayrı hesaplama zincirleriyle ilişkili olabilir; gerçek aynı-girdi kaynak Excel sonucu görülmeden değişiklik yapılmayacak.
+
+## Mevcut otomatik test kapsamı (Excel kabulü yerine geçmez)
+
+- `tests/OzelEgitimHakedis.Wpf.Tests/OfficialDocumentOutputTests.cs`: dört ayrı belge üretimi, A4 portre/tek sayfa, temel alanlar, imza metinleri, icmalde Eylül–Ekim takvim sırası ve sentetik tutar kontrolleri.
+- `tests/OzelEgitimHakedis.Tests/ProgressPaymentIcmalServiceTests.cs`: Eylül–Temmuz dönemi, Kasım için önceki ay aktarımı, eksik başlık/lookup sınırı, program ve hat izolasyonu.
+- `tests/OzelEgitimHakedis.Tests/CurrentXlsmSourceParityTests.cs` ve `CurrentBasicWorkbookDiscrepancyTests.cs`: kodun kaydedilmiş kaynak hücre sonuçlarına karşı regresyon vektörleri. Test açıklamaları bunların masaüstü Excel/VBA yeniden hesaplaması olmadığını açıkça belirtiyor.
+
+Son dokümantasyon commit'i `c21315852b0a02276a27a47d8ce6d7b49374e939` için 19.10.2026 itibarıyla hem [push CI](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39306949094) hem de [PR CI](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39306955405) çalışıyor; sonuç henüz tamamlanmış değil.
 
 ## Kapanış koşulu
 
