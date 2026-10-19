@@ -308,3 +308,29 @@ Kullanıcı kararı (2026-10-19): yeni yüklenen Excel'deki formül esas alınac
 ### PDF doğrulama kullanım kararı
 
 Bu iki XLSM'nin 4/5/6/7 numaralı resmî belge sayfaları kullanıcı menüsüne eklenecek ekranlar değildir. Bunlar, aynı test girdisiyle OEHS'nin ürettiği sekiz PDF'nin (iki program türü × dört belge) referans karşılaştırmasında kullanılacaktır. Kabul, her belge için ayrı ayrı tutar, dönem, yüklenici, hat, imza ve sayfa düzeni kontrolü gerektirir. Mevcut çalışma kitabı sonuçları henüz gerçek Excel/VBA ile yeniden doğrulanmadığı için bu belgeye göre resmî hesap davranışı değiştirilmemiştir.
+
+
+## Devam kaydı — formül sadakati ve arayüz kapsamı (2026-10-19)
+
+### Kaynak formülleri: uygulamada korunacak kesin ifadeler
+
+- **Temel Eğitim / Hesaplama Bilgileri!T4:** `=I4*6/100`. OEHS eşlemesi `input.PriceDifference * 0.06`; iskonto hücresi ve eski elle teminat alanı bu kaynak formülünün girdisi değildir. Son yüklenen kaynak satırındaki önbellek sonucu 441,921 TL, I4=7.365,35 TL'dir.
+- **Özel Eğitim / Hesaplama!AC4:** `=(I4*6/100)+(R4*6/100)`. OEHS eşlemesi `(input.PriceDifference * 0.06) + (input.GuidePriceDifference * 0.06)`. Temel Eğitim kuralıyla birleştirilmeyecek.
+- **Özel Eğitim / Hesaplama!K4:** `=(G4*H4)+I4-J4`; **T4:** `=(P4*Q4)+R4-S4`.
+- **Özel Eğitim / Hesaplama!AD4:** `=(K4*9.48/1000)+(T4*9.48/1000)`; **AE4:** `=M4+V4+Y4+Z4+AA4+AB4+AC4+AD4`; **AF4:** `=O4+X4`; **AG4:** `=AF4-AE4`.
+- **Temel Eğitim / Hesaplama Bilgileri!U4:** `=K4*9.48/1000`. Rapor sayfasındaki D15 için farklı negatif-matrah davranışı varsa hesaplama sayfası formülüyle karıştırılmayacak.
+- Kaynak dosyalarının formül hücreleri ile önbellek sonuçları statik olarak incelendi. Bu kayıt, Excel masaüstünde formüllerin yeniden hesaplandığı veya VBA makrolarının çalıştırıldığı anlamına gelmez. Gerçek Excel/VBA kabul testi hâlâ ayrı bir kapıdır.
+
+### Arayüz kapsamı (unutulmayacak)
+
+- WPF sol navigasyonu mevcut iş akışlarına göre düzenlenmiş; Excel sayfa adları/sırası ile birebir eşleşmiyor. Bu nedenle yalnızca buton metnini değiştirmek yeterli değildir: Temel Eğitim ve Özel Eğitim için ayrı, kaynak sayfa sırasına dayalı navigasyon eşlemesi gerekiyor.
+- PDF referans sayfaları (her iki Excel'de 4/5/6/7) sol menüye eklenmeyecek; yalnızca üretilen dört resmi PDF'nin karşılaştırma referansları olacak.
+- Görünür sayfalar için kaynak yazımı aynen korunacak: Temel Eğitim `Hesaplama Bilgileri`, Özel Eğitim `Hesaplama`; Özel Eğitim'de kaynakta bitişik yazılan `Hizmetişleri Hakediş Raporu` adı da kaynakla birebir kalacak. `Data` ve `Users` gibi teknik/gizli sayfalar kullanıcı menüsüne otomatik eklenmeyecek.
+- Formül izleme/“geçici hesap tutucu” ekranı, her satırda kaynak Excel sayfa+hücre adresi, Excel sütun başlığı, birebir formül, kullanılan girdiler ve sonuç gösterecek şekilde doğrulanmalı. Kaynakta olmayan açıklama başlıkları formülün yerine geçirilmemeli.
+- Kabul matrisi: her program için (1) formül/hücre eşlemesi, (2) arayüz sayfa-sırası eşlemesi, (3) dört PDF'nin tutar/dönem/yüklenici/hat/imza/sayfa düzeni karşılaştırması. Bir programın geçmesi diğer programı doğrulamaz.
+
+### Son CI kontrolü
+
+- Etkin dal `feature/official-payment-document-templates`, commit `80da19707d8caf6b77e910f3709728de39153693`.
+- Push ve PR Windows Build sonuçları başarılı: https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39287433520 ve https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39287443190.
+- PR #3 açık ve birleştirilmemiştir. CI başarısı, gerçek Excel/VBA çalıştırması ve sekiz PDF'nin görsel/parasal birebir kabulü yerine geçmez.
