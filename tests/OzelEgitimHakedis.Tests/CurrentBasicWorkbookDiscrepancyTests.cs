@@ -5,13 +5,13 @@ using Xunit;
 namespace OzelEgitimHakedis.Tests;
 
 /// <summary>
-/// Regression vectors for the latest Basic/Secondary XLSM. Calculation-sheet
-/// W4 and report D28 are separate workbook formula chains and are asserted separately.
+/// Calculation-sheet regression vectors based on the current Basic/Secondary XLSM formulas.
+/// Report D28 is deliberately excluded until captured source-row values are available.
 /// </summary>
 public sealed class CurrentBasicWorkbookParityTests
 {
     [Fact]
-    public void CurrentBasicRows5And6_ShouldMatchCalculationAndReportCells()
+    public void CurrentBasicRows5And6_ShouldMatchCalculationFormulaChain()
     {
         var examples = new[]
         {
@@ -79,7 +79,7 @@ public sealed class CurrentBasicWorkbookParityTests
     }
 
     [Fact]
-    public void CurrentBasicRow4_ShouldMatchCalculationSheetAndReportD28()
+    public void CurrentBasicRow4_ShouldMatchCalculationSheetFormulaChain()
     {
         var input = new ProgressPaymentInput(
             WorkDays: 15m,
@@ -111,24 +111,6 @@ public sealed class CurrentBasicWorkbookParityTests
         Assert.Equal(19204.7452m, result.TotalDeductions);
         Assert.Equal(223334.2548m, result.NetPayable);
 
-        var current = new ProgressPaymentHistoryData(
-            Id: Guid.NewGuid(),
-            CreatedAt: new DateTime(2026, 10, 31, 12, 0, 0, DateTimeKind.Utc),
-            Input: input,
-            Calculation: result,
-            ProgressPaymentNumber: 1,
-            PeriodDate: new DateOnly(2026, 10, 31),
-            RouteNumber: "1",
-            RouteName: "Örnek Güzergâh",
-            WorkName: "Örnek Güzergâh",
-            ContractorName: "Örnek Yüklenici",
-            TenderNumber: "TEST-IHALE",
-            ContractNumber: "TEST-SOZ",
-            ContractorTaxOrIdentityNumber: "12345678901");
-        var reportTotals = ProgressPaymentReportService.Calculate(current, new[] { current });
-        var reportNet = ProgressPaymentReportService.CalculateReportNetPayable(current, reportTotals);
-
-        // Hakediş Raporu D11=K+I, D13=D11+D12, D28=D13-D26.
-        Assert.Equal(224820.03m, reportNet);
+        // Report D28 is not asserted from a synthetic fixture; use a captured Excel row for parity.
     }
 }
