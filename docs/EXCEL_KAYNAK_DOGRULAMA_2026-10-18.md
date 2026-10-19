@@ -111,3 +111,43 @@ Bu belge statik XML incelemesini ve bir inceleme kopyasındaki LibreOffice form�
 2026-10-18'deki ek taramada, iki XLSM'nin çalışma sayfası XML'lerinde `Anasayfa!AA2` hücresine doğrudan başvuran formül bulunmadı; `workbook.xml` tanımlı adlarında da AA2 referansı görülmedi. VBA ikili dosyasında yapılan basit metin taramasında da açık `AA2` dizgesi bulunmadı.
 
 Bu sonuç, AA2'nin kesin olarak kullanılmadığını kanıtlamaz: VBA derlenmiş/akışlara bölünmüş kaynak içerdiğinden basit dizge araması tam VBA kaynak incelemesinin yerine geçmez. Bu yüzden AA2, şu aşamada **düşük öncelikli ama kapatılmamış** risk olarak kalır; kullanıcıya görünen bir hata olmadığı ve tam VBA referans incelemesiyle doğrulandığı varsayılmaz.
+
+
+## 2026-10-19 — Kaynak XLSM yeniden hesaplama ve OEHS vektör karşılaştırması
+
+Bu kontrol kullanıcıdan yeni hücre değerleri istemeden, çalışma ortamındaki iki orijinal XLSM'nin **değiştirilmemiş kopyaları** üzerinde LibreOffice Calc ile yeniden hesaplama yapılarak yürütüldü. Kaynak dosyalar:
+- `03-Temel Eğitim Taşıma Ödeme.xlsmdüzeltildi(2).xlsm`
+- `02-Özel Eğitim Hakediş Ödeme (1)(1).xlsm`
+
+### Temel Eğitim — aynı satır 4 zinciri
+
+| Kaynak hücre | Formül | Yeniden hesaplanan sonuç |
+|---|---|---:|
+| `Hesaplama Bilgileri!T4` | `=I4*6/100` | 441,921 |
+| `Hesaplama Bilgileri!U4` | `=(K4*9.48/1000)` | 3.033,523428144 |
+| `Hesaplama Bilgileri!W4` | `=O4-V4` | 332.516,074511856 |
+| `Hakediş Raporu!D15` | `=IF(D11<0,"0,00 TL",D11*9.48/1000)` | 3.033,523428144 |
+| `Hakediş Raporu!D28` | `=ROUND(D13,2)-ROUND(D26,2)` | 332.516,08 TL |
+
+OEHS `CurrentXlsmSourceParityTests` içindeki aynı giriş vektörü; K=319.991,9228, KDV=31.999,19228, tevkifat=15.999,59614, brüt O=351.991,11508, T=441,921, U=3.033,523428144, toplam kesinti V=19.475,040568144 ve hesaplama neti W=332.516,074511856 sonuçlarını bekliyor. Rapor servisi de D13 ve D26'yı ayrı ayrı iki haneye yuvarlayıp çıkardığında D28=332.516,08 TL verir. **Bu satır 4 aritmetik zinciri kaynak formülleriyle uyumlu.**
+
+### Özel Eğitim — aynı satır 4 zinciri
+
+| Kaynak hücre | Formül | Yeniden hesaplanan sonuç |
+|---|---|---:|
+| `Hesaplama!AC4` | `=(I4*6/100)+(R4*6/100)` | 661,80 |
+| `Hesaplama!AD4` | `=(K4*9.48/1000)+(T4*9.48/1000)` | 736,2857196 |
+| `Hesaplama!AE4` | `=M4+V4+Y4+Z4+AA4+AB4+AC4+AD4` | 27.328,7843196 |
+| `Hesaplama!AF4` | `=O4+X4` | 88.837,724 |
+| `Hesaplama!AG4` | `=AF4-AE4` | 61.508,9396804 |
+| `Hakediş Raporu!D28` | `=ROUND(D13,2)-ROUND(D26,2)` | 61.508,94 TL |
+
+OEHS `CurrentXlsmSourceParityTests` aynı giriş vektöründe K=43.630, T=34.037,27, KDV=11.170,454, tevkifat=8.308,2086, AC=661,80, AD=736,2857196, AE=27.328,7843196 ve AF=88.837,724 sonuçlarını bekliyor. Hesaplama sayfasının AG neti ile rapor D28 aynı hücre değildir; rapor neti D13 ve D26'nın ayrı yuvarlanmasıyla 61.508,94 TL olur. OEHS rapor servisi de bu örnek için aynı iki-haneli rapor netini hesaplıyor. **Bu satır 4 aritmetik zinciri ve rapor neti yuvarlaması kaynak formülleriyle uyumlu.**
+
+### Doğrulama sonucu ve sınırlar
+
+- Bu oturumda LibreOffice Calc, iki XLSM'den ayrı XLSX inceleme kopyaları oluşturup yeniden hesapladı; formüller ve sonuçlar yukarıdaki gibi tekrar okundu. Orijinal XLSM dosyaları değiştirilmedi.
+- GitHub Actions Windows Build run **#2124**, commit `ffbe7fdb7f2db5eb5e800ec645bae94dd6e78256`, başarıyla tamamlandı: **215/215 Core testi ve 4/4 WPF çıktı testi** geçti; PDF smoke üretimi, EXE publish ve izole deneme paketi adımları da başarılı. [CI run](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39303608475)
+- Bu, güncel kaynak satır 4 hesaplama vektörlerinin mevcut OEHS çekirdek testleriyle eşleştiğini destekler. Ancak LibreOffice, Microsoft Excel masaüstü/VBA çalışma zamanı değildir; VBA'nın hücreleri çalışma sırasında değiştirmesi bu testle kanıtlanmadı.
+- CI PDF'leri sentetik fixture'lardır. Kaynak Excel'in 4/5/6/7 sayfaları ile aynı girdilerden oluşturulmuş sekiz gerçek PDF'nin tutar, dönem, yüklenici, hat, imza ve görsel düzen eşleştirmesi **henüz tamamlanmadı**.
+- Kodda veya resmî hesap davranışında bu kontrol nedeniyle yeni bir değişiklik yapılmadı. PR #3 taslak/açık kalır; ana dala birleştirme ve yayınlama yapılmadı.
