@@ -1103,3 +1103,13 @@ Bu değişikliklerin Windows/.NET testleri ve dört PDF'nin görsel kabulü hen�
 - Kabul kriteri: her bir PDF, aynı giriş ve dönem için kendi program türünün Excel referans sayfasıyla uyuşmalı. Dört belge birlikte denetlenmeli; bir belgenin başarılı olması diğer üçünün doğrulandığı anlamına gelmez.
 - Sol menü sayfa eşlemesinde PDF çıktı sayfaları dışarıda tutulacak; kullanıcıya yönelik iş akışı ekranları ile belge üretimi ayrı ele alınacak. Excel'in diğer görünür çalışma sayfaları için navigasyon eşlemesi devam edecek; gizli teknik sayfalar kullanıcı menüsüne konmayacak.
 - Bu bir kapsam/kabul kararıdır; henüz kod veya test değişikliği yapıldığı anlamına gelmez. Sonraki adım: PDF doğrulama test matrisini açıkça 4 belge × 2 program türü olarak kurmak ve mümkün olduğunda Excel/VBA'dan alınmış gerçek referans örnekleriyle kıyaslamak.
+
+
+## CI doğrulama kaydı — 2026-10-19
+
+- Commit `cedacdc020f483f0b7c2e87f9f236f2cf4c815b2` için GitHub Actions Windows Build sonucu **success** olarak doğrulandı.
+- Çalıştırma: https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39282256668
+- Başarılı adımlar arasında tüm solution build, WPF build, test projelerinin build'i, `Test Solution` ve `Generate and verify PDF smoke files` bulunuyor.
+- PDF smoke artefaktı `OEHS-PDF-Smoke-Review` oluşturuldu (artefakt kimliği `12202390499`, 597357 byte; son kullanma tarihi 2026-10-22). Artefakt dosyalarının görsel incelemesi bu kayıtla tamamlanmış sayılmaz.
+- Bu CI sonucu kaynak ve otomatik smoke kontrollerini doğrular; orijinal Excel/VBA'nın masaüstünde çalıştırılması, sekiz gerçek çıktı PDF'sinin Excel referanslarıyla birebir görsel ve tutar karşılaştırması yerine geçmez.
+- PR #3 açık ve birleştirilmemiştir. Ana dala birleştirme yapılmadı.
