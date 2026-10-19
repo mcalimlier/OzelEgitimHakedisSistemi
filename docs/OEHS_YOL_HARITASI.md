@@ -1045,3 +1045,14 @@ Bu değişikliklerin Windows/.NET testleri ve dört PDF'nin görsel kabulü hen�
 - Test değişikliği commit'i: `62d728519885d894917acb9b0153fc52d11e9d1d`. Önceki yol haritası güncellemesi sonrası commit için Windows CI run `39279536998` kuyruğa alınmıştı; yeni test commit'i için ayrıca CI sonucu kontrol edilmeli.
 - Açık riskler: gerçek Excel/VBA golden vector henüz alınmadı; Temel Eğitim T hücresinin doğrudan formülü ile önceki elle giriş açıklaması arasındaki çelişki VBA yazma akışıyla çözülmedi; Özel Eğitim ay başlık anomalisi ve dört PDF'nin kaynak Excel ile uçtan uca kabulü açık.
 - PR #3 açık/taslak kalacak; ana dala birleştirme veya yayın yapılmayacak.
+
+
+## Devam notu — 2026-10-19: XLSM hücre formülleri yeniden kontrol edildi
+
+- Güncel yüklemeler yeniden açıldı; SHA-256 değerleri kayıtlı kanonik XLSM'lerle eşleşti. Formül hücreleri ve önbelleğe alınmış değerler `openpyxl` ile okundu; önbellek değerleri Excel masaüstü yeniden hesaplaması veya VBA çalıştırması kanıtı olarak kullanılmadı.
+- Temel Eğitim `Hesaplama Bilgileri!T4:T6`: `=I4*6/100`, `=I5*6/100`, `=I6*6/100`; önbellek değerleri sırasıyla 441,921; 441,981; 442,041. `U4:U6` damga vergisi formülü `=K*9.48/1000`. Hücre formülü açık; VBA'nın bu hücreyi işlem sırasında elle girilen değerle değiştirip değiştirmediği hâlâ doğrulanmadı.
+- Özel Eğitim `Hesaplama!AC4:AC6` formülleri `=(I*6/100)+(R*6/100)` biçiminde; `AD4:AD6` damga vergisi `=(K*9.48/1000)+(T*9.48/1000)`. Bu hücre formülleri daha önce kaydedilen uygulama formül zinciriyle uyumlu.
+- Temel Eğitim `İcmal Verileri!D3:N3`, `P3:Z3`, `AB3:AL3` başlıklarında Eylül 2026–Haziran 2027 sonrasında Temmuz başlığı var; Special workbook'ta `İcmal Verileri!D3:N3` benzer başlık dizisiyle başlıyor. Özel Eğitim `İcmal Verileri!AP3` ve `AQ3` eşit `Anasayfa!I9` referansları konusu önceki nottaki açık risk olarak kalıyor. Başlık davranışı kaynak Excel/VBA sonuçları olmadan değiştirilmedi.
+- CI run `39279783216` hâlâ `queued`; iş günlüklerinde sonuç yok. Bu yüzden test güncellemesinin başarılı olduğu söylenemez.
+- VBA kaynak kodu okunabilir biçimde çıkarılamadı (bu ortamda `oletools/olefile` kurulu değil). Makro yazma akışı, gerçek Excel/VBA golden vector ve dört PDF'nin karşılaştırmalı kabulü açık.
+- Sıradaki adım: CI tamamlanınca sonuçları incele; ardından VBA kaynak çıkarımı için desteklenen bir yol dene veya kullanıcıdan ilgili VBA prosedürlerini Excel VBA düzenleyicisinden dışa aktarmasını iste. İlerleme tahmini bu oturumda artırılmadı; doğrulanmamış işler tamamlanmış sayılmadı.
