@@ -905,3 +905,37 @@ Kullanıcı açıkça önceki sohbetlerde belirtilen kuralların sıfırlanması
 ### Doğrulama notu
 
 Bu değişikliklerin Windows/.NET testleri ve dört PDF'nin görsel kabulü henüz bu notta başarılı olarak işaretlenmemiştir. Sonraki raporda güncel commit ve GitHub Actions sonucu ayrıca doğrulanacaktır. Ana dala birleştirme veya yayın yapılmadı.
+
+
+## Devam notu — evde devam için — 2026-10-19 17:05 Türkiye
+
+### Git / çalışma durumu
+- Repo: `mcalimlier/OzelEgitimHakedisSistemi`
+- Aktif dal: `feature/official-payment-document-templates`
+- Güncel uzak dal commit'i: `759ae36d27eaa6a1dc226857be84f27b128522e0`
+- PR #3 açık taslak; birleştirme veya yayın yapılmadı.
+- GitHub Desktop'ta bu dala geçip **Fetch origin** ardından **Pull origin** yapılmalı. Pull öncesi yerelde commit edilmemiş değişiklik varsa önce bunlar korunmalı/commit edilmeli; çakışma çıkarsa çözmeden üzerine yazılmamalı.
+
+### Son değişiklikler
+- `c668e8c`: Hesaplama çekirdeğinde Temel Eğitim ek kesin teminatı ve damga vergisi son yüklenen Excel formüllerine uyarlandı.
+- `9455102`: Temel Eğitim testi eski elle-giriş beklentisinden Excel formülü beklentisine güncellendi.
+- `759ae36`: Yol haritasına yalnızca son XLSM dosyalarının esas alınacağı kararı ve sonraki iş listesi kaydedildi.
+
+### CI / doğrulama
+- En güncel Windows Build run: [39251653892](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39251653892)
+- Çözüm ve WPF derleme adımları başarılı; `Test Solution` adımı başarısız.
+- PDF smoke dosyalarının üretim adımı test başarısızlığından dolayı atlandı; EXE yayımlanmadı.
+- Bu nedenle son çekirdek düzeltmesi doğrulanmış sayılmıyor. Evde devamın ilk işi test başarısızlığının ayrıntısını açıp düzeltmek ve CI'ı yeniden çalıştırmak.
+
+### Sıradaki iş sırası
+1. GitHub Actions test başarısızlığını teşhis et; testleri geçirmeden Excel uyumu tamamlandı deme.
+2. İki güncel XLSM'nin formül/VBA/alan eşlemesini çıkar; temel ve özel eğitim akışlarını ayrı tut.
+3. Program seçimini zorunlu kılan, seçilen programa göre alanları gösteren ve her hattın verisini ayrı koruyan arayüz düzenlemesini yap.
+4. Dört PDF'yi aynı referans verilerle üretip dönem, yüklenici, hat, imza, tutar ve sayfa düzenini karşılaştır.
+5. Her çalışma sonunda bu yol haritasını güncelle.
+
+### Açık riskler
+- CI testleri başarısız.
+- VBA kaynak yordamları henüz tam olarak çözümlenip hücre adresleriyle eşleştirilmedi.
+- Excel'deki saklanan formül sonuçları, masaüstü Excel'de yeniden hesaplatılmış doğrulama sonucu değildir.
+- Dört PDF için uçtan uca görsel ve tutar kabulü yapılmadı.
