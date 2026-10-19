@@ -1207,3 +1207,18 @@ Bu oranlar uygulama kapsamı, otomatik test ve henüz açık kalan gerçek kabul
 
 **Sıradaki adım**
 - Bu commitin CI sonucunu kontrol et; ardından kaynak kod/testlerindeki gerçek senaryo kapsamını genişlet ve kabul matrisini yalnızca kanıt elde edilen hücrelerde güncelle. Hesaplama davranışını varsayımla değiştirme; PR #3 taslak kalacak, ana dala birleştirme/yayınlama yapılmayacak.
+
+## 19.10.2026 — Devam notu: PDF kabul kanıtı ayrıntılandırıldı
+
+**Yapılan iş**
+- `PDF_4X2_KABUL_MATRISI.md` dosyası, sekiz PDF kabul hücresinin yanında mevcut otomatik test kapsamını ve sentetik PDF'de gözlenen KDV etiketi/damga vergisi/icmal/süre farklarını da açıklayacak şekilde genişletildi.
+- İncelenen testler: `OfficialDocumentOutputTests`, `ProgressPaymentIcmalServiceTests`, `CurrentXlsmSourceParityTests`, `CurrentBasicWorkbookDiscrepancyTests`.
+- Kod testleri takvim sırası, önceki ay aktarımı ve sentetik belge alanlarını kontrol ediyor; bunlar masaüstü Excel/VBA eşdeğerlik kanıtı değil.
+
+**Doğrulama durumu**
+- Son değişikliklerin CI sonucu bekleniyor; çalıştırma tamamlanmadan başarılı olduğu söylenmeyecek.
+- 8/8 gerçek Excel PDF karşılaştırması açık.
+
+**Açık riskler ve sonraki adım**
+- Gerçek XLSM/VBA ile aynı girdi üzerinden hesaplanmış hücre sonuçları ve dört PDF'nin alan bazında görsel karşılaştırması eksik.
+- CI tamamlanınca test/derleme sonuçlarını doğrula; başarısızsa yalnızca kanıta dayalı düzeltme yap. Negatif fiyat farkı/ek kesin teminat kararını ve programlar arasındaki sentetik farkları varsayımla değiştirme. PR #3 taslak kalacak; ana dala birleştirme/yayınlama yok.
