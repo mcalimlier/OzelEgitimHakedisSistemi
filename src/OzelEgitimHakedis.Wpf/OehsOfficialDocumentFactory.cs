@@ -253,7 +253,7 @@ internal static class OehsOfficialDocumentFactory
 
         AddText(page, "Tarihi", x + 145, 81, 155, 19, 9.5, true, TextAlignment.Left);
         AddText(page, ":", x + 326, 81, 14, 19, 9.5, true, TextAlignment.Center);
-        AddText(page, FormatDate(c.PeriodDate), x + 366, 81, 360, 19, 9.5, false, TextAlignment.Left);
+        AddText(page, FormatDate(c.GeneratedDate), x + 366, 81, 360, 19, 9.5, false, TextAlignment.Left);
         AddText(page, "No.su", x + 145, 99, 155, 19, 9.5, true, TextAlignment.Left);
         AddText(page, ":", x + 326, 99, 14, 19, 9.5, true, TextAlignment.Center);
         AddText(page, c.ProgressPaymentNumber?.ToString(Turkish) ?? "-", x + 366, 99, 360, 19, 9.5, false, TextAlignment.Left);
@@ -271,7 +271,7 @@ internal static class OehsOfficialDocumentFactory
             ("Yüklenicinin Adı / Ticari Unvanı", c.ContractorName),
             ("Sözleşme Bedeli", FormatMoney(c.ContractAmount)),
             ("İhale Tarihi", FormatDate(c.TenderDate)),
-            ("Sözleşme Tarihi", FormatDate(c.ContractDate)),
+            ("Sözleşme Tarihi ve No.su", FormatDate(c.ContractDate)),
             ("Sözleşmenin Sayıştayca Tescil Tarihi ve No'su", "Tescile Dahil Değil"),
             ("Tescilin Yükleniciye Tebliğ Tarihi", "Tescile Dahil Değil"),
             ("İşyeri Teslim Tarihi", FormatDate(c.ContractStartDate)),
@@ -649,9 +649,12 @@ internal static class OehsOfficialDocumentFactory
     }
 
     private static string FormatWorkDays(OehsOfficialDocumentContext c) =>
-        c.ContractWorkDays > 0
-            ? $"{c.ContractWorkDays} İş Günü"
-            : "-";
+        c.ProgramType == TransportationProgramType.BasicOrSecondary &&
+        c.ContractStartDate.HasValue && c.ContractEndDate.HasValue
+            ? $"{FormatDate(c.ContractStartDate)}-{FormatDate(c.ContractEndDate)} Tarihleri Arasıdır."
+            : c.ContractWorkDays > 0
+                ? $"{c.ContractWorkDays} İş Günü"
+                : "-";
 
     private static string FormatAcceptanceDuration(OehsOfficialDocumentContext c) =>
         c.ContractWorkDays <= 0
