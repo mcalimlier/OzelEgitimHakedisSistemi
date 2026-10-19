@@ -57,9 +57,6 @@ public sealed class ProgressPaymentCalculator
         if (input.ContractAmount < 0)
             throw new ArgumentOutOfRangeException(nameof(input), "Sözleşme bedeli negatif olamaz.");
 
-        if (input.ManualAdditionalGuarantee < 0)
-            throw new ArgumentOutOfRangeException(nameof(input), "Elle girilen ek kesin teminat tutarı negatif olamaz.");
-
         if (input.TaxDebt < 0 ||
             input.SocialSecurityDebt < 0 ||
             input.MinimumWageSupport < 0 ||
@@ -135,7 +132,7 @@ public sealed class ProgressPaymentCalculator
         // Onaylanan kaynak davranışı: yeni yüklenen XLSM formülleri esas alınır.
         // Temel Eğitim: Hesaplama Bilgileri!T4 = I4*6/100; I4, input.PriceDifference alanıdır.
         // Özel Eğitim: Hesaplama!AC4 = (I4*6/100) + (R4*6/100).
-        // Her iki formülde de iskonto J/S ve ManualAdditionalGuarantee kullanılmaz.
+        // Her iki formülde de iskonto J/S kullanılmaz.
         var additionalGuarantee = input.ProgramType == TransportationProgramType.BasicOrSecondary
             ? input.PriceDifference * constants.AdditionalGuaranteeRate
             : (input.PriceDifference * constants.AdditionalGuaranteeRate)
