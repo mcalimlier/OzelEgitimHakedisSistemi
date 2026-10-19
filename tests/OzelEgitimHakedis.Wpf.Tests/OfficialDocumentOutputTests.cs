@@ -311,6 +311,12 @@ public sealed class OfficialDocumentOutputTests
             Assert.Contains("Yoktur.", serviceReportText, StringComparison.Ordinal);
             Assert.Contains("M.Y.H.B.Y. Örnek No: 4", serviceReportText, StringComparison.Ordinal);
             Assert.Contains("Sözleşme Tarihi ve No.su", serviceReportText, StringComparison.Ordinal);
+            var generatedDateContext = context with { GeneratedDate = new DateOnly(2026, 10, 19) };
+            var generatedService = Assert.Single(OehsOfficialDocumentFactory.BuildSeparate(generatedDateContext)
+                .Where(output => output.Kind == OehsOfficialDocumentKind.HizmetIsleriHakedisRaporu));
+            var generatedServiceText = GetPageText(Assert.IsType<FixedPage>(generatedService.Document.Pages[0].Child));
+            Assert.Contains("19.10.2026", generatedServiceText, StringComparison.Ordinal);
+            Assert.DoesNotContain("31.10.2026", generatedServiceText, StringComparison.Ordinal);
             Assert.DoesNotContain("M.Y.H.B.Y. Örnek No: 5", serviceReportText, StringComparison.Ordinal);
 
             var specialIcmal = Assert.Single(outputs.Where(output => output.Kind == OehsOfficialDocumentKind.HakedisIcmali));
