@@ -64,7 +64,8 @@ public sealed class ProgressPaymentWorkbookFormulaTests
         Assert.Equal(-12m, current.Calculation.AdditionalGuarantee);
         Assert.Equal(-12m, ProgressPaymentReportService.CalculateReportTotalDeductions(
             current.Calculation, current.Input.ProgramType));
-        Assert.Equal(-300m, ProgressPaymentReportService.CalculateReportNetPayable(current, totals));
+        // Do not assert a synthetic D28/net figure here: this input is not a captured Excel row.
+        // Report D28 parity is covered only by source-derived vectors.
     }
 
     [Fact]
