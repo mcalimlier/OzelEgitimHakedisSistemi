@@ -1222,3 +1222,40 @@ Bu oranlar uygulama kapsamı, otomatik test ve henüz açık kalan gerçek kabul
 **Açık riskler ve sonraki adım**
 - Gerçek XLSM/VBA ile aynı girdi üzerinden hesaplanmış hücre sonuçları ve dört PDF'nin alan bazında görsel karşılaştırması eksik.
 - CI tamamlanınca test/derleme sonuçlarını doğrula; başarısızsa yalnızca kanıta dayalı düzeltme yap. Negatif fiyat farkı/ek kesin teminat kararını ve programlar arasındaki sentetik farkları varsayımla değiştirme. PR #3 taslak kalacak; ana dala birleştirme/yayınlama yok.
+
+
+## 19.10.2026 — Devam notu: kaynak PDF alan eşlemesi ve 16 çıktı doğrulandı
+
+**Yapılan iş**
+- Hizmet İşleri raporunda `No.su` alanı hakediş numarası yerine `RouteNumber` kullanıyor. `RouteName` dört belgenin güzergâh başlıklarında; `WorkName` ayrı `Yapılan Hizmetin Adı` satırında gösteriliyor.
+- Temel/Ortaöğretim süre metni tarih aralığı olarak; Özel Eğitim süre metni `181 İş Günü` gibi kaynak programa göre üretiliyor. Hizmet raporunun tarihi seçili ay sonundan değil, `GeneratedDate` değerinden alınıyor.
+- Özel Eğitim Hakediş Raporu önceki hakediş toplamı üç ondalıkla gösteriliyor; ortak PDF şablonundaki gri fırça WPF testlerinin ayrı STA iş parçacıklarında güvenle kullanılabilmesi için donduruldu.
+- Sekiz tarihsel XLSM vektörüyle dört belge × iki program için ek PDF'ler üretiliyor. Smoke kontrolü artık toplam **16 A4 PDF** dosyasını doğruluyor.
+
+**Doğrulama**
+- Kod/test commit'i [`fc562c7b`](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/commit/fc562c7b3584d17b1e09e41cad36d7d3600634cc) için [push CI](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39317470634) ve [PR CI](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39317481412) başarılı.
+- **222/222 Core testi**, **5/5 WPF çıktı testi** geçti; smoke adımı 16 PDF'yi doğruladı.
+- [16 PDF'lik CI artefaktı](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39317470634/artifacts/12218662122).
+
+**Açık riskler / kabul sınırı**
+- En yeni XLSM'nin aynı girdilerle gerçek Excel/VBA yeniden hesaplaması bu oturumda çalıştırılmadı; tarihsel workbook/PDF vektörleri en yeni dosyanın kabulü yerine geçmez.
+- Tarihsel kaynak PDF'lerinde iki formül/tarih kusuru ve bir makrodan sonra yenilenmemiş aylık veri durumu bulundu. Temel/Ortaöğretim icmalinde `AB4` ile `V4` farkı, VBA makrosu çalıştırılmadan güncel kaynak davranışı olarak genellenmeyecek.
+- İcmalde fiyat farkının ikinci kez eklenmesi kaynak formül zincirinde görülüyor. Bu davranış mevzuat açısından onaylanmış kabul edilmedi; Excel/VBA aynı girdi testi ve açık karar olmadan hesaplama davranışı değiştirilmeyecek.
+- PR #3 taslak/açık ve birleştirilmemiştir.
+
+**Güncel tahmini ilerleme**
+| Modül | Tahmini ilerleme |
+|---|---:|
+| Temel/Ortaöğretim hesaplama | %84 |
+| Özel Eğitim hesaplama | %86 |
+| Ortak hesaplama motoru | %84 |
+| Dört PDF / icmal | %86 |
+| Arşiv ve veri modeli | %86 |
+| WPF / ekran iş akışı | %83 |
+| Test / CI / dağıtım | %96 |
+| **Genel proje** | **%84** |
+
+**Sıradaki adım**
+1. En yeni kaynak XLSM'de aynı örneği Excel masaüstünde yeniden hesapla ve ilgili VBA aktarım makrolarını çalıştır; `Hesaplama Bilgileri!T4/U4/W4`, `İcmal Verileri!AB4:AM4`, `Hesaplama!AC4/AD4/AE4/AG4` ve `D28` sonuçlarını aynı girdiyle karşılaştır.
+2. `İşyeri Teslim Tarihi` kaynak formülünün bitiş tarihi sütununu kullanması ve icmalde fiyat farkının iki kez eklenmesi için kaynak kusurunu aynen koruma/düzeltme kararı verilmeden hesaplama davranışını değiştirme.
+3. Yerel kopya korunmuşsa GitHub Desktop'ta `Fetch origin`, sonra `Pull origin` yap; PR taslak kalacak, ana dala birleştirme/yayınlama yok.
