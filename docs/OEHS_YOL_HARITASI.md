@@ -1056,3 +1056,12 @@ Bu değişikliklerin Windows/.NET testleri ve dört PDF'nin görsel kabulü hen�
 - CI run `39279783216` hâlâ `queued`; iş günlüklerinde sonuç yok. Bu yüzden test güncellemesinin başarılı olduğu söylenemez.
 - VBA kaynak kodu okunabilir biçimde çıkarılamadı (bu ortamda `oletools/olefile` kurulu değil). Makro yazma akışı, gerçek Excel/VBA golden vector ve dört PDF'nin karşılaştırmalı kabulü açık.
 - Sıradaki adım: CI tamamlanınca sonuçları incele; ardından VBA kaynak çıkarımı için desteklenen bir yol dene veya kullanıcıdan ilgili VBA prosedürlerini Excel VBA düzenleyicisinden dışa aktarmasını iste. İlerleme tahmini bu oturumda artırılmadı; doğrulanmamış işler tamamlanmış sayılmadı.
+
+
+## Proje kuralı — 2026-10-19: Excel klonu ve adlandırma sadakati
+
+- Hedef önce kaynak Excel çalışma kitaplarının olabildiğince birebir çalışan masaüstü klonunu oluşturmaktır; kullanıcı ayrıca onaylamadıkça erken UX yeniden adlandırması veya davranış sadeleştirmesi yapılmayacak.
+- Formül açıklamaları, hesaplama dökümleri, test isimleri/raporları ve UI alan etiketlerinde kaynak Excel'in ilgili sütun/hücre çevresinde kullandığı başlıklar aynen esas alınacak. Kaynakta olmayan yeni başlıklar veya bizim uydurduğumuz kısa adlar kullanılmayacak; gerektiğinde sayfa+hücre adresi de eklenecek.
+- Her ayrı çalışma kitabının sol menüsü kendi Excel sayfa adlarını kaynak alacak ve Excel sekme sırasını koruyacak. Türkçe karakter, yazım, kısaltma ve boşluklar aynen tutulacak. Temel/Ortaöğretim ve Özel Eğitim sayfa listeleri birbirinden ayrı doğrulanacak.
+- Programın çalışması ve kaynak Excel/VBA sonuçlarıyla doğrulanması tamamlandıktan sonra buton adları veya içerik iyileştirmeleri ayrıca değerlendirilebilir; bu, şimdiki klonlama hedefini değiştirmez.
+- Sıradaki uygulama adımı: her iki XLSM'deki sayfa adlarını ve sıralarını UI navigasyonuyla karşılaştır; eksik/farklı etiketleri kaynakla birebir eşleştir; ardından test ekle. Bu UI değişikliklerinin test edildiği ancak gerçek CI sonucu görüldüğünde raporlanacak.
