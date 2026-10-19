@@ -939,3 +939,29 @@ Bu değişikliklerin Windows/.NET testleri ve dört PDF'nin görsel kabulü hen�
 - VBA kaynak yordamları henüz tam olarak çözümlenip hücre adresleriyle eşleştirilmedi.
 - Excel'deki saklanan formül sonuçları, masaüstü Excel'de yeniden hesaplatılmış doğrulama sonucu değildir.
 - Dört PDF için uçtan uca görsel ve tutar kabulü yapılmadı.
+
+
+## Devam notu — 2026-10-19, evde yeniden yüklenen XLSM'ler ve CI hatası teşhisi
+
+### Kaynak dosyalar
+- Kullanıcı bu oturumda Temel Eğitim ve Özel Eğitim XLSM dosyalarını yeniden yükledi.
+- SHA-256 karşılaştırması önceki kanonik dosyalarla birebir aynı: Temel Eğitim `37a7818881aae52e8b2fcf95f30a75e1f302dfce1e91e2345f3473668a4d5296`; Özel Eğitim `c31cb024ac1eb59f3b88d2ee12234be98d1f07056884374d8dad108f674d7d1e`. Dolayısıyla yeni yüklemeler kaynak sürümünü değiştirmiyor; aynı en güncel XLSM'ler teyit edildi.
+- Yeniden tarama: Temel Eğitim 11 sayfa/311 formül hücresi; Özel Eğitim 8 sayfa/291 formül hücresi. Bunlar yapısal sayımdır, Excel masaüstü/VBA hesap kabulü değildir.
+- Temel Eğitim kaynak dosyasında `Hesaplama Bilgileri!T4 = I4*6/100`, `U4 = K4*9.48/1000`, `V4 = P4+Q4+R4+S4+T4+U4+M4`, `W4 = O4-V4`. Bu kaynak formüllerini temel alan kod davranışı, eski testteki elle girilen 1.500 TL varsayımıyla karıştırılmamalıdır.
+
+### CI hata incelemesi
+- Windows CI run `39251653892` kayıtları açıldı. Çözüm, WPF, UI sözleşme kontrolleri ve test projelerinin derlemesi başarılı; `Test Solution` başarısız: 221 Core testinden 216 başarılı, 5 başarısız. PDF smoke ve EXE yayınlama adımları test başarısızlığından dolayı atlandı.
+- Beş başarısız testin teşhisi:
+  1. `BasicReportNetPayable_ShouldUseZeroStampTaxWhenD11IsNegativeLikeExcel`: testte kesinti toplamının sıfır olması bekleniyor; mevcut hesapta negatif fiyat farkının kaynak formüle göre negatif ek teminat üretmesi nedeniyle beklenti çelişkili görünüyor. Rapor D15 sıfırlaması ile Hesaplama sayfası kesintileri ayrı zincirler olarak ele alınmalı.
+  2. `CurrentBasicRows5And6_ShouldMatchCalculationAndReportCells`: test 1.500 TL sabit teminat bekliyor, ancak son Temel Eğitim XLSM satırlarında T=I*6% formülü var.
+  3. `CurrentBasicRow4_ShouldMatchCalculationSheetAndReportD28`: aynı eski sabit teminat beklentisi; ayrıca damga vergisi testi U=K*9.48/1000 formülünü izlemeli, manuel T matrahına eklenmemeli.
+  4–5. `ExcelSourceParityTests` içindeki iki Temel Eğitim eski vektörü, eski/önceki kaynak varsayımlarını koruyor ve güncel kaynak formülleriyle uyumlu golden-master testi sayılmamalı.
+- Bu teşhis aşamasında uygulama kodu veya test beklentileri değiştirilmedi. Testleri yeşile çevirmek amacıyla kaynak formüllerinden bağımsız beklenti değiştirmek yok; her test, güncel XLSM'nin gerçek hücre girdileri ve formüllerinden yeniden türetilecek.
+- CI sonucu **başarısız**; PDF çıktıları henüz bu run'da üretilip doğrulanmadı.
+
+### Sıradaki adımlar
+1. Güncel Temel Eğitim XLSM satır 4–6 hücrelerini ve bunların giriş/çıktı alanlarını test vektörlerine birebir bağla; kaynak dışı el ile yazılmış beklenen 1.500 TL teminat değerlerini kaldır veya açıkça eski vektör olarak ayır.
+2. Negatif fiyat farkı senaryosunda hesaplama sayfası T/U/V/W ile rapor D15/D28 zincirini ayrı ayrı test et; kaynağın negatif değer davranışını koru.
+3. Güncel kaynak hücrelerinden türetilen testleri çalıştır ve Windows CI'ı yeniden kontrol et.
+4. CI testleri geçtikten sonra iki program için dört PDF'yi üret; tutar, dönem, yüklenici, hat, imza ve sayfa düzenini birlikte kontrol et.
+5. Bu nottan sonra da PR #3 açık/taslak tutulacak; ana dala birleştirme veya yayınlama yapılmayacak.
