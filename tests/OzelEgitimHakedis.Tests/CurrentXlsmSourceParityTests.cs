@@ -143,4 +143,31 @@ public sealed class CurrentXlsmSourceParityTests
         Assert.Equal(61508.9396804m, result.NetPayable);            // AG4
     }
 
+
+    [Fact]
+    public void UploadedBasicEducationWorkbookRow4_ShouldUsePriceDifferenceTimesSixPercent()
+    {
+        // Source: 03-Temel Eğitim Taşıma Ödeme.xlsmdüzeltildi(2).xlsm
+        // Hesaplama Bilgileri!T4 = I4*6/100; cached T4 = 441.921.
+        // I4 = 7365.35 in this source vector. Discount J4 and the legacy manual
+        // input do not participate in this formula.
+        var input = new ProgressPaymentInput(
+            WorkDays: 1m,
+            DailyPrice: 100m,
+            DiscountAmount: 500m,
+            PriceDifference: 7365.35m,
+            ContractAmount: 100000m,
+            IsVatExempt: true,
+            TaxDebt: 0m,
+            SocialSecurityDebt: 0m,
+            MinimumWageSupport: 0m,
+            ProgramType: TransportationProgramType.BasicOrSecondary,
+            ManualAdditionalGuarantee: 1500m);
+
+        var result = ProgressPaymentCalculator.Calculate(input);
+
+        Assert.Equal(441.921m, result.AdditionalGuarantee);
+        Assert.Equal(441.921m, result.Deductions.AdditionalGuarantee);
+    }
+
 }
