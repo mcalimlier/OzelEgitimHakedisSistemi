@@ -32,23 +32,16 @@ Her iki kaynak dosyada D11 formülü `=IF(D7<0,H2-ABS(D7),H2+D7)` biçimindedir;
 
 Bu örnekler formülün mevcut önbellekli aritmetiğini doğrular; görünen “C - D” açıklamasının yanlış olduğunu tek başına kanıtlamaz. H2, D7 ve D11'in gerçek iş anlamı ile D28/AG net ödeme zinciri Excel masaüstünde aynı örneklerle birlikte kontrol edilmelidir. Kodda veya kaynak XLSM'de değişiklik yapılmadı.
 
-## 5. Ek kesin teminat / kesin teminat — kullanıcı tarafından doğrulanan alan anlamları
+## 5. Ek kesin teminat — güncel kaynak Excel formülleri esas alınır
 
-Kullanıcının doğruladığı iş kuralı iki program için de aynıdır:
-- **Ek kesin teminat tutarı elle girilir.**
-- **Kesin teminat tutarı, elle girilen ek kesin teminat tutarının %6'sıdır.**
+Önceki notta yer alan elle giriş kuralı ve buna dayanan yönlendirmeler geçersizdir; güncel kaynak Excel'ler esas alınır.
 
-Önceki sürümde Temel Eğitim `Hesaplama Bilgileri!T4:T6` hücrelerindeki 1.500 TL değerleri ile OEHS'nin fiyat farkının %6'sını hesaplaması, aynı iş alanının doğrudan karşılaştırması gibi sunulmuştu. Bu yorum alan semantiğini doğru ayırmadığından geri çekilmiştir. Aynı şekilde Özel Eğitim `Hesaplama!AC4` formülü `=(I4*6/100)+R4*6/100` tek başına hangi iş alanına karşılık geldiğini kanıtlamaz.
+- **Temel/Ortaöğretim:** `Hesaplama Bilgileri!T4 = I4*6/100`.
+- **Özel Eğitim:** `Hesaplama!AC4 = (I4*6/100)+(R4*6/100)`.
 
-**Statik olarak gözlenenler; henüz alan eşlemesiyle doğrulanmadı:**
-- Temel Eğitim `T4:T6` değerleri 1.500; `U4=(K4*9.48/1000)+T4*9.48/1000` biçiminde.
-- Özel Eğitim `AC4` formülü `=(I4*6/100)+R4*6/100` biçiminde.
-- Bu hücrelerin kullanıcı giriş alanı, ek kesin teminat tutarı veya kesin teminat tutarı olarak nasıl etiketlendiği; kullanıcı formu/VBA üzerinden nereden doldurulduğu ve diğer hesaplara nasıl aktarıldığı ayrıca izlenmeli.
-- OEHS'nin mevcut hesap motorunda fiyat farkı üzerinden yapılan %6 hesabının, kullanıcının tanımladığı **elle girilen ek kesin teminatın %6'sı** kuralını gerçekten uygulayıp uygulamadığı kod ve model alanları üzerinden doğrulanmalı.
+OEHS kullanıcı arayüzünde bu tutar elle girilen bir alan olarak sunulmamalı; hesaplama motoru ilgili programın formülünü kullanmalıdır. Eski kayıt modelinde kalan alanlar hesaplama sonucunu değiştirmemeli ve kullanıcı girdisi olarak kullanılmamalıdır.
 
-Bu nedenle eski satır bazlı tutar farkları doğru iş kuralının kanıtı sayılmaz. Kaynak XLSM'ler değiştirilmedi ve Excel/VBA masaüstü kabulü yapılmadı.
-
-**Doğrulama adımları:** Her iki programda alan başlıklarını ve kullanıcı giriş akışını izle; girilen bir ek kesin teminat örneğinin %6 sonucunu kesin teminat alanında kontrol et; damga vergisi/kesinti/net zincirini ve dört PDF'yi aynı hakediş bağlamında doğrula. Bu eşlemeden önce hesap davranışını resmî doğru olarak işaretleme.
+Bu formüller çalışma kitabının statik formül kayıtlarından okunmuştur; kaynak dosyalar değiştirilmemiştir. Sonuçlar LibreOffice ile yeniden hesaplanan kopyalardan kontrol edilmiştir; Microsoft Excel/VBA masaüstü kabulü değildir.
 
 ## 6. Hakediş Raporu D6/D8/D10/D11 — formül ve önbellek aritmetiği uyuşmazlığı
 
