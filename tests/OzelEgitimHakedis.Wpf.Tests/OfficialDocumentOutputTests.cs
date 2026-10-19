@@ -568,6 +568,80 @@ public sealed class OfficialDocumentOutputTests
         });
     }
 
+    [Fact]
+    public void LatestSpecialEducationWorkbookRow4_ShouldKeepReportD28DistinctFromCalculationAGInPdf()
+    {
+        RunOnSta(() =>
+        {
+            // Source workbook vector: Hesaplama!AG4 = 95,527.1346528,
+            // while Hakediş Raporu!D28 = 98,907.13. The PDF report must use
+            // the report formula, not silently substitute the calculation-sheet AG value.
+            var input = new ProgressPaymentInput(
+                WorkDays: 19m,
+                DailyPrice: 2608.26m,
+                DiscountAmount: 150m,
+                PriceDifference: 1850m,
+                ContractAmount: 100000m,
+                IsVatExempt: false,
+                TaxDebt: 0m,
+                SocialSecurityDebt: 0m,
+                MinimumWageSupport: 0m,
+                InspectionPenalty: 0m,
+                GuideWorkDays: 30m,
+                GuideDailyPrice: 1362.49m,
+                GuideDiscountAmount: 450m,
+                GuidePriceDifference: 1530m,
+                ProgramType: TransportationProgramType.SpecialEducation);
+            var calculation = ProgressPaymentCalculator.Calculate(input);
+            var payment = new ProgressPaymentHistoryData(
+                Id: Guid.NewGuid(),
+                CreatedAt: new DateTime(2026, 10, 31, 12, 0, 0, DateTimeKind.Utc),
+                Input: input,
+                Calculation: calculation,
+                ProgressPaymentNumber: 1,
+                PeriodDate: new DateOnly(2026, 10, 31),
+                RouteNumber: "1",
+                RouteName: "Örnek Güzergâh",
+                WorkName: "Örnek Güzergâh",
+                ContractorName: "Örnek Yüklenici",
+                TenderNumber: "TEST-IHALE",
+                ContractNumber: "TEST-SOZ",
+                ContractorTaxOrIdentityNumber: "12345678901");
+            var payments = new[] { payment };
+            var totals = ProgressPaymentReportService.Calculate(payment, payments);
+            var reportNet = ProgressPaymentReportService.CalculateReportNetPayable(payment, totals);
+            var context = new OehsOfficialDocumentContext(
+                WorkName: "Örnek Güzergâh",
+                TenderNumber: "TEST-IHALE",
+                RouteNumber: "1",
+                ContractorName: "Örnek Yüklenici",
+                ContractNumber: "TEST-SOZ",
+                ContractAmount: 100000m,
+                TenderDate: new DateOnly(2026, 8, 25),
+                ContractDate: new DateOnly(2026, 8, 25),
+                ContractStartDate: new DateOnly(2026, 9, 1),
+                ContractEndDate: new DateOnly(2027, 6, 30),
+                ContractWorkDays: 180,
+                PeriodDate: new DateOnly(2026, 10, 31),
+                ProgressPaymentNumber: 1,
+                Calculation: calculation,
+                Payments: payments,
+                ReportTotals: totals,
+                ReportNetPayable: reportNet,
+                PreviousDeduction: ProgressPaymentIcmalService.FindPreviousDeduction(payments, payment),
+                GeneratedDate: new DateOnly(2026, 10, 31),
+                ProgramType: TransportationProgramType.SpecialEducation);
+
+            var report = Assert.Single(OehsOfficialDocumentFactory.BuildSeparate(context)
+                .Where(output => output.Kind == OehsOfficialDocumentKind.HakedisRaporu));
+            var page = Assert.IsType<FixedPage>(report.Document.Pages[0].Child);
+
+            Assert.Equal(98907.13m, reportNet);
+            Assert.Equal("98.907,13 TL", GetCellTextAt(page, 476d, 796d));
+            Assert.NotEqual(calculation.NetPayable, reportNet);
+        });
+    }
+
     private static void SaveAndAssertA4Pdf(FixedDocument document, string pdfPath)
     {
         PdfVectorWriter.Save(document, pdfPath);
