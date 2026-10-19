@@ -5175,9 +5175,9 @@ public partial class MainWindow : Window
                     ? "Kaynak: Hesaplama!AC4 | Başlık: Ek Kesin Teminat | Excel formülü: =(I4*6/100)+(R4*6/100) | OEHS: (I taşıma fiyat farkı × %6) + (R rehber fiyat farkı × %6)"
                     : "Kaynak hücre/formül eşlemesi için önce program seçin.",
             selectedProgram == TransportationProgramType.SpecialEducation
-                ? "Ek kaynak: Hesaplama!K4 | Başlık: Taşıma net tutarı | Excel formülü: =(G4*H4)+I4-J4"
+                ? "Ek kaynak: Hesaplama!K4 | Excel formülü: =(G4*H4)+I4-J4"
                 : selectedProgram == TransportationProgramType.BasicOrSecondary
-                    ? "Ek kaynak: Hesaplama Bilgileri!K4 | Başlık: Taşıma net tutarı | Kaynak formül eşlemesi çalışma kitabı doğrulamasına bağlıdır."
+                    ? "Temel Eğitim taşıma neti için hücre/formül eşlemesi kaynak çalışma kitabıyla birebir doğrulanmayı bekliyor; doğrulanmamış K4 eşlemesi gösterilmez."
                     : "Taşıma net tutarı kaynak hücresi: program seçimi bekleniyor.",
             selectedProgram == TransportationProgramType.SpecialEducation
                 ? "Ek kaynak: Hesaplama!T4 | Başlık: Rehber net tutarı | Excel formülü: =(P4*Q4)+R4-S4"
@@ -5209,7 +5209,7 @@ public partial class MainWindow : Window
 
         if (issues.Count > 0)
         {
-            lines.Add("3) EKSİK / GEÇERSİZ GİRDİLER");
+            lines.Add("4) EKSİK / GEÇERSİZ GİRDİLER");
             lines.AddRange(issues.Select(x => "• " + x));
             lines.Add("");
             lines.Add("Vergi, tevkifat, damga vergisi, toplam kesinti ve net ödeme için sonuç üretilmedi. Eksik alanlar tamamlandığında bu iz kendiliğinden yenilenir.");
