@@ -55,7 +55,15 @@ $requiredFiles = @(
     "Temel_Ortaogretim_01_Hakedis_Raporu.pdf",
     "Temel_Ortaogretim_02_Hizmet_Isleri_Hakedis_Raporu.pdf",
     "Temel_Ortaogretim_03_Hizmet_Isleri_Kabul_Tutanagi.pdf",
-    "Temel_Ortaogretim_04_Hakedis_Icmali.pdf"
+    "Temel_Ortaogretim_04_Hakedis_Icmali.pdf",
+    "Historical_Special_Hakedis_Raporu.pdf",
+    "Historical_Special_Hizmet_Isleri_Hakedis_Raporu.pdf",
+    "Historical_Special_Hizmet_Isleri_Kabul_Tutanagi.pdf",
+    "Historical_Special_Hakedis_Icmali.pdf",
+    "Historical_Basic_Hakedis_Raporu.pdf",
+    "Historical_Basic_Hizmet_Isleri_Hakedis_Raporu.pdf",
+    "Historical_Basic_Hizmet_Isleri_Kabul_Tutanagi.pdf",
+    "Historical_Basic_Hakedis_Icmali.pdf"
 )
 
 $missingFiles = @($requiredFiles | Where-Object {
@@ -67,7 +75,7 @@ if ($missingFiles.Count -gt 0) {
 }
 
 Write-Host ""
-Write-Host "Eight official A4 PDF smoke files (four per program type) are ready for visual review:" -ForegroundColor Green
+Write-Host "Sixteen official A4 PDF files are ready: eight baseline smoke PDFs plus eight historical-source-vector PDFs." -ForegroundColor Green
 Get-ChildItem -LiteralPath $resolvedOutputDirectory -Filter "*.pdf" -File |
     Sort-Object Name |
     Select-Object Name, Length, FullName |
