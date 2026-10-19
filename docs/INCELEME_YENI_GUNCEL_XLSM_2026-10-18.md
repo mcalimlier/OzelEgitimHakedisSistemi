@@ -299,9 +299,9 @@ Her iki dosyada da `fullCalcOnLoad=True` ve `forceFullCalc=True`. Aşağıdaki s
 
 Bu vektör `CurrentXlsmSourceParityTests` içine regresyon testi adayı olarak eklendi. Windows CI sonucu görülmeden testin geçtiği söylenmeyecek; saklanmış sonuçlar gerçek Excel/VBA çalıştırmasının yerine geçmez.
 
-### Temel Eğitim — ek kesin teminat karar noktası
+### Temel Eğitim — ek kesin teminat (karar uygulandı)
 
-Yeni yüklemede `Hesaplama Bilgileri!T4` hücresinin formülü `=I4*6/100` olarak görünüyor; saklanmış sonuç 441,921. Bu, önceki açık kullanıcı talimatındaki **Temel Eğitim ek kesin teminatın elle girilmesi** kuralıyla çelişmektedir. Bu fark sessizce çözülmeyecek ve mevcut kod bu bulgu nedeniyle değiştirilmedi. Kaynak Excel'in gerçekten güncel ve onaylı davranışı mı, yoksa dosyada değiştirilmesi gereken bir formül mü olduğu kullanıcı kararı/Excel-VBA doğrulaması gerektirir.
+Kullanıcı kararı (2026-10-19): yeni yüklenen Excel'deki formül esas alınacak. `Hesaplama Bilgileri!T4 = I4*6/100`; saklanmış sonuç 441,921 ve kaynak vektöründe I4=7.365,35. OEHS'de `input.PriceDifference` I4 alanına karşılık gelir; dolayısıyla Temel Eğitim ek kesin teminatı `input.PriceDifference * constants.AdditionalGuaranteeRate` ile hesaplanır. İskonto J4 ve eski `ManualAdditionalGuarantee` alanı bu formüle dahil değildir. `UploadedBasicEducationWorkbookRow4_ShouldUsePriceDifferenceTimesSixPercent` regresyon testi bu sonucu doğrulamak üzere eklendi. Bu, saklanmış Excel hücre sonucuna karşı testtir; Microsoft Excel/VBA'nın çalıştırıldığı anlamına gelmez. CI sonucu ayrıca kontrol edilmelidir.
 
 Özel Eğitim dosyasında ise `Hesaplama!AC4=(I4*6/100)+(R4*6/100)` formülü bulunuyor; bu, Özel Eğitim için ayrıca belirtilen iki fiyat farkının %6'sı kuralıyla eşleşiyor.
 
