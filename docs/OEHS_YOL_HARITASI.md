@@ -1187,3 +1187,23 @@ Bu oranlar uygulama kapsamı, otomatik test ve henüz açık kalan gerçek kabul
 - **Kapsam sınırı:** bunlar gerçek hakediş verileri değil, sentetik smoke çıktılarıdır. Bu inceleme yalnızca tek sayfa/A4/taşma ve temel görünür yerleşim ön kontrolünü kanıtlar; Excel 4/5/6/7 sayfalarıyla parasal veya görsel birebir eşleşmeyi kanıtlamaz. Gerçek Excel/VBA golden vector ve sekiz gerçek PDF karşılaştırması açık kalıyor.
 - CI run #2120 başarılı kalıyor; son dokümantasyon commit'i için ayrıca CI çalışması yok. PR #3 taslak ve birleştirilmemiştir; ana dala birleştirme/yayın yapılmadı.
 - İlerleme yüzdeleri değiştirilmedi. Sonraki adım: gerçek Excel/VBA'dan aynı dönem için hücre sonuçları alınarak dört belge × iki program türü kabul matrisi tamamlanmalı.
+
+## 19.10.2026 — Devam notu: 4×2 PDF kabulü ve ek kesin teminat risk kaydı
+
+**Yapılan iş**
+- `docs/PDF_4X2_KABUL_MATRISI.md` ile Temel Eğitim ve Özel Eğitim için dört PDF'nin her biri ayrı kabul hücresi olarak tanımlandı.
+- GitHub Actions run [39306201091](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39306201091) doğrulandı: tam çözüm/WPF derlemesi, test adımı, PDF smoke üretimi ve EXE publish başarılı. Bu CI, sentetik PDF üretimini doğrular; gerçek Excel/VBA veya görsel parite kabulü değildir.
+- Ek kesin teminat risk kaydı düzeltildi: eski metin `MAX(0, I+R)` davranışı varmış gibi yazıyordu; mevcut hesaplayıcı ve testler kaynak formüllerin işaretli sonucunu koruyor. Temel Eğitim `T=I×%6`, Özel Eğitim `AC=I×%6+R×%6`. Negatif fiyat farkı ile mevzuat yorumu arasındaki fark artık açık karar/risk olarak belgeli.
+
+**Doğrulama durumu**
+- Kaynak kodda formül ve test eşleşmesi incelendi; negatif fiyat farkı için işaretli sonucu doğrulayan testler mevcut.
+- Son dokümantasyon düzeltmesinin kendi CI sonucu henüz teyit edilmedi.
+- 8 sentetik PDF'nin her biri tek sayfa A4 portre olarak incelendi; Temel/Özel örneklerdeki icmal toplamı ve kabul tutanağı süre etiketi farkları kaynak Excel referansıyla doğrulanmadan hata sayılmayacak.
+
+**Açık riskler**
+- Dört PDF × iki program için gerçek Excel masaüstü/VBA ile yeniden hesaplanmış aynı-girdi referansı ve alan bazında eşleştirme.
+- Negatif fiyat farkında ek kesin teminat davranışının yetkili mevzuat/sözleşme kararı.
+- İcmal dönem sırası ve önceki hakediş aktarımı için gerçek çoklu-ay senaryosu; fiziksel yazıcı ve temiz Windows profili kabulü.
+
+**Sıradaki adım**
+- Bu commitin CI sonucunu kontrol et; ardından kaynak kod/testlerindeki gerçek senaryo kapsamını genişlet ve kabul matrisini yalnızca kanıt elde edilen hücrelerde güncelle. Hesaplama davranışını varsayımla değiştirme; PR #3 taslak kalacak, ana dala birleştirme/yayınlama yapılmayacak.
