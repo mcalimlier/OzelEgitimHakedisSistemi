@@ -5193,7 +5193,7 @@ public partial class MainWindow : Window
                 var input = new ProgressPaymentInput(
                     g, h, j, i, selectedContract.ContractAmount, selectedContract.VatExempt,
                     taxDebt, socialSecurityDebt, minimumWageSupport, inspectionPenalty,
-                    p, q, s, r, selectedContract.ProgramType, manualGuarantee);
+                    p, q, s, r, selectedContract.ProgramType);
                 var result = ProgressPaymentCalculator.Calculate(input, _calculationConstants);
                 var constants = result.AppliedConstants ?? _calculationConstants;
                 var vatLabel = selectedContract.VatExempt ? "KDV muaf" : "KDV dahil";
