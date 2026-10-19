@@ -361,6 +361,25 @@ public sealed class ProgressPaymentIcmalServiceTests
             new[] { previous, current }, current));
     }
 
+    [Fact]
+    public void FindPreviousDeduction_ShouldUseLatestSavedRecordWhenPreviousMonthHasDuplicates()
+    {
+        var earlierOctober = History(1, new DateOnly(2026, 10, 31), 150m) with
+        {
+            CreatedAt = new DateTime(2026, 10, 31, 9, 0, 0, DateTimeKind.Utc)
+        };
+        var laterOctober = History(2, new DateOnly(2026, 10, 31), 275m) with
+        {
+            CreatedAt = new DateTime(2026, 10, 31, 16, 0, 0, DateTimeKind.Utc)
+        };
+        var currentNovember = History(3, new DateOnly(2026, 11, 30), 310m);
+
+        var result = ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { earlierOctober, currentNovember, laterOctober }, currentNovember);
+
+        Assert.Equal(275m, result);
+    }
+
     private static ProgressPaymentHistoryData History(
         int number,
         DateOnly period,
