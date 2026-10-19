@@ -171,50 +171,54 @@ public sealed class CurrentXlsmSourceParityTests
     }
 
 
-    [Theory]
-    [InlineData(TransportationProgramType.BasicOrSecondary)]
-    [InlineData(TransportationProgramType.SpecialEducation)]
-    public void AdditionalGuarantee_ShouldFollowWorkbookPriceDifferenceCells_NotDiscountOrManualEntry(
-        TransportationProgramType programType)
+    [Fact]
+    public void AdditionalGuarantee_ShouldFollowWorkbookPriceDifferenceCells_NotDiscountOrManualEntry()
     {
         // Source workbook formula contract:
         // Basic/Secondary T4 = I4*6%; Special Education AC4 = I4*6% + R4*6%.
         // Discount J/S and the legacy manual guarantee field are not referenced.
-        var baseline = new ProgressPaymentInput(
-            WorkDays: 1m,
-            DailyPrice: 100m,
-            DiscountAmount: 0m,
-            PriceDifference: 1000m,
-            ContractAmount: 100000m,
-            IsVatExempt: true,
-            TaxDebt: 0m,
-            SocialSecurityDebt: 0m,
-            MinimumWageSupport: 0m,
-            InspectionPenalty: 0m,
-            GuideWorkDays: 1m,
-            GuideDailyPrice: 200m,
-            GuideDiscountAmount: 0m,
-            GuidePriceDifference: 500m,
-            ProgramType: programType,
-            ManualAdditionalGuarantee: 0m);
-
-        var changedUnrelatedFields = baseline with
+        foreach (var programType in new[]
         {
-            DiscountAmount = 900m,
-            GuideDiscountAmount = 700m,
-            ManualAdditionalGuarantee = 9876.54m
-        };
+            TransportationProgramType.BasicOrSecondary,
+            TransportationProgramType.SpecialEducation
+        })
+        {
+            var baseline = new ProgressPaymentInput(
+                WorkDays: 1m,
+                DailyPrice: 100m,
+                DiscountAmount: 0m,
+                PriceDifference: 1000m,
+                ContractAmount: 100000m,
+                IsVatExempt: true,
+                TaxDebt: 0m,
+                SocialSecurityDebt: 0m,
+                MinimumWageSupport: 0m,
+                InspectionPenalty: 0m,
+                GuideWorkDays: 1m,
+                GuideDailyPrice: 200m,
+                GuideDiscountAmount: 0m,
+                GuidePriceDifference: 500m,
+                ProgramType: programType,
+                ManualAdditionalGuarantee: 0m);
 
-        var baselineResult = ProgressPaymentCalculator.Calculate(baseline);
-        var changedResult = ProgressPaymentCalculator.Calculate(changedUnrelatedFields);
-        var expected = programType == TransportationProgramType.BasicOrSecondary
-            ? 60m
-            : 90m;
+            var changedUnrelatedFields = baseline with
+            {
+                DiscountAmount = 900m,
+                GuideDiscountAmount = 700m,
+                ManualAdditionalGuarantee = 9876.54m
+            };
 
-        Assert.Equal(expected, baselineResult.AdditionalGuarantee);
-        Assert.Equal(expected, changedResult.AdditionalGuarantee);
-        Assert.Equal(baselineResult.Deductions.AdditionalGuarantee,
-            changedResult.Deductions.AdditionalGuarantee);
+            var baselineResult = ProgressPaymentCalculator.Calculate(baseline);
+            var changedResult = ProgressPaymentCalculator.Calculate(changedUnrelatedFields);
+            var expected = programType == TransportationProgramType.BasicOrSecondary
+                ? 60m
+                : 90m;
+
+            Assert.Equal(expected, baselineResult.AdditionalGuarantee);
+            Assert.Equal(expected, changedResult.AdditionalGuarantee);
+            Assert.Equal(baselineResult.Deductions.AdditionalGuarantee,
+                changedResult.Deductions.AdditionalGuarantee);
+        }
     }
 
 }
