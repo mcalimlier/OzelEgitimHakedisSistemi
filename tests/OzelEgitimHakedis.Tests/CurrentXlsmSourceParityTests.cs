@@ -250,4 +250,43 @@ public sealed class CurrentXlsmSourceParityTests
         Assert.Equal(specialBaseline.AdditionalGuarantee, specialWithDiscount.AdditionalGuarantee);
     }
 
+
+    [Fact]
+    public void AdditionalGuarantee_ShouldPreserveSignedSourceFormulaForNegativePriceDifferences()
+    {
+        // The source formula is a direct percentage expression and does not apply MAX(0, ...).
+        // This locks current Excel-formula parity while keeping the legal/contract interpretation
+        // as a documented review risk rather than silently changing the official calculation.
+        var basic = new ProgressPaymentInput(
+            WorkDays: 1m,
+            DailyPrice: 100m,
+            DiscountAmount: 0m,
+            PriceDifference: -100m,
+            ContractAmount: 100000m,
+            IsVatExempt: true,
+            TaxDebt: 0m,
+            SocialSecurityDebt: 0m,
+            MinimumWageSupport: 0m,
+            ProgramType: TransportationProgramType.BasicOrSecondary);
+
+        var special = new ProgressPaymentInput(
+            WorkDays: 1m,
+            DailyPrice: 100m,
+            DiscountAmount: 0m,
+            PriceDifference: -100m,
+            ContractAmount: 100000m,
+            IsVatExempt: true,
+            TaxDebt: 0m,
+            SocialSecurityDebt: 0m,
+            MinimumWageSupport: 0m,
+            GuideWorkDays: 1m,
+            GuideDailyPrice: 100m,
+            GuideDiscountAmount: 0m,
+            GuidePriceDifference: -50m,
+            ProgramType: TransportationProgramType.SpecialEducation);
+
+        Assert.Equal(-6m, ProgressPaymentCalculator.Calculate(basic).AdditionalGuarantee);
+        Assert.Equal(-9m, ProgressPaymentCalculator.Calculate(special).AdditionalGuarantee);
+    }
+
 }
