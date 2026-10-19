@@ -17,18 +17,24 @@
 
 Kabul öncesinde gerçek XLSM'deki D6, D7, D8, D10 ve D11 hücreleri aynı veri örneğiyle izlenmelidir. Kaynak Excel'in hücre anlamları ile C# eşlemesi arasındaki fark, sözleşmeye uygunluk teyit edilmeden kapatılmamalıdır.
 
-## R-02 — Negatif fiyat farkından negatif ek kesin teminat hesaplanması
+## R-02 — Negatif fiyat farkı ve ek kesin teminat
 
-**Sonuç: Negatif teminat tutarı engelleniyor; oran merkezi sabitlerden okunuyor.**
+**Sonuç: Kaynak XLSM formülü ve mevcut C# kodu işaretli sonucu koruyor; mevzuatla yorum farkı açık karar olarak tutuluyor.**
 
-Ek kesin teminat hesabı `MAK(0; I+R) × oran` mantığıyla eşdeğer uygulanır; negatif toplam negatif teminat alacağı oluşturmaz. Oran `ProgressPaymentCalculationConstants.AdditionalGuaranteeRate` üzerinden alınır.
+Güncel kaynak formülleri:
+- Temel Eğitim: `Hesaplama Bilgileri!T4 = I4*6/100`.
+- Özel Eğitim: `Hesaplama!AC4 = (I4*6/100) + (R4*6/100)`.
+- Her iki formülde de ilgili fiyat farkı terimleri ayrı ayrı %6 ile çarpılır; J/S iskonto tutarları teminat matrahından düşülmez.
 
-İlgili testler:
-- `NegativePriceDifference_ShouldRemainSignedWithoutNegativeGuaranteeCredit`
-- `MixedSignedPriceDifferences_ShouldCalculateGuaranteeOnNetPositiveIncreaseOnly`
-- `CustomCalculationConstants_ShouldDriveEveryRateBasedFormulaAndBeSnapshotted`
+Bu formüllerin doğrudan uygulanması, negatif I veya R girdisi olduğunda negatif ek kesin teminat bileşeni üretebilir. Mevcut `ProgressPaymentCalculator` bunu `MAK(0; I+R)` biçiminde sınırlandırmaz. Kaynak formüle uygunluk testleri de bu işaretli davranışı doğrular:
+- `ProgressPaymentCalculatorTests.NegativePriceDifference_ShouldMatchExcelSignedGuaranteeFormula`
+- `ProgressPaymentCalculatorTests.MixedSignedPriceDifferences_ShouldCalculateEachExcelPriceDifferenceAtSixPercent`
+- `CurrentBasicWorkbookDiscrepancyTests.CurrentBasicRows5And6_ShouldMatchCalculationFormulaChain`
+- `CurrentXlsmSourceParityTests` içindeki Özel Eğitim satır 4–6 testleri.
 
-Taşıma ve rehber fiyat farklarının aynı teminat matrahında birleştirilmesi sözleşme ve mevzuat bakımından ayrıca teyit edilmelidir. 4735 sayılı Kanun'un 12'nci maddesi fiyat farkı nedeniyle sözleşme bedelinde artış meydana gelmesini esas alır:
+**Açık karar / risk:** 4735 sayılı Kanun'un 12'nci maddesi ek kesin teminatı fiyat farkı nedeniyle sözleşme bedelinde artış meydana gelmesi koşuluna bağlar. Bu mevzuat ifadesi ile kaynak Excel'in negatif fiyat farkına da %6 uygulayan cebirsel formülü aynı davranış değildir. Resmî hesaplama davranışı, yetkili karar ve işlem tarihindeki sözleşme/mevzuat incelemesi olmadan sessizce `MAX(0, I+R)` formülüne çevrilmemelidir. Mevcut uygulama kaynak Excel formülünü izler; negatif fiyat farkı senaryosu ayrı kabul/risk maddesi olarak kalır.
+
+Kaynak:
 https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx?KararId=5a55fc2e4d77a80d4646eb11537c79a3f55aca0b0f11934f4313f5be1b4ea587
 
 ## R-03 — Hizmet İşleri Hakediş Raporu örnek numarası
