@@ -1246,14 +1246,14 @@ Bu oranlar uygulama kapsamı, otomatik test ve henüz açık kalan gerçek kabul
 **Güncel tahmini ilerleme**
 | Modül | Tahmini ilerleme |
 |---|---:|
-| Temel/Ortaöğretim hesaplama | %84 |
-| Özel Eğitim hesaplama | %86 |
-| Ortak hesaplama motoru | %84 |
-| Dört PDF / icmal | %86 |
+| Temel/Ortaöğretim hesaplama | %85 |
+| Özel Eğitim hesaplama | %87 |
+| Ortak hesaplama motoru | %85 |
+| Dört PDF / icmal | %87 |
 | Arşiv ve veri modeli | %86 |
 | WPF / ekran iş akışı | %83 |
-| Test / CI / dağıtım | %96 |
-| **Genel proje** | **%84** |
+| Test / CI / dağıtım | %97 |
+| **Genel proje** | **%85** |
 
 **Sıradaki adım**
 1. En yeni kaynak XLSM'de aynı örneği Excel masaüstünde yeniden hesapla ve ilgili VBA aktarım makrolarını çalıştır; `Hesaplama Bilgileri!T4/U4/W4`, `İcmal Verileri!AB4:AM4`, `Hesaplama!AC4/AD4/AE4/AG4` ve `D28` sonuçlarını aynı girdiyle karşılaştır.
@@ -1274,11 +1274,18 @@ Bu oranlar uygulama kapsamı, otomatik test ve henüz açık kalan gerçek kabul
 
 **C# kaynak-paritesi kapsamı**
 - Son yüklenen dosyalardan kaydedilmiş hücre vektörleri `CurrentXlsmSourceParityTests` ve `CurrentBasicWorkbookDiscrepancyTests` içinde test ediliyor.
-- Ek olarak eski Temel/Ortaöğretim kaynak kopyasının gerçek 5. ve 8. satırları için K/L/M/O/T/U/V/W zincirini kontrol eden regresyon testi eklendi. Bu testin commit'i `2af6a0845e115e6676c5912a7406f48aaaec86b4`; CI tamamlanmadan sonucu başarılı sayılmayacak.
-- Önceki commit `fc562c7b3584d17b1e09e41cad36d7d3600634cc` için PR CI başarılı: tam çözüm derlemesi, Core testleri, WPF çıktı testleri, PDF smoke ve Windows EXE publish adımları geçti. Yeni kaynak satırı testinin CI sonucu ayrıca bekleniyor.
+- Ek olarak eski Temel/Ortaöğretim kaynak kopyasının gerçek 5. ve 8. satırları için K/L/M/O/T/U/V/W zincirini kontrol eden regresyon testi eklendi. [Commit `2af6a084`](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/commit/2af6a0845e115e6676c5912a7406f48aaaec86b4) için [push CI](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39317694624) ve [PR CI](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39317706602) başarılı.
+- Son başarılı test CI'sında **223/223 Core**, **5/5 WPF çıktı testi** geçti; 16 A4 PDF smoke dosyası doğrulandı ve Windows EXE ile arkadaş deneme paketi artefaktları yüklendi. [16 PDF artefaktı](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39317694624/artifacts/12218891266).
 
 **Açık kabul sınırları**
 - Gerçek Excel masaüstünde aynı girdiyle yeniden hesaplama ve VBA aktarım makrolarının çalıştırılması hâlâ doğrulanmadı.
 - Sekiz tarihsel kaynak PDF'si için otomatik alan/tutar karşılaştırmaları var; Temel/Ortaöğretim icmalinde kaynak PDF ile OEHS arasında **4,19 TL** fark ve kaynakta VBA makrosu yeniden çalıştırılmadan kalmış olabilecek eski `AB4` değeri açık risk olarak korunuyor.
 - Hesaplama davranışı, kaynak ve test kanıtı olmadan değiştirilmedi. PR #3 taslak ve birleştirilmemiş kalacak.
 
+
+
+## Son doğrulama eki — 2026-10-19
+
+- Formül yeniden hesaplama karşılaştırması: **5.375 karşılaştırılabilir sayısal hücrede 0 fark** (erişilebilir tarihsel kaynak XLSM kopyaları + LibreOffice yeniden hesaplaması). Bu, Excel/VBA makro çalıştırması değildir.
+- Son kod/test CI'sı: 223 Core + 5 WPF test geçti; 16 PDF doğrulandı. Arkadaş deneme ZIP'i ayrıca incelendi: üç dosya içeriyor (`OEHS.exe`, `KULLANIM.txt`, `OEHS_DENEME_PAKETI.flag`); başlangıç arşivi/önceden kaydedilmiş kullanıcı verisi içermiyor. Veriler çıkarılan klasördeki `DenemeVerisi` altına yazılacak şekilde kullanım notu mevcut.
+- Genel ilerleme tahmini %85; %90 eşiğine ulaşılmadı. Kalan ana blok: en yeni XLSM'yi gerçek Excel/VBA ile yeniden hesaplayıp 4×2 resmi PDF kabulünü kapatmak ve icmalde kaynak formül kusurunun korunması/düzeltilmesi kararını belgelemek.
