@@ -380,6 +380,31 @@ public sealed class ProgressPaymentIcmalServiceTests
         Assert.Equal(275m, result);
     }
 
+    [Fact]
+    public void FindPreviousDeduction_ShouldIgnoreRecordsWithIncompleteIdentity()
+    {
+        var incompletePrevious = History(1, new DateOnly(2026, 10, 31), 275m) with
+        {
+            ContractorTaxOrIdentityNumber = ""
+        };
+        var currentNovember = History(2, new DateOnly(2026, 11, 30), 310m);
+
+        var resultFromIncompletePrevious = ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { incompletePrevious, currentNovember }, currentNovember);
+
+        Assert.Equal(0m, resultFromIncompletePrevious);
+
+        var incompleteCurrent = currentNovember with
+        {
+            ContractNumber = ""
+        };
+        var resultForIncompleteCurrent = ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { History(3, new DateOnly(2026, 10, 31), 275m), incompleteCurrent },
+            incompleteCurrent);
+
+        Assert.Equal(0m, resultForIncompleteCurrent);
+    }
+
     private static ProgressPaymentHistoryData History(
         int number,
         DateOnly period,
