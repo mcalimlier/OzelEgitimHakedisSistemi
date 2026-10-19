@@ -64,3 +64,40 @@ CI başarısı, sentetik PDF smoke sonucu veya yalnızca PDF'nin açılması bu 
 - **Kaynak durumu:** etkin dalın Git ağacında `.xlsm`, `.xlsx` veya `.xlsb` dosyası bulunmadı. Bu nedenle bu turda masaüstü Excel/VBA yeniden hesaplaması ve gerçek referanslı 4×2 PDF kabulü yapılmadı.
 - **Açık risk/engel:** sekiz PDF için aynı girdilerle gerçek Excel/VBA referansları yok; sentetik smoke çıktıları kabul kanıtı sayılmaz. Negatif fiyat farkında ek kesin teminatın işaretli sonuç üretmesi Excel formülüne sadakattir, ancak mevzuat/sözleşme değerlendirmesi gerektiren noktadır.
 - **Sıradaki adım:** dört belgeyi iki program için aynı hakediş girdisiyle üretip dönem, yüklenici, hat, her tutar, imza alanları ve sayfa yerleşimini karşılaştıran kabul kaydını doldurmak; Excel/VBA sonuçları olmadan hesap davranışını değiştirmemek.
+
+
+## Devam notu — 2026-10-19 (bağımsız XLSM formül ve PDF ön incelemesi)
+
+### Kaynak formül doğrulaması — tarihsel dosya kopyaları
+
+Bu oturumda kişisel dosya alanındaki 17.10.2026 tarihli tarihsel XLSM kopyaları ayrıca yeniden hesaplandı:
+
+- `03-Temel Eğitim Taşıma Ödeme(1).xlsm`
+- `02-Özel Eğitim Hakediş Ödeme(1).xlsm`
+
+Dosyaların kopyaları LibreOffice Calc ile XLSX'e dönüştürülerek yeniden hesaplandı; orijinal önbellek değerleri, yeniden hesaplanan hücreler ve aşağıdaki kaynak formül aynası karşılaştırıldı. Aktif satırlar için tolerans **0,000001 TL**:
+
+| Program | Satırlar | Hücre eşlemesi | Karşılaştırma | Fark |
+|---|---:|---|---:|---:|
+| Temel/Ortaöğretim | 4–8 | K, L, M, N, O, T, U, V, W | 45 hücre | 0 uyumsuzluk |
+| Özel Eğitim | 4–6 | K, L, M, N, O, T, U, V, W, X, AC, AD, AE, AF, AG | 45 hücre | 0 uyumsuzluk |
+| **Toplam** | **8 kaynak satırı** | **90 formül sonucu** | **90 hücre** | **0 uyumsuzluk** |
+
+Bu değerler aynı tarihsel kaynak kopyalarında formül zincirinin LibreOffice yeniden hesaplamasıyla tutarlı olduğunu gösterir. Bunlar masaüstü Excel/VBA çalıştırması değildir ve 19.10.2026 tarihli en yeni XLSM'lerin yerine geçmez.
+
+Yeni `HistoricalWorkbookFormulaParityTests.cs` testi, bu 8 kaynak satırının aynı temel hesaplama alanlarını OEHS `ProgressPaymentCalculator` ile karşılaştırır. CI:
+- [Push CI — 39311836817](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39311836817): başarılı.
+- [PR CI — 39311842694](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39311842694): başarılı.
+
+### Tarihsel kaynak PDF'lerinde bulunan dönem metni kusuru
+
+LibreOffice ile alınan tarihsel kaynak PDF'lerinde sekiz resmi sayfa bulundu ve metin/tutarlar incelendi. Özel Eğitim dosyasında `Hakediş Raporu!A4` hücresi formül değil, sabit metin olarak `30.04.2026 TARİHİNE KADAR YAPILAN İŞİN` içeriyor. Aynı dosyanın `Anasayfa!E5` dönemi Ekim 2026; kabul tutanağındaki dönem 01.10.2026–31.10.2026; icmal Eylül ve Ekim 2026 satırlarını gösteriyor. Kaynak PDF altındaki rapor tarihi de 24.06.2026, hizmet işleri raporunun tarihi 10/19/2026.
+
+Bu, tarihsel dosya kopyasında belgeler arası **kaynak metin/tarih tutarsızlığıdır**. OEHS'nin seçili dönemden türettiği başlığı bu sabit metinle değiştirmedik; kaynak kusuru kayıt altına alındı. En yeni XLSM'de aynı hücre kusurunun sürüp sürmediği ayrı doğrulanmalıdır.
+
+### PDF kabul kapısının durumu
+
+- Kaynak Excel'in tarihsel kopyalarından sekiz belge sayfası LibreOffice ile dışa aktarıldı ve metin/yerleşim ön incelemesi yapıldı.
+- OEHS smoke ZIP'indeki sekiz sentetik PDF'nin tamamı tek sayfa A4 portre; ancak bu PDF'ler aynı gerçek XLSM girdileriyle üretilmiş olmadığından tutar kabulünü kapatmaz.
+- **4 × 2 gerçek kaynak PDF kabul matrisi: 0/8 kapalı.** Kalan iş; en yeni kaynak dosyanın aynı girdi ve aynı dönemle yeniden hesaplanmış sonuçlarıyla dört OEHS PDF'sinin alan alan karşılaştırılmasıdır.
+- Excel/VBA makroları masaüstü Excel'de çalıştırılmadı. LibreOffice ile formül hesaplama, VBA olay/makro davranışını doğrulamaz.
