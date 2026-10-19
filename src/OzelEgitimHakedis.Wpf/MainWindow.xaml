@@ -498,7 +498,7 @@
                                                     <TextBlock Grid.Row="6" Grid.Column="0" Text="Taşıma Günlük Fiyatı" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
                                                     <TextBox x:Name="ContractTransportDailyPriceTextBox" Grid.Row="6" Grid.Column="1" Margin="4.5" Style="{StaticResource FieldTextBox}" TextChanged="ContractTransportDailyPriceTextBox_TextChanged" ToolTip="Excel İhale Verileri içindeki Günlük Fiyat. Hat ve hakediş ekranlarında tekrar girilmez."/>
                                                     <TextBlock Grid.Row="0" Grid.Column="0" Text="TAŞIMA PROGRAMI" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
-                                                    <ComboBox x:Name="TransportProgramTypeComboBox" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Margin="4.5" Style="{StaticResource FieldComboBox}" SelectedIndex="0" SelectionChanged="TransportProgramTypeComboBox_SelectionChanged" ToolTip="Rehber ve asgari ücret desteği kuralları seçilen program türüne göre uygulanır.">
+                                                    <ComboBox x:Name="TransportProgramTypeComboBox" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Margin="4.5" Style="{StaticResource FieldComboBox}" SelectedIndex="-1" SelectionChanged="TransportProgramTypeComboBox_SelectionChanged" ToolTip="Devam etmeden önce taşıma programını seçin. Program seçilmeden kayıt işlemi yapılmamalıdır.">
                                                         <ComboBoxItem Content="Özel Eğitim Taşıma" Tag="SpecialEducation"/>
                                                         <ComboBoxItem Content="Temel / Ortaöğretim Taşıma" Tag="BasicOrSecondary"/>
                                                     </ComboBox>
