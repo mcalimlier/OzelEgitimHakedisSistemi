@@ -986,3 +986,31 @@ Bu değişikliklerin Windows/.NET testleri ve dört PDF'nin görsel kabulü hen�
 2. Kalan test hatalarını tam log ve kaynak formüllerle düzelt; ardından test ve PDF smoke aşamalarının çalıştığını doğrula.
 3. İki programın dört PDF'sini aynı referans veriyle birlikte kontrol et.
 4. PR #3 açık/taslak kalsın; ana dala birleştirme veya yayınlama yok.
+
+
+## Devam notu — 2026-10-19, ilerleme raporu ve test doğrulama kapısı
+
+### Dal / CI durumu
+- Aktif çalışma dalı: `feature/official-payment-document-templates`.
+- Son devam notu commit'i: `f1f5e9f0a94a526c796adbdccc0dc27446e8f3ec`.
+- Bu commit için birleşik durum sorgusunda status/check kaydı dönmedi; PR tetiklemeli workflow sorgusunda da run bulunmadı. Bu, testlerin başarılı olduğu anlamına gelmez.
+- Son doğrulanmış test çalışması eski kodda 221 testten 216 başarılı, 5 başarısızdı. Yeni test beklentileri için yeni CI sonucu henüz alınmadı.
+- Uzak dalda test dosyaları değiştirildi; yerel bilgisayarın durumu bu ortamdan doğrulanmadı.
+
+### İlerleme yüzdeleri (kanıta dayalı tahmin)
+- Genel proje: yaklaşık %81. %90 hedefi tamamlanmadı.
+- Çekirdek modüller, mevcut kaynak paritesi ve kabul kapılarına göre:
+  - Temel/Ortaöğretim hesaplama: yaklaşık %75 — formül zinciri kodda var; güncel XLSM ile otomatik testler henüz yeniden çalıştırılmadı ve gerçek Excel/VBA kabulü yok.
+  - Özel Eğitim hesaplama: yaklaşık %80 — ayrı hesap zinciri ve geçmiş testler var; güncel Excel/VBA uçtan uca kabulü yok.
+  - İcmal / aylık aktarım: yaklaşık %70 — ay sırası ve başlık anomalileri belgeli; gerçek Excel/VBA karşılaştırması açık.
+  - Dört resmî PDF: yaklaşık %75 — şablon ve önceki smoke test geçmişi var; mevcut dalın son test değişikliklerinden sonra yeniden üretim ve aynı örnekle dört belge karşılaştırması yok.
+  - WPF iş akışı / alanlar: yaklaşık %75 — otomatik sözleşme ve derleme testleri geçmişte geçti; güncel XLSM başlıklarıyla uçtan uca görsel kabul yok.
+  - Test / CI / Windows paketleme: yaklaşık %65 — önceki CI'da 5 test başarısızdı; bu turdaki yeni test beklentileri için CI sonucu yok.
+- Yüzdeler mühendislik kapsam tahminidir; gerçek Excel/VBA veya kullanıcı kabulü yerine geçmez. Bu nedenle eski yol haritasındaki %90+ çekirdek tahminleri, güncel kaynak dosyalarıyla doğrulama yapılmadan tamamlanma kanıtı olarak kullanılmamalıdır.
+
+### Açık risk ve sonraki adım
+- Testlerde bazı beklenen net/rapor değerleri formül zincirinden türetildi ancak yeni CI ile henüz doğrulanmadı. Özellikle rapor D28 değerleri için beklentiler kaynak hücre zincirine bağlanmadan kesin kabul edilmemeli.
+- Yol haritasında geçmişte Temel Eğitim T hücresinin sabit 1.500 TL olduğu ve T=I*6% olduğu yönünde birbiriyle çelişen notlar bulunuyor. En son yüklenen XLSM'nin doğrudan hücre/formül içeriği ile VBA'nın bu hücreyi çalışma sırasında yazıp yazmadığı kesinleştirilmeden resmî hesap kuralı seçilmeyecek.
+- İlk sıradaki iş: son XLSM'den T4:T6, U4:U6, V4:W6 ve rapor D11/D13/D15/D26/D28 hücrelerini ve VBA yazma yordamlarını tekrar birlikte incelemek; ardından test beklentilerini hücre bazında düzeltmek ve yeni CI çalışmasını doğrulamak.
+- İkinci sıradaki iş: başarılı CI'dan sonra iki program için dört PDF'yi aynı örnekle üretip karşılaştırmak.
+- PR #3 açık kalacak; ana dala birleştirme veya yayınlama yapılmayacak.
