@@ -272,3 +272,39 @@ Sekiz PDF artefaktı indirildi ve sayfa boyutu, metin çıkarımı ve düşük �
 - Ön incelemede belirgin sayfa taşması veya ikinci sayfaya bölünme görülmedi. Kabul Tutanağı'ndaki paragraf/imza alanları arasında geniş boşluk var; tek başına kusur sayılmadı, kaynak Excel'in yazdırma düzeniyle birebir karşılaştırma gerektiriyor.
 
 **Sınır:** Bu görsel ön inceleme referans Excel PDF'leriyle piksel/piksel karşılaştırma, gerçek kullanıcı verisi kabul testi, fiziksel yazıcı ve imza alanı kullanıcı kabulü değildir. Dolayısıyla PDF görsel kabul kapısı henüz tamamen kapanmış sayılmaz.
+
+
+## Ek kaynak kontrolü — 2026-10-19 konuşmasında yeniden yüklenen iki XLSM
+
+Bu bölüm, 18.10.2026 incelemesindeki dosyalardan ayrı olarak 19.10.2026 oturumunda gelen dosyaların salt okunur statik incelemesidir. Dosya adları ve SHA-256 değerleri farklı olduğundan önceki inceleme sonuçları yeni dosyalara otomatik olarak atfedilmemelidir.
+
+| Program | Gelen dosya | Bayt | SHA-256 | Sayfa yapısı |
+|---|---|---:|---|---|
+| Temel Eğitim | `03-Temel Eğitim Taşıma Ödeme.xlsmdüzeltildi(2).xlsm` | 182328 | `37a7818881aae52e8b2fcf95f30a75e1f302dfce1e91e2345f3473668a4d5296` | 11 sayfa; hesaplama sayfası `Hesaplama Bilgileri` |
+| Özel Eğitim | `02-Özel Eğitim Hakediş Ödeme (1)(1).xlsm` | 92772 | `c31cb024ac1eb59f3b88d2ee12234be98d1f07056884374d8dad108f674d7d1e` | 8 sayfa; hesaplama sayfası `Hesaplama` |
+
+Her iki dosyada da `fullCalcOnLoad=True` ve `forceFullCalc=True`. Aşağıdaki saklanmış hücre sonuçları formül metinleriyle statik olarak karşılaştırılmıştır; Microsoft Excel'de yeniden hesaplama, VBA makrolarını çalıştırma veya kullanıcı kabulü yapılmış sayılmaz.
+
+### Özel Eğitim — yeni yüklemedeki 4. satır
+
+| Hücre | Kaynak formül/değer | Saklanmış sonuç |
+|---|---|---:|
+| `Hesaplama!K4` | `(G4*H4)+I4-J4` | 43.630,00 |
+| `Hesaplama!T4` | `(P4*Q4)+R4-S4` | 34.037,27 |
+| `Hesaplama!AC4` | `(I4*6/100)+(R4*6/100)` | 661,80 |
+| `Hesaplama!AD4` | `(K4*9.48/1000)+(T4*9.48/1000)` | 736,2857196 |
+| `Hesaplama!AE4` | Kesinti toplamı | 27.328,7843196 |
+| `Hesaplama!AF4` | Brüt toplam | 88.837,724 |
+| `Hesaplama!AG4` | `AF4-AE4` | 61.508,9396804 |
+
+Bu vektör `CurrentXlsmSourceParityTests` içine regresyon testi adayı olarak eklendi. Windows CI sonucu görülmeden testin geçtiği söylenmeyecek; saklanmış sonuçlar gerçek Excel/VBA çalıştırmasının yerine geçmez.
+
+### Temel Eğitim — ek kesin teminat karar noktası
+
+Yeni yüklemede `Hesaplama Bilgileri!T4` hücresinin formülü `=I4*6/100` olarak görünüyor; saklanmış sonuç 441,921. Bu, önceki açık kullanıcı talimatındaki **Temel Eğitim ek kesin teminatın elle girilmesi** kuralıyla çelişmektedir. Bu fark sessizce çözülmeyecek ve mevcut kod bu bulgu nedeniyle değiştirilmedi. Kaynak Excel'in gerçekten güncel ve onaylı davranışı mı, yoksa dosyada değiştirilmesi gereken bir formül mü olduğu kullanıcı kararı/Excel-VBA doğrulaması gerektirir.
+
+Özel Eğitim dosyasında ise `Hesaplama!AC4=(I4*6/100)+(R4*6/100)` formülü bulunuyor; bu, Özel Eğitim için ayrıca belirtilen iki fiyat farkının %6'sı kuralıyla eşleşiyor.
+
+### PDF doğrulama kullanım kararı
+
+Bu iki XLSM'nin 4/5/6/7 numaralı resmî belge sayfaları kullanıcı menüsüne eklenecek ekranlar değildir. Bunlar, aynı test girdisiyle OEHS'nin ürettiği sekiz PDF'nin (iki program türü × dört belge) referans karşılaştırmasında kullanılacaktır. Kabul, her belge için ayrı ayrı tutar, dönem, yüklenici, hat, imza ve sayfa düzeni kontrolü gerektirir. Mevcut çalışma kitabı sonuçları henüz gerçek Excel/VBA ile yeniden doğrulanmadığı için bu belgeye göre resmî hesap davranışı değiştirilmemiştir.
