@@ -1259,3 +1259,26 @@ Bu oranlar uygulama kapsamı, otomatik test ve henüz açık kalan gerçek kabul
 1. En yeni kaynak XLSM'de aynı örneği Excel masaüstünde yeniden hesapla ve ilgili VBA aktarım makrolarını çalıştır; `Hesaplama Bilgileri!T4/U4/W4`, `İcmal Verileri!AB4:AM4`, `Hesaplama!AC4/AD4/AE4/AG4` ve `D28` sonuçlarını aynı girdiyle karşılaştır.
 2. `İşyeri Teslim Tarihi` kaynak formülünün bitiş tarihi sütununu kullanması ve icmalde fiyat farkının iki kez eklenmesi için kaynak kusurunu aynen koruma/düzeltme kararı verilmeden hesaplama davranışını değiştirme.
 3. Yerel kopya korunmuşsa GitHub Desktop'ta `Fetch origin`, sonra `Pull origin` yap; PR taslak kalacak, ana dala birleştirme/yayınlama yok.
+
+## 19.10.2026 — Kaynak formül yeniden hesaplama denetimi
+
+**İncelenen kaynak kopyaları**
+- `03-Temel Eğitim Taşıma Ödeme(1).xlsm` — SHA-256: `9f89be5a8e0315e177b97c02cb8f146be0040ebc1f4be7d7a3d30b5f57040423`
+- `02-Özel Eğitim Hakediş Ödeme(1).xlsm` — SHA-256: `3c67f22327f9c748208cdcd7f9ed5952e37d514ea75a2043aa2f3d49867f61a4`
+
+**Yeniden hesaplama sonucu**
+- Kaynak dosyalardaki 2.289 Temel/Ortaöğretim ve 3.402 Özel Eğitim formül hücresi, LibreOffice ile yeniden hesaplanmış XLSX kopyalarıyla karşılaştırıldı.
+- Karşılaştırılabilir sayısal hücre sayısı: **5.375**. Tolerans (10^{-6}) TL üzerinde sayısal fark: **0**.
+- Her kaynak dosyada beşer `TODAY()` hücresi, kaynak önbelleğinde 16.10.2026 ve yeniden hesaplamada 19.10.2026 verdi. Bunlar hesaplama uyuşmazlığı değil, yeniden hesaplama tarihinin değişmesidir.
+- Bu kontrol, formül önbelleği ile LibreOffice yeniden hesaplamasını karşılaştırır; masaüstü Microsoft Excel/VBA makrolarının çalıştırıldığını kanıtlamaz. 19.10.2026 tarihinde yüklenen iki son dosyanın ham baytları bu çalışma ortamında doğrudan açılamadığından, bu sayısal sayım önceki erişilebilir kaynak kopyalarına aittir.
+
+**C# kaynak-paritesi kapsamı**
+- Son yüklenen dosyalardan kaydedilmiş hücre vektörleri `CurrentXlsmSourceParityTests` ve `CurrentBasicWorkbookDiscrepancyTests` içinde test ediliyor.
+- Ek olarak eski Temel/Ortaöğretim kaynak kopyasının gerçek 5. ve 8. satırları için K/L/M/O/T/U/V/W zincirini kontrol eden regresyon testi eklendi. Bu testin commit'i `2af6a0845e115e6676c5912a7406f48aaaec86b4`; CI tamamlanmadan sonucu başarılı sayılmayacak.
+- Önceki commit `fc562c7b3584d17b1e09e41cad36d7d3600634cc` için PR CI başarılı: tam çözüm derlemesi, Core testleri, WPF çıktı testleri, PDF smoke ve Windows EXE publish adımları geçti. Yeni kaynak satırı testinin CI sonucu ayrıca bekleniyor.
+
+**Açık kabul sınırları**
+- Gerçek Excel masaüstünde aynı girdiyle yeniden hesaplama ve VBA aktarım makrolarının çalıştırılması hâlâ doğrulanmadı.
+- Sekiz tarihsel kaynak PDF'si için otomatik alan/tutar karşılaştırmaları var; Temel/Ortaöğretim icmalinde kaynak PDF ile OEHS arasında **4,19 TL** fark ve kaynakta VBA makrosu yeniden çalıştırılmadan kalmış olabilecek eski `AB4` değeri açık risk olarak korunuyor.
+- Hesaplama davranışı, kaynak ve test kanıtı olmadan değiştirilmedi. PR #3 taslak ve birleştirilmemiş kalacak.
+
