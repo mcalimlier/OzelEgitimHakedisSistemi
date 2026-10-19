@@ -965,3 +965,24 @@ Bu değişikliklerin Windows/.NET testleri ve dört PDF'nin görsel kabulü hen�
 3. Güncel kaynak hücrelerinden türetilen testleri çalıştır ve Windows CI'ı yeniden kontrol et.
 4. CI testleri geçtikten sonra iki program için dört PDF'yi üret; tutar, dönem, yüklenici, hat, imza ve sayfa düzenini birlikte kontrol et.
 5. Bu nottan sonra da PR #3 açık/taslak tutulacak; ana dala birleştirme veya yayınlama yapılmayacak.
+
+
+## Devam notu — 2026-10-19, Temel Eğitim test beklentileri güncellendi
+
+### Yapılanlar
+- GitHub Actions logunda beş testin tam hata satırları yeniden incelendi. Hataların dördü Temel Eğitim testlerindeki eski manuel teminat/damga vergisi beklentilerinden, biri negatif fiyat farkında rapor D15 ile hesaplama sayfası kesinti zincirini aynı kabul etmekten kaynaklanıyordu.
+- `ProgressPaymentWorkbookFormulaTests.cs`: negatif fiyat farkı testinde rapor damga vergisi sıfırlamasının, hesaplama sayfasındaki negatif ek kesin teminatı sıfırlamadığı ayrı doğrulanacak şekilde güncellendi.
+- `CurrentBasicWorkbookDiscrepancyTests.cs`: test açıklamaları ve beklentileri son XLSM formüllerine uyarlandı: T=I*6%, U=K*9.48/1000; eski sabit 1.500 TL ve T'yi damga vergisi matrahına ekleme beklentileri kaldırıldı.
+- `ExcelSourceParityTests.cs`: eski Temel Eğitim test vektörlerinde güncel formül davranışıyla çelişen damga vergisi/kesinti/net tutar beklentileri değiştirildi. Özel Eğitim testleri bu değişiklikte değiştirilmedi.
+- Bu değişiklikler GitHub API üzerinden uzak feature dalına üç ayrı commit olarak yazıldı. Son commit: `2af6823f7721a2021242c54cbf8b473c75a0c6b0`.
+
+### Doğrulama durumu
+- **Testler henüz çalıştırılmadı / başarılı sayılmıyor.** Bu ortamda uzak GitHub dosyaları düzenlendi; CI sonucu görülmeden kod veya test başarısı iddia edilmeyecek.
+- Bazı beklenen ondalık değerler formül zincirinden türetildi; sonraki CI sonucu bunları sınayacak. Bir hata kalırsa kaynak formül/örnek hücreye dönülerek düzeltilecek.
+- PDF smoke testi ve dört PDF'nin görsel/tutar kabulü henüz tamamlanmadı.
+
+### Sonraki adım
+1. Yeni dal ucu için GitHub Actions çalışmasını kontrol et.
+2. Kalan test hatalarını tam log ve kaynak formüllerle düzelt; ardından test ve PDF smoke aşamalarının çalıştığını doğrula.
+3. İki programın dört PDF'sini aynı referans veriyle birlikte kontrol et.
+4. PR #3 açık/taslak kalsın; ana dala birleştirme veya yayınlama yok.
