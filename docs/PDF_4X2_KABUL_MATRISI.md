@@ -116,3 +116,10 @@ Aynı tarihsel Temel Eğitim kaynak kopyasının LibreOffice PDF dışa aktarım
 Bu, Temel/Ortaöğretim icmalinde Özel Eğitim için kullanılan iki fiyat-farkı bloğunu toplayan formülün, Temel Eğitim'de ikinci blok kesinti sütunları olduğu hâlde aynen kalmış olabileceğini gösterir. **OEHS hesap davranışı bu bulgu üzerine değiştirilmedi.** Yeni `HistoricalBasicWorkbookRow4_ShouldMatchReportCellsWithoutImportingIcmalColumnDefect` testi, rapor tutarlarını kaynak örnekle karşılaştırır ve uygulamanın ham fiyat farkına kesinti bloğunu katmamasını korur. Bu, Excel'deki icmal formülünün doğru olduğuna dair kabul değildir; resmi çıktıda Excel ile birebir eşleşme isteniyorsa kaynak formül kusurunun nasıl ele alınacağı iş sahibi kararı gerektirir.
 
 Bu bulgu 17.10.2026 tarihli tarihsel dosya kopyasına aittir. En yeni Temel Eğitim XLSM'de `Hakediş İcmali!D6` ve AB:AL başlık/formül zinciri ayrıca doğrulanmadan tüm sürümlere genellenmemelidir.
+
+
+### Hizmet İşleri Hakediş Raporu örnek numarası — kaynakla hizalandı
+
+Tarihsel kaynak PDF'lerinde hem Temel/Ortaöğretim (LibreOffice dışa aktarım sayfa 20) hem Özel Eğitim (sayfa 43) Hizmet İşleri Hakediş Raporu alt bilgisi **`M.Y.H.B.Y. Örnek No: 4`** olarak basılıyor. OEHS şablonunda ve testinde önce **5** bekleniyordu. Kaynak örnekleriyle doğrudan karşılaştırınca bu etiket farkı doğrulandı; `OehsOfficialDocumentFactory` **4** olarak düzeltildi ve WPF regresyon testi 4'ü bekleyip 5'i reddedecek şekilde güncellendi.
+
+Bu düzeltme yalnızca belge alt bilgisini hizalar; hesaplama davranışını değiştirmez. Yeni kod ve test CI sonucu henüz bekleniyor. Aynı girdilerle sekiz PDF'nin tüm alanlarının karşılaştırılması yine ayrı kabul kapısıdır.
