@@ -113,9 +113,14 @@ Aynı tarihsel Temel Eğitim kaynak kopyasının LibreOffice PDF dışa aktarım
 - Bu nedenle `Hakediş İcmali!D6` sonucu **19.670,304557692 TL**; PDF'de **19.670,30 TL** basılıyor. `E6=C6+D6` sonucu **219.045,63 TL**.
 - Aynı kaynakta `Hakediş Raporu` brüt/tahakkuk tutarı **219.312,85 TL**; bu tutar hesaplama sayfasındaki KDV dâhil brüt zincirle uyumlu. İcmal toplamı bu değerle **267,23 TL** fark gösteriyor.
 
-Bu, Temel/Ortaöğretim icmalinde Özel Eğitim için kullanılan iki fiyat-farkı bloğunu toplayan formülün, Temel Eğitim'de ikinci blok kesinti sütunları olduğu hâlde aynen kalmış olabileceğini gösterir. **OEHS hesap davranışı bu bulgu üzerine değiştirilmedi.** Yeni `HistoricalBasicWorkbookRow4_ShouldMatchReportCellsWithoutImportingIcmalColumnDefect` testi, rapor tutarlarını kaynak örnekle karşılaştırır ve uygulamanın ham fiyat farkına kesinti bloğunu katmamasını korur. Bu, Excel'deki icmal formülünün doğru olduğuna dair kabul değildir; resmi çıktıda Excel ile birebir eşleşme isteniyorsa kaynak formül kusurunun nasıl ele alınacağı iş sahibi kararı gerektirir.
+Bu, Temel/Ortaöğretim icmalinde Özel Eğitim için kullanılan iki fiyat-farkı bloğunu toplayan formülün, Temel Eğitim'de ikinci blok kesinti sütunları olduğu hâlde aynen kalmış olabileceğini gösterir.
 
-Bu bulgu 17.10.2026 tarihli tarihsel dosya kopyasına aittir. En yeni Temel Eğitim XLSM'de `Hakediş İcmali!D6` ve AB:AL başlık/formül zinciri ayrıca doğrulanmadan tüm sürümlere genellenmemelidir.
+Ayrımı açık tutmak gerekir:
+- `ProgressPaymentReportService`, Hakediş Raporu için ham fiyat farkını `I4` değerinden alır; yeni `HistoricalBasicWorkbookRow4_ShouldMatchReportCellsWithoutImportingIcmalColumnDefect` testi bu rapor alanlarını doğrular.
+- PDF icmal üreticisi `OehsOfficialDocumentFactory` ise kaynak `D6` formülünün davranışını korumak için Temel/Ortaöğretim'de ham fiyat farkına mevcut hakedişin hesaplanmış kesintisini ekler. Bu nedenle uygulama, kaynak formül kusurunun yapısını taklit eder; ancak tarihsel dosyadaki `AB4=12.304,954557692` değeri hesaplama sayfasındaki `V4=12.300,765146612` değerinden **4,18941108 TL** farklıdır. Bu sabit aylık veri farkı nedeniyle aynı hesaplama girdileri tek başına tarihsel PDF'deki `D6` değerini üretmeye yetmez.
+- **Kod davranışı bu bulgu üzerine değiştirilmedi.** Kaynak formülün düzeltilmesi mi yoksa mevcut Excel çıktısının birebir korunması mı gerektiği açık bir karar noktasıdır.
+
+Bu bulgu 17.10.2026 tarihli tarihsel dosya kopyasına aittir. En yeni Temel Eğitim XLSM'de `Hakediş İcmali!D6`, AB:AL başlıkları ve aylık veri aktarım makrosu ayrıca doğrulanmadan tüm sürümlere genellenmemelidir.
 
 
 ### Hizmet İşleri Hakediş Raporu örnek numarası — kaynakla hizalandı
@@ -123,3 +128,18 @@ Bu bulgu 17.10.2026 tarihli tarihsel dosya kopyasına aittir. En yeni Temel Eği
 Tarihsel kaynak PDF'lerinde hem Temel/Ortaöğretim (LibreOffice dışa aktarım sayfa 20) hem Özel Eğitim (sayfa 43) Hizmet İşleri Hakediş Raporu alt bilgisi **`M.Y.H.B.Y. Örnek No: 4`** olarak basılıyor. OEHS şablonunda ve testinde önce **5** bekleniyordu. Kaynak örnekleriyle doğrudan karşılaştırınca bu etiket farkı doğrulandı; `OehsOfficialDocumentFactory` **4** olarak düzeltildi ve WPF regresyon testi 4'ü bekleyip 5'i reddedecek şekilde güncellendi.
 
 Bu düzeltme yalnızca belge alt bilgisini hizalar; hesaplama davranışını değiştirmez. Yeni kod ve test CI sonucu henüz bekleniyor. Aynı girdilerle sekiz PDF'nin tüm alanlarının karşılaştırılması yine ayrı kabul kapısıdır.
+
+
+### Özel Eğitim icmalinde fiyat farkının iki kez toplanması
+
+Tarihsel Özel Eğitim kaynak PDF'sinde Eylül satırı `İş Tutarı 54.725,90 TL` ve `Fiyat Farkı 1.403,57 TL`; Ekim satırı `İş Tutarı 93.318,27 TL` ve `Fiyat Farkı 1.403,57 TL` olarak gösteriliyor. Kaynak makro aylık tutar kolonuna `Hesaplama!K + Hesaplama!T` yazıyor; bu iki hücre ham `I/R` fiyat farklarını zaten içeriyor. İcmal formülü fiyat farkını ayrıca eklediğinden satır toplamı ham farkı ikinci kez içeriyor. OEHS icmal üreticisi şu an bu kaynak davranışını koruyor. Bu, kaynak PDF ile tutarlılık bulgusudur; hesaplama matrahının doğru olduğu yönünde bağımsız mevzuat onayı değildir. İcmal davranışı değiştirilmeden önce en yeni XLSM ve VBA makrosu aynı girdiyle tekrar doğrulanmalıdır.
+
+### Hizmet İşleri Hakediş Raporu — alan eşlemesi düzeltildi
+
+Kaynak XLSM sayfalarında ve tarihsel PDF'lerde şu alanlar doğrulandı:
+- Alt bilgi `M.Y.H.B.Y. Örnek No: 4`.
+- `Tarihi` alanı seçili ödeme ayının son günü değil, raporun üretildiği tarihtir (`TODAY()`).
+- `Sözleşme Tarihi ve No.su` etiketi korunur.
+- Temel/Ortaöğretim'de `Sözleşmeye Göre İşin Süresi` başlangıç ve bitiş tarihlerini `gg.aa.yyyy-gg.aa.yyyy Tarihleri Arasıdır.` biçiminde birleştirir; Özel Eğitim'de kaynak hücre `İş Günü` sayısını metne ekler.
+
+OEHS `OehsOfficialDocumentFactory` bu alanlara göre düzeltildi; WPF testleri numara, etiket, üretim tarihi ve program bazlı süre metnini kontrol ediyor. [İlgili kod commit'i](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/commit/d22a1e8346f25e77c15e95f2bab769bf41a192d4). Güncel test/CI durumu aşağıdaki son doğrulama kaydında belirtilmelidir.
