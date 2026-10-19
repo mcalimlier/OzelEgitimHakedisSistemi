@@ -99,7 +99,7 @@ Bu, tarihsel dosya kopyasında belgeler arası **kaynak metin/tarih tutarsızlı
 
 - Kaynak Excel'in tarihsel kopyalarından sekiz belge sayfası LibreOffice ile dışa aktarıldı ve metin/yerleşim ön incelemesi yapıldı.
 - OEHS smoke ZIP'indeki sekiz sentetik PDF'nin tamamı tek sayfa A4 portre; ancak bu PDF'ler aynı gerçek XLSM girdileriyle üretilmiş olmadığından tutar kabulünü kapatmaz.
-- **En yeni XLSM ve gerçek Excel/VBA ile resmi kabul: 0/8 kapalı.** Buna ek olarak 17.10.2026 tarihli tarihsel kaynak kopyaları için sekiz OEHS PDF'si gerçek hücre değerlerinden türetilen vektörlerle üretildi; test edilen finansal/şablon alanlarında 6/8 belge eşleşti, 2 istisna aşağıda belgelendi. Bu tarihsel kontrol en yeni XLSM kabulünün yerine geçmez.
+- **En yeni XLSM ve gerçek Excel/VBA ile resmi kabul: 0/8 kapalı.** Buna ek olarak 17.10.2026 tarihli tarihsel kaynak kopyaları için sekiz OEHS PDF'si gerçek hücre değerlerinden türetilen vektörlerle üretildi; test edilen finansal/şablon alanlarında 4/8 belge tam eşleşti; dört istisna aşağıda belgelendi (iki tarih/formül kusuru, bir sabit tarih metni, bir makro sonrası yenilenmemiş aylık veri). Bu tarihsel kontrol en yeni XLSM kabulünün yerine geçmez.
 - Excel/VBA makroları masaüstü Excel'de çalıştırılmadı. LibreOffice ile formül hesaplama, VBA olay/makro davranışını doğrulamaz.
 
 
@@ -154,7 +154,7 @@ OEHS `OehsOfficialDocumentFactory` bu alanlara göre düzeltildi; WPF testleri n
 - Core testleri: **222/222 geçti**. WPF çıktı testleri: **5/5 geçti**.
 - Smoke artefaktı artık **16 PDF** içerir: sekiz temel sentetik çıktı ve sekiz tarihsel XLSM kaynak vektöründen üretilen çıktı. [PDF artefaktı](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39314524004/artifacts/12217118649).
 - Tarihsel Özel Eğitim örneğinde dört PDF'nin finansal alanları kaynak PDF değerleriyle eşleşiyor; önceki hakediş toplamının üç ondalık basamaklı gösterimi de kaynakla hizalandı. Kaynak Hakediş Raporu'ndaki sabit `30.04.2026` başlığı ve `24.06.2026` alt tarihi kusur olarak kalır; OEHS seçili dönem ve üretim tarihini kullanır.
-- Tarihsel Temel/Ortaöğretim örneğinde Hakediş Raporu, Hizmet İşleri Hakediş Raporu ve Kabul Tutanağı test edilen alanlarda eşleşiyor. İcmal ise `AB4` aylık veri hücresi hesaplama sayfasındaki `V4` ile 4,19 TL farklı olduğundan kaynak PDF ile birebir eşleşmiyor; kod davranışı değiştirilmedi.
+- Tarihsel Temel/Ortaöğretim örneğinde Hakediş Raporu ve Kabul Tutanağı test edilen alanlarda eşleşiyor. Hizmet İşleri raporunda `İşyeri Teslim Tarihi` kaynak formül kusuruyla farklı; OEHS `İşe Başlama Tarihi`ni kullanıyor. İcmal PDF'sindeki `AB4` değeri makrodan sonra yenilenmediği için kaynak görüntüsü OEHS çıktısından 4,19 TL farklı; statik VBA modülü `V` değerinin `AB:AM` alanına aktarıldığını gösteriyor, fakat makro çalıştırılmadı.
 - WPF şablonundaki paylaşılan gri fırça da donduruldu (`Freeze()`); yeni tarihsel PDF testi ayrı STA iş parçacığında çalıştığında ortaya çıkan çapraz iş parçacığı hatası giderildi.
 
 ### Sıradaki adım
@@ -163,3 +163,14 @@ OEHS `OehsOfficialDocumentFactory` bu alanlara göre düzeltildi; WPF testleri n
 2. En yeni XLSM dosyalarının hücre ve VBA akışını aynı örnek üzerinden yeniden doğrula; özellikle `Hakediş İcmali!D6`, `İcmal Verileri!AB4:AM4` ve Özel Eğitim'in `AN:AX` kesinti bloğu.
 3. Temel/Ortaöğretim icmalindeki 4,19 TL fark için kaynak Excel'in hatalı formülünü aynen koruma, mantıksal fiyat farkını düzeltme veya aylık icmal değerini arşivde ayrıca saklama seçeneklerinden biri açıkça kararlaştırılmadan hesaplama davranışını değiştirme.
 4. Ana dala birleştirme/yayınlama yapma; PR taslak kalacak.
+
+
+### Hizmet İşleri raporunda hat numarası, güzergâh ve hizmet adı ayrımı
+
+Tarihsel kaynak hücreleri `Hizmet İşleri Hakediş Raporu!F4` için Temel/Ortaöğretim'de `Anasayfa!K16`, Özel Eğitim'de `VLOOKUP(Anasayfa!K17, 'İhale Verileri'!A:R, 1, FALSE)` kullanıyor. İki formül de **hat numarasını** veriyor; hakediş numarasını değil. OEHS'nin `No.su` alanı bu nedenle `ProgressPaymentNumber` yerine `RouteNumber` kullanacak şekilde düzeltildi.
+
+Aynı kaynak sayfasında hat başlığı `Hattın Adı` sütunundan, `Yapılan Hizmetin Adı` ise ayrı bir alan/şekilden geliyor. OEHS bağlamına `RouteName` alanı eklendi; dört belgenin başlıkları güzergâh adını, Hizmet İşleri raporundaki `Yapılan Hizmetin Adı` satırı ise sözleşmenin `WorkName` değerini kullanıyor. Tarihsel PDF testi, `No.su: 1` ile `ProgressPaymentNumber: 2` ayrımını ve iki farklı metin alanını doğruluyor.
+
+### Kaynak formül kusuru: İşyeri teslim tarihi
+
+Tarihsel Temel/Ortaöğretim ​`Hizmet İşleri Hakediş Raporu!F15` formülü `İhale Verileri` aralığının 11. sütununu; Özel Eğitim'de aynı alan 16. sütunu çekiyor. Her iki aralıkta bu sütun `İşin Bitiş Tarihi` olduğu hâlde etiket `İşyeri Teslim Tarihi`; kaynak PDF bu nedenle **25.06.2027** gösteriyor. Aynı tabloda `İşe Başlama Tarihi` 14.09.2026. OEHS mevcut bağlamdaki `ContractStartDate` değerini (14.09.2026) kullanıyor; bu mantıksal alan eşlemesidir, fakat tarihsel Excel PDF'siyle birebir aynı değildir. Kaynak formülün düzeltilmesi veya aynen taklit edilmesi en yeni XLSM/VBA ile doğrulanmadan kararlaştırılmamalıdır.
