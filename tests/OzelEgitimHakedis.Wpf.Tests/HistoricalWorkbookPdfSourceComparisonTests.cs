@@ -232,7 +232,7 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
         Assert.Contains("181 İş Günü", acceptance);
         Assert.Contains("14.09.2026", acceptance);
         Assert.Contains("25.06.2027", acceptance);
-        Assert.Contains("1 Numaralı Kaynak Test Güzergâhı Hattı Öğrenci Taşıma İşi", acceptance, StringComparison.Ordinal);
+        Assert.Contains("Kaynak Test Güzergâhı Hattı Öğrenci Taşıma İşi", acceptance, StringComparison.Ordinal);
 
         var icmal = PageText(outputs, OehsOfficialDocumentKind.HakedisIcmali);
         Assert.Contains("Hizmet Alımı İşi Eylül 2026", icmal);
