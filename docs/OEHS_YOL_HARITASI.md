@@ -1065,3 +1065,32 @@ Bu değişikliklerin Windows/.NET testleri ve dört PDF'nin görsel kabulü hen�
 - Her ayrı çalışma kitabının sol menüsü kendi Excel sayfa adlarını kaynak alacak ve Excel sekme sırasını koruyacak. Türkçe karakter, yazım, kısaltma ve boşluklar aynen tutulacak. Temel/Ortaöğretim ve Özel Eğitim sayfa listeleri birbirinden ayrı doğrulanacak.
 - Programın çalışması ve kaynak Excel/VBA sonuçlarıyla doğrulanması tamamlandıktan sonra buton adları veya içerik iyileştirmeleri ayrıca değerlendirilebilir; bu, şimdiki klonlama hedefini değiştirmez.
 - Sıradaki uygulama adımı: her iki XLSM'deki sayfa adlarını ve sıralarını UI navigasyonuyla karşılaştır; eksik/farklı etiketleri kaynakla birebir eşleştir; ardından test ekle. Bu UI değişikliklerinin test edildiği ancak gerçek CI sonucu görüldüğünde raporlanacak.
+
+
+## Devam notu — 2026-10-19: Sol menü ile Excel sayfa sırası karşılaştırıldı
+
+### Uzak dal ve CI
+- PR #3 yeniden kontrol edildi: açık, taslak, birleştirilmemiş. Head commit: `9fc6c089b2eba77386eb53a45b8489273435c015`; base `feature/wpf-contract-entry-v0.5`.
+- Windows CI run `39279783216` / build job `118151703170` hâlâ `queued`; bu nedenle son test güncellemesi için doğrulanmış başarı yok.
+
+### Kaynak XLSM sayfa sırası — menü hedefi
+- **Temel Eğitim** (11 sayfa, kaynak sırası): `Anasayfa`, `İhale Verileri`, `Hesaplama Bilgileri`, `Hakediş Raporu`, `Hizmet İşleri Hakediş Raporu`, `Hizmet İşleri K. Tutanağı`, `Hakediş İcmali`, `İcmal Verileri`, `Ayarlar`, `Data`, `Users`.
+- **Özel Eğitim** (8 sayfa, kaynak sırası): `Anasayfa`, `İhale Verileri`, `Hesaplama`, `Hakediş Raporu`, `Hizmetişleri Hakediş Raporu`, `Hizmet İşleri K. Tutanağı`, `Hakediş İcmali`, `İcmal Verileri`.
+- Kaynak yazımı korunmalı: Temel Eğitim'de `Hesaplama Bilgileri`; Özel Eğitim'de `Hesaplama). Özel Eğitim sayfa adı `Hizmetişleri Hakediş Raporu) şeklinde boşluksuz/bitşik yazılmıştır; kaynakta bu şekilde olduğu için klon menü etiketinde aynen korunmalıdır.
+- Temel Eğitim'deki `Data` sayfası veryHidden; `Users) ve `Data) veri/erişim altyapısı sayfaları normal kullanıcı menüsünde gösterilmek zorunda değildir. Klonlama hedefi sayfa davranışlarını korumaktır; gizli teknik sayfaları kullanıcıya açmak Excel görünürlüğünü taklit etmez. `Ayarlar) ise kaynakta görünür çalışma sayfasıdır ve sayfa görünürlüğü doğrulandıktan sonra menü eşlemesine dahil edilmelidir.
+
+### Mevcut WPF menüsü karşılaştırması
+- `src/OzelEgitimHakedis.Wpf/MainWindow.xaml` içinde mevcut sol navigasyon butonları iş akışlarına göre `Home`, `Contract`, `Contractors`, `Lines`, `Progress`, `Reports`, `History`, `Statistics`, `Archives`, `Settings), ayrıca `Trace) olarak tanımlı. Bunlar Excel sayfa adlarıyla birebir eşleşmiyor ve Excel sekme sırasını izlemiyor.
+- Bu nedenle sadece buton metinlerini körlemesine değiştirmek doğru olmaz: mevcut etiketlerin arkasında farklı iş akışları var; iki programın sayfa sayısı ve sayfa adı da farklı. Birebir klon için program türüne bağlı, Excel sayfa sırasını izleyen bir navigasyon/ekran eşlemesi gerekiyor. Bu turda navigasyon koduna dokunulmadı; mevcut akışları kırmadan yapılacak değişiklik için regresyon testi planlanacak.
+
+### Sonraki uygulama adımı
+1. WPF'nin program seçimi durumunu ve mevcut sayfa görünürlük/Tag eşlemesini belirle.
+2. İki ayrı navigasyon konfigürasyonu tanımla; görünen kaynak sayfalarını kaynak sırasıyla ve birebir yazımla göster, teknik/gizli sayfaları gizle.
+3. Kaynak Excel sekmesiyle her UI hedefi arasında açık eşleme oluştur; henüz ayrı ekranı olmayan sayfalar için formül/çıktı davranışını var olmayan ekran varmış gibi göstermeden planla.
+4. UI sözleşme testleri ekle ve Windows CI sonucu görülene kadar değişikliği doğrulanmış sayma.
+
+### İlerleme raporu
+- Genel proje: yaklaşık **%81** (değişmedi; sayfa/menü envanteri yapıldı ama arayüz eşlemesi henüz uygulanmadı ve CI hâlâ kuyrukta).
+- Bu turda yapılan iş: mevcut XAML navigasyonu incelendi, iki XLSM'nin sayfa adları/sırası kaynak inceleme dokümanından doğrulandı, isim/sıra farkı belgelendi.
+- Açık risk: WPF'de her Excel sayfasına birebir karşılık gelen ayrı görünüm mevcut değil; sadece etiket değiştirmek klonlama sağlamaz. Bir sonraki adım navigasyon yapısını program türüne göre eşleştirmek.
+- PR #3 açık/taslak; ana dala birleştirme/yayınlama yapılmadı.
