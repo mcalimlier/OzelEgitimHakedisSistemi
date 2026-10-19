@@ -279,7 +279,7 @@ public sealed class OfficialDocumentOutputTests
             Assert.Equal("220,00 TL", GetCellTextAt(paymentPage, 476d, 172d)); // A
             Assert.Equal("10,00 TL", GetCellTextAt(paymentPage, 476d, 201d));  // B
             Assert.Equal("230,00 TL", GetCellTextAt(paymentPage, 476d, 230d)); // C = A + B
-            Assert.Equal("120,00 TL", GetCellTextAt(paymentPage, 476d, 293d)); // D
+            Assert.Equal("120,000 TL", GetCellTextAt(paymentPage, 476d, 293d)); // Special Education D keeps the source three-decimal precision
             Assert.Equal("110,00 TL", GetCellTextAt(paymentPage, 476d, 322d)); // E = C - D
             Assert.Equal("0,00 TL", GetCellTextAt(paymentPage, 476d, 351d));   // F
             Assert.Equal("110,00 TL", GetCellTextAt(paymentPage, 476d, 380d)); // G = D11 + D12
