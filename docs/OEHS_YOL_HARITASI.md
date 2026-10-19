@@ -1014,3 +1014,13 @@ Bu değişikliklerin Windows/.NET testleri ve dört PDF'nin görsel kabulü hen�
 - İlk sıradaki iş: son XLSM'den T4:T6, U4:U6, V4:W6 ve rapor D11/D13/D15/D26/D28 hücrelerini ve VBA yazma yordamlarını tekrar birlikte incelemek; ardından test beklentilerini hücre bazında düzeltmek ve yeni CI çalışmasını doğrulamak.
 - İkinci sıradaki iş: başarılı CI'dan sonra iki program için dört PDF'yi aynı örnekle üretip karşılaştırmak.
 - PR #3 açık kalacak; ana dala birleştirme veya yayınlama yapılmayacak.
+
+
+## Devam notu — 2026-10-19: güncel XLSM formüllerine göre test ayrıştırması
+
+- İşlem yapılan dal: `feature/official-payment-document-templates`. PR #3 taslak/açık; ana dala birleştirme veya yayın yapılmadı.
+- Güncel XLSM hücre formülleri ile sentetik/legacy test beklentileri ayrılmaya başlandı. Temel Eğitim satır 5 testinde `K=15×6545+1501−250=99426`, `T=1501×6%=90.06`, `U=99426×9.48/1000=942.55848`; bu nedenle kesinti toplamı 12003.91848 ve hesaplama sayfası neti 97364.68152 olarak düzeltildi.
+- Temel Eğitim için gerçek kaynak satırından yakalanmamış sentetik girdilerdeki D28/rapor neti beklentileri kaldırıldı. Rapor D28 ancak Excel'den alınmış aynı satırın girdileri ve hücre sonuçlarıyla doğrulanacak; sentetik sayı artık Excel altın sonucu gibi kullanılmayacak.
+- Negatif fiyat farkı testi, kaynak formüllerinin doğruladığı hesaplama sayfası damga vergisi, ek teminat ve rapor D15 davranışını sınayacak şekilde bırakıldı; sentetik D28/net tutar beklentisi kaldırıldı.
+- Bu değişikliklerin ardından CI henüz sonuçlanmış olarak görülmedi; başarılı test iddiası yok. Sonraki adım: en son commit'in Windows CI sonucunu incelemek; kalan başarısız testleri gerçek XLSM hücre zinciriyle karşılaştırmak; VBA ile yazılan/değiştirilen hücreleri ve özel eğitim gerçek örneklerini doğrulamak.
+- Açık risk: Temel Eğitim T/U formülleri ile daha önce kullanıcı tarafından belirtilen elle teminat girişi davranışı arasında fark var. Hücre formülü ve VBA yazma akışı birlikte doğrulanmadan bu fark kapatılmayacak.
