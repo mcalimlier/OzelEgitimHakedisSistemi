@@ -202,6 +202,55 @@ public sealed class CurrentXlsmSourceParityTests
     }
 
     [Fact]
+    public void HistoricalBasicWorkbookRows5And8_ShouldMatchRecalculatedSourceCells()
+    {
+        // Source copies reviewed 2026-10-17:
+        // 03-Temel Eğitim Taşıma Ödeme(1).xlsm, Hesaplama Bilgileri rows 5 and 8.
+        // These are formula-recalculation parity vectors, not desktop Excel/VBA execution.
+        var exemptRow5 = ProgressPaymentCalculator.Calculate(new ProgressPaymentInput(
+            WorkDays: 13m,
+            DailyPrice: 6545m,
+            DiscountAmount: 0m,
+            PriceDifference: 3659.2m,
+            ContractAmount: 100000m,
+            IsVatExempt: true,
+            TaxDebt: 0m,
+            SocialSecurityDebt: 0m,
+            MinimumWageSupport: 0m,
+            ProgramType: TransportationProgramType.BasicOrSecondary));
+
+        Assert.Equal(88744.2m, exemptRow5.TransportNetAmount);       // K5
+        Assert.Equal(0m, exemptRow5.TransportVat);                   // L5
+        Assert.Equal(0m, exemptRow5.TransportWithholding);           // M5
+        Assert.Equal(88744.2m, exemptRow5.GrossAmount);             // O5
+        Assert.Equal(219.552m, exemptRow5.AdditionalGuarantee);     // T5 = I5*6%
+        Assert.Equal(841.295016m, exemptRow5.StampTax);              // U5 = K5*9.48/1000
+        Assert.Equal(1060.847016m, exemptRow5.TotalDeductions);      // V5
+        Assert.Equal(87683.352984m, exemptRow5.NetPayable);          // W5
+
+        var taxableRow8 = ProgressPaymentCalculator.Calculate(new ProgressPaymentInput(
+            WorkDays: 13m,
+            DailyPrice: 2810m,
+            DiscountAmount: 0m,
+            PriceDifference: 1571.03m,
+            ContractAmount: 100000m,
+            IsVatExempt: false,
+            TaxDebt: 0m,
+            SocialSecurityDebt: 0m,
+            MinimumWageSupport: 0m,
+            ProgramType: TransportationProgramType.BasicOrSecondary));
+
+        Assert.Equal(38101.03m, taxableRow8.TransportNetAmount);     // K8
+        Assert.Equal(3810.103m, taxableRow8.TransportVat);           // L8
+        Assert.Equal(1905.0515m, taxableRow8.TransportWithholding);  // M8
+        Assert.Equal(41911.133m, taxableRow8.GrossAmount);           // O8
+        Assert.Equal(94.2618m, taxableRow8.AdditionalGuarantee);     // T8 = I8*6%
+        Assert.Equal(361.1977644m, taxableRow8.StampTax);            // U8 = K8*9.48/1000
+        Assert.Equal(2360.5110644m, taxableRow8.TotalDeductions);    // V8
+        Assert.Equal(39550.6219356m, taxableRow8.NetPayable);        // W8
+    }
+
+    [Fact]
     public void AdditionalGuarantee_ShouldFollowProgramSpecificSourceFormulaAndIgnoreDiscounts()
     {
         var basic = new ProgressPaymentInput(
