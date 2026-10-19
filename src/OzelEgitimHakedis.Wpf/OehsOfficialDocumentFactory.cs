@@ -62,7 +62,14 @@ internal static class OehsOfficialDocumentFactory
     private static readonly CultureInfo Turkish = CultureInfo.GetCultureInfo("tr-TR");
     private static readonly Brush Black = Brushes.Black;
     private static readonly Brush White = Brushes.White;
-    private static readonly Brush TotalGray = new SolidColorBrush(Color.FromRgb(217, 217, 217));
+    private static readonly Brush TotalGray = CreateFrozenTotalGray();
+
+    private static Brush CreateFrozenTotalGray()
+    {
+        var brush = new SolidColorBrush(Color.FromRgb(217, 217, 217));
+        brush.Freeze();
+        return brush;
+    }
     private static readonly Brush LightGray = new SolidColorBrush(Color.FromRgb(242, 242, 242));
 
     public static FixedDocument BuildCombined(OehsOfficialDocumentContext context)
