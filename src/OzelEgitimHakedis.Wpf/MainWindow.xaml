@@ -737,7 +737,7 @@
                                                     <TextBox x:Name="InspectionPenaltyTextBox" Grid.Row="7" Grid.Column="3" Margin="4.5" Style="{StaticResource PremiumFieldTextBox}"/>
                                                     <TextBlock x:Name="ManualAdditionalGuaranteeLabel" Grid.Row="8" Grid.Column="0" Text="Ek Kesin Teminat (Excel formülü)" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
                                                     <TextBox x:Name="ManualAdditionalGuaranteeTextBox" Grid.Row="8" Grid.Column="1" Margin="4.5" Style="{StaticResource PremiumFieldTextBox}" Text="Excel formülüyle hesaplanır" IsReadOnly="True" ToolTip="Tutar, seçili programın güncel kaynak Excel formülünden hesaplanır; elle giriş kullanılmaz."/>
-                                                    <TextBlock x:Name="GuaranteeRuleHintTextBlock" Grid.Row="8" Grid.Column="2" Grid.ColumnSpan="2" Text="Temel/Ortaöğretim: elle giriş • Özel Eğitim: (I × %6) + (R × %6)" Foreground="#FFD180" TextWrapping="Wrap" VerticalAlignment="Center" Margin="7,4.5"/>
+                                                    <TextBlock x:Name="GuaranteeRuleHintTextBlock" Grid.Row="8" Grid.Column="2" Grid.ColumnSpan="2" Text="Temel/Ortaöğretim: I × %6 • Özel Eğitim: (I × %6) + (R × %6)" Foreground="#FFD180" TextWrapping="Wrap" VerticalAlignment="Center" Margin="7,4.5"/>
                                                 </Grid>
                                                 <Border x:Name="MultiRouteEntryBorder" Visibility="Collapsed" Style="{StaticResource Card}" Padding="7" Margin="4.5,7,0,0">
                                                     <StackPanel>
@@ -795,7 +795,6 @@
                                                                     </DataGridTextColumn.EditingElementStyle>
                                                                 </DataGridTextColumn>
                                                                 <DataGridTextColumn Header="Denetim Cezası" Binding="{Binding InspectionPenalty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="105"/>
-                                                                <DataGridTextColumn Header="Ek Kesin Teminat (Excel formülü)" Binding="{Binding ManualAdditionalGuarantee, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="155"/>
                                                             </DataGrid.Columns>
                                                         </DataGrid>
                                                     </StackPanel>
