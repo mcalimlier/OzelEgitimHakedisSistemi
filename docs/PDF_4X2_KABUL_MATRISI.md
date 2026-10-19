@@ -99,7 +99,7 @@ Bu, tarihsel dosya kopyasında belgeler arası **kaynak metin/tarih tutarsızlı
 
 - Kaynak Excel'in tarihsel kopyalarından sekiz belge sayfası LibreOffice ile dışa aktarıldı ve metin/yerleşim ön incelemesi yapıldı.
 - OEHS smoke ZIP'indeki sekiz sentetik PDF'nin tamamı tek sayfa A4 portre; ancak bu PDF'ler aynı gerçek XLSM girdileriyle üretilmiş olmadığından tutar kabulünü kapatmaz.
-- **4 × 2 gerçek kaynak PDF kabul matrisi: 0/8 kapalı.** Kalan iş; en yeni kaynak dosyanın aynı girdi ve aynı dönemle yeniden hesaplanmış sonuçlarıyla dört OEHS PDF'sinin alan alan karşılaştırılmasıdır.
+- **En yeni XLSM ve gerçek Excel/VBA ile resmi kabul: 0/8 kapalı.** Buna ek olarak 17.10.2026 tarihli tarihsel kaynak kopyaları için sekiz OEHS PDF'si gerçek hücre değerlerinden türetilen vektörlerle üretildi; test edilen finansal/şablon alanlarında 6/8 belge eşleşti, 2 istisna aşağıda belgelendi. Bu tarihsel kontrol en yeni XLSM kabulünün yerine geçmez.
 - Excel/VBA makroları masaüstü Excel'de çalıştırılmadı. LibreOffice ile formül hesaplama, VBA olay/makro davranışını doğrulamaz.
 
 
@@ -127,7 +127,7 @@ Bu bulgu 17.10.2026 tarihli tarihsel dosya kopyasına aittir. En yeni Temel Eği
 
 Tarihsel kaynak PDF'lerinde hem Temel/Ortaöğretim (LibreOffice dışa aktarım sayfa 20) hem Özel Eğitim (sayfa 43) Hizmet İşleri Hakediş Raporu alt bilgisi **`M.Y.H.B.Y. Örnek No: 4`** olarak basılıyor. OEHS şablonunda ve testinde önce **5** bekleniyordu. Kaynak örnekleriyle doğrudan karşılaştırınca bu etiket farkı doğrulandı; `OehsOfficialDocumentFactory` **4** olarak düzeltildi ve WPF regresyon testi 4'ü bekleyip 5'i reddedecek şekilde güncellendi.
 
-Bu düzeltme yalnızca belge alt bilgisini hizalar; hesaplama davranışını değiştirmez. Yeni kod ve test CI sonucu henüz bekleniyor. Aynı girdilerle sekiz PDF'nin tüm alanlarının karşılaştırılması yine ayrı kabul kapısıdır.
+Bu düzeltme yalnızca belge alt bilgisini hizalar; hesaplama davranışını değiştirmez. Güncel kod ve testler push CI'da başarılıdır: [run 39314524004](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39314524004). En yeni XLSM'nin sekiz PDF alanının tamamını karşılaştırma ayrı kabul kapısıdır.
 
 
 ### Özel Eğitim icmalinde fiyat farkının iki kez toplanması
@@ -143,3 +143,21 @@ Kaynak XLSM sayfalarında ve tarihsel PDF'lerde şu alanlar doğrulandı:
 - Temel/Ortaöğretim'de `Sözleşmeye Göre İşin Süresi` başlangıç ve bitiş tarihlerini `gg.aa.yyyy-gg.aa.yyyy Tarihleri Arasıdır.` biçiminde birleştirir; Özel Eğitim'de kaynak hücre `İş Günü` sayısını metne ekler.
 
 OEHS `OehsOfficialDocumentFactory` bu alanlara göre düzeltildi; WPF testleri numara, etiket, üretim tarihi ve program bazlı süre metnini kontrol ediyor. [İlgili kod commit'i](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/commit/d22a1e8346f25e77c15e95f2bab769bf41a192d4). Güncel test/CI durumu aşağıdaki son doğrulama kaydında belirtilmelidir.
+
+
+## Son doğrulama kaydı — 2026-10-19, commit `a5eb7c1121e24620669fd9f535b45793e6713723`
+
+- [Windows push CI](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39314524004): başarılı.
+- [Windows PR CI](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39314531090): bu kayıt yazılırken çalışıyor.
+- Core testleri: **222/222 geçti**. WPF çıktı testleri: **5/5 geçti**.
+- Smoke artefaktı artık **16 PDF** içerir: sekiz temel sentetik çıktı ve sekiz tarihsel XLSM kaynak vektöründen üretilen çıktı. [PDF artefaktı](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39314524004/artifacts/12217118649).
+- Tarihsel Özel Eğitim örneğinde dört PDF'nin finansal alanları kaynak PDF değerleriyle eşleşiyor; önceki hakediş toplamının üç ondalık basamaklı gösterimi de kaynakla hizalandı. Kaynak Hakediş Raporu'ndaki sabit `30.04.2026` başlığı ve `24.06.2026` alt tarihi kusur olarak kalır; OEHS seçili dönem ve üretim tarihini kullanır.
+- Tarihsel Temel/Ortaöğretim örneğinde Hakediş Raporu, Hizmet İşleri Hakediş Raporu ve Kabul Tutanağı test edilen alanlarda eşleşiyor. İcmal ise `AB4` aylık veri hücresi hesaplama sayfasındaki `V4` ile 4,19 TL farklı olduğundan kaynak PDF ile birebir eşleşmiyor; kod davranışı değiştirilmedi.
+- WPF şablonundaki paylaşılan gri fırça da donduruldu (`Freeze()`); yeni tarihsel PDF testi ayrı STA iş parçacığında çalıştığında ortaya çıkan çapraz iş parçacığı hatası giderildi.
+
+### Sıradaki adım
+
+1. PR CI tamamlandıktan sonra son commit'in her iki CI sonucunu kaydet.
+2. En yeni XLSM dosyalarının hücre ve VBA akışını aynı örnek üzerinden yeniden doğrula; özellikle `Hakediş İcmali!D6`, `İcmal Verileri!AB4:AM4` ve Özel Eğitim'in `AN:AX` kesinti bloğu.
+3. Temel/Ortaöğretim icmalindeki 4,19 TL fark için kaynak Excel'in hatalı formülünü aynen koruma, mantıksal fiyat farkını düzeltme veya aylık icmal değerini arşivde ayrıca saklama seçeneklerinden biri açıkça kararlaştırılmadan hesaplama davranışını değiştirme.
+4. Ana dala birleştirme/yayınlama yapma; PR taslak kalacak.
