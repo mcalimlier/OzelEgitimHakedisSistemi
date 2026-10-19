@@ -881,3 +881,27 @@ Kullanıcı Temel Eğitim ek kesin teminatının elle girildiğini belirtmişti;
 - Kaynak formül hücreleri ve saklanan sonuçlar okundu; bunların gerçek Excel hesaplama sonucu olarak yeniden üretimi yapılmadı.
 - Uygulama kodu veya hesap davranışı bu adımda değiştirilmedi.
 - Sıradaki adım: VBA'daki yazma/aktarım yordamlarını hücre adresleriyle eşleştir; özellikle Temel Eğitim T4 ek kesin teminat uyuşmazlığını, kullanıcı giriş alanlarını ve rapor D15/D28 farkını kaynak üzerinde çöz. Sonra bu zincir için testler oluştur ve mevcut çekirdekle karşılaştır.
+
+
+## Nihai Excel'i tek kaynak kabul etme kararı — 2026-10-19
+
+Kullanıcı açıkça önceki sohbetlerde belirtilen kuralların sıfırlanmasını ve yalnızca son yüklenen iki XLSM dosyasının esas alınmasını istedi. Temel Eğitim çekirdeğinin ve arayüzün gerektiğinde kökten yeniden yazılmasına izin verildi. Bundan sonra önceki sözlü kural, kod yorumu veya eski test beklentisi, güncel XLSM formülüyle çelişirse kaynak kabul edilmeyecek.
+
+### Bu karara göre yapılan ilk çekirdek düzeltmesi
+
+- `ProgressPaymentCalculator` içinde Temel Eğitim ek kesin teminatı artık `ManualAdditionalGuarantee` alanından almıyor; son XLSM'deki `Hesaplama Bilgileri!T4 = I4*6/100` formülüne göre fiyat farkı girdisinin %6'sı olarak hesaplanıyor.
+- Temel Eğitim damga vergisi, son XLSM'deki `U4 = K4*9.48/1000` zincirine uyarlandı; eski kodun manuel teminatı damga vergisi matrahına eklemesi kaldırıldı.
+- Özel Eğitim formülü ayrı kaldı: `AC4 = I4*6/100 + R4*6/100`; iki program tek formülde birleştirilmedi.
+- Temel Eğitim testinin manuel teminat beklentisi, son Excel formülüne göre güncellendi.
+- Kod ve test değişiklikleri ayrı commit'lerde kaydedildi. Bu kayıt, testlerin çalıştırıldığı anlamına gelmez; güncel CI sonucu ayrıca kontrol edilmelidir.
+
+### Sıradaki işler
+
+1. Güncel XLSM'lerin hücre etiketleri, tüm formül zincirleri, veri doğrulamaları ve VBA olay akışını kod alanlarıyla eşleştirmek.
+2. Temel Eğitim ve Özel Eğitim için bağımsız Excel referans testleri oluşturmak; kaynak önbellekli örnekleri gerçek Excel hesaplamasıyla karıştırmamak.
+3. Kullanıcı arayüzünü Excel akışına göre yeniden düzenlemek: program seçimi zorunlu, alanlar seçilen programa özgü, çoklu hat verileri ayrık, firma muafiyet bilgisi firma kaydında.
+4. Her hakedişin dört PDF'sini aynı örnek veriyle üretip tutar, dönem, yüklenici, hat, imza ve sayfa düzenini birlikte karşılaştırmak.
+
+### Doğrulama notu
+
+Bu değişikliklerin Windows/.NET testleri ve dört PDF'nin görsel kabulü henüz bu notta başarılı olarak işaretlenmemiştir. Sonraki raporda güncel commit ve GitHub Actions sonucu ayrıca doğrulanacaktır. Ana dala birleştirme veya yayın yapılmadı.
