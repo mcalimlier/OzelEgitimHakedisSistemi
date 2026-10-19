@@ -55,3 +55,12 @@ CI başarısı, sentetik PDF smoke sonucu veya yalnızca PDF'nin açılması bu 
 - **Doğrulama:** commit `a6127422655c6c55b0d1470c936c16bc4febfef3`, Windows CI run `39307338034` başarılı.
 - **Açık risk/engel:** sekiz PDF için gerçek masaüstü Excel/VBA yeniden hesaplanmış aynı-girdi referansları ve aynı verilerle OEHS PDF'leri karşılaştırması hâlâ yok. Sentetik smoke örnekleri bu boşluğu kapatmaz.
 - **Sıradaki adım:** kaynak XLSM'nin gerçek yeniden hesaplama sonuçlarına erişilebilen ilk fırsatta 4×2 matriste her belgeyi dönem, yüklenici, hat, tutarlar, imza alanları ve sayfa yerleşimiyle ayrı ayrı kapatmak; formül uyuşmazlıklarını test ve karar notuyla izlemek.
+
+
+## Devam notu — 2026-10-19 (son doğrulama)
+
+- **Tamamlandı:** `AdditionalGuarantee_ShouldPreserveSignedSourceFormulaForNegativePriceDifferences` regresyon testi eklendi. Temel Eğitim için I=-100 TL olduğunda T=-6 TL; Özel Eğitim için I=-100 TL ve R=-50 TL olduğunda AC=-9 TL beklenir. Bu, doğrudan kaynak formül davranışını kilitler; hukuki/ihale yorumu hakkında karar vermez.
+- **Doğrulama:** commit `f891895c6e4b0fcc92c0f7d252f23face7fe261e` için [Windows Build CI](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39309542369) **başarılı**. PR #3 hâlâ açık/taslak ve birleştirilmedi.
+- **Kaynak durumu:** etkin dalın Git ağacında `.xlsm`, `.xlsx` veya `.xlsb` dosyası bulunmadı. Bu nedenle bu turda masaüstü Excel/VBA yeniden hesaplaması ve gerçek referanslı 4×2 PDF kabulü yapılmadı.
+- **Açık risk/engel:** sekiz PDF için aynı girdilerle gerçek Excel/VBA referansları yok; sentetik smoke çıktıları kabul kanıtı sayılmaz. Negatif fiyat farkında ek kesin teminatın işaretli sonuç üretmesi Excel formülüne sadakattir, ancak mevzuat/sözleşme değerlendirmesi gerektiren noktadır.
+- **Sıradaki adım:** dört belgeyi iki program için aynı hakediş girdisiyle üretip dönem, yüklenici, hat, her tutar, imza alanları ve sayfa yerleşimini karşılaştıran kabul kaydını doldurmak; Excel/VBA sonuçları olmadan hesap davranışını değiştirmemek.
