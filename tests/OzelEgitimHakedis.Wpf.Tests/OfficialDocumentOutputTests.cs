@@ -356,6 +356,15 @@ public sealed class OfficialDocumentOutputTests
                 }
             }
 
+            var basicServiceReport = Assert.Single(
+                basicOutputs.Where(output => output.Kind == OehsOfficialDocumentKind.HizmetIsleriHakedisRaporu));
+            var basicServiceReportText = GetPageText(
+                Assert.IsType<FixedPage>(basicServiceReport.Document.Pages[0].Child));
+            Assert.Contains("01.09.2026-30.06.2027 Tarihleri Arasıdır.", basicServiceReportText, StringComparison.Ordinal);
+            Assert.DoesNotContain("180 İş Günü", basicServiceReportText, StringComparison.Ordinal);
+            Assert.Contains("Sözleşme Tarihi ve No.su", basicServiceReportText, StringComparison.Ordinal);
+            Assert.Contains("M.Y.H.B.Y. Örnek No: 4", basicServiceReportText, StringComparison.Ordinal);
+
             // July is a real period for Basic/Secondary, unlike the current
             // Special Education lookup range where July remains a zero placeholder.
             var julyInput = input with
