@@ -201,4 +201,53 @@ public sealed class CurrentXlsmSourceParityTests
         Assert.Equal(332516.074511856m, result.NetPayable);    // W4
     }
 
+    [Fact]
+    public void AdditionalGuarantee_ShouldFollowProgramSpecificSourceFormulaAndIgnoreDiscounts()
+    {
+        var basic = new ProgressPaymentInput(
+            WorkDays: 1m,
+            DailyPrice: 100m,
+            DiscountAmount: 0m,
+            PriceDifference: 7365.35m,
+            ContractAmount: 100000m,
+            IsVatExempt: true,
+            TaxDebt: 0m,
+            SocialSecurityDebt: 0m,
+            MinimumWageSupport: 0m,
+            ProgramType: TransportationProgramType.BasicOrSecondary);
+
+        var special = new ProgressPaymentInput(
+            WorkDays: 1m,
+            DailyPrice: 100m,
+            DiscountAmount: 0m,
+            PriceDifference: 7365.35m,
+            ContractAmount: 100000m,
+            IsVatExempt: true,
+            TaxDebt: 0m,
+            SocialSecurityDebt: 0m,
+            MinimumWageSupport: 0m,
+            GuideWorkDays: 1m,
+            GuideDailyPrice: 100m,
+            GuideDiscountAmount: 0m,
+            GuidePriceDifference: 3500m,
+            ProgramType: TransportationProgramType.SpecialEducation);
+
+        var basicBaseline = ProgressPaymentCalculator.Calculate(basic);
+        var basicWithDiscount = ProgressPaymentCalculator.Calculate(basic with { DiscountAmount = 500m });
+        var specialBaseline = ProgressPaymentCalculator.Calculate(special);
+        var specialWithDiscount = ProgressPaymentCalculator.Calculate(special with
+        {
+            DiscountAmount = 500m,
+            GuideDiscountAmount = 800m
+        });
+
+        // Basic/Secondary source formula: T = I * 6%; discount J is not part of T.
+        Assert.Equal(441.921m, basicBaseline.AdditionalGuarantee);
+        Assert.Equal(basicBaseline.AdditionalGuarantee, basicWithDiscount.AdditionalGuarantee);
+
+        // Special Education source formula: AC = (I * 6%) + (R * 6%); discounts J/S are not inputs.
+        Assert.Equal(651.921m, specialBaseline.AdditionalGuarantee);
+        Assert.Equal(specialBaseline.AdditionalGuarantee, specialWithDiscount.AdditionalGuarantee);
+    }
+
 }
