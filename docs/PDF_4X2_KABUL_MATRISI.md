@@ -174,3 +174,12 @@ Aynı kaynak sayfasında hat başlığı `Hattın Adı` sütunundan, `Yapılan H
 ### Kaynak formül kusuru: İşyeri teslim tarihi
 
 Tarihsel Temel/Ortaöğretim ​`Hizmet İşleri Hakediş Raporu!F15` formülü `İhale Verileri` aralığının 11. sütununu; Özel Eğitim'de aynı alan 16. sütunu çekiyor. Her iki aralıkta bu sütun `İşin Bitiş Tarihi` olduğu hâlde etiket `İşyeri Teslim Tarihi`; kaynak PDF bu nedenle **25.06.2027** gösteriyor. Aynı tabloda `İşe Başlama Tarihi` 14.09.2026. OEHS mevcut bağlamdaki `ContractStartDate` değerini (14.09.2026) kullanıyor; bu mantıksal alan eşlemesidir, fakat tarihsel Excel PDF'siyle birebir aynı değildir. Kaynak formülün düzeltilmesi veya aynen taklit edilmesi en yeni XLSM/VBA ile doğrulanmadan kararlaştırılmamalıdır.
+
+
+## Güncel devam kaydı — 2026-10-19
+
+- Güncel kod doğrulaması: [commit `9e09adca`](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/commit/9e09adca88a5ce4e19fe5837e776656045cf1190) için [push CI](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39316589255) ve [PR CI](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39316596025) başarılı. Son dokümantasyon commit'i `2c449019` için [push CI](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39316639093) ve [PR CI](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39316648124) de başarılı.
+- Hizmet İşleri raporundaki `No.su` alanı artık `RouteNumber` ile doldurulur; `RouteName` dört belgenin güzergâh başlıklarında, `WorkName` ise ayrı `Yapılan Hizmetin Adı` satırında kullanılır. 16 PDF smoke paketi ve tarihsel kaynak vektör testi bu alanları kapsar.
+- Tarihsel kaynak PDF'lerinde Temel/Ortaöğretim Hakediş Raporu alt tarihi `16.10.2026`, diğer raporlardaki üretim tarihi `19.10.2026`; Özel Eğitim Hakediş Raporu ise sabit `24.06.2026` alt tarihi gösteriyor. OEHS `GeneratedDate` kullanarak güncel üretim tarihini tutarlı gösterir. Bu tarih farkları kaynak dosya durumuna aittir; resmî hesap tutarlarına müdahale edilmedi.
+- Kaynak `İşyeri Teslim Tarihi` formülü bitiş tarihi sütununu çekiyor; OEHS başlangıç tarihini kullanıyor. Bu kaynak formül kusuru açıkça belgeli ve karar verilene kadar değiştirilmedi.
+- **Sıradaki iş:** en yeni XLSM'nin aynı örneği gerçek Excel'de yeniden hesaplanıp VBA makroları çalıştırılarak tarihsel/yenilenmiş değer farkları doğrulanmalı. `Hakediş İcmali`ndeki fiyat farkını ikinci kez ekleme davranışı için kaynak davranışını koruma veya düzeltme kararı alınmadan kod değişikliği yapılmamalı. PR taslak ve birleştirilmemiş kalacak.
