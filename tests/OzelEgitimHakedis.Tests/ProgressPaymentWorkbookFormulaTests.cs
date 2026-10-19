@@ -59,8 +59,10 @@ public sealed class ProgressPaymentWorkbookFormulaTests
         Assert.Equal(-0.948m, current.Calculation.StampTax);
         Assert.Equal(0m, ProgressPaymentReportService.CalculateReportStampTax(
             current.Calculation, current.Input.ProgramType));
-        // A negative price difference does not create a negative manually entered guarantee.
-        Assert.Equal(0m, ProgressPaymentReportService.CalculateReportTotalDeductions(
+        // The workbook calculation sheet keeps T=I*6% signed; report D15 clamps
+        // negative stamp tax to zero, but this does not erase the negative T deduction.
+        Assert.Equal(-12m, current.Calculation.AdditionalGuarantee);
+        Assert.Equal(-12m, ProgressPaymentReportService.CalculateReportTotalDeductions(
             current.Calculation, current.Input.ProgramType));
         Assert.Equal(-300m, ProgressPaymentReportService.CalculateReportNetPayable(current, totals));
     }
