@@ -52,8 +52,7 @@ public sealed class ProgressPaymentCalculatorTests
         var input = new ProgressPaymentInput(
             WorkDays: 1, DailyPrice: 100m, DiscountAmount: 0m, PriceDifference: 20m,
             ContractAmount: 1000m, IsVatExempt: false, TaxDebt: 0m,
-            SocialSecurityDebt: 0m, MinimumWageSupport: 0m, ProgramType: TransportationProgramType.BasicOrSecondary,
-            ManualAdditionalGuarantee: 1500m);
+            SocialSecurityDebt: 0m, MinimumWageSupport: 0m, ProgramType: TransportationProgramType.BasicOrSecondary);
 
         var result = ProgressPaymentCalculator.Calculate(input);
 
