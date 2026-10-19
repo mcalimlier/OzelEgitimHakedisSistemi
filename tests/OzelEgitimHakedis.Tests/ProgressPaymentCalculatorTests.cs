@@ -47,7 +47,7 @@ public sealed class ProgressPaymentCalculatorTests
     }
 
     [Fact]
-    public void BasicOrSecondaryProgram_ShouldUseManuallyEnteredAdditionalGuarantee()
+    public void BasicOrSecondaryProgram_ShouldCalculateAdditionalGuaranteeFromWorkbookPriceDifference()
     {
         var input = new ProgressPaymentInput(
             WorkDays: 1, DailyPrice: 100m, DiscountAmount: 0m, PriceDifference: 20m,
@@ -57,13 +57,12 @@ public sealed class ProgressPaymentCalculatorTests
 
         var result = ProgressPaymentCalculator.Calculate(input);
 
-        Assert.Equal(1500m, result.AdditionalGuarantee);
-        Assert.Equal(1500m, result.Deductions.AdditionalGuarantee);
-        // Hesaplama Bilgileri!U = (K*9.48/1000) + (T*9.48/1000);
-        // K=120 ve elle girilen T=1500 olduğundan hesaplama sayfası damga vergisi 15.3576 TL'dir.
-        Assert.Equal(15.3576m, result.StampTax);
-        Assert.Equal(1521.3576m, result.TotalDeductions);
-        Assert.Equal(-1389.3576m, result.NetPayable);
+        Assert.Equal(1.20m, result.AdditionalGuarantee);
+        Assert.Equal(1.20m, result.Deductions.AdditionalGuarantee);
+        // Nihai Temel Eğitim Excel'i: U = K*9.48/1000; T = I*6%.
+        Assert.Equal(1.1376m, result.StampTax);
+        Assert.Equal(8.3376m, result.TotalDeductions);
+        Assert.Equal(123.6624m, result.NetPayable);
     }
 
     [Fact]
