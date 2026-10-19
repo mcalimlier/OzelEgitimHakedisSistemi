@@ -1165,3 +1165,15 @@ Bu oranlar uygulama kapsamı, otomatik test ve henüz açık kalan gerçek kabul
 - Test commit'i 7bf7c5faa02cfffa0230d2d258b65e1cd73ef383 için run #2116 (39301128036) başarıyla tamamlandı. Build, çekirdek testler, WPF çıktı testleri, PDF smoke üretimi ve Windows EXE yayımlama adımları başarılı. PDF smoke yalnızca sentetik test verisidir; gerçek Excel sayfalarıyla görsel/parasal kabulün yerine geçmez.
 - Bu nedenle #2114 hatası düzeltilmiş test beklentisiyle yeniden doğrulandı; hata gizlenmedi. Yine de gerçek sekiz PDF'nin kaynak XLSM ile karşılaştırması ve Microsoft Excel/VBA masaüstü kontrolü açık risk olarak duruyor.
 - PR #3 açık/taslak ve birleştirilmemiştir. İlerleme yüzdeleri gerçek kaynak Excel/PDF kabulü tamamlanana kadar değiştirilmedi.
+
+
+## 2026-10-19 — CI 2120 ve icmal devam kontrolü
+
+- Etkin dal: `feature/official-payment-document-templates`; PR #3 taslak ve birleştirilmemiş durumda.
+- CI çalıştırması #2120 (run ID `39301657226`) tamamlandı: **success**. Tam çözüm ve WPF derlemeleri başarılı; çekirdek testleri 215/215, WPF çıktı testleri 4/4 geçti; sekiz A4 PDF smoke dosyası üretildi; Windows x64 self-contained EXE yayımlama adımı başarılı.
+- CI derlemesinde kod analiz uyarıları var (ör. CA1822, CA1861, CA1014); derleme hatası yok. Arkadaş deneme paketi ve EXE artefakt yükleme adımları workflow koşulları nedeniyle atlandı; bu, kullanıcıya indirilebilir EXE artefaktı sağlandığı anlamına gelmez.
+- PDF smoke dosyaları sentetik test verisiyle üretildi. Sekiz dosyanın üretim başarısı, gerçek Excel/VBA tutarları veya görsel düzenle birebir eşleşme kanıtı değildir.
+- İcmal servisi tekrar incelendi: Eylül–Temmuz takvim sırası korunuyor; Temel/Ortaöğretim Temmuz aktarımı ile Özel Eğitim Temmuz yer tutucusu ayrı. Önceki ay kesintisi; program, ihale, sözleşme, hat ve yüklenici kimliğiyle eşleştiriliyor. Kaynak Excel’deki formül/başlık kusuru sessizce değiştirilmedi.
+- Açık kabul işi: kaynak Excel’in Hakediş Raporu, Hizmet İşleri Hakediş Raporu, Hizmet İşleri Kabul Tutanağı ve Hakediş İcmali sayfalarıyla iki program için toplam sekiz PDF’nin tutar, dönem, yüklenici, hat, imza ve sayfa düzeni karşılaştırması. Microsoft Excel/VBA masaüstü doğrulaması hâlâ gerekli.
+- İlerleme tahminleri değişmedi: Temel/Ortaöğretim %82, Özel Eğitim %84, ortak motor %82, dört PDF/icmal %80, arşiv %86, WPF %80, test/CI/dağıtım %92, genel %83.
+- Sonraki adım: CI artefaktındaki sekiz PDF’yi görsel incelemeye al; mümkün değilse kullanıcı tarafından gerçek Excel/VBA çıktı ve hücre değerleri sağlanmasını iste. Ana dala birleştirme/yayınlama yapılmayacak.
