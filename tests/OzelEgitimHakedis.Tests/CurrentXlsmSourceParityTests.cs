@@ -128,7 +128,8 @@ public sealed class CurrentXlsmSourceParityTests
             GuideDailyPrice: 1362.49m,
             GuideDiscountAmount: 800m,
             GuidePriceDifference: 3500m,
-            ProgramType: TransportationProgramType.SpecialEducation);
+            ProgramType: TransportationProgramType.SpecialEducation,
+            ManualAdditionalGuarantee: 1500m);
 
         var result = ProgressPaymentCalculator.Calculate(input);
 
@@ -136,7 +137,7 @@ public sealed class CurrentXlsmSourceParityTests
         Assert.Equal(34037.27m, result.GuideNetAmount);            // T4
         Assert.Equal(11170.454m, result.Vat);                      // L4 + U4
         Assert.Equal(8308.2086m, result.Withholding);              // M4 + V4
-        Assert.Equal(661.8m, result.AdditionalGuarantee);           // AC4 = 6%*(I4+R4)
+        Assert.Equal(661.8m, result.AdditionalGuarantee);           // AC4 = 6%*(I4+R4), not manual input
         Assert.Equal(736.2857196m, result.StampTax);                // AD4
         Assert.Equal(27328.7843196m, result.TotalDeductions);       // AE4
         Assert.Equal(88837.724m, result.GrossAmount);               // AF4
