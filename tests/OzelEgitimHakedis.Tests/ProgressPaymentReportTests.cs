@@ -246,6 +246,61 @@ public sealed class ProgressPaymentReportTests
 
 
     [Fact]
+    public void HistoricalBasicWorkbookRow4_ShouldMatchReportCellsWithoutImportingIcmalColumnDefect()
+    {
+        // Historical source: 03-Temel Eğitim Taşıma Ödeme(1).xlsm, row 4.
+        // Source Hakediş Raporu values: A=192,009.97; B=7,365.35; C/E=199,375.32;
+        // gross=219,312.85; deductions=12,300.77; payable=207,012.08.
+        // The source Hakediş İcmali!D6 formula additionally adds İcmal Verileri!AB4
+        // (a deduction column in Basic/Secondary), inflating its displayed price difference
+        // to 19,670.30. OEHS intentionally keeps the price difference equal to raw I4;
+        // this source-formula discrepancy is documented and must not be silently changed.
+        var input = new ProgressPaymentInput(
+            WorkDays: 9.82693033060048m,
+            DailyPrice: 19539.1608m,
+            DiscountAmount: 0m,
+            PriceDifference: 7365.349999999999m,
+            ContractAmount: 100000m,
+            IsVatExempt: false,
+            TaxDebt: 0m,
+            SocialSecurityDebt: 0m,
+            MinimumWageSupport: 0m,
+            InspectionPenalty: 0m,
+            ProgramType: TransportationProgramType.BasicOrSecondary);
+        var calculation = ProgressPaymentCalculator.Calculate(input);
+        var current = new ProgressPaymentHistoryData(
+            Guid.NewGuid(),
+            new DateTime(2026, 9, 30),
+            input,
+            calculation,
+            1,
+            new DateOnly(2026, 9, 30),
+            "1",
+            "Hat 1",
+            "İş",
+            "Firma",
+            "TENDER",
+            "SOZ",
+            ContractorTaxOrIdentityNumber: "12345678901");
+
+        var totals = ProgressPaymentReportService.Calculate(current, new[] { current });
+        var reportNet = ProgressPaymentReportService.CalculateReportNetPayable(current, totals);
+
+        Assert.InRange(Math.Abs(192009.97189999995m - totals.CumulativeServiceAmount), 0m, 0.000001m);
+        Assert.InRange(Math.Abs(7365.35m - totals.CumulativePriceDifference), 0m, 0.000001m);
+        Assert.InRange(Math.Abs(199375.32189999995m - totals.CumulativeTotal), 0m, 0.000001m);
+        Assert.InRange(Math.Abs(0m - totals.PreviousTotal), 0m, 0.000001m);
+        Assert.InRange(Math.Abs(199375.32189999995m - totals.CurrentTotal), 0m, 0.000001m);
+        Assert.Equal(219312.85m, decimal.Round(
+            totals.CurrentTotal + calculation.Vat, 2, MidpointRounding.AwayFromZero));
+        Assert.Equal(12300.77m, decimal.Round(
+            ProgressPaymentReportService.CalculateReportTotalDeductions(
+                calculation, TransportationProgramType.BasicOrSecondary),
+            2, MidpointRounding.AwayFromZero));
+        Assert.Equal(207012.08m, reportNet);
+    }
+
+    [Fact]
     public void BasicOrSecondary_SyntheticTransportVector_ShouldMapReportCells()
     {
         // Synthetic regression vector for the Basic/Secondary report mapping.
