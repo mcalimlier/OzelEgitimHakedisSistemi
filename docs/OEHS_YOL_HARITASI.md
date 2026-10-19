@@ -1177,3 +1177,13 @@ Bu oranlar uygulama kapsamı, otomatik test ve henüz açık kalan gerçek kabul
 - Açık kabul işi: kaynak Excel’in Hakediş Raporu, Hizmet İşleri Hakediş Raporu, Hizmet İşleri Kabul Tutanağı ve Hakediş İcmali sayfalarıyla iki program için toplam sekiz PDF’nin tutar, dönem, yüklenici, hat, imza ve sayfa düzeni karşılaştırması. Microsoft Excel/VBA masaüstü doğrulaması hâlâ gerekli.
 - İlerleme tahminleri değişmedi: Temel/Ortaöğretim %82, Özel Eğitim %84, ortak motor %82, dört PDF/icmal %80, arşiv %86, WPF %80, test/CI/dağıtım %92, genel %83.
 - Sonraki adım: CI artefaktındaki sekiz PDF’yi görsel incelemeye al; mümkün değilse kullanıcı tarafından gerçek Excel/VBA çıktı ve hücre değerleri sağlanmasını iste. Ana dala birleştirme/yayınlama yapılmayacak.
+
+
+## Devam notu — 2026-10-19: Sekiz sentetik PDF'nin görsel/taşma ön kontrolü
+
+- CI run #2120 artefaktı `OEHS-PDF-Smoke-Review` çalışma ortamında incelendi. Sekiz PDF'nin her biri tek sayfa ve A4 portre boyutunda (595.3 × 841.9 pt).
+- PDF metin sınırları kontrol edildi: sekiz dosyada sayfa dışına taşan metin span'ı bulunmadı. Sayfa görselleri toplu önizlemede açıldı; temel tablo, imza blokları ve alt notlar sayfa içinde görünüyor.
+- Tutar/metin örneği: Özel Eğitim sentetik icmalinde Eylül 140,00 TL ve Ekim 120,00 TL; Temel/Ortaöğretim sentetik icmalinde Eylül 140,00 TL ve Ekim 125,00 TL. Temel örneğinde fark sütunu ham fiyat farkına kesinti toplamını da ekliyor; bu, kaynak Excel'deki ayrı icmal davranışıyla uyumlu test vektörüdür.
+- **Kapsam sınırı:** bunlar gerçek hakediş verileri değil, sentetik smoke çıktılarıdır. Bu inceleme yalnızca tek sayfa/A4/taşma ve temel görünür yerleşim ön kontrolünü kanıtlar; Excel 4/5/6/7 sayfalarıyla parasal veya görsel birebir eşleşmeyi kanıtlamaz. Gerçek Excel/VBA golden vector ve sekiz gerçek PDF karşılaştırması açık kalıyor.
+- CI run #2120 başarılı kalıyor; son dokümantasyon commit'i için ayrıca CI çalışması yok. PR #3 taslak ve birleştirilmemiştir; ana dala birleştirme/yayın yapılmadı.
+- İlerleme yüzdeleri değiştirilmedi. Sonraki adım: gerçek Excel/VBA'dan aynı dönem için hücre sonuçları alınarak dört belge × iki program türü kabul matrisi tamamlanmalı.
