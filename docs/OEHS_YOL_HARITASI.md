@@ -848,3 +848,36 @@ Bu sayımlar çalışma kitabındaki data_type == 'f' hücrelerine dayanır; VBA
 - **Doğrulama:** yalnızca dosya/formül hücresi sayımı doğrulandı. Uygulama kodu değiştirilmedi; test/CI sonucu bu not için iddia edilmiyor.
 - **Açık risk:** VBA kaynak/prosedür çağrı envanterinin bu iki dosya sürümüyle eşleştiği, Excel masaüstü sonuçları ve uygulama çıktıları hücre hücre karşılaştırılmalı.
 - **Sıradaki adım:** Temel Eğitim için kaynak hücre → VBA → hesaplama sonucu → dört PDF alanı izlenebilirlik tablosunu çıkar; ardından bu tabloya dayalı birim/regresyon testlerini yazıp mevcut çekirdeği karşılaştır. Eşdeğerlik kanıtlanmayan kod henüz silinmeyecek.
+
+
+## 19.10.2026 — Temel Eğitim çekirdeği: ilk hücre-zinciri doğrulaması
+
+Yeni yüklenen dosyalar doğrudan açılarak aşağıdaki kaynak zincirleri okundu. Bunlar dosyadaki formüller ve kayıtlı önbellek değerleridir; Excel masaüstünde yeniden hesaplatılmış sonuç değildir.
+
+### Temel Eğitim taşıma
+
+- Hesaplama Bilgileri!K4 = (G4*H4)+I4-J4; önbellek: 319991.9228.
+- L4 = IF(E4="Hayır",K4*10/100,); M4=L4/2; N4=K4+M4; O4=K4+L4.
+- T4 = I4*6/100; önbellek: 441.921.
+- U4 = K4*9.48/1000; V4 = P4+Q4+R4+S4+T4+U4+M4; W4 = O4-V4.
+- Örnek satır 4'te W4 önbelleği 332516.074511856.
+- Hakediş Raporu!D28 = ROUND(D13,2)-ROUND(D26,2); önbellek: 332516.08. Bu, Hesaplama Bilgileri!W4 ile iki ondalık gösterimde eşleşir.
+
+### Kullanıcı kararıyla açık kalan çelişki
+
+Kullanıcı Temel Eğitim ek kesin teminatının elle girildiğini belirtmişti; ancak bu yeni Temel Eğitim XLSM'de Hesaplama Bilgileri!T4 formülü açıkça =I4*6/100. Bu iki bilgi aynı anda aynı alan için doğru kabul edilemez. En yeni XLSM kaynak önceliği nedeniyle uygulama kodu bu konuda henüz değiştirilmedi. I4 alanının iş anlamı, T4 etiket/açıklaması, ilgili VBA yordamları ve Excel'de gerçek giriş senaryosu kontrol edilerek ayrım yapılmalı; gerekirse kullanıcıya karar noktası sunulmalı. Kullanıcı talimatındaki elle giriş kuralı, hücre kanıtı çözülmeden sessizce formüle veya formül elle girişe dönüştürülmemeli.
+
+### Özel Eğitim taşıma ve teminat
+
+- Hesaplama!K4 = (G4*H4)+I4-J4; L4 = IF(E4="Hayır",K4*10/100,); M4=L4/2; N4=K4+M4; O4=K4+L4.
+- Hesaplama!T4 = (P4*Q4)+R4-S4; U4 = IF(E4="Hayır",T4*20/100,); V4 = IF(E4="Hayır",U4*9/10,0); W4=T4+V4; X4=T4+U4.
+- Hesaplama!AC4 = (I4*6/100)+(R4*6/100); önbellek: 661.8.
+- Hesaplama!AD4 = (K4*9.48/1000)+(T4*9.48/1000); AE4 = M4+V4+Y4+Z4+AA4+AB4+AC4+AD4; AF4=O4+X4; AG4=AF4-AE4.
+- Örnek satır 4'te AG4 önbelleği 61508.9396804; Hakediş Raporu!D28 önbelleği 61508.94.
+- Özel Eğitim İcmal Verileri sayfasında AN3 Eylül, AO3 Ekim, AP3 ve AQ3 ise ikisi de Aralık 2026'ya bağlanıyor. Bu ay başlığı kusuru belgelenmiştir; kaynak Excel/VBA gerçek sonuçlarıyla doğrulamadan sütun davranışı değiştirilmemeli.
+
+### Doğrulama sınırı ve sıradaki adım
+
+- Kaynak formül hücreleri ve saklanan sonuçlar okundu; bunların gerçek Excel hesaplama sonucu olarak yeniden üretimi yapılmadı.
+- Uygulama kodu veya hesap davranışı bu adımda değiştirilmedi.
+- Sıradaki adım: VBA'daki yazma/aktarım yordamlarını hücre adresleriyle eşleştir; özellikle Temel Eğitim T4 ek kesin teminat uyuşmazlığını, kullanıcı giriş alanlarını ve rapor D15/D28 farkını kaynak üzerinde çöz. Sonra bu zincir için testler oluştur ve mevcut çekirdekle karşılaştır.
