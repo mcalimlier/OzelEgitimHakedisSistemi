@@ -105,4 +105,42 @@ public sealed class CurrentXlsmSourceParityTests
         Assert.Equal(98351.765m, result.GrossAmount);               // AF6
         Assert.Equal(87543.800394m, result.NetPayable);              // AG6
     }
+
+    [Fact]
+    public void UploadedSpecialEducationWorkbookRow4_ShouldMatchCachedCalculationChain()
+    {
+        // Read from the user's 2026-10-19 upload:
+        // 02-Özel Eğitim Hakediş Ödeme (1)(1).xlsm, Hesaplama row 4.
+        // These are cached workbook results; this is not a claim that Excel/VBA
+        // was executed in this environment.
+        var input = new ProgressPaymentInput(
+            WorkDays: 16m,
+            DailyPrice: 2320m,
+            DiscountAmount: 1020m,
+            PriceDifference: 7530m,
+            ContractAmount: 100000m,
+            IsVatExempt: false,
+            TaxDebt: 1200m,
+            SocialSecurityDebt: 12560m,
+            MinimumWageSupport: 1362.49m,
+            InspectionPenalty: 2500m,
+            GuideWorkDays: 23m,
+            GuideDailyPrice: 1362.49m,
+            GuideDiscountAmount: 800m,
+            GuidePriceDifference: 3500m,
+            ProgramType: TransportationProgramType.SpecialEducation);
+
+        var result = ProgressPaymentCalculator.Calculate(input);
+
+        Assert.Equal(43630m, result.TransportNetAmount);          // K4
+        Assert.Equal(34037.27m, result.GuideNetAmount);            // T4
+        Assert.Equal(11170.454m, result.Vat);                      // L4 + U4
+        Assert.Equal(8308.2086m, result.Withholding);              // M4 + V4
+        Assert.Equal(661.8m, result.AdditionalGuarantee);           // AC4 = 6%*(I4+R4)
+        Assert.Equal(736.2857196m, result.StampTax);                // AD4
+        Assert.Equal(27328.7843196m, result.TotalDeductions);       // AE4
+        Assert.Equal(88837.724m, result.GrossAmount);               // AF4
+        Assert.Equal(61508.9396804m, result.NetPayable);            // AG4
+    }
+
 }
