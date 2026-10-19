@@ -120,13 +120,11 @@ public sealed class ProgressPaymentCalculator
         var invoiceAmountAfterWithholding =
             transportInvoiceAmount + guideInvoiceAmount;
 
-        // Hesaplama Bilgileri sayfası:
-        // Temel Eğitim U = (K*9.48/1000) + (T*9.48/1000), T elle girilen ek kesin teminattır.
-        // Özel Eğitim AD = (K*9.48/1000) + (T*9.48/1000), T rehber net tutarıdır.
+        // Nihai kaynak XLSM formülleri:
+        // Temel Eğitim: U = K*9.48/1000.
+        // Özel Eğitim: AD = (K*9.48/1000) + (T*9.48/1000).
         // Hakediş Raporu'nun ayrı D15 formülü rapor servisi içinde uygulanır.
-        var transportStampTax = input.ProgramType == TransportationProgramType.BasicOrSecondary
-            ? (transportNetAmount + input.ManualAdditionalGuarantee) * constants.StampTaxRate
-            : transportNetAmount * constants.StampTaxRate;
+        var transportStampTax = transportNetAmount * constants.StampTaxRate;
         var guideStampTax = input.ProgramType == TransportationProgramType.BasicOrSecondary
             ? 0m
             : guideNetAmount * constants.StampTaxRate;
@@ -134,12 +132,12 @@ public sealed class ProgressPaymentCalculator
         // Temel Eğitim raporundaki D15 için negatif matrahın sıfırlanması ayrı rapor formülüdür.
         var stampTax = transportStampTax + guideStampTax;
 
-        // Program-specific source rules confirmed by the user after checking the workbooks:
-        // Basic/Secondary: the additional-guarantee amount is manually entered and used as-is.
-        // Special Education: AC = I*6% + R*6%; discount fields J/S are not included.
-        // Keep the programs separate; do not derive Basic/Secondary from price difference.
+        // Nihai yüklenen Excel'ler esas alınır; önceki sözlü kural/varsayımlar dikkate alınmaz.
+        // Temel Eğitim: Hesaplama Bilgileri!T4 = I4*6/100.
+        // Özel Eğitim: Hesaplama!AC4 = (I4*6/100) + (R4*6/100).
+        // İskonto J/S bu formüllere dahil değildir.
         var additionalGuarantee = input.ProgramType == TransportationProgramType.BasicOrSecondary
-            ? input.ManualAdditionalGuarantee
+            ? input.PriceDifference * constants.AdditionalGuaranteeRate
             : (input.PriceDifference * constants.AdditionalGuaranteeRate)
               + (input.GuidePriceDifference * constants.AdditionalGuaranteeRate);
 
