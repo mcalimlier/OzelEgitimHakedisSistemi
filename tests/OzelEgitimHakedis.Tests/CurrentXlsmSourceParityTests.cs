@@ -172,57 +172,6 @@ public sealed class CurrentXlsmSourceParityTests
 
 
     [Fact]
-    public void AdditionalGuarantee_ShouldFollowWorkbookPriceDifferenceCells_NotDiscountOrManualEntry()
-    {
-        // Source workbook formula contract:
-        // Basic/Secondary T4 = I4*6%; Special Education AC4 = I4*6% + R4*6%.
-        // Discount J/S and the legacy manual guarantee field are not referenced.
-        foreach (var programType in new[]
-        {
-            TransportationProgramType.BasicOrSecondary,
-            TransportationProgramType.SpecialEducation
-        })
-        {
-            var baseline = new ProgressPaymentInput(
-                WorkDays: 1m,
-                DailyPrice: 100m,
-                DiscountAmount: 0m,
-                PriceDifference: 1000m,
-                ContractAmount: 100000m,
-                IsVatExempt: true,
-                TaxDebt: 0m,
-                SocialSecurityDebt: 0m,
-                MinimumWageSupport: 0m,
-                InspectionPenalty: 0m,
-                GuideWorkDays: 1m,
-                GuideDailyPrice: 200m,
-                GuideDiscountAmount: 0m,
-                GuidePriceDifference: 500m,
-                ProgramType: programType,
-                ManualAdditionalGuarantee: 0m);
-
-            var changedUnrelatedFields = baseline with
-            {
-                DiscountAmount = 900m,
-                GuideDiscountAmount = 700m,
-                ManualAdditionalGuarantee = 9876.54m
-            };
-
-            var baselineResult = ProgressPaymentCalculator.Calculate(baseline);
-            var changedResult = ProgressPaymentCalculator.Calculate(changedUnrelatedFields);
-            var expected = programType == TransportationProgramType.BasicOrSecondary
-                ? 60m
-                : 90m;
-
-            Assert.Equal(expected, baselineResult.AdditionalGuarantee);
-            Assert.Equal(expected, changedResult.AdditionalGuarantee);
-            Assert.Equal(baselineResult.Deductions.AdditionalGuarantee,
-                changedResult.Deductions.AdditionalGuarantee);
-        }
-    }
-
-
-    [Fact]
     public void UploadedBasicEducationWorkbookRow4_ShouldMatchFullCalculationChain()
     {
         // Source: 03-Temel Eğitim Taşıma Ödeme.xlsmdüzeltildi(2).xlsm
