@@ -171,7 +171,7 @@ internal static class OehsOfficialDocumentFactory
             ("D", "Bir Önceki Hakedişlerin Toplam Tutarı", c.ReportTotals.PreviousTotal, White, 29),
             ("E", "Bu Hakedişin Tutarı ( C - D )", c.ReportTotals.CurrentTotal, White, 29),
             ("F", BuildVatRateLabel(c.Calculation, c.ProgramType), c.Calculation.Vat, White, 29),
-            ("G", "Tahakkuk Tutarı", c.ReportTotals.CurrentTotal + c.ReportTotals.CurrentPriceDifference + c.Calculation.Vat, TotalGray, 32)
+            ("G", "Tahakkuk Tutarı", c.ReportTotals.CurrentTotal + c.Calculation.Vat, TotalGray, 32)
         };
         foreach (var row in summaryRows)
         {
