@@ -110,7 +110,7 @@ Aynı tarihsel Temel Eğitim kaynak kopyasının LibreOffice PDF dışa aktarım
 - `İcmal Verileri!P4` (Eylül 2026 ham fiyat farkı): **7.365,35 TL**.
 - `İcmal Verileri!AB4` (başlık: `HAKEDİŞLERDEN YAPILAN KESİNTİ TUTARLARI`): **12.304,954557692 TL**.
 - `Hakediş İcmali!D6` formülü, `15+MATCH(...)` ile P:Z fiyat farkı sütununu **ve** `27+MATCH(...)` ile AB:AL kesinti sütununu topluyor.
-- Bu nedenle `Hakediş İcmali!D6` sonucu **19.670,304557692 TL**; PDF'de **19.670,30 TL** basılıyor. `E6=C6+D6` sonucu **219.045,63 TL**.
+- Bu nedenle `Hakediş İcmali!D6` sonucu **19.670,304557692 TL**; PDF'de **19.670,30 TL** basılıyor. `C6` ise `Hesaplama!K4` değerini (fiyat farkı zaten dâhil) kullanıyor; `E6=C6+D6` sonucu **219.045,63 TL** oluyor ve fiyat farkı ikinci kez ekleniyor.
 - Aynı kaynakta `Hakediş Raporu` brüt/tahakkuk tutarı **219.312,85 TL**; bu tutar hesaplama sayfasındaki KDV dâhil brüt zincirle uyumlu. İcmal toplamı bu değerle **267,23 TL** fark gösteriyor.
 
 Bu, Temel/Ortaöğretim icmalinde Özel Eğitim için kullanılan iki fiyat-farkı bloğunu toplayan formülün, Temel Eğitim'de ikinci blok kesinti sütunları olduğu hâlde aynen kalmış olabileceğini gösterir.
@@ -132,7 +132,9 @@ Bu düzeltme yalnızca belge alt bilgisini hizalar; hesaplama davranışını de
 
 ### Özel Eğitim icmalinde fiyat farkının iki kez toplanması
 
-Tarihsel Özel Eğitim kaynak PDF'sinde Eylül satırı `İş Tutarı 54.725,90 TL` ve `Fiyat Farkı 1.403,57 TL`; Ekim satırı `İş Tutarı 93.318,27 TL` ve `Fiyat Farkı 1.403,57 TL` olarak gösteriliyor. Kaynak makro aylık tutar kolonuna `Hesaplama!K + Hesaplama!T` yazıyor; bu iki hücre ham `I/R` fiyat farklarını zaten içeriyor. İcmal formülü fiyat farkını ayrıca eklediğinden satır toplamı ham farkı ikinci kez içeriyor. OEHS icmal üreticisi şu an bu kaynak davranışını koruyor. Bu, kaynak PDF ile tutarlılık bulgusudur; hesaplama matrahının doğru olduğu yönünde bağımsız mevzuat onayı değildir. İcmal davranışı değiştirilmeden önce en yeni XLSM ve VBA makrosu aynı girdiyle tekrar doğrulanmalıdır.
+Tarihsel Özel Eğitim kaynak PDF'sinde Eylül satırı `İş Tutarı 54.725,90 TL` ve `Fiyat Farkı 1.403,57 TL`; Ekim satırı `İş Tutarı 93.318,27 TL` ve `Fiyat Farkı 1.403,57 TL` olarak gösteriliyor. Kaynak makro aylık tutar kolonuna `Hesaplama!K + Hesaplama!T` yazıyor; bu iki hücre ham `I/R` fiyat farklarını zaten içeriyor. İcmal formülü fiyat farkını ayrıca eklediğinden satır toplamı ham farkı ikinci kez içeriyor. OEHS icmal üreticisi şu an bu kaynak davranışını koruyor.
+
+Mantıksal ayrımda aylık `İş Tutarı` fiyat farkı hariç temel hizmet tutarı olmalı, `Fiyat Farkı` yalnızca ham `I/R` olmalı; toplam da `K+T` ile eşleşmeli. Tarihsel kaynak PDF ise Eylül toplamında **56.129,48 TL**, Ekim toplamında **94.721,85 TL** göstererek her iki ham farkı ikinci kez ekliyor. Bu, kaynak PDF ile tutarlılık bulgusudur; hesaplama matrahının doğru olduğu yönünde bağımsız mevzuat onayı değildir. İcmal davranışı değiştirilmeden önce en yeni XLSM ve VBA makrosu aynı girdiyle tekrar doğrulanmalıdır.
 
 ### Hizmet İşleri Hakediş Raporu — alan eşlemesi düzeltildi
 
