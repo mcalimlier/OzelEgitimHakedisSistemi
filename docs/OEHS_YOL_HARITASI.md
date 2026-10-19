@@ -1113,3 +1113,37 @@ Bu değişikliklerin Windows/.NET testleri ve dört PDF'nin görsel kabulü hen�
 - PDF smoke artefaktı `OEHS-PDF-Smoke-Review` oluşturuldu (artefakt kimliği `12202390499`, 597357 byte; son kullanma tarihi 2026-10-22). Artefakt dosyalarının görsel incelemesi bu kayıtla tamamlanmış sayılmaz.
 - Bu CI sonucu kaynak ve otomatik smoke kontrollerini doğrular; orijinal Excel/VBA'nın masaüstünde çalıştırılması, sekiz gerçek çıktı PDF'sinin Excel referanslarıyla birebir görsel ve tutar karşılaştırması yerine geçmez.
 - PR #3 açık ve birleştirilmemiştir. Ana dala birleştirme yapılmadı.
+
+
+## Devam notu — 2026-10-19: Bir saatlik çekirdek ilerleme ve güncel CI
+
+### Uzak dal / doğrulama
+- Etkin dal: `feature/official-payment-document-templates`; PR #3 açık, taslak ve birleştirilmemiş durumda. Base dal: `feature/wpf-contract-entry-v0.5`.
+- Commit `811547b7f725eead6cde010df6e5af7777708d80` için Windows CI run **2110** başarılı tamamlandı. Tam çözüm/WPF derlemeleri, UI statik kontrolleri, arşiv/yol haritası kontrolleri, test projeleri, `Test Solution`, PDF smoke üretimi ve Windows EXE publish adımları başarılı.
+- CI başarısı derleme ve otomatik testleri kanıtlar; gerçek Excel/VBA yeniden hesaplaması veya sekiz PDF'nin Excel referanslarıyla görsel eşleşmesi değildir. PDF smoke test verisi sentetiktir.
+- Bu turda modelden eski ek kesin teminat giriş parametresi kaldırıldı; Temel/Ortaöğretim ve Özel Eğitim kaynak formül dalları ayrı kaldı. Kalan iki eski çağrı temizlendi. Kaynak Excel formülü esas alınır.
+
+### Gerçekçi çekirdek ilerleme tahminleri
+Bu oranlar uygulama kapsamı, otomatik test ve henüz açık kalan gerçek kabul işleri birlikte dikkate alınarak verilmiş mühendislik tahminidir; tamamlanma sertifikası değildir.
+
+| Çekirdek | Tahmin | Bu turdaki kanıt / açık kalan ana iş |
+|---|---:|---|
+| Temel/Ortaöğretim hesaplama | %82 | Kaynak formül zinciri ve regresyon testleri var; Excel masaüstü/VBA golden vector ve satır bazlı kabul açık |
+| Özel Eğitim hesaplama | %84 | AC/AD/AE/AG formül zinciri testlerde; gerçek Excel/VBA yeniden hesaplama ve uçtan uca örnek açık |
+| Ortak formül ve hakediş rapor motoru | %82 | Rapor neti/damga vergisi düzeltmeleri ve testler var; kaynak rapor hücreleriyle tam senaryo karşılaştırması açık |
+| Dört PDF ve icmal (8 çıktı) | %80 | Tek sayfa A4/sentetik smoke otomatik doğrulanıyor; 8 PDF'nin kaynak Excel sayfalarıyla gerçek tutar, dönem, yüklenici, hat, imza ve yerleşim karşılaştırması açık |
+| Arşiv, kayıt ve geri yükleme | %86 | Çakışma/yeniden hesaplama korumaları ve CI statik kontrolleri var; temiz Windows profiliyle etkileşimli kabul açık |
+| WPF ekranları ve Excel sayfa akışı | %80 | UI derlemesi ve statik sözleşme kontrolleri başarılı; iki workbook'un tüm görünür sayfalarıyla program türüne özel navigasyon eşlemesi açık |
+| Test, CI ve dağıtım hattı | %92 | Run 2110 başarılı; gerçek kullanıcı denemesi, kaynak Excel paritesi ve görsel PDF kabulü bu kapsamın dışında |
+| **Genel proje** | **%83** | CI/derleme güveni arttı; yüksek riskli Excel/VBA ve 8 PDF kabul kapıları henüz kapanmadı |
+
+### Sonraki paralel işler
+1. Temel Eğitim: T4/U4/W4 ve Hakediş Raporu D15/D28 zincirini kaynak dosyadan gelen tek bir kabul vektöründe sabitle; Excel/VBA kanıtı olmadan hücre davranışını değiştirme.
+2. Özel Eğitim: AC4/AD4/AE4/AG4 ve D28 sonuçlarını ayrı golden vector ile eşleştir.
+3. PDF: dört belge × iki program için kabul matrisi; sentetik smoke çıktısını gerçek kaynak kabulüyle karıştırma.
+4. WPF/arşiv: program türüne göre görünür Excel sayfa sırası ve temiz profilde kayıt/geri açma senaryosu.
+5. Her değişiklikten sonra Windows CI sonucunu yeniden kontrol et. PR taslak kalacak; ana dala birleştirme/yayın yapılmayacak.
+
+### GitHub Desktop eşitleme
+- Bu commitler uzak GitHub dalına yazılmıştır. Yerel kopyayı güncellemeden önce GitHub Desktop'ta doğru dalın `feature/official-payment-document-templates` olduğunu ve yerel değişikliklerin kaydedildiğini kontrol et.
+- Yerel çalışma ağacında korunması gereken commit edilmemiş değişiklik yoksa **Fetch origin**, ardından **Pull origin** yap. Yerel değişiklik varsa önce onları commit et veya güvenli biçimde yedekle; pull ile üzerine yazma riski alma.
