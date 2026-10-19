@@ -32,11 +32,11 @@ public sealed class CurrentBasicWorkbookParityTests
                     ManualAdditionalGuarantee: 1500m),
                 SourceTransportNet = 99426m,
                 SourceGross = 109368.6m,
-                SourceStampTax = 956.77848m,
-                SourceTotalDeductions = 13428.07848m,
-                SourceNet = 95940.52152m,
-                SourceReportD28 = 97441.51m,
-                ExpectedReportNet = 97441.51m
+                SourceStampTax = 942.15648m,
+                SourceTotalDeductions = 12003.51648m,
+                SourceNet = 97365.08352m,
+                SourceReportD28 = 98851.45m,
+                ExpectedReportNet = 98851.45m
             },
             new
             {
@@ -55,11 +55,11 @@ public sealed class CurrentBasicWorkbookParityTests
                     ManualAdditionalGuarantee: 1500m),
                 SourceTransportNet = 93197m,
                 SourceGross = 102516.7m,
-                SourceStampTax = 897.72756m,
-                SourceTotalDeductions = 13057.57756m,
-                SourceNet = 89459.12244m,
-                SourceReportD28 = 90961.10m,
-                ExpectedReportNet = 90961.10m
+                SourceStampTax = 883.50756m,
+                SourceTotalDeductions = 11633.47756m,
+                SourceNet = 90883.22244m,
+                SourceReportD28 = 92370.98m,
+                ExpectedReportNet = 92370.98m
             }
         };
 
@@ -70,8 +70,8 @@ public sealed class CurrentBasicWorkbookParityTests
             Assert.Equal(example.SourceTransportNet, result.TransportNetAmount);
             Assert.Equal(example.SourceGross, result.GrossAmount);
 
-            // Current workbook: T is manually entered as 1500; U=(K*9.48/1000)+(T*9.48/1000).
-            Assert.Equal(1500m, result.AdditionalGuarantee);
+            // Latest Basic XLSM: T=I*6%; U=K*9.48/1000. The legacy manual input is ignored.
+            Assert.Equal(example.Input.PriceDifference * 0.06m, result.AdditionalGuarantee);
             Assert.Equal(example.SourceStampTax, result.StampTax);
             Assert.Equal(example.SourceTotalDeductions, result.TotalDeductions);
             Assert.Equal(example.SourceNet, result.NetPayable);
@@ -117,19 +117,19 @@ public sealed class CurrentBasicWorkbookParityTests
 
         var result = ProgressPaymentCalculator.Calculate(input);
 
-        // Latest workbook's Hesaplama Bilgileri row 4, recalculated in a disposable
-        // LibreOffice copy (not Excel/VBA acceptance): K=220490, L=22049,
-        // M=11024.5, T=1500 (literal), U=2104.4652, V=20628.9652, W=221910.0348.
+        // Latest workbook's Hesaplama Bilgileri row 4: K=220490, L=22049,
+        // M=11024.5, T=I*6%=90, U=K*9.48/1000=2090.2452.
+        // LibreOffice cached/recalculated values are not Excel/VBA acceptance.
         Assert.Equal(220490m, result.TransportNetAmount);
         Assert.Equal(22049m, result.TransportVat);
         Assert.Equal(11024.5m, result.TransportWithholding);
         Assert.Equal(242539m, result.GrossAmount);
 
-        // The manually entered T=1500 is used as-is and included in the source stamp-tax base.
-        Assert.Equal(1500m, result.AdditionalGuarantee);
-        Assert.Equal(2104.4652m, result.StampTax);
-        Assert.Equal(20628.9652m, result.TotalDeductions);
-        Assert.Equal(221910.0348m, result.NetPayable);
+        // Source formulas T=I*6%, U=K*9.48/1000, V includes T+U+M, W=O-V.
+        Assert.Equal(90m, result.AdditionalGuarantee);
+        Assert.Equal(2090.2452m, result.StampTax);
+        Assert.Equal(19204.7452m, result.TotalDeductions);
+        Assert.Equal(223334.2548m, result.NetPayable);
 
         var current = new ProgressPaymentHistoryData(
             Id: Guid.NewGuid(),
@@ -149,6 +149,6 @@ public sealed class CurrentBasicWorkbookParityTests
         var reportNet = ProgressPaymentReportService.CalculateReportNetPayable(current, reportTotals);
 
         // Hakediş Raporu D11=K+I, D13=D11+D12, D28=D13-D26.
-        Assert.Equal(223410.03m, reportNet);
+        Assert.Equal(224820.03m, reportNet);
     }
 }
