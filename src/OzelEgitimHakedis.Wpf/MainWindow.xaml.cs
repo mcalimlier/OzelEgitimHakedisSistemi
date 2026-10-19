@@ -7362,7 +7362,8 @@ public partial class MainWindow : Window
             ControllerRole: signatories.ControllerRole,
             ApproverName: signatories.ApproverName,
             ApproverRole: signatories.ApproverRole,
-            ProgramType: latest.Input.ProgramType);
+            ProgramType: latest.Input.ProgramType,
+            RouteName: string.IsNullOrWhiteSpace(latest.RouteName) ? route.Name : latest.RouteName.Trim());
     }
 
     private FixedDocument? BuildSelectedRouteOutputDocument()
