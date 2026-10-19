@@ -1,3 +1,4 @@
+using System.IO;
 using System.Runtime.ExceptionServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -269,8 +270,8 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
         // snapshot value 12.304,95, so the generated icmal differs by 4,19 TL.
         Assert.Contains("₺19.666,12", icmal);
         Assert.Contains("₺219.041,44", icmal);
-        Assert.DoesNotContain("₺19.670,30", icmal);
-        Assert.DoesNotContain("₺219.045,63", icmal);
+        Assert.DoesNotContain("₺19.670,30", icmal, StringComparison.Ordinal);
+        Assert.DoesNotContain("₺219.045,63", icmal, StringComparison.Ordinal);
     }
 
     private static string PageText(
