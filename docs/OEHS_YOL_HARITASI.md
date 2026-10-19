@@ -1024,3 +1024,14 @@ Bu değişikliklerin Windows/.NET testleri ve dört PDF'nin görsel kabulü hen�
 - Negatif fiyat farkı testi, kaynak formüllerinin doğruladığı hesaplama sayfası damga vergisi, ek teminat ve rapor D15 davranışını sınayacak şekilde bırakıldı; sentetik D28/net tutar beklentisi kaldırıldı.
 - Bu değişikliklerin ardından CI henüz sonuçlanmış olarak görülmedi; başarılı test iddiası yok. Sonraki adım: en son commit'in Windows CI sonucunu incelemek; kalan başarısız testleri gerçek XLSM hücre zinciriyle karşılaştırmak; VBA ile yazılan/değiştirilen hücreleri ve özel eğitim gerçek örneklerini doğrulamak.
 - Açık risk: Temel Eğitim T/U formülleri ile daha önce kullanıcı tarafından belirtilen elle teminat girişi davranışı arasında fark var. Hücre formülü ve VBA yazma akışı birlikte doğrulanmadan bu fark kapatılmayacak.
+
+
+## Devam notu — 2026-10-19: hesaplama testleri geçti, PDF smoke icmal kontrolü kaldı
+
+- İncelenen commit: `fb0b56b849bbe68b4d2e982cb2fb095dcb78bf34`; CI run: [39278058152](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39278058152).
+- Windows üzerinde Core testleri 221/221 geçti; Core ve WPF test projelerinin derlemeleri başarılı.
+- PDF smoke adımı başarısız: `OfficialDocumentOutputTests.FourOfficialTemplates_ShouldExportAsSinglePageA4VectorPdfs` içinde Temel/Ortaöğretim Temmuz icmalinde `₺15,04` metni bulunamadı. Bu nedenle PDF artefaktları yüklenmedi ve EXE yayımlama aşaması tamamlanmadı.
+- Testteki Temmuz örneği sentetik bir `ProgressPaymentInput` ve özel oluşturulmuş `ProgressPaymentCalculation` kullanıyor. Beklenen 15,04 TL tutarının Excel kaynağıyla kanıtı henüz yok; sırf testi geçirmek için beklenti veya hesaplama davranışı değiştirilmedi.
+- Açık iş: Temel/Ortaöğretim icmalinin ilgili hücre/formül ve VBA aktarım zincirini test girdileriyle eşleştir; uygulamanın oluşturduğu PDF metnindeki gerçek tutarı ve kaynağını belirle. Kaynak formülü doğrulanınca gerekirse testi ya da uygulama kodunu düzelt ve CI'ı yeniden çalıştır.
+- Diğer açık riskler sürüyor: iki XLSM'de VBA'nın hücre yazma akışı uçtan uca doğrulanmadı; Özel Eğitim aylık başlık anomalisi açık; dört PDF'nin gerçek Excel/VBA referansıyla görsel ve tutar kabulü tamamlanmadı.
+- PR #3 açık/taslak tutulacak; ana dala birleştirme veya yayın yapılmayacak.
