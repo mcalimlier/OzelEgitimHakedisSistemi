@@ -1147,3 +1147,13 @@ Bu oranlar uygulama kapsamı, otomatik test ve henüz açık kalan gerçek kabul
 ### GitHub Desktop eşitleme
 - Bu commitler uzak GitHub dalına yazılmıştır. Yerel kopyayı güncellemeden önce GitHub Desktop'ta doğru dalın `feature/official-payment-document-templates` olduğunu ve yerel değişikliklerin kaydedildiğini kontrol et.
 - Yerel çalışma ağacında korunması gereken commit edilmemiş değişiklik yoksa **Fetch origin**, ardından **Pull origin** yap. Yerel değişiklik varsa önce onları commit et veya güvenli biçimde yedekle; pull ile üzerine yazma riski alma.
+
+
+## Devam notu — 2026-10-19: Hakediş raporu tahakkuk tutarı mükerrer fiyat farkı düzeltmesi
+
+- Kaynak Excel `Hakediş Raporu!D13 = D11 + D12` zinciri ve yüklenen çalışma kitabı satır 4 örnekleriyle karşılaştırmada, PDF şablonundaki G / “Tahakkuk Tutarı” satırının `CurrentTotal + CurrentPriceDifference + VAT` kullanması mükerrer fiyat farkı riski oluşturuyordu. `CurrentTotal` zaten K (Temel/Ortaöğretim) veya K+T (Özel Eğitim) dönem tutarını içeriyor; K/T zincirinde ham I/R fiyat farkı zaten bulunuyor.
+- `src/OzelEgitimHakedis.Wpf/OehsOfficialDocumentFactory.cs` düzeltildi: G artık `CurrentTotal + VAT` kullanıyor. PDF testindeki sentetik rapor vektörü de G=110,00 TL bekleyecek şekilde düzeltildi; daha önce G=120,00 TL beklentisi, aynı fiyat farkını ikinci kez ekliyordu. Net tutar testi 105,00 TL olarak kalıyor ve artık G−H ile tutarlı.
+- Kod commit'i: `37fee954761ec82548aa04f7d5afc51e4e21036c`. Windows CI run 2114 / `39301053567` başlamış durumda; son görülen aşamada .NET kurulumu sürüyordu, test sonucu henüz yok.
+- Test commit'i: `7bf7c5faa02cfffa0230d2d258b65e1cd73ef383`. Bu commit için henüz ayrı CI çalışması görünmedi; en son test değişikliğinin CI tarafından alınıp alınmadığı yeniden kontrol edilmeli.
+- Bu değişiklik henüz kaynak Excel/VBA masaüstü kabulü veya sekiz PDF'nin görsel kabulü anlamına gelmez. CI başarıyla bitse dahi bu iki kabul işi açık kalır.
+- PR #3 taslak/açık ve birleştirilmemiştir; ana dala birleştirme/yayın yapılmadı. İlerleme yüzdeleri CI ve PDF kabulü tamamlanana kadar artırılmadı.
