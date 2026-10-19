@@ -34,8 +34,8 @@ public sealed class CurrentXlsmReportNetFormulaTests
                     GuideDiscountAmount: 550m,
                     GuidePriceDifference: 1766m,
                     ProgramType: TransportationProgramType.SpecialEducation),
-                ExpectedReportNet = 101351.37m,
-                SourceReportD28 = 101351.37m
+                ExpectedReportNet = 97595.37m,
+                SourceReportD28 = 97595.37m
             },
             new
             {
@@ -55,8 +55,8 @@ public sealed class CurrentXlsmReportNetFormulaTests
                     GuideDiscountAmount: 650m,
                     GuidePriceDifference: 1875m,
                     ProgramType: TransportationProgramType.SpecialEducation),
-                ExpectedReportNet = 91618.81m,
-                SourceReportD28 = 91618.81m
+                ExpectedReportNet = 87543.80m,
+                SourceReportD28 = 87543.80m
             }
         };
 
@@ -124,8 +124,88 @@ public sealed class CurrentXlsmReportNetFormulaTests
         var reportTotals = ProgressPaymentReportService.Calculate(current, new[] { current });
         var reportNet = ProgressPaymentReportService.CalculateReportNetPayable(current, reportTotals);
 
-        // Current XLSM recalculated in a disposable LibreOffice copy:
-        // calculation AG4 = 95,527.1346528; report D28 = 98,907.13.
-        Assert.Equal(98907.13m, reportNet);
+        // Source workbook calculation AG4 = 95,527.1346528. The report's
+        // D28 is ROUND(D13,2)-ROUND(D26,2), without adding I4/R4 a second time.
+        Assert.Equal(95527.13m, reportNet);
+    }
+
+    [Fact]
+    public void UploadedSpecialEducationWorkbookRow4_ReportNetShouldMatchD28()
+    {
+        var input = new ProgressPaymentInput(
+            WorkDays: 16m,
+            DailyPrice: 2320m,
+            DiscountAmount: 1020m,
+            PriceDifference: 7530m,
+            ContractAmount: 100000m,
+            IsVatExempt: false,
+            TaxDebt: 1200m,
+            SocialSecurityDebt: 12560m,
+            MinimumWageSupport: 1362.49m,
+            InspectionPenalty: 2500m,
+            GuideWorkDays: 23m,
+            GuideDailyPrice: 1362.49m,
+            GuideDiscountAmount: 800m,
+            GuidePriceDifference: 3500m,
+            ProgramType: TransportationProgramType.SpecialEducation);
+        var calculation = ProgressPaymentCalculator.Calculate(input);
+        var current = new ProgressPaymentHistoryData(
+            Id: Guid.NewGuid(),
+            CreatedAt: new DateTime(2026, 10, 31, 12, 0, 0, DateTimeKind.Utc),
+            Input: input,
+            Calculation: calculation,
+            ProgressPaymentNumber: 1,
+            PeriodDate: new DateOnly(2026, 10, 31),
+            RouteNumber: "1",
+            RouteName: "Örnek Güzergâh",
+            WorkName: "Örnek Güzergâh",
+            ContractorName: "Örnek Yüklenici",
+            TenderNumber: "TEST-IHALE",
+            ContractNumber: "TEST-SOZ",
+            ContractorTaxOrIdentityNumber: "12345678901");
+
+        var totals = ProgressPaymentReportService.Calculate(current, new[] { current });
+        var reportNet = ProgressPaymentReportService.CalculateReportNetPayable(current, totals);
+
+        // Uploaded workbook source: Hakediş Raporu!D28 = 61,508.94.
+        Assert.Equal(61508.94m, reportNet);
+    }
+
+    [Fact]
+    public void UploadedBasicEducationWorkbookRow4_ReportNetShouldMatchD28()
+    {
+        var input = new ProgressPaymentInput(
+            WorkDays: 16m,
+            DailyPrice: 19539.1608m,
+            DiscountAmount: 0m,
+            PriceDifference: 7365.35m,
+            ContractAmount: 100000m,
+            IsVatExempt: false,
+            TaxDebt: 0m,
+            SocialSecurityDebt: 0m,
+            MinimumWageSupport: 0m,
+            InspectionPenalty: 0m,
+            ProgramType: TransportationProgramType.BasicOrSecondary);
+        var calculation = ProgressPaymentCalculator.Calculate(input);
+        var current = new ProgressPaymentHistoryData(
+            Id: Guid.NewGuid(),
+            CreatedAt: new DateTime(2026, 10, 31, 12, 0, 0, DateTimeKind.Utc),
+            Input: input,
+            Calculation: calculation,
+            ProgressPaymentNumber: 1,
+            PeriodDate: new DateOnly(2026, 10, 31),
+            RouteNumber: "1",
+            RouteName: "Örnek Güzergâh",
+            WorkName: "Örnek Güzergâh",
+            ContractorName: "Örnek Yüklenici",
+            TenderNumber: "TEST-IHALE",
+            ContractNumber: "TEST-SOZ",
+            ContractorTaxOrIdentityNumber: "12345678901");
+
+        var totals = ProgressPaymentReportService.Calculate(current, new[] { current });
+        var reportNet = ProgressPaymentReportService.CalculateReportNetPayable(current, totals);
+
+        // Uploaded workbook source: Hakediş Raporu!D28 = 332,516.08.
+        Assert.Equal(332516.08m, reportNet);
     }
 }
