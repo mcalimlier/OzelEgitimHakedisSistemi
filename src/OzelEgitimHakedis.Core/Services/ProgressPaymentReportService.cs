@@ -157,15 +157,14 @@ public static class ProgressPaymentReportService
     {
         ArgumentNullException.ThrowIfNull(calculation);
 
-        // Temel Eğitim Hakediş Raporu D11 = H2 + D7 (K + I).
-        // D15 = IF(D11<0,0,D11*9.48/1000). The calculation-sheet U formula
-        // uses K + manually entered T instead; these are separate workbook formulas.
-        // Özel Eğitim raporu hesaplama sayfasındaki damga vergisini aynen kullanır.
+        // Temel Eğitim Hakediş Raporu D15 = IF(D11<0,0,D11*9.48/1000).
+        // D11 is the current calculation-sheet K value. Do not add raw I again:
+        // K already includes I. This is distinct from the Special Education
+        // calculation-sheet stamp-tax formula, which is returned unchanged.
         if (programType != TransportationProgramType.BasicOrSecondary)
             return calculation.StampTax;
 
-        var reportBase = calculation.TransportNetAmount
-                         + (rawTransportPriceDifference ?? calculation.PriceDifferenceExcludingVat);
+        var reportBase = calculation.TransportNetAmount;
         var stampTaxRate = calculation.AppliedConstants?.StampTaxRate
                            ?? ProgressPaymentCalculator.StampTaxRate;
         return reportBase < 0m ? 0m : reportBase * stampTaxRate;
@@ -190,12 +189,10 @@ public static class ProgressPaymentReportService
         ArgumentNullException.ThrowIfNull(current);
         ArgumentNullException.ThrowIfNull(reportTotals);
 
-        // Her iki kaynak Excel'de Hakediş Raporu D13 zinciri, H2 tutarına
-        // D7 fiyat farkını ekler ve D12 KDV'yi dahil eder. Hesaplama sayfası
-        // netinden farklı olabilen bu rapor zinciri iki program için de uygulanır.
-        var reportGross = reportTotals.CurrentTotal
-                          + reportTotals.CurrentPriceDifference
-                          + current.Calculation.Vat;
+        // Hakediş Raporu D13 = D11 + D12. CurrentTotal already represents
+        // the workbook's K (Basic) or K+T (Special) current-period amount,
+        // including raw I/R price differences. Adding D7 again double-counts I/R.
+        var reportGross = reportTotals.CurrentTotal + current.Calculation.Vat;
         var reportDeductions = CalculateReportTotalDeductions(
             current.Calculation,
             current.Input.ProgramType,
