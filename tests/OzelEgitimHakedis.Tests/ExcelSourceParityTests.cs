@@ -38,12 +38,12 @@ public sealed class ExcelSourceParityTests
         Assert.Equal(1905.0515m, result.TransportWithholding);       // M = L/2
         Assert.Equal(40006.0815m, result.InvoiceAmountAfterWithholding); // N = K+M
         Assert.Equal(41911.133m, result.GrossAmount);                // O = K+L
-        // The old row's guarantee amount is supplied explicitly as a manual input.
-        // Current authoritative Basic rules include that input in the stamp-tax base.
+        // This legacy input is not a golden-master vector for the latest XLSM.
+        // Current Basic formula T=I*6%; U=K*9.48/1000.
         Assert.Equal(94.2618m, result.AdditionalGuarantee);
-        Assert.Equal(362.091366264m, result.StampTax);
-        Assert.Equal(2361.404666264m, result.TotalDeductions);
-        Assert.Equal(39549.728333736m, result.NetPayable);
+        Assert.Equal(361.1977644m, result.StampTax);
+        Assert.Equal(2360.5110644m, result.TotalDeductions);
+        Assert.Equal(39550.6219356m, result.NetPayable);
     }
 
     [Fact]
@@ -137,9 +137,9 @@ public sealed class ExcelSourceParityTests
         Assert.Equal(0m, result.TransportWithholding); // M
         Assert.Equal(88744.2m, result.GrossAmount); // O
         Assert.Equal(219.552m, result.AdditionalGuarantee); // T
-        Assert.Equal(843.37636896m, result.StampTax); // Current U = (K+manual T)*0.00948
-        Assert.Equal(1062.92836896m, result.TotalDeductions);
-        Assert.Equal(87681.27163104m, result.NetPayable);
+        Assert.Equal(841.295016m, result.StampTax); // Latest U = K*0.00948
+        Assert.Equal(1060.847016m, result.TotalDeductions);
+        Assert.Equal(87683.352984m, result.NetPayable);
     }
 
     [Fact]
