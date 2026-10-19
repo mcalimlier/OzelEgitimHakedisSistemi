@@ -1157,3 +1157,11 @@ Bu oranlar uygulama kapsamı, otomatik test ve henüz açık kalan gerçek kabul
 - Test commit'i: `7bf7c5faa02cfffa0230d2d258b65e1cd73ef383`. Bu commit için henüz ayrı CI çalışması görünmedi; en son test değişikliğinin CI tarafından alınıp alınmadığı yeniden kontrol edilmeli.
 - Bu değişiklik henüz kaynak Excel/VBA masaüstü kabulü veya sekiz PDF'nin görsel kabulü anlamına gelmez. CI başarıyla bitse dahi bu iki kabul işi açık kalır.
 - PR #3 taslak/açık ve birleştirilmemiştir; ana dala birleştirme/yayın yapılmadı. İlerleme yüzdeleri CI ve PDF kabulü tamamlanana kadar artırılmadı.
+
+
+## CI takip notu — 2026-10-19: PDF smoke düzeltmesi doğrulandı
+
+- Run #2114 (39301053567) başarısız oldu; logdaki tek test hatası, kod düzeltmesinin (37fee954) test düzeltmesi (7bf7c5fa) PR birleştirme anlık görüntüsüne girmeden önce çalışmasından kaynaklandı: eski test 120,00 TL beklerken yeni kod doğru olarak 110,00 TL verdi. Derleme ve çekirdek testler başarılıydı; PDF smoke adımı bu eski beklenti yüzünden durdu.
+- Test commit'i 7bf7c5faa02cfffa0230d2d258b65e1cd73ef383 için run #2116 (39301128036) başarıyla tamamlandı. Build, çekirdek testler, WPF çıktı testleri, PDF smoke üretimi ve Windows EXE yayımlama adımları başarılı. PDF smoke yalnızca sentetik test verisidir; gerçek Excel sayfalarıyla görsel/parasal kabulün yerine geçmez.
+- Bu nedenle #2114 hatası düzeltilmiş test beklentisiyle yeniden doğrulandı; hata gizlenmedi. Yine de gerçek sekiz PDF'nin kaynak XLSM ile karşılaştırması ve Microsoft Excel/VBA masaüstü kontrolü açık risk olarak duruyor.
+- PR #3 açık/taslak ve birleştirilmemiştir. İlerleme yüzdeleri gerçek kaynak Excel/PDF kabulü tamamlanana kadar değiştirilmedi.
