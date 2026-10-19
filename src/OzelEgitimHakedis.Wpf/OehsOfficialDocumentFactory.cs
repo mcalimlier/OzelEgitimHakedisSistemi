@@ -178,7 +178,10 @@ internal static class OehsOfficialDocumentFactory
             var bold = row.Key is "G" or "E";
             AddCell(page, row.Key, x, y, 53, row.Height, 10, bold, TextAlignment.Center, row.Fill);
             AddCell(page, row.Label, x + 53, y, 356, row.Height, 10, bold, TextAlignment.Left, row.Fill);
-            AddCell(page, FormatMoney(row.Value), x + 409, y, w - 409, row.Height, 10, true, TextAlignment.Right, row.Fill, new Thickness(3, 2, 8, 2));
+            var formattedValue = row.Key == "D" && c.ProgramType == TransportationProgramType.SpecialEducation && row.Value != 0m
+                ? FormatMoney(row.Value, decimalPlaces: 3)
+                : FormatMoney(row.Value);
+            AddCell(page, formattedValue, x + 409, y, w - 409, row.Height, 10, true, TextAlignment.Right, row.Fill, new Thickness(3, 2, 8, 2));
             y += row.Height;
         }
 
@@ -670,9 +673,10 @@ internal static class OehsOfficialDocumentFactory
     private static string FormatLongDate(DateOnly? date) =>
         date?.ToDateTime(TimeOnly.MinValue).ToString("dd MMMM yyyy dddd", Turkish) ?? "-";
 
-    private static string FormatMoney(decimal value, bool withCurrency = true)
+    private static string FormatMoney(decimal value, bool withCurrency = true, int decimalPlaces = 2)
     {
-        var formatted = value.ToString("#,##0.00", Turkish);
+        var format = decimalPlaces == 3 ? "#,##0.000" : "#,##0.00";
+        var formatted = value.ToString(format, Turkish);
         return withCurrency ? formatted + " TL" : formatted;
     }
 
