@@ -35,7 +35,8 @@ internal sealed record OehsOfficialDocumentContext(
     string ControllerRole = "İlçe Milli Eğitim Şube Müdürü",
     string ApproverName = "Özgür BAYSAL",
     string ApproverRole = "İlçe Milli Eğitim Müdürü",
-    TransportationProgramType ProgramType = TransportationProgramType.SpecialEducation);
+    TransportationProgramType ProgramType = TransportationProgramType.SpecialEducation,
+    string RouteName = "");
 
 internal enum OehsOfficialDocumentKind
 {
@@ -266,14 +267,18 @@ internal static class OehsOfficialDocumentFactory
         AddText(page, FormatDate(c.GeneratedDate), x + 366, 81, 360, 19, 9.5, false, TextAlignment.Left);
         AddText(page, "No.su", x + 145, 99, 155, 19, 9.5, true, TextAlignment.Left);
         AddText(page, ":", x + 326, 99, 14, 19, 9.5, true, TextAlignment.Center);
-        AddText(page, c.ProgressPaymentNumber?.ToString(Turkish) ?? "-", x + 366, 99, 360, 19, 9.5, false, TextAlignment.Left);
+        AddText(page, string.IsNullOrWhiteSpace(c.RouteNumber) ? "-" : c.RouteNumber.Trim(), x + 366, 99, 360, 19, 9.5, false, TextAlignment.Left);
         AddText(page, "Uygulama Yılı", x + 145, 117, 155, 19, 9.5, true, TextAlignment.Left);
         AddText(page, ":", x + 326, 117, 14, 19, 9.5, true, TextAlignment.Center);
         AddText(page, (c.PeriodDate?.Year ?? c.GeneratedDate.Year).ToString(Turkish), x + 366, 117, 360, 19, 9.5, false, TextAlignment.Left);
 
-        AddText(page, "Yapılan Hizmetin Adı", x + 2, 173, 310, 50, 9.5, true, TextAlignment.Left);
-        AddText(page, ":", x + 324, 173, 14, 50, 9.5, true, TextAlignment.Center);
-        AddText(page, BuildWorkTitle(c, includeRouteNumber: false, includeStudentSuffix: true), x + 356, 151, w - 360, 77, 8.6, true, TextAlignment.Left);
+        AddText(page, BuildWorkTitle(c, includeRouteNumber: false, includeStudentSuffix: true), x + 356, 151, w - 360, 22, 8.6, true, TextAlignment.Left);
+        AddText(page, "Yapılan Hizmetin Adı", x + 2, 173, 310, 22, 9.5, true, TextAlignment.Left);
+        AddText(page, ":", x + 324, 173, 14, 22, 9.5, true, TextAlignment.Center);
+        var serviceName = string.IsNullOrWhiteSpace(c.WorkName)
+            ? BuildWorkTitle(c, includeRouteNumber: false, includeStudentSuffix: true)
+            : c.WorkName.Trim();
+        AddText(page, serviceName, x + 356, 173, w - 360, 22, 8.6, true, TextAlignment.Left);
 
         var info = new (string Label, string Value)[]
         {
@@ -628,7 +633,7 @@ internal static class OehsOfficialDocumentFactory
         bool includeRouteNumber,
         bool includeStudentSuffix)
     {
-        var work = (context.WorkName ?? string.Empty).Trim();
+        var work = (string.IsNullOrWhiteSpace(context.RouteName) ? context.WorkName : context.RouteName).Trim();
         var routeNumber = string.IsNullOrWhiteSpace(context.RouteNumber)
             ? "-"
             : context.RouteNumber.Trim();
