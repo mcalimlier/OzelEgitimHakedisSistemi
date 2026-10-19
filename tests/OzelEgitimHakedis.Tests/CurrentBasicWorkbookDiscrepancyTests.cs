@@ -28,8 +28,7 @@ public sealed class CurrentBasicWorkbookParityTests
                     SocialSecurityDebt: 1500m,
                     MinimumWageSupport: 1500m,
                     InspectionPenalty: 1500m,
-                    ProgramType: TransportationProgramType.BasicOrSecondary,
-                    ManualAdditionalGuarantee: 1500m),
+                    ProgramType: TransportationProgramType.BasicOrSecondary),
                 SourceTransportNet = 99426m,
                 SourceGross = 109368.6m,
                 SourceStampTax = 942.55848m,
@@ -49,8 +48,7 @@ public sealed class CurrentBasicWorkbookParityTests
                     SocialSecurityDebt: 1500m,
                     MinimumWageSupport: 1500m,
                     InspectionPenalty: 1500m,
-                    ProgramType: TransportationProgramType.BasicOrSecondary,
-                    ManualAdditionalGuarantee: 1500m),
+                    ProgramType: TransportationProgramType.BasicOrSecondary),
                 SourceTransportNet = 93197m,
                 SourceGross = 102516.7m,
                 SourceStampTax = 883.50756m,
@@ -92,8 +90,7 @@ public sealed class CurrentBasicWorkbookParityTests
             SocialSecurityDebt: 1500m,
             MinimumWageSupport: 1500m,
             InspectionPenalty: 1500m,
-            ProgramType: TransportationProgramType.BasicOrSecondary,
-            ManualAdditionalGuarantee: 1500m);
+            ProgramType: TransportationProgramType.BasicOrSecondary);
 
         var result = ProgressPaymentCalculator.Calculate(input);
 
