@@ -149,7 +149,7 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
         DateOnly period,
         DateOnly generatedDate) =>
         new(
-            WorkName: "Kaynak Test Güzergâhı",
+            WorkName: current.WorkName,
             TenderNumber: "TEST-IHALE",
             RouteNumber: "1",
             ContractorName: "Örnek Yüklenici",
@@ -174,7 +174,8 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
             ControllerRole: "TEST ŞUBE MÜDÜRÜ",
             ApproverName: "TEST ONAYLAYAN",
             ApproverRole: "TEST MÜDÜR",
-            ProgramType: program);
+            ProgramType: program,
+            RouteName: current.RouteName);
 
     private static ProgressPaymentHistoryData History(
         ProgressPaymentInput input,
@@ -191,7 +192,7 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
             period,
             "1",
             "Kaynak Test Güzergâhı",
-            "Kaynak Test Güzergâhı",
+            "Örnek Öğrenci Taşıma İşi",
             "Örnek Yüklenici",
             "TEST-IHALE",
             "TEST-SOZ",
@@ -218,6 +219,9 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
         Assert.Contains("Sözleşme Tarihi ve No.su", service);
         Assert.Contains("181 İş Günü", service);
         Assert.Contains("M.Y.H.B.Y. Örnek No: 4", service);
+        Assert.Contains("No.su" + Environment.NewLine + ":" + Environment.NewLine + "1", service, StringComparison.Ordinal);
+        Assert.Contains("Kaynak Test Güzergâhı Hattı Öğrenci Taşıma İşi", service, StringComparison.Ordinal);
+        Assert.Contains("Örnek Öğrenci Taşıma İşi", service, StringComparison.Ordinal);
 
         var acceptance = PageText(outputs, OehsOfficialDocumentKind.KabulTutanagi);
         Assert.Contains("01.10.2026 / 31.10.2026", acceptance);
@@ -255,6 +259,9 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
         Assert.Contains("Sözleşme Tarihi ve No.su", service);
         Assert.Contains("14.09.2026-25.06.2027 Tarihleri Arasıdır.", service);
         Assert.Contains("M.Y.H.B.Y. Örnek No: 4", service);
+        Assert.Contains("No.su" + Environment.NewLine + ":" + Environment.NewLine + "1", service, StringComparison.Ordinal);
+        Assert.Contains("Kaynak Test Güzergâhı Hattı Öğrenci Taşıma İşi", service, StringComparison.Ordinal);
+        Assert.Contains("Örnek Öğrenci Taşıma İşi", service, StringComparison.Ordinal);
 
         var acceptance = PageText(outputs, OehsOfficialDocumentKind.KabulTutanagi);
         Assert.Contains("14.09.2026 / 30.09.2026", acceptance);
