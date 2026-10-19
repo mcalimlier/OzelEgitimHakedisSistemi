@@ -149,7 +149,7 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
         DateOnly period,
         DateOnly generatedDate) =>
         new(
-            WorkName: current.WorkName,
+            WorkName: current.WorkName ?? string.Empty,
             TenderNumber: "TEST-IHALE",
             RouteNumber: "1",
             ContractorName: "Örnek Yüklenici",
@@ -175,7 +175,7 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
             ApproverName: "TEST ONAYLAYAN",
             ApproverRole: "TEST MÜDÜR",
             ProgramType: program,
-            RouteName: current.RouteName);
+            RouteName: current.RouteName ?? string.Empty);
 
     private static ProgressPaymentHistoryData History(
         ProgressPaymentInput input,
