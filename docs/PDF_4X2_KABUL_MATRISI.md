@@ -40,10 +40,18 @@ Bunlar sentetik smoke verisinin gözlemleridir; tek başına kaynak Excel'e uygu
 - `tests/OzelEgitimHakedis.Tests/ProgressPaymentIcmalServiceTests.cs`: Eylül–Temmuz dönemi, Kasım için önceki ay aktarımı, eksik başlık/lookup sınırı, program ve hat izolasyonu.
 - `tests/OzelEgitimHakedis.Tests/CurrentXlsmSourceParityTests.cs` ve `CurrentBasicWorkbookDiscrepancyTests.cs`: kodun kaydedilmiş kaynak hücre sonuçlarına karşı regresyon vektörleri. Test açıklamaları bunların masaüstü Excel/VBA yeniden hesaplaması olmadığını açıkça belirtiyor.
 
-Son dokümantasyon commit'i `c21315852b0a02276a27a47d8ce6d7b49374e939` için 19.10.2026 itibarıyla hem [push CI](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39306949094) hem de [PR CI](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39306955405) çalışıyor; sonuç henüz tamamlanmış değil.
+Güncel doğrulama: commit `a6127422655c6c55b0d1470c936c16bc4febfef3` için [Windows Build CI](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39307338034) **başarıyla tamamlandı**. Tam çözüm/WPF derlemesi, UI kontrolleri, test derlemeleri, `Test Solution`, PDF smoke üretimi ve Windows EXE/izole deneme paketi artefakt adımları başarılı. Bu, otomatik CI kanıtıdır; kaynak Excel/VBA ile sekiz PDF'nin alan alan kabulü değildir.
 
 ## Kapanış koşulu
 
 Matristeki sekiz hücrenin her biri için gerçek Excel masaüstü/VBA ile yeniden hesaplanmış referans sonuçlar ve aynı girdilerle OEHS PDF'si mevcut olmalı. Her eşleşme alan bazında kayıt altına alınmalı. Excel formülü ile uygulama arasında fark bulunursa, kaynak hücre/formül, gerçek sonuç ve test kanıtı belgelenmeden hesaplama davranışı değiştirilmemeli.
 
 CI başarısı, sentetik PDF smoke sonucu veya yalnızca PDF'nin açılması bu kabul kapısını kapatmaz.
+
+
+## Devam notu — 2026-10-19
+
+- **Tamamlandı:** `FindPreviousDeduction_ShouldUseLatestSavedRecordWhenPreviousMonthHasDuplicates` regresyon testi; aynı ayda birden fazla Ekim kaydı varsa en son kaydedilen kaydın kesintisinin Kasım'a taşındığını denetler.
+- **Doğrulama:** commit `a6127422655c6c55b0d1470c936c16bc4febfef3`, Windows CI run `39307338034` başarılı.
+- **Açık risk/engel:** sekiz PDF için gerçek masaüstü Excel/VBA yeniden hesaplanmış aynı-girdi referansları ve aynı verilerle OEHS PDF'leri karşılaştırması hâlâ yok. Sentetik smoke örnekleri bu boşluğu kapatmaz.
+- **Sıradaki adım:** kaynak XLSM'nin gerçek yeniden hesaplama sonuçlarına erişilebilen ilk fırsatta 4×2 matriste her belgeyi dönem, yüklenici, hat, tutarlar, imza alanları ve sayfa yerleşimiyle ayrı ayrı kapatmak; formül uyuşmazlıklarını test ve karar notuyla izlemek.
