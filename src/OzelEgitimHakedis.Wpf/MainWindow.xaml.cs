@@ -88,7 +88,6 @@ public partial class MainWindow : Window
         MinimumWageSupportTextBox.Text = "0";
         SetMinimumWageSupportInputMode(null);
         InspectionPenaltyTextBox.Text = "0";
-        ManualAdditionalGuaranteeTextBox.Text = "0";
         DiscountTextBox.Text = "0";
         GuideWorkDaysTextBox.Text = "0";
         GuideDailyPriceTextBox.Text = "0";
@@ -1334,7 +1333,7 @@ public partial class MainWindow : Window
             ContractorPhoneTextBox, ContractorEmailTextBox, ContractorBankTextBox, ContractorContactTextBox,
             RouteNumberTextBox, RouteNameTextBox, RouteTransportWorkDaysTextBox,
             RouteGuideWorkDaysTextBox, RouteGuideDailyPriceTextBox,
-            WorkDaysTextBox, DailyPriceTextBox, GuideWorkDaysTextBox, GuideDailyPriceTextBox, ManualAdditionalGuaranteeTextBox,
+            WorkDaysTextBox, DailyPriceTextBox, GuideWorkDaysTextBox, GuideDailyPriceTextBox,
             DiscountTextBox, GuideDiscountTextBox, PriceDifferenceTextBox, GuidePriceDifferenceTextBox,
             TaxDebtTextBox, SocialSecurityDebtTextBox, MinimumWageSupportTextBox, InspectionPenaltyTextBox,
             ProgressNumberTextBox
@@ -4353,7 +4352,7 @@ public partial class MainWindow : Window
 
             if (row.WorkDays < 0 || row.DailyPrice < 0m || row.DiscountAmount < 0m ||
                 row.TaxDebt < 0m || row.SocialSecurityDebt < 0m ||
-                row.MinimumWageSupport < 0m || row.InspectionPenalty < 0m || row.ManualAdditionalGuarantee < 0m ||
+                row.MinimumWageSupport < 0m || row.InspectionPenalty < 0m ||
                 (hasGuide && (row.GuideWorkDays < 0 || row.GuideDailyPrice < 0m || row.GuideDiscountAmount < 0m)))
             {
                 errors.Add($"Hat {route.RouteNumber}: gün, günlük fiyat, iskonto ve kesinti alanları negatif olamaz. Fiyat farkı işaretli olabilir.");
@@ -4377,8 +4376,7 @@ public partial class MainWindow : Window
                 hasGuide ? row.GuideDailyPrice : 0m,
                 hasGuide ? row.GuideDiscountAmount : 0m,
                 hasGuide ? row.GuidePriceDifference : 0m,
-                contract.ProgramType,
-                row.ManualAdditionalGuarantee);
+                contract.ProgramType);
 
             var calculation = ProgressPaymentCalculator.Calculate(input, _calculationConstants);
             var routeProgressNumber = MonthlyProgressPaymentIdentityService.SuggestNextRouteNumber(
@@ -4638,8 +4636,7 @@ public partial class MainWindow : Window
                 guideDailyPrice,
                 guideDiscount,
                 guidePriceDifference,
-                selectedContract.ProgramType,
-                ParseManualAdditionalGuarantee(selectedContract.ProgramType));
+                selectedContract.ProgramType);
 
             int? progressNumber = null;
             if (int.TryParse(
@@ -4975,19 +4972,6 @@ public partial class MainWindow : Window
         NavigationButton_Click(new System.Windows.Controls.Button { Tag = "Trace" }, new RoutedEventArgs());
     }
 
-    private decimal ParseManualAdditionalGuarantee(TransportationProgramType programType)
-    {
-        if (programType != TransportationProgramType.BasicOrSecondary)
-            return 0m;
-
-        if (!TryParseDecimal(ManualAdditionalGuaranteeTextBox.Text, out var value) || value < 0m)
-            throw new ArgumentOutOfRangeException(
-                nameof(ManualAdditionalGuaranteeTextBox),
-                "Temel/Ortaöğretim için ek kesin teminat tutarını sıfır veya daha büyük geçerli bir tutar olarak girin.");
-
-        return value;
-    }
-
     private void ConfigureLiveCalculationTrace()
     {
         foreach (var textBox in new TextBox[]
@@ -4995,7 +4979,7 @@ public partial class MainWindow : Window
             WorkDaysTextBox, DailyPriceTextBox, GuideWorkDaysTextBox, GuideDailyPriceTextBox,
             DiscountTextBox, GuideDiscountTextBox, PriceDifferenceTextBox, GuidePriceDifferenceTextBox,
             TaxDebtTextBox, SocialSecurityDebtTextBox, MinimumWageSupportTextBox, InspectionPenaltyTextBox,
-            ContractAmountTextBox, ProgressNumberTextBox, ManualAdditionalGuaranteeTextBox
+            ContractAmountTextBox, ProgressNumberTextBox
         })
             textBox.TextChanged += (_, _) => RefreshCalculationTraceLive();
 
@@ -5107,14 +5091,6 @@ public partial class MainWindow : Window
             issues.Add("Denetim cezası geçersiz.");
         }
 
-        decimal manualGuarantee = 0m;
-        if (selectedProgram == TransportationProgramType.BasicOrSecondary &&
-            (!TryParseDecimal(ManualAdditionalGuaranteeTextBox.Text, out manualGuarantee) || manualGuarantee < 0m))
-        {
-            manualGuarantee = 0m;
-            issues.Add("Temel/Ortaöğretim ek kesin teminatı geçersiz; elle girilen tutarı kontrol edin.");
-        }
-
         if (selectedProgram == TransportationProgramType.BasicOrSecondary &&
             MinimumWageSupportEnabledCheckBox.IsChecked != true)
             minimumWageSupport = 0m;
@@ -5126,7 +5102,7 @@ public partial class MainWindow : Window
         var guaranteeRate = _calculationConstants.AdditionalGuaranteeRate;
         var specialGuarantee = i * guaranteeRate + r * guaranteeRate;
         var guaranteeDisplay = selectedProgram == TransportationProgramType.BasicOrSecondary
-            ? "elle girilen ek kesin teminat = " + M(manualGuarantee) + " TL (aynen kullanılır)"
+            ? "I × " + (guaranteeRate * 100m).ToString("0.##", culture) + "% = " + M(i * guaranteeRate) + " TL"
             : selectedProgram == TransportationProgramType.SpecialEducation
                 ? "(I × " + (guaranteeRate * 100m).ToString("0.##", culture) + "%) + (R × "
                   + (guaranteeRate * 100m).ToString("0.##", culture) + "%) = "
@@ -5162,11 +5138,7 @@ public partial class MainWindow : Window
             "Asgari ücret desteği (etkin): " + M(minimumWageSupport) + " TL",
             "Denetim cezası: " + Raw(InspectionPenaltyTextBox) + " TL",
             "Sözleşme bedeli: " + (selectedContract is null ? Raw(ContractAmountTextBox) : M(selectedContract.ContractAmount)) + " TL",
-            "Ek kesin teminat manuel giriş: " + (selectedProgram == TransportationProgramType.BasicOrSecondary
-                ? Raw(ManualAdditionalGuaranteeTextBox) + " TL"
-                : selectedProgram == TransportationProgramType.SpecialEducation
-                    ? "Özel Eğitimde kullanılmıyor; AC formülle hesaplanır"
-                    : "Program seçilince belirlenir"),
+            "Ek kesin teminat: " + guaranteeDisplay,
             "",
             "2) EXCEL KAYNAK EŞLEŞMESİ (sayfa, hücre, sütun başlığı ve birebir formül)",
             selectedProgram == TransportationProgramType.BasicOrSecondary
@@ -5202,7 +5174,7 @@ public partial class MainWindow : Window
                     : "T — Rehber neti = Program seçimi bekleniyor",
             "AC — Ek kesin teminat = " + (issues.Count == 0 ? guaranteeDisplay : "Hesap bekliyor (eksik/geçersiz giriş)"),
             "AD — Damga vergisi matrahı: " + (selectedProgram == TransportationProgramType.BasicOrSecondary
-                ? "(K + elle girilen ek kesin teminat) × damga vergisi oranı"
+                ? "Kaynak Excel U sütunu formülü; kaynak hücreler esas alınır"
                 : "K × damga vergisi oranı + T × damga vergisi oranı"),
             ""
         });
@@ -5251,7 +5223,7 @@ public partial class MainWindow : Window
                     "Toplam tevkifat = M + V = " + M(result.Withholding) + " TL",
                     "Fatura ara toplamı = N + W = " + M(result.InvoiceAmountAfterWithholding) + " TL",
                     "AD — Damga vergisi = " + (selectedProgram == TransportationProgramType.BasicOrSecondary
-                        ? "(K + elle girilen ek kesin teminat) × oran = " + M(result.StampTax) + " TL"
+                        ? "Kaynak Excel formülü = " + M(result.StampTax) + " TL"
                         : "(K × oran) + (T × oran) = " + M(result.StampTax) + " TL"),
                     "AE — Toplam kesintiler = tevkifat + vergi borcu + denetim cezası + SGK + asgari ücret desteği + AC + AD = " + M(result.TotalDeductions) + " TL",
                     "AF — Brüt toplam = O + X = " + M(result.GrossAmount) + " TL",
@@ -5297,8 +5269,7 @@ public partial class MainWindow : Window
                         hasGuide ? row.GuideDailyPrice : 0m,
                         hasGuide ? row.GuideDiscountAmount : 0m,
                         hasGuide ? row.GuidePriceDifference : 0m,
-                        selectedContract.ProgramType,
-                        row.ManualAdditionalGuarantee);
+                        selectedContract.ProgramType);
                     var rowResult = ProgressPaymentCalculator.Calculate(rowInput, _calculationConstants);
                     lines.Add("Hat " + row.RouteNumber + " — " + row.RouteName);
                     lines.Add("  K = G×H+I−J = " + M(rowResult.TransportNetAmount) + " TL");
@@ -6660,12 +6631,12 @@ public partial class MainWindow : Window
     {
         var selectedProgram = (ProgressTenderListBox.SelectedItem as ContractDraftData)?.ProgramType
             ?? TransportationProgramType.SpecialEducation;
-        ManualAdditionalGuaranteeTextBox.IsEnabled = selectedProgram == TransportationProgramType.BasicOrSecondary;
-        ManualAdditionalGuaranteeLabel.Text = selectedProgram == TransportationProgramType.BasicOrSecondary
-            ? "Ek Kesin Teminat (elle)" : "Ek Kesin Teminat (formül)";
+        ManualAdditionalGuaranteeTextBox.IsEnabled = false;
+        ManualAdditionalGuaranteeTextBox.Text = selectedProgram == TransportationProgramType.BasicOrSecondary ? "I × %6" : "(I × %6) + (R × %6)";
+        ManualAdditionalGuaranteeLabel.Text = "Ek Kesin Teminat (Excel formülü)";
         GuaranteeRuleHintTextBlock.Text = selectedProgram == TransportationProgramType.BasicOrSecondary
-            ? "Temel/Ortaöğretim: elle giriş; kesin teminat = girilen tutarın %6'sı"
-            : "Özel Eğitim: (I × %6) + (R × %6)";
+            ? "Temel/Ortaöğretim: kaynak Excel formülü = I × %6"
+            : "Özel Eğitim: kaynak Excel formülü = (I × %6) + (R × %6)";
         var selectedRoutes = ProgressRouteComboBox.SelectedItems.OfType<RouteDraft>().ToArray();
         if (selectedRoutes.Length > 1)
         {
@@ -7963,7 +7934,6 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         }
 
         public decimal InspectionPenalty { get; set; }
-        public decimal ManualAdditionalGuarantee { get; set; }
 
         private void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
