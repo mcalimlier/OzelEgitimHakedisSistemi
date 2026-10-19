@@ -819,3 +819,32 @@ OEHS mevcut kodu önceki ayın kayıtlı toplam kesintisini her iki program içi
 - PR #3 açık/taslak/birleştirilmemiş tutulacak; ana dala birleştirme veya yayınlama için ayrıca açık onay gerekir.
 - Not: Bu yol haritası kaydı, yerel bilgisayarın güncel olduğunu varsaymaz. Yarın işe başlamadan önce gerçek GitHub head/CI ve yerel Git durumları tekrar doğrulanmalıdır.
 
+
+
+## 19.10.2026 — Excel-klonu hedefi ve Temel Eğitim çekirdeği için yeniden yazım izni
+
+Kullanıcı kararı: OEHS'nin hedefi, Excel kurulu olmadan çalışan bir Windows programı olarak iki güncel XLSM'nin hesaplama ve belge davranışını mümkün olduğunca birebir taklit etmektir. Temel Eğitim taşıma çekirdeği kaynak Excel ile uyuşmuyorsa mevcut uygulama kodunu düzeltmek, sadeleştirmek veya testlerle güvenli biçimde değiştirip yeniden yazmak kabul edilmiştir. Kodun korunması değil, kaynak Excel ile kanıtlanmış eşdeğerlik önceliklidir.
+
+### Güncel yüklemelerde yeniden sayılan formüller
+
+Dosya adları ve bu oturumda erişilen içerikler üzerinden openpyxl ile formül hücreleri yeniden sayıldı:
+
+- Temel Eğitim — 03-Temel Eğitim Taşıma Ödeme.xlsmdüzeltildi.xlsm: 11 sayfa, **311 formül hücresi**.
+- Özel Eğitim — 02-Özel Eğitim Hakediş Ödeme.xlsm: 8 sayfa, **291 formül hücresi**.
+
+Bu sayımlar çalışma kitabındaki data_type == 'f' hücrelerine dayanır; VBA yordamlarının tamamının davranışsal olarak doğrulandığını veya hesaplamaların uygulamayla eşleştiğini göstermez. Önceki ara envanterlerdeki formül sayıları bu oturumdaki yeniden sayımla çelişirse, burada belirtilen dosyalar üzerinde yeniden üretilen sayımlar esas alınmalı; sayfa bazlı envanter de aynı dosya sürümünden tekrar üretilmelidir.
+
+### Uygulama kararı
+
+1. Temel Eğitim taşıma hesaplaması, Temel Eğitim XLSM'sinin formül ve VBA akışından bağımsız test edilebilir bir çekirdek olarak ele alınacak.
+2. Her hesap girdisi ve çıktı için kaynak sayfa/hücre, formül veya makro yazma hedefi, uygulamadaki alan ve regresyon testi eşleştirilecek.
+3. Özel Eğitim hesaplamaları ayrı kalacak; yalnızca kaynakların gerçekten ortak doğruladığı yardımcı davranışlar paylaşılacak.
+4. Kod silme/yeniden yazma işlemi, önce mevcut davranış ve testlerin envanteri çıkarıldıktan sonra yapılacak. Kaynakla doğrulanmamış davranış sessizce değiştirilmez; belirsizlik karar listesinde tutulur.
+5. Yeni değişiklikler yalnızca özellik dalında yapılır. Ana dala birleştirme/yayınlama için açık onay gerekir.
+
+### Bu devam adımının durumu
+
+- **Yapılan:** iki yüklemenin formül sayıları bu oturumda yeniden doğrulandı; yeniden yazım için kullanıcı onayı ve öncelik kayda geçirildi.
+- **Doğrulama:** yalnızca dosya/formül hücresi sayımı doğrulandı. Uygulama kodu değiştirilmedi; test/CI sonucu bu not için iddia edilmiyor.
+- **Açık risk:** VBA kaynak/prosedür çağrı envanterinin bu iki dosya sürümüyle eşleştiği, Excel masaüstü sonuçları ve uygulama çıktıları hücre hücre karşılaştırılmalı.
+- **Sıradaki adım:** Temel Eğitim için kaynak hücre → VBA → hesaplama sonucu → dört PDF alanı izlenebilirlik tablosunu çıkar; ardından bu tabloya dayalı birim/regresyon testlerini yazıp mevcut çekirdeği karşılaştır. Eşdeğerlik kanıtlanmayan kod henüz silinmeyecek.
