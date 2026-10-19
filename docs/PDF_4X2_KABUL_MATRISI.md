@@ -101,3 +101,18 @@ Bu, tarihsel dosya kopyasında belgeler arası **kaynak metin/tarih tutarsızlı
 - OEHS smoke ZIP'indeki sekiz sentetik PDF'nin tamamı tek sayfa A4 portre; ancak bu PDF'ler aynı gerçek XLSM girdileriyle üretilmiş olmadığından tutar kabulünü kapatmaz.
 - **4 × 2 gerçek kaynak PDF kabul matrisi: 0/8 kapalı.** Kalan iş; en yeni kaynak dosyanın aynı girdi ve aynı dönemle yeniden hesaplanmış sonuçlarıyla dört OEHS PDF'sinin alan alan karşılaştırılmasıdır.
 - Excel/VBA makroları masaüstü Excel'de çalıştırılmadı. LibreOffice ile formül hesaplama, VBA olay/makro davranışını doğrulamaz.
+
+
+### Temel/Ortaöğretim tarihsel XLSM icmal formül kusuru — karar bekliyor
+
+Aynı tarihsel Temel Eğitim kaynak kopyasının LibreOffice PDF dışa aktarımı ve hücre formülleri birlikte incelendiğinde ek bir kaynak uyuşmazlığı bulundu:
+
+- `İcmal Verileri!P4` (Eylül 2026 ham fiyat farkı): **7.365,35 TL**.
+- `İcmal Verileri!AB4` (başlık: `HAKEDİŞLERDEN YAPILAN KESİNTİ TUTARLARI`): **12.304,954557692 TL**.
+- `Hakediş İcmali!D6` formülü, `15+MATCH(...)` ile P:Z fiyat farkı sütununu **ve** `27+MATCH(...)` ile AB:AL kesinti sütununu topluyor.
+- Bu nedenle `Hakediş İcmali!D6` sonucu **19.670,304557692 TL**; PDF'de **19.670,30 TL** basılıyor. `E6=C6+D6` sonucu **219.045,63 TL**.
+- Aynı kaynakta `Hakediş Raporu` brüt/tahakkuk tutarı **219.312,85 TL**; bu tutar hesaplama sayfasındaki KDV dâhil brüt zincirle uyumlu. İcmal toplamı bu değerle **267,23 TL** fark gösteriyor.
+
+Bu, Temel/Ortaöğretim icmalinde Özel Eğitim için kullanılan iki fiyat-farkı bloğunu toplayan formülün, Temel Eğitim'de ikinci blok kesinti sütunları olduğu hâlde aynen kalmış olabileceğini gösterir. **OEHS hesap davranışı bu bulgu üzerine değiştirilmedi.** Yeni `HistoricalBasicWorkbookRow4_ShouldMatchReportCellsWithoutImportingIcmalColumnDefect` testi, rapor tutarlarını kaynak örnekle karşılaştırır ve uygulamanın ham fiyat farkına kesinti bloğunu katmamasını korur. Bu, Excel'deki icmal formülünün doğru olduğuna dair kabul değildir; resmi çıktıda Excel ile birebir eşleşme isteniyorsa kaynak formül kusurunun nasıl ele alınacağı iş sahibi kararı gerektirir.
+
+Bu bulgu 17.10.2026 tarihli tarihsel dosya kopyasına aittir. En yeni Temel Eğitim XLSM'de `Hakediş İcmali!D6` ve AB:AL başlık/formül zinciri ayrıca doğrulanmadan tüm sürümlere genellenmemelidir.
