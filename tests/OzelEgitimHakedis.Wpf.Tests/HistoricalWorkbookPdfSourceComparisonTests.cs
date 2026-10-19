@@ -213,6 +213,7 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
         Assert.Contains("93.318,27 TL", report);
         Assert.Contains("968,87 TL", report);
         Assert.Contains("92.349,40 TL", report);
+        Assert.Contains("1 Numaralı Kaynak Test Güzergâhı Hattı Taşıma İşi", report, StringComparison.Ordinal);
         Assert.Contains("31.10.2026 TARİHİNE KADAR YAPILAN İŞİN", report, StringComparison.Ordinal);
         Assert.DoesNotContain("30.04.2026 TARİHİNE KADAR YAPILAN İŞİN", report, StringComparison.Ordinal);
 
@@ -231,6 +232,7 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
         Assert.Contains("181 İş Günü", acceptance);
         Assert.Contains("14.09.2026", acceptance);
         Assert.Contains("25.06.2027", acceptance);
+        Assert.Contains("1 Numaralı Kaynak Test Güzergâhı Hattı Öğrenci Taşıma İşi", acceptance, StringComparison.Ordinal);
 
         var icmal = PageText(outputs, OehsOfficialDocumentKind.HakedisIcmali);
         Assert.Contains("Hizmet Alımı İşi Eylül 2026", icmal);
@@ -243,6 +245,7 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
         Assert.Contains("968,87", icmal);
         Assert.Contains("1.571,89", icmal);
         Assert.Contains("149.279,43", icmal);
+        Assert.Contains("Kaynak Test Güzergâhı Hattı Öğrenci Taşıma İşi", icmal, StringComparison.Ordinal);
     }
 
     private static void AssertBasicEducationSourceFields(
@@ -256,6 +259,7 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
         Assert.Contains("1.890,08 TL", report);
         Assert.Contains("12.300,77 TL", report);
         Assert.Contains("207.012,08 TL", report);
+        Assert.Contains("1 Numaralı Kaynak Test Güzergâhı Hattı Taşıma İşi", report, StringComparison.Ordinal);
         Assert.Contains("30.09.2026 TARİHİNE KADAR YAPILAN İŞİN", report, StringComparison.Ordinal);
 
         var service = PageText(outputs, OehsOfficialDocumentKind.HizmetIsleriHakedisRaporu);
@@ -273,10 +277,12 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
         Assert.Contains("181", acceptance);
         Assert.DoesNotContain("181 İş Günü", acceptance);
         Assert.Contains("25.06.2027", acceptance);
+        Assert.Contains("1 Numaralı Kaynak Test Güzergâhı Hattı Öğrenci Taşıma İşi", acceptance, StringComparison.Ordinal);
 
         var icmal = PageText(outputs, OehsOfficialDocumentKind.HakedisIcmali);
         Assert.Contains("Hizmet Alımı İşi Eylül 2026", icmal);
         Assert.Contains("₺199.375,32", icmal);
+        Assert.Contains("Kaynak Test Güzergâhı Hattı Öğrenci Taşıma İşi", icmal, StringComparison.Ordinal);
         // The historical Excel PDF prints 19.670,30 and 219.045,63. OEHS currently
         // recalculates the deduction column as 12.300,77 instead of the stale AB4
         // snapshot value 12.304,95, so the generated icmal differs by 4,19 TL.
