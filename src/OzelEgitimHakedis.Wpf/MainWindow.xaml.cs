@@ -5168,7 +5168,28 @@ public partial class MainWindow : Window
                     ? "Özel Eğitimde kullanılmıyor; AC formülle hesaplanır"
                     : "Program seçilince belirlenir"),
             "",
-            "2) KAYNAK FORMÜLLERİ VE CANLI ARA DEĞERLER",
+            "2) EXCEL KAYNAK EŞLEŞMESİ (sayfa, hücre, sütun başlığı ve birebir formül)",
+            selectedProgram == TransportationProgramType.BasicOrSecondary
+                ? "Kaynak: Hesaplama Bilgileri!T4 | Başlık: Ek Kesin Teminat | Excel formülü: =I4*6/100 | OEHS: I (Taşıma fiyat farkı) × %6"
+                : selectedProgram == TransportationProgramType.SpecialEducation
+                    ? "Kaynak: Hesaplama!AC4 | Başlık: Ek Kesin Teminat | Excel formülü: =(I4*6/100)+(R4*6/100) | OEHS: (I taşıma fiyat farkı × %6) + (R rehber fiyat farkı × %6)"
+                    : "Kaynak hücre/formül eşlemesi için önce program seçin.",
+            selectedProgram == TransportationProgramType.SpecialEducation
+                ? "Ek kaynak: Hesaplama!K4 | Başlık: Taşıma net tutarı | Excel formülü: =(G4*H4)+I4-J4"
+                : selectedProgram == TransportationProgramType.BasicOrSecondary
+                    ? "Ek kaynak: Hesaplama Bilgileri!K4 | Başlık: Taşıma net tutarı | Kaynak formül eşlemesi çalışma kitabı doğrulamasına bağlıdır."
+                    : "Taşıma net tutarı kaynak hücresi: program seçimi bekleniyor.",
+            selectedProgram == TransportationProgramType.SpecialEducation
+                ? "Ek kaynak: Hesaplama!T4 | Başlık: Rehber net tutarı | Excel formülü: =(P4*Q4)+R4-S4"
+                : "Rehber satırı bu programda kaynak formülüne göre kullanılmaz.",
+            selectedProgram == TransportationProgramType.BasicOrSecondary
+                ? "Ek kaynak: Hesaplama Bilgileri!U4 | Başlık: Damga Vergisi | Excel formülü: =K4*9.48/1000 (rapor sayfasındaki farklı matrah davranışıyla karıştırmayın)"
+                : selectedProgram == TransportationProgramType.SpecialEducation
+                    ? "Ek kaynak: Hesaplama!AD4 | Başlık: Damga Vergisi | Excel formülü: =(K4*9.48/1000)+(T4*9.48/1000)"
+                    : "Damga vergisi kaynak hücresi: program seçimi bekleniyor.",
+            "Not: Kaynak başlıkları/formülleri XLSM statik incelemesinden alınmıştır; Excel masaüstü/VBA yeniden hesaplaması yerine geçmez.",
+            "",
+            "3) OEHS CANLI FORMÜL VE ARA DEĞERLER",
             "K — Taşıma neti = G × H + I − J = " + (issues.Count == 0
                 ? N(g) + " × " + M(h) + " + " + M(i) + " − " + M(j) + " = " + M(transportNet) + " TL"
                 : "Hesap bekliyor (eksik/geçersiz giriş)"),
