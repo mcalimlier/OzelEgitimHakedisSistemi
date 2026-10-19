@@ -221,4 +221,37 @@ public sealed class CurrentXlsmSourceParityTests
         }
     }
 
+
+    [Fact]
+    public void UploadedBasicEducationWorkbookRow4_ShouldMatchFullCalculationChain()
+    {
+        // Source: 03-Temel Eğitim Taşıma Ödeme.xlsmdüzeltildi(2).xlsm
+        // Values are from the recalculated workbook copy; LibreOffice recalculation
+        // was used here, not desktop Excel/VBA execution.
+        var input = new ProgressPaymentInput(
+            WorkDays: 16m,
+            DailyPrice: 19539.1608m,
+            DiscountAmount: 0m,
+            PriceDifference: 7365.35m,
+            ContractAmount: 100000m,
+            IsVatExempt: false,
+            TaxDebt: 0m,
+            SocialSecurityDebt: 0m,
+            MinimumWageSupport: 0m,
+            InspectionPenalty: 0m,
+            ProgramType: TransportationProgramType.BasicOrSecondary);
+
+        var result = ProgressPaymentCalculator.Calculate(input);
+
+        Assert.Equal(319991.9228m, result.TransportNetAmount); // K4
+        Assert.Equal(31999.19228m, result.Vat);                // L4
+        Assert.Equal(15999.59614m, result.Withholding);        // M4
+        Assert.Equal(335991.51894m, result.InvoiceAmountAfterWithholding); // N4
+        Assert.Equal(351991.11508m, result.GrossAmount);        // O4
+        Assert.Equal(441.921m, result.AdditionalGuarantee);     // T4
+        Assert.Equal(3033.523428144m, result.StampTax);        // U4
+        Assert.Equal(19475.040568144m, result.TotalDeductions);// V4
+        Assert.Equal(332516.074511856m, result.NetPayable);    // W4
+    }
+
 }
