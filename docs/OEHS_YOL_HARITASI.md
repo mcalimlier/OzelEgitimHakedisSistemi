@@ -1035,3 +1035,13 @@ Bu değişikliklerin Windows/.NET testleri ve dört PDF'nin görsel kabulü hen�
 - Açık iş: Temel/Ortaöğretim icmalinin ilgili hücre/formül ve VBA aktarım zincirini test girdileriyle eşleştir; uygulamanın oluşturduğu PDF metnindeki gerçek tutarı ve kaynağını belirle. Kaynak formülü doğrulanınca gerekirse testi ya da uygulama kodunu düzelt ve CI'ı yeniden çalıştır.
 - Diğer açık riskler sürüyor: iki XLSM'de VBA'nın hücre yazma akışı uçtan uca doğrulanmadı; Özel Eğitim aylık başlık anomalisi açık; dört PDF'nin gerçek Excel/VBA referansıyla görsel ve tutar kabulü tamamlanmadı.
 - PR #3 açık/taslak tutulacak; ana dala birleştirme veya yayın yapılmayacak.
+
+
+## Devam notu — 2026-10-19: Temmuz icmal testi formül zincirine bağlandı
+
+- PDF smoke run `39278058152` logu incelendi: 221/221 Core testi geçti, fakat `OfficialDocumentOutputTests.FourOfficialTemplates_ShouldExportAsSinglePageA4VectorPdfs` testi Temel/Ortaöğretim Temmuz icmalinde `₺15,04` beklediği için başarısız oldu.
+- İlgili test vektöründe Temel/Ortaöğretim girdileri: hizmet 100 TL, ham fiyat farkı 10 TL, vergi borcu 2 TL, denetim cezası 2 TL, KDV muaf. Güncel çekirdek formüllerinde damga vergisi `K*0,00948 = 110*0,00948 = 1,0428 TL`; ek kesin teminat `I*0,06 = 0,60 TL`. Dolayısıyla kesintiler toplamı `2 + 2 + 1,0428 + 0,60 = 5,6428 TL`; Temel Eğitim icmalinde fiyat farkı sütunu ham I tutarına kesinti toplamını eklediğinden `10 + 5,6428 = 15,6428 TL`, iki ondalık gösterimde 15,64 TL; toplam sütunu 110 + 15,64 = 125,64 TL.
+- Yalnızca bu sentetik testteki iki beklenen metin `₺15,64` ve `₺125,64` olarak güncellendi. Hesaplama koduna dokunulmadı; Excel masaüstü/VBA sonucu olduğu iddia edilmiyor. Bu, uygulamanın mevcut formül zincirinden türetilmiş test beklentisidir ve yeni CI sonucu ile sınanacak.
+- Test değişikliği commit'i: `62d728519885d894917acb9b0153fc52d11e9d1d`. Önceki yol haritası güncellemesi sonrası commit için Windows CI run `39279536998` kuyruğa alınmıştı; yeni test commit'i için ayrıca CI sonucu kontrol edilmeli.
+- Açık riskler: gerçek Excel/VBA golden vector henüz alınmadı; Temel Eğitim T hücresinin doğrudan formülü ile önceki elle giriş açıklaması arasındaki çelişki VBA yazma akışıyla çözülmedi; Özel Eğitim ay başlık anomalisi ve dört PDF'nin kaynak Excel ile uçtan uca kabulü açık.
+- PR #3 açık/taslak kalacak; ana dala birleştirme veya yayın yapılmayacak.
