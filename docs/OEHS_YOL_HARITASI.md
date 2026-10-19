@@ -1094,3 +1094,12 @@ Bu değişikliklerin Windows/.NET testleri ve dört PDF'nin görsel kabulü hen�
 - Bu turda yapılan iş: mevcut XAML navigasyonu incelendi, iki XLSM'nin sayfa adları/sırası kaynak inceleme dokümanından doğrulandı, isim/sıra farkı belgelendi.
 - Açık risk: WPF'de her Excel sayfasına birebir karşılık gelen ayrı görünüm mevcut değil; sadece etiket değiştirmek klonlama sağlamaz. Bir sonraki adım navigasyon yapısını program türüne göre eşleştirmek.
 - PR #3 açık/taslak; ana dala birleştirme/yayınlama yapılmadı.
+
+
+## Kullanıcı kararı — 2026-10-19: 4/5/6/7 sayfaları PDF doğrulama referansıdır
+
+- Temel Eğitim ve Özel Eğitim Excel dosyalarındaki 4/5/6/7 numaralı sayfalar (sırasıyla ilgili hakediş raporu, Hizmet İşleri Hakediş Raporu, Hizmet İşleri K. Tutanağı ve Hakediş İcmali sayfaları) uygulamanın sol menüsünde ayrı navigasyon butonları olarak yer almayacak.
+- Bu dört Excel sayfası, kaynak şablon/hesap sonucu referansları olarak kullanılacak. Programın ürettiği dört PDF'nin tutarları, dönem bilgisi, yüklenici, hat, imza alanları ve sayfa düzeni; ilgili eğitim türünün Excel 4/5/6/7 sayfalarıyla karşılaştırılacak.
+- Kabul kriteri: her bir PDF, aynı giriş ve dönem için kendi program türünün Excel referans sayfasıyla uyuşmalı. Dört belge birlikte denetlenmeli; bir belgenin başarılı olması diğer üçünün doğrulandığı anlamına gelmez.
+- Sol menü sayfa eşlemesinde PDF çıktı sayfaları dışarıda tutulacak; kullanıcıya yönelik iş akışı ekranları ile belge üretimi ayrı ele alınacak. Excel'in diğer görünür çalışma sayfaları için navigasyon eşlemesi devam edecek; gizli teknik sayfalar kullanıcı menüsüne konmayacak.
+- Bu bir kapsam/kabul kararıdır; henüz kod veya test değişikliği yapıldığı anlamına gelmez. Sonraki adım: PDF doğrulama test matrisini açıkça 4 belge × 2 program türü olarak kurmak ve mümkün olduğunda Excel/VBA'dan alınmış gerçek referans örnekleriyle kıyaslamak.
