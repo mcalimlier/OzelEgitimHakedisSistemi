@@ -132,10 +132,10 @@ public sealed class ProgressPaymentCalculator
         // Temel Eğitim raporundaki D15 için negatif matrahın sıfırlanması ayrı rapor formülüdür.
         var stampTax = transportStampTax + guideStampTax;
 
-        // Nihai yüklenen Excel'ler esas alınır; önceki sözlü kural/varsayımlar dikkate alınmaz.
-        // Temel Eğitim: Hesaplama Bilgileri!T4 = I4*6/100.
+        // Onaylanan kaynak davranışı: yeni yüklenen XLSM formülleri esas alınır.
+        // Temel Eğitim: Hesaplama Bilgileri!T4 = I4*6/100; I4, input.PriceDifference alanıdır.
         // Özel Eğitim: Hesaplama!AC4 = (I4*6/100) + (R4*6/100).
-        // İskonto J/S bu formüllere dahil değildir.
+        // Her iki formülde de iskonto J/S ve ManualAdditionalGuarantee kullanılmaz.
         var additionalGuarantee = input.ProgramType == TransportationProgramType.BasicOrSecondary
             ? input.PriceDifference * constants.AdditionalGuaranteeRate
             : (input.PriceDifference * constants.AdditionalGuaranteeRate)
