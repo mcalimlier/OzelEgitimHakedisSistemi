@@ -449,3 +449,29 @@ Yüzdeler mühendislik tahminidir; resmi kabul oranı değildir.
 - Commit'ler: WPF `bf05a6fd63bdb792d9b93819626937319c74bd1f`; test `164cea0044227431887d1a6bfd5c645d0481e9c5`.
 - İlgili önceki koşular [39435909317](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39435909317) ve [39435976702](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39435976702) başarılı tamamlandı. Yeni iki commit için henüz yeni CI sonucu görünmüyor; başarı iddiası yapılmıyor.
 - Devam eden öncelikler değişmedi: son commit CI; 1/3/5 hat WPF uçtan uca seçim/çıktı testi; XLSM ham kaynak erişimi; iki program için 8 PDF'nin Excel/VBA karşılaştırması. PR #3 açık/taslak kalır.
+
+
+## Gün sonu devam notu — 20.10.2026
+
+### Bugün son yapılanlar
+- Çoklu-hat çıktı sınırında boş rota anahtarı senaryosu için WPF hata yakalama eklendi: `bf05a6fd63bdb792d9b93819626937319c74bd1f`.
+- Bu davranışın regresyon testi eklendi: `OutputSelection_ShouldRejectBlankRouteKey`, commit `164cea0044227431887d1a6bfd5c645d0481e9c5`.
+- İlgili Windows CI run [39436417301](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39436417301) **başarılı**: tam çözüm/WPF derlemesi, UI sözleşmesi ve kompakt yerleşim kontrolleri, test derlemesi ve test çözümü, PDF smoke üretimi/doğrulaması ve Windows EXE publish adımları geçti. Artefakt yükleme adımlarının bir kısmı ortam kısıtı nedeniyle atlandı; indirilebilir EXE paketi hazır olduğu varsayılmamalı.
+- Önceki doğrulama run'ları [39435909317](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39435909317) ve [39435976702](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39435976702) da başarılı tamamlandı.
+
+### Durum ve açık riskler
+- Seçili rota anahtarlarının boş, yinelenen veya taslağı eksik olması durumunda hakediş üretimi engellenir. Yeni boş anahtar testi CI'da geçti.
+- CI başarısı gerçek masaüstü Windows etkileşim/DPI kabulü veya kaynak Excel/VBA paritesi yerine geçmez.
+- Kaynak XLSM dosyaları bu dalda görünmediği için Microsoft Excel/VBA'da yeniden hesaplama ve iki program için 8 PDF'nin kaynak PDF/Excel ile alan alan görsel kabulü hâlâ açık.
+- İcmal riskleri (Özel Eğitimde K+T ile I+R'nin ayrı toplanması; Temel Eğitimde C8/D8 fiyat farkı/aktarımı olasılığı) karar verilmeden değiştirilmemeli.
+- PR #3 açık/taslak; ana dala birleştirme ve yayınlama yapılmadı.
+
+### Bir sonraki oturum için kısa sıra
+1. PR dalındaki en son commit ve CI durumunu yeniden doğrula; devam notu commit'inin CI sonucunu ayrıca kontrol et.
+2. Çoklu-hat 1/3/5 rota seçimlerinde WPF uçtan uca test kapsamını güçlendir; seçilmeyen taslakların hesap/PDF çıktısına girmediğini kanıtla.
+3. İki XLSM kaynağının erişilebilir konumunu doğrula; bulunursa Excel/VBA sonuçlarını hücre düzeyinde otomatik karşılaştır.
+4. Temel Eğitim ve Özel Eğitim için dört PDF'den oluşan 4×2 kabul matrisini gerçek Excel/VBA çıktılarıyla tamamla.
+5. Gerçek Windows masaüstü, DPI ve arşiv düzeltme kabulünü kaydet.
+6. Formül farklarını sessizce değiştirme; kanıt ve karar gerektiren icmal konularını ayrı tut.
+
+**Oturum sonu:** Bu not güncellendi. Kullanıcı bu akşam devam etmeyebilir; sonraki oturum bu nottan başlamalı. Herhangi bir merge/release yapılmamalı.
