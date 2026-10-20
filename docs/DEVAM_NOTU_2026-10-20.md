@@ -777,3 +777,9 @@ Yüzdeler ölçüm sistemiyle hesaplanmış kesin istatistik değil, iş paketle
 
 - Yama paketi artık 3 aday modül içeriyor: Temel Eğitim Module1 ve Roller; Özel Eğitim Module1. `Roller.bas` için `Option Explicit` ve `i As Long` eklendi. Özel Eğitim `SayfaYazdir`, yazdırma hatasında önceki `Application.ScreenUpdating` değerini geri yükleyip başarı mesajı göstermeyecek şekilde ele alındı.
 - Statik test sonucu 17/17 PASS. VBA IDE compile ve Excel çalışma zamanı hâlâ açık kabul kapısıdır. Kaynak XLSM dosyaları değişmedi.
+
+
+## Son statik yama genişletmesi — birleşik fiyat farkı aktarımı (20.10.2026)
+
+- Özel Eğitim `TumFiyatFarkiAktarimlari` için yama adayı güncellendi: alt makroları çağırmadan önce hem taşıma fiyat farkı (P:Z) hem rehber fiyat farkı (AB:AL) hedef başlıkları doğrulanıyor; hata halinde başarı mesajı gösterilmiyor.
+- Statik test sayısı 18/18 PASS oldu. Excel VBA IDE derlemesi ve gerçek çalışma zamanı testi hâlâ yapılmadı; resmi XLSM dosyaları değiştirilmedi.
