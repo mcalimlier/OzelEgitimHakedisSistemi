@@ -88,14 +88,17 @@ Bu sonuç LibreOffice yeniden hesaplaması ile kaynak önbelleğinin karşılaş
 İlk MemberData düzenlemesi de Windows CI'da CS3016 verdi; bu nedenle testler daha basit ve derleyici açısından güvenli bir düzene alındı: tek [Fact], tipli tuple kaynak vektörleri ve foreach ile hücre sonuçlarının doğrulanması. Güncel commit: 15e3e88755ef768fdb6352c8bacb56f6ce99cafe. Bu commit için yeni CI sonucu henüz görünmüyor.
 
 
-## Son XLSM içindeki hesaplama–icmal tutarsızlığı (Özel Eğitim)
+## Son XLSM'lerdeki icmal riskleri — kaynak önbelleği ve formül ayrı ayrı
 
-Son Özel Eğitim XLSM'sinde seçili dönem Anasayfa!E5 = Kasım 2026 ve hesaplama satır 4 için:
+**Özel Eğitim**
+- Anasayfa!E5 = Kasım 2026.
+- Hesaplama!K4 = 43.630,00 TL; Hesaplama!T4 = 34.037,27 TL; K+T = 77.667,27 TL.
+- Hakediş Raporu!D11 = 77.667,27 TL; D8−D10 da aynı değeri verir.
+- Hakediş İcmali!C8 = 77.667,27 TL ve D8 = 11.030,00 TL; E8 = C8+D8 = 88.697,27 TL. D8, İcmal Verileri'ndeki güncel taşıma fiyat farkı I=7.530 TL ile rehber fiyat farkı R=3.500 TL'yi toplar. Böylece fiyat farkı, C8 içindeki K+T tutarında zaten bulunmasına rağmen ayrı sütunda bir kez daha eklenmiş olur.
 
-- Hesaplama!K4 = 43.630,00 TL; Hesaplama!T4 = 34.037,27 TL; toplam = 77.667,27 TL.
-- Hakediş Raporu!H2 ve D11 önbelleği 77.667,27 TL; D8−D10 da 77.667,27 TL. Bu rapor zinciri kendi içinde tutarlı.
-- Buna karşılık İcmal Verileri!F3 = Kasım 2026 başlığı altında satır 4 değeri 319.991,9228 TL; Hakediş İcmali!C8 aynı 319.991,9228 TL'yi gösteriyor. Bu tutar, son Temel Eğitim XLSM'sindeki Hesaplama Bilgileri!K4 değerine eşit; Özel Eğitim satır 4 K+T toplamıyla eşleşmiyor.
+**Temel Eğitim**
+- Hesaplama Bilgileri!K4 = 319.991,9228 TL; İcmal Verileri!F4 = 319.991,9228 TL eşleşir.
+- Hakediş İcmali!C8 = 319.991,9228 TL; D8 = 26.840,390568144 TL; E8 = 346.832,313368144 TL.
+- İcmal Verileri'nde ilgili ay için fiyat farkı aktarım hücresi R4 = 7.367,35 TL, kesinti aktarım hücresi AD4 = 19.473,040568144 TL; toplam D8 = R4+AD4 olur. Hesaplama Bilgileri!I4 = 7.365,35 TL ve V4 = 19.475,040568144 TL olduğundan aktarılmış değerler hesaplama satırıyla aynı değil; kaynak aktarım alanları yenilenmemiş veya başka seçili ay/satır bağlamından kalmış olabilir.
 
-Bu bulgu, son Özel Eğitim dosyasının icmal aktarım önbelleğinin seçili hesaplama satırıyla uyumsuz olabileceğini gösterir. Makro masaüstü Excel'de çalıştırılmadığı için nedenini (aktarımı yenileme gereği, farklı seçili hat veya başka kaynak mantığı) kesinleştirmiyorum. **OEHS icmalini bu tek önbellek değerine göre sessizce değiştirmeyin.** Aynı hat/dönem seçimiyle Excel'de ilgili aktarım makroları çalıştırılmalı; ardından İcmal Verileri!F4, Hakediş İcmali!C8/D8/E8 ve dört PDF tekrar alınarak karşılaştırılmalıdır.
-
-Temel Eğitim dosyasında İcmal Verileri!F4 = 319.991,9228 TL ve Hesaplama Bilgileri!K4 = 319.991,9228 TL eşleşmektedir. Bu nedenle Özel Eğitim farkı programlar arası aktarım/önbellek doğrulaması gerektiren ayrı bir bulgudur.
+Bu bulgular, son XLSM'lerde **icmal formülü ile aktarılmış hücrelerin ayrı ayrı kabul edilmesi gerektiğini** gösterir. Makrolar masaüstü Excel'de çalıştırılmadığı için eski aktarım hücrelerinin neden güncellenmediği kesinleştirilmemiştir. Kaynak formülü sessizce değiştirmeyin; aynı hat/dönemle aktarım makrolarını Excel'de çalıştırıp İcmal Verileri'ndeki ilgili aylık K+T, I/R ve kesinti bloklarını yeniden kontrol edin. Ardından Hakediş İcmali C/D/E satırlarını ve dört PDF'yi tekrar karşılaştırın.
