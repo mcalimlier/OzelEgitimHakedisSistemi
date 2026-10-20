@@ -61,6 +61,47 @@ public sealed class RouteDraftCacheTests
         Assert.Equal(0m, cache["B"].PriceDifference);
     }
 
+    [Fact]
+    public void OutputSelection_ShouldExcludeCachedButDeselectedRoutes()
+    {
+        var cache = new RouteDraftCache<Draft>
+        {
+            ["A"] = new Draft { RouteKey = "A", PriceDifference = 10m },
+            ["B"] = new Draft { RouteKey = "B", PriceDifference = 20m },
+            ["C"] = new Draft { RouteKey = "C", PriceDifference = 30m }
+        };
+
+        var selected = SelectedRouteDrafts.SelectExact(new[] { "A", "C" }, cache);
+
+        Assert.Equal(new[] { "A", "C" }, selected.Select(x => x.RouteKey));
+        Assert.DoesNotContain(selected, x => x.RouteKey == "B");
+        Assert.Equal(40m, selected.Sum(x => x.PriceDifference));
+    }
+
+    [Fact]
+    public void OutputSelection_ShouldFailClosedWhenSelectedRouteHasNoDraft()
+    {
+        var cache = new RouteDraftCache<Draft>
+        {
+            ["A"] = new Draft { RouteKey = "A" }
+        };
+
+        Assert.Throws<InvalidOperationException>(() =>
+            SelectedRouteDrafts.SelectExact(new[] { "A", "B" }, cache));
+    }
+
+    [Fact]
+    public void OutputSelection_ShouldRejectDuplicateSelectedRouteKeys()
+    {
+        var cache = new RouteDraftCache<Draft>
+        {
+            ["A"] = new Draft { RouteKey = "A" }
+        };
+
+        Assert.Throws<InvalidOperationException>(() =>
+            SelectedRouteDrafts.SelectExact(new[] { "A", "A" }, cache));
+    }
+
     private sealed class Draft
     {
         public string RouteKey { get; init; } = string.Empty;
