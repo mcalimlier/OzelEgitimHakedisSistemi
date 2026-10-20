@@ -35,8 +35,9 @@ Güncel kaynak formülleri:
 Bu formüllerin doğrudan uygulanması, negatif I veya R girdisi olduğunda negatif ek kesin teminat bileşeni üretebilir. Mevcut `ProgressPaymentCalculator` bunu `MAK(0; I+R)` biçiminde sınırlandırmaz. Kaynak formüle uygunluk testleri de bu işaretli davranışı doğrular:
 - `ProgressPaymentCalculatorTests.NegativePriceDifference_ShouldMatchExcelSignedGuaranteeFormula`
 - `ProgressPaymentCalculatorTests.MixedSignedPriceDifferences_ShouldCalculateEachExcelPriceDifferenceAtSixPercent`
-- `CurrentBasicWorkbookDiscrepancyTests.CurrentBasicRows5And6_ShouldMatchCalculationFormulaChain`
-- `CurrentXlsmSourceParityTests` içindeki Özel Eğitim satır 4–6 testleri.
+- `CurrentBasicWorkbookParityTests.LatestBasicRows4To8_ShouldMatchWorkbookCalculationCells` — son Temel XLSM satır 4–8.
+- `CurrentXlsmSourceParityTests.LatestSpecialEducationRows4To6_ShouldMatchWorkbookCalculationCells` — son Özel XLSM satır 4–6.
+- Önceki yüklemeye ait satır 4–6/5–8 test adları kaldırılmıştır; son XLSM vektörleri üstündür.
 
 **Açık karar / risk:** 4735 sayılı Kanun'un 12'nci maddesi ek kesin teminatı fiyat farkı nedeniyle sözleşme bedelinde artış meydana gelmesi koşuluna bağlar. Bu mevzuat ifadesi ile kaynak Excel'in negatif fiyat farkına da %6 uygulayan cebirsel formülü aynı davranış değildir. Resmî hesaplama davranışı, yetkili karar ve işlem tarihindeki sözleşme/mevzuat incelemesi olmadan sessizce `MAX(0, I+R)` formülüne çevrilmemelidir. Mevcut uygulama kaynak Excel formülünü izler; negatif fiyat farkı senaryosu ayrı kabul/risk maddesi olarak kalır.
 
