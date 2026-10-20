@@ -91,6 +91,18 @@ public sealed class RouteDraftCacheTests
     }
 
     [Fact]
+    public void OutputSelection_ShouldRejectBlankRouteKey()
+    {
+        var cache = new RouteDraftCache<Draft>
+        {
+            ["A"] = new Draft { RouteKey = "A" }
+        };
+
+        Assert.Throws<ArgumentException>(() =>
+            SelectedRouteDrafts.SelectExact(new[] { " " }, cache));
+    }
+
+    [Fact]
     public void OutputSelection_ShouldRejectEmptySelection()
     {
         var cache = new RouteDraftCache<Draft>
