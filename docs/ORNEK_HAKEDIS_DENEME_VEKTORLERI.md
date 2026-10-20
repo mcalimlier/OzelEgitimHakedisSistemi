@@ -1,6 +1,6 @@
 # Hakediş Deneme Vektörleri
 
-Bu dosya, OEHS geliştirme çalışması sırasında sentetik hesaplama girdilerini ve C# hesaplama çekirdeği için beklenen sonuçları kaydetmek amacıyla oluşturulmuştur. Resmî ödeme örneği değildir; kaynak Excel/VBA ile bire bir kabul testi olarak değerlendirilmemelidir.
+Bu dosya, OEHS geliştirme çalışması sırasında sentetik hesaplama girdilerini ve C# hesaplama çekirdeği için beklenen sonuçları kaydetmek amacıyla oluşturulmuştur. **Yalnızca sentetik regresyon vektörüdür; son yüklenen Excel'lerin resmî test verisi, kaynak satırı veya kabul kuralı değildir.** Son XLSM/VBA ile çelişen herhangi bir tutar, oran veya davranış burada kalıcı kural sayılmaz; vektör güncellenmeli veya kaldırılmalıdır. Kaynak Excel/VBA ile bire bir kabul testi değildir.
 
 ## Temel / Ortaöğretim
 
