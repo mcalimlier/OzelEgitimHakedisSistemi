@@ -195,3 +195,12 @@ Tarihsel Temel/Ortaöğretim ​`Hizmet İşleri Hakediş Raporu!F15` formülü 
 
 
 - **Test düzeltmesi güncellemesi:** CS3016 sonrasında MemberData da kaldırıldı; kaynak vektörleri artık [Fact] içinde tipli tuple listesi ve foreach ile test ediliyor. Güncel test commit'i 15e3e88755ef768fdb6352c8bacb56f6ce99cafe; CI sonucu henüz alınmadı.
+
+
+## Güncel Windows CI sonucu — 20.10.2026
+
+- [Windows CI run 39399443926](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39399443926) ve [run 39399513703](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39399513703) **başarılı** tamamlandı.
+- Son doğrulanan testler: **215/215 Core**, **5/5 WPF çıktı testi**. Tam çözüm ve WPF derlemesi, UI statik kontrolleri, PDF smoke üretimi ve Windows EXE publish adımları başarılı.
+- Eski source-vector test metotları son XLSM satırlarıyla değiştirildiği için test sayısı önceki CI'daki 223'ten 215'e indi; son testlerde 8 gerçek kaynak satırı 2 program-özel test içinde döngüyle doğrulanıyor. Eski yükleme vektörleri artık geçerli kabul edilmiyor.
+- Arkadaş test paketi ve EXE artefakt yükleme adımları CI ortamı kısıtlaması nedeniyle atlandı; hazırlama adımları başarılı. CI, masaüstü Excel/VBA veya 4×2 PDF görsel kabulü yerine geçmez.
+- Güncel PR başı bu ekleme öncesinde bfe1c5d7... idi; son kaynak ve test düzeltmeleri dalda. PR #3 açık/taslak/birleştirilmemiş durumda.
