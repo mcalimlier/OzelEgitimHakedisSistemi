@@ -580,3 +580,43 @@ Bu yüzdeler resmi kabul ölçütlerine göre yaklaşık mühendislik ilerleme t
 - Yüzdeler gerçek Excel/VBA ve 8 PDF kabulü tamamlanana kadar yükseltilmemelidir. Yeni kanıt geldikçe her paketin gerekçesiyle birlikte güncelle.
 - PR #3 açık/taslak; ana dala birleştirme veya yayınlama yapılmamalı.
 
+## Eşzamanlı çekirdek değerlendirmesi ve düzeltilmiş ilerleme raporu — 20.10.2026
+
+Önceki %60, geliştirme ilerlemesi ile resmî kabul ilerlemesini tek yüzdeye sıkıştırdığı için yanıltıcıydı. Bu, kodun gerilediği anlamına gelmez. Bundan sonra iki ayrı ölçüt kullanılacaktır: geliştirme ilerlemesi ve kanıtlanmış kabul ilerlemesi.
+
+### Yüzdeler (yaklaşık mühendislik tahmini; resmî kabul değildir)
+
+| Çekirdek / iş paketi | Geliştirme ilerlemesi | Kanıtlanmış kabul | Kalan ana iş |
+|---|---:|---:|---|
+| Temel Eğitim hesaplama | 85% | 65% | Gerçek Excel/VBA hücre eşitliği ve icmal formül kararları |
+| Özel Eğitim hesaplama | 85% | 65% | Gerçek Excel/VBA hücre eşitliği ve icmal formül kararları |
+| İKN / firma / hat / dönem akışı | 80% | 65% | WPF uçtan uca seçim, firma değişimi, dönem izolasyonu, arşiv akışı |
+| Çoklu hat ve taslak izolasyonu | 80% | 70% | UI'dan hesaplama/arşiv/PDF'ye seçili hat kapsamının uçtan uca kanıtı |
+| PDF üretimi ve şablon entegrasyonu | 80% | 65% | 8/8 gerçek Excel/VBA çıktısıyla alan ve görsel karşılaştırma |
+| Otomatik test ve CI | 85% | 85% | Son kod commit'inde Windows CI başarılı; gerçek masaüstü ve Excel kabulü ayrı |
+| Gerçek Excel/VBA ve resmî çıktı kabulü | 45% | 25% | RAR içindeki VBA kaynaklarının okunması, Excel'de makro çalıştırma, 8 PDF kabulü |
+| **Genel geliştirme ilerlemesi** | **80%** | — | Kod ve entegrasyon işlerinin tahmini tamamlanma oranı |
+| **Genel doğrulanmış kabul ilerlemesi** | — | **65%** | Yalnızca mevcut otomatik test/CI ve kaynak formül kontrolleriyle kanıtlanan bölüm |
+
+Yüzdeler ölçüm sistemiyle hesaplanmış kesin istatistik değil, iş paketleri ve açık kabul kriterleri üzerinden verilen tahminlerdir. Herhangi bir kaynak Excel/VBA veya gerçek PDF kabulü tamamlanmış sayılmamıştır.
+
+### CI doğrulaması
+- Kod commit'i `d34f789f49f1914e23965f79f6509a485bb38e31` için Windows CI run [39451659524](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39451659524) artık **success** olarak doğrulandı.
+- Workflow'da tam çözüm derlemesi, WPF derlemesi, UI sözleşmesi/yerleşim kontrolleri, test derlemesi, `Test Solution`, PDF smoke üretimi/doğrulaması ve Windows EXE publish adımları başarılıdır.
+- PDF/EXE artefakt yükleme adımları ortam kısıtı nedeniyle atlandı; indirilebilir paketin yayınlandığı varsayılmamalı.
+- 37 hat seçimi regresyonu 1,2,3,5,8,12,20,36,37 seçim sayılarında seçili anahtarları ve toplamı kontrol eder. Bu servis testi WPF uçtan uca testi değildir.
+- PR #3 açık/taslak kalır. Merge/release yapılmaz.
+
+### Paralel çalışma sırası
+1. Hesaplama çekirdekleri: Temel ve Özel Eğitim formül/parite riskleri ayrı ayrı.
+2. İş akışı çekirdeği: İKN, firma, program, hat, dönem ve arşiv izolasyonu.
+3. Çıktı çekirdeği: PDF alanları, tutarların kaynak zinciri ve tek sayfa düzeni.
+4. QA çekirdeği: CI, regresyon testleri, kaynak Excel/VBA ve gerçek masaüstü kabulü.
+5. Her commit ve doğrulama sonucu tek devam notuna eklenir; paralel inceleme başlıkları ayrı ajanlar veya ayrı branch'ler olarak sunulmaz.
+
+### Sıradaki somut öncelikler
+- VBA RAR arşivlerinin içeriğini çıkarıp modül/UserForm/Sheet kodlarını envanterlemek; mevcut ortamda RAR çıkarıcı yoksa erişilebilir kaynak biçimi/CI adımı bulmak, VBA incelemesini yapılmış gibi göstermemek.
+- İki XLSM'nin son SHA-256 ve kaynak hücre vektörlerini koruyarak Microsoft Excel/VBA sonucu ile karşılaştırma hattı hazırlamak.
+- WPF 1/3/5+ hat seçiminden arşiv ve dört PDF'ye kapsam aktarımını uçtan uca doğrulamak.
+- 8 PDF'nin tutar, dönem, yüklenici, hat, imza ve sayfa düzeni kabulünü ayrı ayrı tamamlamak.
+
