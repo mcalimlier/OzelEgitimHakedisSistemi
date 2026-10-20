@@ -660,3 +660,20 @@ Yüzdeler ölçüm sistemiyle hesaplanmış kesin istatistik değil, iş paketle
 - **Kalan kabul kapıları:** (1) Microsoft Excel masaüstünde VBA makrolarını gerçek dosyalarda çalıştırıp yeniden hesaplamak; (2) Temel T4/U4/W4, Hakediş Raporu D15/D28; Özel AC4:AG4, Hakediş Raporu D28 ve VBA aktarım/icmal hücrelerini kaydetmek; (3) iki programın PDF 4/5/6/7 belgelerini gerçek kaynak PDF'leriyle 8/8 alan ve görsel karşılaştırmadan geçirmek; (4) icmal fiyat farkı tekrar sayımı konusunda kaynak formülü ve makro aktarımını ayırarak kanıt toplamak.
 - **Önemli kısıt:** kaynak Excel/VBA masaüstü çalıştırması ve gerçek kaynak PDF görselleri olmadan resmî hesap davranışı değiştirilmeyecek ve iki çekirdeğe %100 kabul etiketi verilmeyecek.
 - **Bir sonraki eylem:** mevcut dalda kod/test tarafındaki güvenli regresyon açıklarını kapatmaya devam et; CI sonucunu gerçek Excel/VBA ve 8 PDF kabulünden ayrı raporla. Dosyaları tekrar isteme veya kaynakları sohbet başına baştan inceleme; bu notu başlangıç noktası olarak kullan.
+
+
+## Devam checkpoint'i — son CI doğrulaması ve iki hesaplama çekirdeği (20.10.2026 16:20 +03:00)
+
+- Etkin dal: `feature/official-payment-document-templates`.
+- PR #3: açık/taslak; birleştirilmedi ve yayınlanmadı.
+- Kontrol edilen HEAD: `d89b6c8b45ee9edfe77ecde861eee68343b98b8d`.
+- HEAD için Windows CI run [39455983608](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39455983608) **success**. Tam çözüm/WPF derlemesi, UI sözleşmesi/yerleşim kontrolleri, test derlemeleri, Test Solution, PDF smoke üretimi ve Windows EXE publish hazırlığı başarılı.
+- Test sayıları logdan doğrulandı: **232/232 Core**, **6/6 WPF**. PDF/EXE artifact yükleme adımları bu koşuda atlandı; indirilebilir paket yayımlandığı varsayılmamalı.
+- Son kod değişikliği, sekiz resmi PDF'nin ayrı ve benzersiz dosya olarak üretildiğini, varlığını ve asgari boyutunu doğrulayan WPF smoke testidir. Hesaplama formüllerini değiştirmemiştir.
+- Temel Eğitim ve Özel Eğitim çekirdekleri ayrı kalır. Son XLSM satır vektörü testleri, Temel satır 4–8 ve Özel satır 4–6 hesaplama sonuçlarını kapsar; rapor D28 testleri ayrıca vardır.
+- Geliştirme/test kanıtı, gerçek Excel/VBA kabulü değildir. Microsoft Excel masaüstünde VBA makrolarının çalıştırılması; Temel `T4/U4/W4`, `Hakediş Raporu!D15/D28`; Özel `AC4:AG4`, `Hakediş Raporu!D28` ve makro sonrası icmal aktarım hücrelerinin kaydı hâlâ açık.
+- 4×2 PDF kabul matrisi hâlâ **0/8 resmî kaynak-kabul kapalı**: her programın dört belgesi aynı girdiyle üretilmiş gerçek Excel/VBA referanslarıyla tutar, dönem, yüklenici, hat, imza ve tek sayfa A4 düzeni bakımından ayrı karşılaştırılmalı.
+- İcmal fiyat farkının ikinci kez eklenmesi riski kaynak formül/makro aktarımıyla çözülmeden hesaplama davranışı sessizce değiştirilmemeli.
+- CI logunda `ProgressPaymentArchiveBatchServiceTests.cs` için CA1861 analiz uyarısı görüldü; derleme/test başarısızlığı değildir. İstenirse test kodu sadeleştirmesi ayrı ve küçük bir iş olarak yapılabilir.
+- **Sıradaki işler:** (1) WPF smoke testinden üretilen 8 PDF'nin gerçek kaynak Excel çıktılarıyla karşılaştırma kayıtlarını kapatmak için kaynak kabul kanıtını elde edilebilir hale getirmek; (2) hesaplama çekirdeklerinde eksik kalan gerçek Excel/VBA ve icmal aktarım kanıtlarını tamamlamak; (3) güvenli, kaynakla temellendirilen regresyon kapsamını artırmak ve her yeni commit'in CI sonucunu yeniden kontrol etmek.
+- İlerleme yüzdesi yalnızca yeni doğrulanmış kabul kanıtıyla artırılacak. Bu checkpoint'te iki çekirdek için %100 kabul iddiası yoktur.
