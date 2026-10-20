@@ -53,3 +53,19 @@
 ## Veri silme işlemi için geri alma koruması
 - Her iki `AyVerileriniSil` aday yordamı, ilk `ClearContents` öncesinde tüm hedef sütunların `.Formula` yedeklerini alır. Hedef başlıkları eksikse veya sayfa korumalıysa işlem başlamaz. Silme sırasında hata oluşursa yedekleri geri yüklemeyi dener.
 - Bu eklemelerden sonra statik regresyon kontrolü **33/33 PASS** oldu. Excel çalışma zamanı testleri hâlâ gerekli.
+
+## Otonom VBA statik denetim genişletmesi — 20.10.2026
+
+### Kaynak envanteri ve açık hata yolları
+- Çıkarılmış orijinal kaynakta Temel Eğitim için 11, Özel Eğitim için 3 adet `.bas/.cls/.frm` metin kaynağı incelendi; UserForm `.frx` dosyaları da mevcut. Basit prosedür sınır sayımı 49 Sub/Function/Property başlangıç-bitiş eşleşmesi verdi; bu bir VBA derleyicisi değildir.
+- Sabit `Sheets(...)` / `Worksheets(...)` referanslarında daha önceki envanterde eksik sayfa adı bulunmadı. Bu, dinamik referansların veya buton/event bağlantılarının çalıştığını kanıtlamaz.
+- Orijinal kaynakta birçok kritik aktarım yordamında hata yakalama yoktu. Yerel güvenli yama adayının v2 paketinde Temel Eğitim `HesapKontrol` ile Özel Eğitim'in dört ay aktarım yordamı ve `HesapKontrol` yordamına açık `On Error GoTo Hata` yolu eklendi.
+- Yama v2 dosyası: `OEHS_VBA_Guvenli_Ay_Aktarim_Yamasi_v2_2026-10-20.zip`; SHA-256 `a4438fa9e6d79335f576defdba27a89573fa7a68243bf25aa0649da36984f38a`. Statik kontrol **39/39 PASS**.
+- Yama adayı orijinal XLSM'lere içe aktarılmadı. Hata mesajları sağlar; aktarım sırasında yazma hatası yaşanırsa tüm önceki yazıları geri alma garantisi vermez. Bu nedenle “tam hata güvenliği” kabulü değildir.
+- Bu statik incelemede VBA IDE compile, gerçek Excel çalışma zamanı, UserForm `.frx` kontrol olayları, buton atamaları ve DPI/ekran testi yürütülmedi. Bunlar açık kabul kapıları olarak kalır.
+
+### Son CI doğrulaması
+- HEAD `626feba9c4b879e542fc89fded0511d564c2a973` için PR run [39465630481](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39465630481) başarılı: tam çözüm/WPF derleme, UI statik kontrolleri, test çözümü, PDF smoke ve Windows EXE publish adımları başarılı.
+- Smoke PDF/EXE artefaktlarının yüklenmesi ortam sınırlaması nedeniyle atlandı. Bu CI, Excel/VBA masaüstü kabulü ve 8/8 gerçek PDF karşılaştırması değildir.
+- PR #3 açık/taslak kalır; merge/release yapılmadı.
+
