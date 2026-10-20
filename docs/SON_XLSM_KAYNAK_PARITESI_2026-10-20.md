@@ -204,3 +204,11 @@ Bu kriterler ürün kabul şartıdır; sonraki geliştirme/devam notlarında kor
 - Bu bölüm, kullanıcının açık ürün talimatını kalıcı kabul kriterine dönüştürür; tek başına mevcut ekranın bu kabulleri geçtiğini kanıtlamaz.
 - Mevcut PR'de İKN/firma/sözleşme/hat iş akışının bazı parçaları ve program türü koruma kontrolleri vardır; yukarıdaki seçmeli çoklu hat, hat-bazlı değişiklik izolasyonu, birleşik İKN tablosu ve kaynak sayfa adlarının menüye tam eşlenmesi uçtan uca ayrıca doğrulanmalıdır.
 - Bu kriterler uygulandığında test ve CI sonuçları kaydedilmeli; gerçek Excel/VBA ve 8 PDF alan-alan kabulü ayrı açık kalmalıdır. PR açık/taslak kalır; onaysız merge/release yapılmaz.
+
+
+## Kaynak başlık düzeltmesi — Özel Eğitim AP3/Kasım (20.10.2026)
+
+- Kaynak dosyada `İcmal Verileri!AP3` formülü yanlışlıkla `=Anasayfa!I9` (Aralık) idi; VBA aktarım sütun eşlemesi AP=Kasım, AQ=Aralık olduğundan AP3'ün `=Anasayfa!I8` olması gerekir.
+- Ayrı bir düzeltilmiş kopya üretildi: `02-Ozel_Egitim_Hakedis_AP3_Kasim_Duzeltme.xlsm`. AP3 formülü ve önbellek değeri Kasım 2026'ya çevrildi; AQ3 `=Anasayfa!I9` / Aralık 2026 olarak korundu.
+- ZIP/XLSM doğrulaması: tüm 47 arşiv parçası korundu; `xl/vbaProject.bin` SHA-256 orijinal ile aynı (`80a75b85adc3bb864747bbbe9ff5ea5089359aaf0f64022d8ba256dccec46310`). Yalnızca `xl/worksheets/sheet8.xml` içindeki AP3 formül/cached başlık değeri değişti.
+- Orijinal dosya değiştirilmedi. Bu kopya henüz Microsoft Excel masaüstünde açılıp yeniden hesaplanmadı; VBA compile/run ve PDF kabulü açık kalır.
