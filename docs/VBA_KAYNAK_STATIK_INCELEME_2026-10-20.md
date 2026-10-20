@@ -99,11 +99,12 @@ Kaynak RAR arşivleri tekrar çıkarılarak XLSM satır 3 başlıklarıyla birli
 - Silme yordamı ise `D4:N103`, `P4:Y103`, `AB4:AK103` aralıklarını temizliyor; ikinci ve üçüncü aralıkta Z ve AL sütunları eksik. Dolayısıyla tüm aralıkları silmeye devam etse bile Temmuz fiyat farkı ve kesinti verilerini bırakıyor.
 - Kaynak XLSM hücre başlıkları, cached values ile teyit edildi: Temel `N3=Temmuz`, `Z3=Temmuz`, `AL3=Temmuz`. Doğru düzeltme, tüm yılı silmek değil, E4'te seçili dönemin her ilgili blokta eşleşen sütununu bulup yalnızca o sütunun 4:103 satırlarını temizlemektir. Tüm hedef sütunlar önceden bulunmadan hiçbir hücre temizlenmemelidir.
 
-### VBA-08 — Özel Eğitim kesinti başlıkları ile makro sütun haritası arasında kaynak uyumsuzluğu
-- Özel Eğitim makrosu kesintileri Eylül–Temmuz için AN:AX sütunlarına sırayla yazar; makro eşlemesinde Kasım AP, Aralık AQ olmalıdır.
-- Kaynak XLSM'de `İcmal Verileri!AP3` ve `AQ3` formüllerinin ikisi de `=Anasayfa!I9` (Aralık) olarak görünüyor; cached başlıklar da iki kez Aralık gösteriyor ve Kasım başlığı eksik.
-- Bu, kaynak workbook başlık formülü ile VBA aktarım sütun haritası arasındaki çelişkidir. Formülü veya makro eşlemesini sessizce değiştirmedim. Özel Eğitim için resmî karar gerektirebilecek kaynak uyuşmazlığı olarak ayrı test edilmeli; mevcut VBA'da E5'in ilk ay sözcüğüyle statik eşleme kullanılması, başlıkla doğrulama yapmadan veri yazdığı için riski artırıyor.
+### VBA-08 — Özel Eğitim AP3 ay başlığı düzeltildi
+- Kullanıcı talimatı ve VBA aktarım eşlemesiyle uyumlu doğru sıra: `AN:AX` içinde Kasım `AP`, Aralık `AQ` olmalıdır.
+- Yetkili kaynak XLSM'nin ilk halinde `İcmal Verileri!AP3` yanlışlıkla `=Anasayfa!I9` (Aralık) idi; `AQ3` de doğru biçimde `=Anasayfa!I9` idi.
+- Güvenli bir düzeltme kopyası oluşturuldu: `İcmal Verileri!AP3 = Anasayfa!I8` (Kasım), `AQ3 = Anasayfa!I9` (Aralık). Düzeltme yalnızca `xl/worksheets/sheet8.xml` içindeki AP3 formül ve önbellek değerini değiştirdi. XLSM arşivindeki 47 parçanın adları korundu ve `xl/vbaProject.bin` SHA-256 değeri değişmedi.
+- Kaynak orijinal dosyanın üzerine yazılmadı. Düzeltilmiş kopyanın Excel masaüstünde açılıp yeniden hesaplanması ve makro çalıştırması henüz yapılmadığından bu, dosya düzeyinde formül düzeltmesi doğrulamasıdır; VBA compile/runtime kabulü değildir.
 
 ### Ek doğrulama sınırı
-- Bu turda XLSM dosyaları salt okunur açıldı; kaynak workbook'a değişiklik yazılmadı.
-- Bulgular kaynak formül metinleri ve önbelleğe alınmış hücre değerleriyle desteklenir; Microsoft Excel'de VBA derlemesi/çalıştırması değildir.
+- Orijinal XLSM değiştirilmedi; düzeltilmiş ayrı kopya dosya düzeyinde doğrulandı.
+- Formül ve cached başlık doğrulandı; Microsoft Excel'de VBA derlemesi/çalıştırması ve PDF kabulü henüz yapılmadı.
