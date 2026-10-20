@@ -70,7 +70,7 @@
 - PR #3 açık/taslak kalır; merge/release yapılmadı.
 ## Otonom VBA hata günlüğü adayı — v3
 
-- Yerel yama paketi: `OEHS_VBA_Guvenli_Ay_Aktarim_Yamasi_v3_2026-10-20.zip`; SHA-256 `39d50277faccb59b7ad1e53584efcd75bc935cc11c72bd7d5f9c3e5fddf24117`.
+- Yerel yama paketi: `OEHS_VBA_Guvenli_Ay_Aktarim_Yamasi_v3_2026-10-20.zip`; SHA-256 `130fec24eab0eaae5017907e26f553ab3b9e11e8ebf8eaa675a0179be9df8688`.
 - Yeni `OEHS_ErrorLog.bas` adayı, hata zamanı, çalışma kitabı, yordam adı, hata numarası/açıklamasını `OEHS_VBA_Error.log` dosyasına en iyi çabayla yazar; çalışma kitabı klasörüne yazılamazsa TEMP klasörünü dener.
 - Temel Eğitim ve Özel Eğitim aday Module1/Module2 hata etiketlerine log çağrıları eklendi. Temel Eğitim LoginForm'da çıkış ve sosyal bağlantı yordamları açık hata yoluna geçirildi; Temel/Özel Eğitim `Worksheet_Change` ve Temel Eğitim `Workbook_Open` hata yollarına log çağrısı eklendi.
 - Statik regresyon: **45/45 PASS**. Kontroller kaynak metni, yordam sınır sayımı, log çağrısı ve önceki 39 kontrolü kapsar. Bu bir VBA derlemesi/çalıştırması değildir.
