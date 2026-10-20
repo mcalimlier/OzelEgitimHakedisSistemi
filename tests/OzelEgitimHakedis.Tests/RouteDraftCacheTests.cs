@@ -138,6 +138,36 @@ public sealed class RouteDraftCacheTests
             SelectedRouteDrafts.SelectExact(new[] { "A", "A" }, cache));
     }
 
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(3)]
+    [InlineData(5)]
+    public void OutputSelection_ShouldIncludeExactlyOneThreeOrFiveSelectedRoutes(int selectedCount)
+    {
+        var cache = Enumerable.Range(1, 5).ToDictionary(
+            index => $"R{index}",
+            index => new Draft
+            {
+                RouteKey = $"R{index}",
+                WorkDays = index * 3,
+                PriceDifference = index * 10m
+            },
+            StringComparer.Ordinal);
+
+        var selectedKeys = Enumerable.Range(1, selectedCount)
+            .Select(index => $"R{index}")
+            .ToArray();
+
+        var selected = SelectedRouteDrafts.SelectExact(selectedKeys, cache);
+
+        Assert.Equal(selectedCount, selected.Count);
+        Assert.Equal(selectedKeys, selected.Select(draft => draft.RouteKey));
+        Assert.Equal(selectedKeys.Sum(key => cache[key].PriceDifference), selected.Sum(draft => draft.PriceDifference));
+        Assert.All(cache.Values.Where(draft => !selectedKeys.Contains(draft.RouteKey, StringComparer.Ordinal)),
+            draft => Assert.DoesNotContain(draft, selected));
+    }
+
     private sealed class Draft
     {
         public string RouteKey { get; init; } = string.Empty;
