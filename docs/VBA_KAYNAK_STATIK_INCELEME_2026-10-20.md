@@ -118,5 +118,5 @@ Ayrı bir aday kaynak yaması oluşturuldu; orijinal XLSM dosyalarına içe akta
 - Özel Eğitim AyVerileriniSil: E5'ten seçili ayı alır; D:N, P:Z, AB:AL ve AN:AX bloklarının dördünde de başlık eşleşmesi gerekir; bir hedef bulunamazsa işlem kapalı-güvenli biçimde iptal edilir.
 - Özel Eğitim'in dört statik ay eşlemeli aktarım prosedürüne tanınmayan ay için Case Else eklendi; yazmadan önce hedef sütun başlığı seçili ayla karşılaştırılır.
 - İndirilebilir aday yama paketi: OEHS_VBA_Guvenli_Ay_Aktarim_Yamasi_2026-10-20.zip. İçinde iki .bas kaynak adayı, açıklama ve statik test sonuçları bulunur.
-- Statik kontrol: 9/9 yapısal kontrol geçti. Bu sonuç VBA derlemesi veya Excel çalışma zamanı testi değildir. Orijinal XLSM'ler değiştirilmedi; yama Excel'de derlenip çalıştırılmadan resmî kabul edilmiş sayılamaz.
+- Statik kontrol: ilk yama turundaki 9/9 kontrolün ardından ay/blok eşlemesi ve hedef korumaları genişletilerek toplam 15/15 statik kontrol geçti. Bu sonuç VBA derlemesi veya Excel çalışma zamanı testi değildir. Orijinal XLSM'ler değiştirilmedi; yama Excel'de derlenip çalıştırılmadan resmî kabul edilmiş sayılamaz.
 - Kalan gerçek kabul kapıları: Excel VBA IDE Compile; boş/geçersiz ay ve bozuk başlık testleri; önceki/sonraki ayların korunması; Temel Temmuz N/Z/AL; Özel Kasım AP/Aralık AQ; aktarım ve PDF çıktıları.
