@@ -16,7 +16,7 @@ Asıl hata, önceki C# eşlemesinin aylık hakediş tutarından fiyat farkını 
 | Hesaplama!K | G × H + I − J; taşıma hakediş tutarı | Taşıma bileşeni |
 | Hesaplama!T | P × Q + R − S; rehber hakediş tutarı | Rehber bileşeni |
 | HakedişToplamlariniAktar | K + T, seçili ay için İcmal Verileri D:N'ye yazılır | Calculation.TotalAmount aylık değere aynen yansır |
-| Hakediş Raporu!D6 (A) | Seçili mali yıl/dönemdeki aylık K+T toplamı | CumulativeServiceAmount |
+| Hakediş Raporu!D6 (A) | Önceki dönem K+T toplamı + güncel dönem hizmet tabanı; güncel ham I+R bu hücrede ayrı tutulur | CumulativeServiceAmount |
 | Hakediş Raporu!D7 (B) | Güncel ham fiyat farkı I + R | CurrentPriceDifference |
 | Hakediş Raporu!D8 (C) | D6 + D7 | CumulativeTotal |
 | Hakediş Raporu!D10 (D) | Güncel dönemden önceki aylık K+T toplamı (İcmal Verileri!O) | PreviousTotal |
@@ -27,13 +27,13 @@ Asıl hata, önceki C# eşlemesinin aylık hakediş tutarından fiyat farkını 
 
 Önceki dönem K+T tutarı 100 TL, güncel dönem K+T tutarı 110 TL ve güncel ham fiyat farkı I+R 10 TL ise:
 
-1. A = D6 = 100 + 110 = **210 TL**
-2. B = D7 = **10 TL**
-3. C = D8 = A + B = **220 TL**
-4. D = D10 = **100 TL**
-5. E = D11 = C − D = **120 TL**
+1. A = D6 = önceki K+T (100 TL) + güncel hizmet tabanı (100 TL) = **200 TL**
+2. B = D7 = güncel ham fiyat farkı = **10 TL**
+3. C = D8 = A + B = **210 TL**
+4. D = D10 = önceki K+T = **100 TL**
+5. E = D11 = C − D = **110 TL**
 
-Sorunlu PDF'de C=210 TL görünürken E=120 TL gösteriliyordu. Kaynağa göre C aslında 220 TL olmalı. Önceki C# kodu aylık K+T tutarından ham fiyat farkını tekrar çıkardığı için A'yı 10 TL eksik üretiyordu. Bu düzeltildi: CalculateWorkbookMonthlyPaymentAmount, Calculation.TotalAmount değerini aynen kullanıyor. Böylece A=210, C=220 ve E=120 aynı veri kümesinde tutarlı olur.
+Örnek, D6/D7 ayrımını göstermek içindir; gerçek kabul için son XLSM'nin hesaplanmış hücreleri kullanılmalıdır. D6 güncel dönemin ham I+R fiyat farkını dışarıda bırakır; D7 bu farkı bir kez ekler. Bu nedenle C# rapor servisi hizmet tabanını ve fiyat farkını ayrı hesaplayıp rapor toplamında birleştirir. Bu örnek, kaynak Excel'de gerçek bir uyuşmazlık bulunduğunun kanıtı değildir.
 
 Orijinal D11 formülü IF(D7<0,H2-ABS(D7),H2+D7), H2 ise Hesaplama K+T toplamıdır. Formülün iki dalı da matematiksel olarak H2+D7 sonucunu verir. Aylık aktarım doğru yapıldığında bu, D8−D10 eşitliğini karşılamalıdır; HesapKontrol makrosu tam da bu ilişkiyi doğrular.
 
