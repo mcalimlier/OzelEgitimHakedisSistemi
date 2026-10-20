@@ -181,3 +181,12 @@ Bu oranlar mühendislik tahminidir, kabul sertifikası değildir. Genel proje %9
 - CI run [39401000133](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39401000133) başarılı: 215/215 Core, 6/6 WPF; tam çözüm/WPF derlemesi, UI statik kontrolleri, PDF smoke ve Windows EXE publish geçti. Artefakt yükleme adımları ortam kısıtlaması nedeniyle atlandı.
 - Son kaynak-parite, risk ve devam-notu düzeltmeleri dokümantasyon odaklıdır. Güncel HEAD 2e68e2674f85ce9976a6a33486d84a737b39d77a için CI run [39401156074](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39401156074) başlamış durumda; son sonuç henüz görülmedi.
 - PR #3 açık/taslak/birleştirilmemiştir. Bu turda geliştirme/test hazırlığı yaklaşık %90'a getirildi. Kalan kritik kabul: Excel masaüstünde VBA makrolarını çalıştırma; dört PDF × iki program için gerçek kaynak çıktısıyla alan alan karşılaştırma; UI DPI/yazıcı/temiz profil denemeleri. Bunlar yapılmadan 8/8 resmî kabul tamamlanmış sayılmayacak.
+
+
+## Devam turu — eski Excel kuralları ve test dokümanlarının temizliği
+- 16.10 ve 18.10 tarihli XLSM analizleri, 11.10 referans-formül/PDF belgesi ve eski Excel V2/akış/uyuşmazlık notlarına açık "tarihsel, güncel kabul kaynağı değil" uyarısı eklendi. Son yüklenen dosyalarla çelişen hücre/adres/formül beklentileri geçerli kural olarak kopyalanmamalı.
+- `EXCEL_MASAUSTU_KABUL_LISTESI.md` son dosyaların hash'leri, Temel satır 4–8 ve Özel satır 4–6 formül/vectörleri, icmal çift sayım riskleri ve 4×2 PDF kabul adımlarıyla baştan yazıldı.
+- Yinelenen `EXCEL_MASAUSTU_KABUL_KONTROL_LISTESI.md` eski hücre adreslerini tekrar etmemesi için kanonik listeye yönlendirme belgesine dönüştürüldü.
+- Bu turdaki değişiklikler belge/kabul-prosedürü güncellemeleridir; hesaplama motoru veya resmi tutar formülleri değiştirilmedi.
+- Önceki CI run [39401253948](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39401253948) başarılıydı (215/215 Core, 6/6 WPF). Bu turdaki yeni doküman değişikliklerinin CI sonucu son commit için ayrıca kontrol edilecek.
+- Açık kalanlar: gerçek Excel masaüstünde VBA sonrası değerler; kaynak Excel PDF'leriyle 8/8 alan/tutar/görsel karşılaştırması; Windows'ta etkileşimli DPI/yazıcı kabulü. PR taslak kalacak.
