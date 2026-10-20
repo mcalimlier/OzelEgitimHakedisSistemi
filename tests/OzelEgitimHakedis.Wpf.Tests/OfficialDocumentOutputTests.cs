@@ -548,6 +548,8 @@ public sealed class OfficialDocumentOutputTests
                 : Path.GetFullPath(configuredOutputDirectory!);
             Directory.CreateDirectory(temporaryDirectory);
 
+            var exportedPdfPaths = new List<string>(capacity: 8);
+
             try
             {
                 foreach (var output in outputs)
@@ -559,6 +561,7 @@ public sealed class OfficialDocumentOutputTests
 
                     var pdfPath = Path.Combine(temporaryDirectory, output.FileSuffix + ".pdf");
                     SaveAndAssertA4Pdf(output.Document, pdfPath);
+                    exportedPdfPaths.Add(pdfPath);
                 }
 
                 // Export a separate four-document set for Basic/Secondary transport too.
@@ -574,7 +577,18 @@ public sealed class OfficialDocumentOutputTests
                         temporaryDirectory,
                         "Temel_Ortaogretim_" + output.FileSuffix + ".pdf");
                     SaveAndAssertA4Pdf(output.Document, pdfPath);
+                    exportedPdfPaths.Add(pdfPath);
                 }
+
+                // Acceptance requires four official documents for each distinct
+                // calculation core: eight unique, materialized PDFs in total.
+                Assert.Equal(8, exportedPdfPaths.Count);
+                Assert.Equal(8, exportedPdfPaths.Distinct(StringComparer.OrdinalIgnoreCase).Count());
+                Assert.All(exportedPdfPaths, pdfPath =>
+                {
+                    Assert.True(File.Exists(pdfPath), $"Expected PDF was not written: {pdfPath}");
+                    Assert.True(new FileInfo(pdfPath).Length > 1000, $"PDF is unexpectedly small: {pdfPath}");
+                });
             }
             finally
             {
