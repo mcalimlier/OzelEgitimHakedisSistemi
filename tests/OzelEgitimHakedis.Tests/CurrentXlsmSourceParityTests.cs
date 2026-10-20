@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using OzelEgitimHakedis.Core.Models;
 using OzelEgitimHakedis.Core.Services;
 using Xunit;
@@ -12,13 +13,16 @@ namespace OzelEgitimHakedis.Tests;
 /// </summary>
 public sealed class CurrentXlsmSourceParityTests
 {
+    public static IEnumerable<object[]> LatestSpecialRows =>
+        new[]
+        {
+            new object[] { 16m, 2320m, 1020m, 7530m, 23m, 1362.49m, 800m, 3500m, 1200m, 2500m, 12560m, 1362.49m, 43630m, 34037.27m, 11170.454m, 8308.2086m, 661.8m, 736.2857196m, 27328.7843196m, 88837.724m, 61508.9396804m },
+            new object[] { 16m, 1894m, 1200m, 5250m, 23m, 1362.49m, 680m, 3300m, 1500m, 3000m, 13100m, 1454.65m, 34354m, 33957.27m, 10226.854m, 7830.0086m, 513m, 647.5908396m, 28045.2494396m, 78538.124m, 50492.8745604m },
+            new object[] { 16m, 2184m, 1300m, 3980m, 23m, 1362.49m, 930m, 5700m, 5500m, 3500m, 14850m, 1819.72m, 37624m, 36107.27m, 10983.854m, 8380.5086m, 580.8m, 698.9724396m, 35330.0010396m, 84715.124m, 49385.1229604m }
+        };
+
     [Theory]
-    [InlineData(16, 2320, 1020, 7530, 23, 1362.49, 800, 3500, 1200, 2500, 12560, 1362.49,
-        43630, 34037.27, 11170.454, 8308.2086, 661.8, 736.2857196, 27328.7843196, 88837.724, 61508.9396804)]
-    [InlineData(16, 1894, 1200, 5250, 23, 1362.49, 680, 3300, 1500, 3000, 13100, 1454.65,
-        34354, 33957.27, 10226.854, 7829.??, 513, 647.5908396, 28045.2494396, 78538.124, 50492.8745604)]
-    [InlineData(16, 2184, 1300, 3980, 23, 1362.49, 930, 5700, 5500, 3500, 14850, 1819.72,
-        37624, 36107.27, 10983.854, 8380.5086, 580.8, 698.9724396, 35330.0010396, 84715.124, 49385.1229604)]
+    [MemberData(nameof(LatestSpecialRows))]
     public void LatestSpecialEducationRows4To6_ShouldMatchWorkbookCalculationCells(
         decimal workDays, decimal dailyPrice, decimal discount, decimal priceDifference,
         decimal guideDays, decimal guideDailyPrice, decimal guideDiscount, decimal guidePriceDifference,
