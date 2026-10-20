@@ -190,5 +190,8 @@ Tarihsel Temel/Ortaöğretim ​`Hizmet İşleri Hakediş Raporu!F15` formülü 
 - Son yüklenen dosyalar artık doğrudan okunup SHA-256 ile sabitlendi. Yetkili kaynak vektörleri ve formül özeti: [SON_XLSM_KAYNAK_PARITESI_2026-10-20.md](SON_XLSM_KAYNAK_PARITESI_2026-10-20.md).
 - Temel Eğitim satır 4–8 ve Özel Eğitim satır 4–6 kaynak sonuçları C# regresyon testlerine aktarıldı. Eski yüklemeye dayanan test vektörleri yenileriyle değiştirildi; program çekirdekleri ayrı tutuldu.
 - Her iki son XLSM'nin formül önbelleği, LibreOffice Calc ile ayrı XLSX kopyalarında yeniden hesaplanan sayısal sonuçlarla karşılaştırıldı: 279 sayısal hücre, 0 fark (tolerans 0,000001 TL). Bu sonuç masaüstü Microsoft Excel/VBA makro kabulü değildir.
-- Windows CI run [39398873252](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39398873252) önceki test commit'inde CS3016 nedeniyle başarısız oldu. Test vektörleri MemberData biçimine alındı; yeni CI run [39399075572](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39399075572) kuyruğa alındı. Bu yeni çalışmanın sonucu henüz doğrulanmış değil.
+- Windows CI run [39398873252](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39398873252) önceki test commit'inde CS3016 nedeniyle başarısız oldu. İlk MemberData denemesi de CS3016 ile başarısız oldu. Son düzeltmede attribute tabanlı veri sağlayıcıları kaldırılarak her program için [Fact] içinde typed tuple vektörleri döngüyle doğrulanıyor. Güncel test commit'i için yeni CI sonucu henüz görünmüyor.
 - Sekiz PDF kabul hücresinin durumu değişmedi: gerçek aynı-girdi Excel/VBA PDF referansı ve alan alan karşılaştırma olmadan hiçbiri kapatılmış sayılmaz.
+
+
+- **Test düzeltmesi güncellemesi:** CS3016 sonrasında MemberData da kaldırıldı; kaynak vektörleri artık [Fact] içinde tipli tuple listesi ve foreach ile test ediliyor. Güncel test commit'i 15e3e88755ef768fdb6352c8bacb56f6ce99cafe; CI sonucu henüz alınmadı.
