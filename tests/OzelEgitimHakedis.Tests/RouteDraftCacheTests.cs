@@ -91,6 +91,18 @@ public sealed class RouteDraftCacheTests
     }
 
     [Fact]
+    public void OutputSelection_ShouldRejectNullDraftForSelectedRoute()
+    {
+        var cache = new RouteDraftCache<Draft>
+        {
+            ["A"] = null!
+        };
+
+        Assert.Throws<InvalidOperationException>(() =>
+            SelectedRouteDrafts.SelectExact(new[] { "A" }, cache));
+    }
+
+    [Fact]
     public void OutputSelection_ShouldRejectDuplicateSelectedRouteKeys()
     {
         var cache = new RouteDraftCache<Draft>
