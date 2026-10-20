@@ -48,27 +48,27 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
             var specialOutputs = OehsOfficialDocumentFactory.BuildSeparate(special);
             Assert.Equal(4, specialOutputs.Count);
             var specialReport = PageText(specialOutputs, OehsOfficialDocumentKind.HakedisRaporu);
-            Assert.Contains("77.667,27", specialReport);
-            Assert.Contains("236.014,30", specialReport);
-            Assert.Contains("158.347,03", specialReport);
-            Assert.Contains("61.508,94", specialReport);
+            Assert.Contains("77.667,27", specialReport, System.StringComparison.Ordinal);
+            Assert.Contains("236.014,30", specialReport, System.StringComparison.Ordinal);
+            Assert.Contains("158.347,03", specialReport, System.StringComparison.Ordinal);
+            Assert.Contains("61.508,94", specialReport, System.StringComparison.Ordinal);
             var specialIcmal = PageText(specialOutputs, OehsOfficialDocumentKind.HakedisIcmali);
-            Assert.Contains("₺77.667,27", specialIcmal);
-            Assert.Contains("₺11.030,00", specialIcmal);
-            Assert.Contains("₺88.697,27", specialIcmal); // Source XLSM adds I+R separately after K+T.
+            Assert.Contains("₺77.667,27", specialIcmal, System.StringComparison.Ordinal);
+            Assert.Contains("₺11.030,00", specialIcmal, System.StringComparison.Ordinal);
+            Assert.Contains("₺88.697,27", specialIcmal, System.StringComparison.Ordinal); // Source XLSM adds I+R separately after K+T.
 
             var basic = BuildLatestBasicEducationContext();
             var basicOutputs = OehsOfficialDocumentFactory.BuildSeparate(basic);
             Assert.Equal(4, basicOutputs.Count);
             var basicReport = PageText(basicOutputs, OehsOfficialDocumentKind.HakedisRaporu);
-            Assert.Contains("319.991,92", basicReport);
-            Assert.Contains("1.018.593,25", basicReport);
-            Assert.Contains("698.601,33", basicReport);
-            Assert.Contains("332.516,08", basicReport);
+            Assert.Contains("319.991,92", basicReport, System.StringComparison.Ordinal);
+            Assert.Contains("1.018.593,25", basicReport, System.StringComparison.Ordinal);
+            Assert.Contains("698.601,33", basicReport, System.StringComparison.Ordinal);
+            Assert.Contains("332.516,08", basicReport, System.StringComparison.Ordinal);
             var basicIcmal = PageText(basicOutputs, OehsOfficialDocumentKind.HakedisIcmali);
-            Assert.Contains("₺319.991,92", basicIcmal);
-            Assert.Contains("₺26.840,39", basicIcmal);
-            Assert.Contains("₺346.832,31", basicIcmal);
+            Assert.Contains("₺319.991,92", basicIcmal, System.StringComparison.Ordinal);
+            Assert.Contains("₺26.840,39", basicIcmal, System.StringComparison.Ordinal);
+            Assert.Contains("₺346.832,31", basicIcmal, System.StringComparison.Ordinal);
             // The latest Basic XLSM cached icmal adds a stale/misaligned deduction block
             // to its price-difference column; OEHS currently does not silently copy that defect.
 
