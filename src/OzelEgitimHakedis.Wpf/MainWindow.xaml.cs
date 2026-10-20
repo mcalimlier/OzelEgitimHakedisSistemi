@@ -1273,10 +1273,12 @@ public partial class MainWindow : Window
             _suppressSelectionEvents = true;
             try
             {
-                ProgressContractorTextBlock.Text = "Seçilmedi";
+                ProgressContractorComboBox.ItemsSource = Array.Empty<ContractorDraft>();
+                ProgressContractorComboBox.SelectedItem = null;
+                ProgressContractorTextBlock.Text = "Firma seçiniz";
                 ProgressRouteComboBox.ItemsSource = Array.Empty<RouteDraft>();
-                ProgressRouteComboBox.SelectedItem = null;
-                ProgressRouteRelationTextBlock.Text = "İhale, sözleşme ve hat seçiniz.";
+                ProgressRouteComboBox.SelectedItems.Clear();
+                ProgressRouteRelationTextBlock.Text = "İhale, sözleşme, firma ve hat seçiniz.";
             }
             finally
             {
@@ -1287,32 +1289,133 @@ public partial class MainWindow : Window
             return;
         }
 
-        var routes = _routes.Where(x => IsRouteForContract(x, contract)).ToArray();
-        var previous = preserveSelection ? ProgressRouteComboBox.SelectedItem as RouteDraft : null;
+        var contractRoutes = _routes.Where(x => IsRouteForContract(x, contract)).ToArray();
+        var previousContractor = preserveSelection
+            ? ProgressContractorComboBox.SelectedItem as ContractorDraft
+            : null;
+        var firms = contractRoutes
+            .Where(x => !string.IsNullOrWhiteSpace(x.ContractorTaxOrIdentityNumber))
+            .GroupBy(x => OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber), StringComparer.Ordinal)
+            .Select(group =>
+            {
+                var route = group.First();
+                return _contractors.FirstOrDefault(x =>
+                           x.ProgramType == contract.ProgramType &&
+                           string.Equals(
+                               OehsIdentityService.NormalizeIdentity(x.TaxOrIdentityNumber),
+                               group.Key,
+                               StringComparison.Ordinal))
+                       ?? new ContractorDraft(
+                           string.IsNullOrWhiteSpace(route.ContractorName) ? "Firma adı tanımlanmamış" : route.ContractorName,
+                           route.ContractorTaxOrIdentityNumber,
+                           ProgramType: route.ProgramType);
+            })
+            .OrderBy(x => x.Name, StringComparer.CurrentCultureIgnoreCase)
+            .ToArray();
 
         _suppressSelectionEvents = true;
         try
         {
-            ProgressRouteComboBox.ItemsSource = routes;
-            ProgressRouteComboBox.SelectedItem = previous is null
+            ProgressContractorComboBox.ItemsSource = firms;
+            var matchedPrevious = previousContractor is null
                 ? null
-                : routes.FirstOrDefault(x =>
-                    string.Equals(x.RouteNumber, previous.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(x.ContractNumber, previous.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(
-                        OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
-                        OehsIdentityService.NormalizeIdentity(previous.ContractorTaxOrIdentityNumber),
-                        StringComparison.Ordinal));
+                : firms.FirstOrDefault(x => string.Equals(
+                    OehsIdentityService.NormalizeIdentity(x.TaxOrIdentityNumber),
+                    OehsIdentityService.NormalizeIdentity(previousContractor.TaxOrIdentityNumber),
+                    StringComparison.Ordinal));
+            ProgressContractorComboBox.SelectedItem = matchedPrevious
+                ?? (firms.Length == 1 ? firms[0] : null);
+
+            var selectedFirm = ProgressContractorComboBox.SelectedItem as ContractorDraft;
+            var visibleRoutes = selectedFirm is null
+                ? Array.Empty<RouteDraft>()
+                : contractRoutes.Where(x => string.Equals(
+                    OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
+                    OehsIdentityService.NormalizeIdentity(selectedFirm.TaxOrIdentityNumber),
+                    StringComparison.Ordinal)).ToArray();
+
+            var previousSelectedKeys = preserveSelection
+                ? ProgressRouteComboBox.SelectedItems.OfType<RouteDraft>()
+                    .Select(x => OehsIdentityService.BuildRouteKey(
+                        x.TenderNumber, x.RouteNumber, x.ContractorTaxOrIdentityNumber, x.ContractNumber, x.ProgramType))
+                    .ToHashSet(StringComparer.Ordinal)
+                : new HashSet<string>(StringComparer.Ordinal);
+
+            ProgressRouteComboBox.ItemsSource = visibleRoutes;
+            ProgressRouteComboBox.SelectedItems.Clear();
+            foreach (var route in visibleRoutes)
+            {
+                var key = OehsIdentityService.BuildRouteKey(
+                    route.TenderNumber, route.RouteNumber, route.ContractorTaxOrIdentityNumber, route.ContractNumber, route.ProgramType);
+                if (previousSelectedKeys.Contains(key))
+                    ProgressRouteComboBox.SelectedItems.Add(route);
+            }
+            ProgressContractorTextBlock.Text = selectedFirm is null
+                ? (firms.Length == 0 ? "Bu sözleşmede firmaya bağlı hat bulunamadı." : "Devam etmek için firmayı seçin.")
+                : $"{selectedFirm.Name} • {visibleRoutes.Length} hat";
+            ProgressRouteRelationTextBlock.Text = selectedFirm is null
+                ? "Önce yüklenici firmayı seçiniz."
+                : visibleRoutes.Length == 0 ? "Bu firmaya bağlı hat bulunamadı." : "Yalnızca seçilen firmaya ait hatlar listeleniyor.";
         }
         finally
         {
             _suppressSelectionEvents = false;
         }
+
         UpdateMultiRouteDraftRows();
         UpdateProgressRouteDefaults();
     }
 
-    private void UpdateHomeTenderSummary(ContractDraftData? contract)
+    private void ProgressContractorComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!IsInitialized || _suppressSelectionEvents || IsArchiveEditing)
+            return;
+
+        var contract = ProgressTenderListBox.SelectedItem as ContractDraftData;
+        var contractor = ProgressContractorComboBox.SelectedItem as ContractorDraft;
+        var previousKeys = ProgressRouteComboBox.SelectedItems.OfType<RouteDraft>()
+            .Select(x => OehsIdentityService.BuildRouteKey(
+                x.TenderNumber, x.RouteNumber, x.ContractorTaxOrIdentityNumber, x.ContractNumber, x.ProgramType))
+            .ToHashSet(StringComparer.Ordinal);
+
+        var routes = contract is null || contractor is null
+            ? Array.Empty<RouteDraft>()
+            : _routes.Where(x =>
+                IsRouteForContract(x, contract) &&
+                string.Equals(
+                    OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
+                    OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber),
+                    StringComparison.Ordinal)).ToArray();
+
+        _suppressSelectionEvents = true;
+        try
+        {
+            ProgressRouteComboBox.ItemsSource = routes;
+            ProgressRouteComboBox.SelectedItems.Clear();
+            foreach (var route in routes)
+            {
+                var key = OehsIdentityService.BuildRouteKey(
+                    route.TenderNumber, route.RouteNumber, route.ContractorTaxOrIdentityNumber, route.ContractNumber, route.ProgramType);
+                if (previousKeys.Contains(key))
+                    ProgressRouteComboBox.SelectedItems.Add(route);
+            }
+            ProgressContractorTextBlock.Text = contractor is null
+                ? "Devam etmek için firmayı seçin."
+                : $"{contractor.Name} • {routes.Length} hat";
+            ProgressRouteRelationTextBlock.Text = contractor is null
+                ? "Önce yüklenici firmayı seçiniz."
+                : routes.Length == 0 ? "Bu firmaya bağlı hat bulunamadı." : "Yalnızca seçilen firmaya ait hatlar listeleniyor.";
+        }
+        finally
+        {
+            _suppressSelectionEvents = false;
+        }
+
+        UpdateMultiRouteDraftRows();
+        UpdateProgressRouteDefaults();
+    }
+
+        private void UpdateHomeTenderSummary(ContractDraftData? contract)
     {
         if (contract is null)
         {
