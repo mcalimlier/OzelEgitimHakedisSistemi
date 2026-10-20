@@ -86,3 +86,16 @@ Bu sonuç LibreOffice yeniden hesaplaması ile kaynak önbelleğinin karşılaş
 
 ## Son test uygulama notu — 20.10.2026
 İlk MemberData düzenlemesi de Windows CI'da CS3016 verdi; bu nedenle testler daha basit ve derleyici açısından güvenli bir düzene alındı: tek [Fact], tipli tuple kaynak vektörleri ve foreach ile hücre sonuçlarının doğrulanması. Güncel commit: 15e3e88755ef768fdb6352c8bacb56f6ce99cafe. Bu commit için yeni CI sonucu henüz görünmüyor.
+
+
+## Son XLSM içindeki hesaplama–icmal tutarsızlığı (Özel Eğitim)
+
+Son Özel Eğitim XLSM'sinde seçili dönem Anasayfa!E5 = Kasım 2026 ve hesaplama satır 4 için:
+
+- Hesaplama!K4 = 43.630,00 TL; Hesaplama!T4 = 34.037,27 TL; toplam = 77.667,27 TL.
+- Hakediş Raporu!H2 ve D11 önbelleği 77.667,27 TL; D8−D10 da 77.667,27 TL. Bu rapor zinciri kendi içinde tutarlı.
+- Buna karşılık İcmal Verileri!F3 = Kasım 2026 başlığı altında satır 4 değeri 319.991,9228 TL; Hakediş İcmali!C8 aynı 319.991,9228 TL'yi gösteriyor. Bu tutar, son Temel Eğitim XLSM'sindeki Hesaplama Bilgileri!K4 değerine eşit; Özel Eğitim satır 4 K+T toplamıyla eşleşmiyor.
+
+Bu bulgu, son Özel Eğitim dosyasının icmal aktarım önbelleğinin seçili hesaplama satırıyla uyumsuz olabileceğini gösterir. Makro masaüstü Excel'de çalıştırılmadığı için nedenini (aktarımı yenileme gereği, farklı seçili hat veya başka kaynak mantığı) kesinleştirmiyorum. **OEHS icmalini bu tek önbellek değerine göre sessizce değiştirmeyin.** Aynı hat/dönem seçimiyle Excel'de ilgili aktarım makroları çalıştırılmalı; ardından İcmal Verileri!F4, Hakediş İcmali!C8/D8/E8 ve dört PDF tekrar alınarak karşılaştırılmalıdır.
+
+Temel Eğitim dosyasında İcmal Verileri!F4 = 319.991,9228 TL ve Hesaplama Bilgileri!K4 = 319.991,9228 TL eşleşmektedir. Bu nedenle Özel Eğitim farkı programlar arası aktarım/önbellek doğrulaması gerektiren ayrı bir bulgudur.
