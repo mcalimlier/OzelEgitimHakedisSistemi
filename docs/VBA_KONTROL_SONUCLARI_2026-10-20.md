@@ -77,3 +77,14 @@
 - Aday `.frm/.cls` kodu orijinal VBA projesine aktarılmadı; UserForm `.frx` kontrol tasarımı ve gerçek click olay bağlantıları doğrulanmadı. Kopya XLSM'de Excel VBA IDE `Debug > Compile`, hata senaryoları ve log dosyası yazımı doğrulanmadan üretim kabulü verilmemelidir.
 - Son doğrulanmış HEAD `c70cbe6b94592b501e6a7885b579f2a270e98f3f` için PR CI [39466840508](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39466840508) ve push CI [39466831941](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39466831941) başarılıdır. Bunlar Windows uygulama build/test/smoke kapılarıdır; VBA masaüstü kabulü ve 8/8 gerçek Excel PDF kabulü açık kalır.
 - PR #3 açık/taslak; merge/release yapılmadı.
+
+## Otonom devam doğrulaması — güncel HEAD CI ve kaynak taraması (20.10.2026)
+
+- Etkin dal HEAD: `079fa599ee5d43b2429b212aded66374f7dad1b3`.
+- PR Windows CI run [39467713481](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39467713481) **başarılı**. Doğrulanan adımlar: çözüm/WPF derlemesi, UI sözleşmesi ve kompakt yerleşim kontrolleri, test projelerinin derlenmesi ve çalıştırılması, PDF smoke üretimi/doğrulaması, Windows EXE publish hazırlığı.
+- Smoke PDF, test paketi ve EXE yükleme adımlarının bazıları ortam sınırlaması nedeniyle atlandı. Bu koşu Microsoft Excel/VBA compile/run veya gerçek Excel PDF kabulü değildir.
+- Orijinal dışa aktarılmış VBA kaynakları üzerinde ek salt-okunur envanter taraması yapıldı. Temel Eğitimde `All_Pages.bas`, `BuÇalışmaKitabı.cls`, formlar, `Module2.bas`, `Oto_close.bas`, `Roller.bas`, `Sayfa1.cls`, `Sayfa12.cls` kaynaklarında; Özel Eğitimde `Module1.bas`, `Module2.bas`, `Sayfa1.cls` kaynaklarında `Option Explicit` direktifi yok. Bu tek başına derleme hatası kanıtı değildir; ancak değişken tanımlama denetimi eksik olduğundan açık statik risk olarak tutulmalıdır.
+- `On Error Resume Next` izleri orijinal Temel Eğitim `Form_Success.frm`, `LoginForm.frm`, `Module2.bas` ve Özel Eğitim `Module2.bas` içinde bulundu. Bu kullanımların her birini otomatik değiştirmek, form açma/kapatma veya dışa aktarma davranışını bozabileceğinden, v3 adayındaki hedefli hata günlükleme değişiklikleri orijinal XLSM'ye uygulanmış gibi kabul edilmemelidir.
+- v3 yama paketi SHA-256 yeniden hesaplandı ve kayıtlı değerle eşleşti: `130fec24eab0eaae5017907e26f553ab3b9e11e8ebf8eaa675a0179be9df8688`. Statik paket regresyonu 45/45 PASS; bu VBA derleyicisi veya çalışma zamanı sonucu değildir.
+- Kabul kapıları değişmedi: yama adayını kopya XLSM'ye uygulama, Excel VBA IDE `Debug > Compile`, boş/geçersiz ay ve seçili ay silme/geri alma senaryoları, hata logu yazımı, gerçek UserForm click/event kabulü ve 8/8 kaynak Excel PDF karşılaştırması.
+- PR #3 açık/taslak kalır. Merge/release yapılmadı.
