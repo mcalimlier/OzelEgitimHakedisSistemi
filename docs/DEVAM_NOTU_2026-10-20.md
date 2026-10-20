@@ -277,3 +277,13 @@ Bu bölüm devam notlarının kalıcı ürün kriteridir. Yeni oturumlarda ve he
 - Bu CI sonucu kod derleme ve mevcut otomatik testler için kanıttır; çoklu/tekli hat geçişini gerçek WPF etkileşimiyle test eden özel regresyonun eklendiği anlamına gelmez. Bu davranış için hedefli test hâlâ açık.
 - Açık kabul riskleri aynı: Microsoft Excel masaüstü/VBA ile yeniden hesaplama yapılmadı; kaynak örnekleriyle 8/8 PDF alan ve görsel kabulü tamamlanmadı; XLSM sayfa envanteri ve sol menü eşlemesi tamamlanmalı. PR #3 taslak/açık kalacak; merge veya release yok.
 - Sıradaki adım: test mimarisini inceleyip hat taslağı koruma mantığını güvenilir biçimde otomatik test edilebilir kılmak; kırılgan metin taraması yerine mümkünse küçük, bağımsız bir taslak eşleme/koruma bileşenini test etmek.
+
+
+## Çoklu hat taslak önbelleği — 20.10.2026
+
+- `MainWindow.xaml.cs` içinde seçimi geçici kaldırılan hatların kaydedilmemiş aylık taslaklarının kaybolması riski için kimlik anahtarlı `_multiRouteDraftCache` eklendi.
+- Görünen `_multiRoutePaymentRows` koleksiyonu hâlâ yalnızca seçili hatları taşır; taslak önbelleği ise aynı hakediş formunda seçimi değiştirilen hatların değerlerini korur. Yeni hat satırları sıfır aylık girişlerle başlar; mevcut satır değerleri yalnızca tam `RouteKey` eşleşmesinde geri yüklenir.
+- Form temizlenirken önbellek de temizlenir. Aylık değişim akışı mevcut aylık giriş sıfırlama davranışını kullanır.
+- Kod commit'i: `7da224211daaeb45c49938ff29681f28ba2495fc`.
+- Doğrulama: bu değişiklikten sonra yeni Windows CI koşusu henüz sonuçlanmadı. Bu nedenle derleme/test başarısı şimdilik iddia edilmiyor. Sonraki adım CI sonucunu kontrol etmek ve gerekiyorsa düzeltmektir.
+- Açık risk: gerçek etkileşimli WPF testiyle A/B seç → A/C seç → B taslağını geri getir senaryosu henüz çalıştırılmadı. Çoklu hakediş kaydetme yolu seçili hat listesini ve görünür satırları kullanmaya devam eder; bu davranış CI ve testle teyit edilmelidir.
