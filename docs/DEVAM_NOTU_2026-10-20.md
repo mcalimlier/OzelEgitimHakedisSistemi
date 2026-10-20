@@ -165,3 +165,11 @@ Bu oranlar mühendislik tahminidir, kabul sertifikası değildir. Genel proje %9
 - Son XLSM formül önbelleği ile LibreOffice yeniden hesaplaması karşılaştırması: 279 sayısal hücrede tolerans üstü fark 0.
 - Yeni kritik açık bulgu: Temel Eğitim icmalinde aylık fiyat farkı + kesinti aktarım hücreleri kaynak satırındaki I/V ile aynı değil; Özel Eğitim icmalinde K+T aylık tutarına I+R ayrıca ekleniyor. İcmal VBA aktarımı Excel masaüstünde çalıştırılmadan kaynak kusuru/önbellek etkisi ayrıştırılmış sayılmaz; hesap davranışı sessizce değiştirilmedi.
 - PR #3 taslak/açık/birleştirilmemiş kalacak. Sıradaki iş: son XLSM'nin dört çıktı sayfasını aynı girdilerle OEHS dört PDF'siyle alan alan karşılaştırmak ve gerçek Excel/VBA aktarım sonucunu doğrulamak.
+
+
+## Güncel kaynak PDF regresyonu — 2026-10-20
+- WPF testine son yüklenen Temel satır 4 ve Özel satır 4 girdileriyle 8 ayrı A4 PDF üretme/doğrulama eklendi. Hakediş Raporu ve Hakediş İcmali toplamları, ayrıca her çıktının tek A4 sayfa olması denetleniyor.
+- CI run [39400709937](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39400709937) başarılı: 215/215 Core, 6/6 WPF; tam çözüm/WPF derlemesi, UI statik kontrolleri, PDF smoke ve Windows EXE publish başarılı.
+- Bu koşu sırasında bir tutar metni assertion'ı gerçek icmal D sütununu (fiyat farkı + kesinti) dikkate alacak şekilde düzeltildi. Sonrasında yeni koşu geçti.
+- Son commit a0bce9e063492095493392c3ee40f10c02c648f6 yalnızca CA1307 uyarılarını gidermek için Assert.Contains çağrılarına StringComparison.Ordinal ekledi; bu son küçük commit için CI bekleniyor.
+- Kaynak PDF'ler aynı dosya içindeki güncel Excel/VBA makrolarının çalıştırılmasıyla elde edilmiş referanslar değildir. Gerçek masaüstü Excel/VBA ve dört resmi PDF'nin kaynakla görsel kabulü açık.
