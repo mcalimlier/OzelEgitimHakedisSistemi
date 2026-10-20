@@ -120,3 +120,12 @@ Ayrı bir aday kaynak yaması oluşturuldu; orijinal XLSM dosyalarına içe akta
 - İndirilebilir aday yama paketi: OEHS_VBA_Guvenli_Ay_Aktarim_Yamasi_2026-10-20.zip. İçinde iki .bas kaynak adayı, açıklama ve statik test sonuçları bulunur.
 - Statik kontrol: ilk yama turundaki 9/9 kontrolün ardından ay/blok eşlemesi ve hedef korumaları genişletilerek toplam 18/18 statik kontrol geçti; ayrıca Roller.bas değişken bildirimi, SayfaYazdir hata yolundaki ScreenUpdating geri yüklemesi ve birleşik fiyat farkı aktarımında hedeflerin alt yordam çağrılarından önce doğrulanması kontrol edildi. Bu sonuç VBA derlemesi veya Excel çalışma zamanı testi değildir. Orijinal XLSM'ler değiştirilmedi; yama Excel'de derlenip çalıştırılmadan resmî kabul edilmiş sayılamaz.
 - Kalan gerçek kabul kapıları: Excel VBA IDE Compile; boş/geçersiz ay ve bozuk başlık testleri; önceki/sonraki ayların korunması; Temel Temmuz N/Z/AL; Özel Kasım AP/Aralık AQ; aktarım ve PDF çıktıları.
+
+
+## VBA-10 — Yazdırma ve kaynak dışa aktarma hata bildirimi düzeltmeleri (20.10.2026)
+
+- Temel Eğitim `SayfaYazdir` artık önceki `Application.ScreenUpdating` değerini kaydeder ve hem başarı hem hata yolunda geri yükler; yazdırma hatasında başarı mesajı göstermez.
+- Her iki programın `Module2` kaynak dışa aktarma yordamları için aday modüller eklendi. Bileşen dışa aktarma hataları tek tek sayılır ve listelenir; tüm bileşenler aktarılamasa bile yanlış bir başarı mesajı gösterilmez. Genel erişim/klasör hataları ayrı yakalanır.
+- Temel Eğitim'deki sabit kullanıcı adı/şifre (kaynakta bulunan) değiştirilmedi; README'de ayrı güvenlik riski olarak kaydedildi. Bu yamada kimlik doğrulama davranışını değiştirmemek için sessizce kaldırılmadı.
+- Yama paketi 27/27 statik regresyon kontrolünden geçti. Bu kontroller kaynak metni ve prosedür yapısı içindir; Excel VBA IDE derlemesi veya gerçek çalışma zamanı testi değildir.
+- Yeni aday dosyalar: `Temel_Egitim_Module2_SAFE.bas`, `Ozel_Egitim_Module2_SAFE.bas`; ayrıca Temel Eğitim yazdırma hata yolu düzeltildi.
