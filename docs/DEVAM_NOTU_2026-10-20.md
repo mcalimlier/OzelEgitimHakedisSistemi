@@ -333,3 +333,22 @@ Yüzdeler mühendislik tahminidir; resmî kabul/sertifika değildir.
 3. Temel ve Özel Eğitim için kaynak workbook sayfa/alan → hücre/formül → VBA aktarımı → model → PDF alanı envanteri tamamlanmalı.
 4. Gerçek Microsoft Excel/VBA masaüstü çalıştırması ve kaynak Excel'den üretilmiş sekiz PDF bulunmadığı sürece bu kabul kapıları açık işaretlenmeli.
 5. PR #3 taslak kalmalı; ana dala birleştirme veya yayınlama yapılmamalı.
+
+
+## Devam notu — taslak cache regresyon testleri (2026-10-20, 14:52 +03:00)
+
+### Kod değişiklikleri
+- `src/OzelEgitimHakedis.Core/Services/RouteDraftCache.cs` eklendi. `RouteDraftCache<T>`, kararlı rota anahtarıyla taslakları saklayan `Dictionary<string,T>` tabanlı bir sınıf; `ResetAll(Action<T>)` görünürlükten bağımsız bütün cache girdilerini sıfırlamaya olanak veriyor. Commit: `1a20cc2cf10ecc3e956baa0b553ba697672cff44`.
+- `tests/OzelEgitimHakedis.Tests/RouteDraftCacheTests.cs` eklendi. İki test; A/B→A/C→A/B senaryosunda rota taslağının izolasyonu/geri yüklenmesi ve seçimi kaldırılmış rota dahil dönem reseti davranışını sınamayı amaçlıyor. Commit: `94e5b5273f3b9093a87e5bd069a990b819d75c90`.
+- `MainWindow.xaml.cs` içindeki cache yeni sınıfa bağlandı ve ay değişimi sıfırlaması `ResetAll` üzerinden çalışıyor. Commit: `42f01c2234208f0cc65b139c13d6ddd87f5025dc`.
+
+### Doğrulama
+- PR #3 güncel head: `42f01c2234208f0cc65b139c13d6ddd87f5025dc`; açık/taslak/birleştirilmemiş.
+- CI run [39434121985](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39434121985) son kontrolde `in_progress`; .NET 8 kurulumu sürüyor, derleme ve test adımları henüz başlamamıştı. Önceki test commit'inin run'ı [39434092509](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39434092509) da son kontrolde `in_progress`.
+- Bu nedenle yeni testler henüz başarılı olarak işaretlenmemeli. CI tamamlanınca sonuç kontrol edilmeli; başarısızlık varsa loglardan düzeltme yapılmalı.
+- Testler saf cache davranışını doğrular; gerçek WPF kullanıcı etkileşimi, seçili hatların uçtan uca PDF üretimi, Excel masaüstü/VBA paritesi ve sekiz gerçek Excel PDF karşılaştırması hâlâ ayrı kabul kapılarıdır.
+
+### Çekirdek ilerleme durumu
+- Çoklu hat/taslak izolasyonu: önceki tahmin `%78`; testler eklenmiş olsa da CI henüz tamamlanmadığından kabul oranı şimdilik değiştirilmedi.
+- Genel mühendislik tahmini: `%82`; resmî kabul oranı değildir.
+- Sıradaki adım: run `39434121985` ve ilişkili PR CI sonuçlarını kontrol etmek; ardından gerçek WPF entegrasyon testine ve XLSM→PDF alan envanterine devam etmek.
