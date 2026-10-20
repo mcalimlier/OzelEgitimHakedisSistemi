@@ -550,3 +550,14 @@ Yüzdeler mühendislik tahminidir; resmi kabul oranı değildir.
 - Bu CI sonucu, masaüstü UI E2E testinin, gerçek Excel/VBA hesaplama eşitliğinin veya sekiz PDF'nin görsel kabulünün tamamlandığı anlamına gelmez.
 - Açık kabul işleri: firma kimliği eksik hat verisinin davranışı; farklı firma/İKN/dönem değişiminde gerçek UI senaryoları; seçilen hatların yalnızca hesaplama/arşiv/PDF'ye gittiğinin uçtan uca doğrulanması; iki güncel Excel'in gerçek Excel/VBA sonuçlarıyla karşılaştırma; dört PDF türünün her programda tutar/dönem/yüklenici/hat/imza/sayfa düzeni kontrolü.
 - PR #3 açık/taslak. Ana dala birleştirme veya yayınlama yapılmadı.
+
+## Ek çalışma kaydı — 2026-10-20, firma kimliği eksik hatların güvenli ele alınması
+
+- Kod commit'i: `d34f789f49f1914e23965f79f6509a485bb38e31`.
+- Hakediş ekranında firma seçimi listesi, vergi/T.C. kimlik numarası boş hatları önceden seçeneklerden çıkarıyordu; bu durumda kullanıcının hatların neden görünmediğini anlaması zor olabilirdi.
+- `UpdateProgressContractorAndRoutes` artık seçilen sözleşmedeki kimlik numarası eksik hat sayısını açıkça hesaplıyor ve firma/hat seçim mesajında uyarı gösteriyor. Bu hatlar ödeme seçimine dahil edilmiyor; boş kimlik üzerinden eşleştirme yapıp farklı firmaları karıştırma riski önleniyor.
+- Bu değişiklik bir veri düzeltmesi yapmaz; eksik kimlikli hat kaydı yetkili kaynak veride düzeltilmelidir. Aynı ada sahip işletmeleri ad üzerinden otomatik birleştirme yapılmadı.
+- Doğrulama sınırı: GitHub dosya güncellemesi/commit doğrulandı. Bu commit için CI sonucu bu not yazılırken henüz alınmadığından derleme ve test başarısı iddia edilmiyor. Yeni CI tamamlanınca sonucu tekrar kontrol et.
+- Diğer açık kabul işleri değişmedi: gerçek Microsoft Excel/VBA yeniden hesaplaması; Temel ve Özel Eğitim için 4'er PDF'nin gerçek Excel çıktılarıyla tutar, dönem, yüklenici, hat, imza ve sayfa düzeni karşılaştırması; WPF gerçek masaüstü/DPI kabulü.
+- PR #3 açık/taslak kalmalı; ana dala birleştirme veya yayınlama yapılmamalı.
+
