@@ -118,7 +118,7 @@ Bu oranlar mühendislik tahminidir, kabul sertifikası değildir. Genel proje %9
 ## Ek çalışma kaydı — 2026-10-20, son XLSM önceliği ve eski kural düzeltmeleri
 - Kullanıcının talimatı doğrultusunda kaynak hiyerarşisi netleştirildi: en son yüklenen Temel Eğitim ve Özel Eğitim XLSM/VBA, eski GitHub dokümanı/testi/sentetik vektörle çelişirse üstündür.
 - `docs/XLSM_KAYNAK_INCELEMESI_VE_HAKEDIS_AKISI.md` içinde eski “negatif fiyat farklarında taşıma ve rehber fiyat farklarını netle, yalnızca pozitifse %6 teminat uygula” metni kaldırılarak son Excel formüllerine göre Temel `T=I×%6`, Özel `AC=I×%6+R×%6` kuralı yazıldı; hukuki karar ayrı risk olarak korundu.
-- `docs/ON_DENETIM_RISK_DUZELTMELERI_2026-10-15.md` içindeki eski R-01 açıklaması, fiyat farkını aylık K+T'den çıkarıp ayrı eklemenin mükerrerliği önlediğini iddia ediyordu. Bu metin düzeltildi: kaynak K/T zaten fiyat farkını içeriyor; rapor D7/D8 zinciri ayrıca fiyat farkı eklediğinden kaynak davranışı/olası mükerrerlik risk olarak kaydedildi.
+- `docs/ON_DENETIM_RISK_DUZELTMELERI_2026-10-15.md` içindeki R-01 açıklaması yeniden kontrol edildi: Hakediş Raporu D6, güncel dönemin ham I+R fiyat farkını dışarıda tutar; D7 bunu bir kez ekler. Bu nedenle rapor zinciri icmaldeki olası çift ekleme riskinden ayrıldı. R-01 ve kaynak inceleme tablosu bu formül zincirine göre düzeltildi.
 - Sentetik `ORNEK_HAKEDIS_DENEME_VEKTORLERI.md` dosyasına son Excel ile çelişirse yetkili kabul kuralı sayılamayacağı açıkça eklendi.
 - Tarihsel yol haritası sonuçları en son XLSM kabulinden ayrıldı.
 - CI run 39398001399, kaynak ve test derleme aşamalarını geçti; Windows EXE publish adımı devam ederken kontrol edildi. Nihai CI sonucu henüz doğrulanmış değil.
@@ -129,3 +129,15 @@ Bu oranlar mühendislik tahminidir, kabul sertifikası değildir. Genel proje %9
 - Kod incelemesinde `ProgressPaymentReportService` güncel dönemin hizmet tabanını (I/R hariç) ve ham I+R fiyat farkını ayrı hesaplıyor; aylık geçmiş K+T toplamı, D6/D7/D8 zinciriyle uyumlu biçimde kuruluyor.
 - Önceki notta bu Hakediş Raporu zincirini icmaldeki olası çift ekleme riskiyle karıştıran ifade vardı. R-01 ve kaynak inceleme belgesi düzeltildi: rapor ile icmal ayrı kabul edilir; birinin davranışı diğerine genellenmez.
 - Bu doküman düzeltmeleri için yeni CI sonucu henüz alınmadı; kaynak/test mantığı değişmedi, yalnızca açıklama düzeltildi.
+
+
+## Ek çalışma kaydı — son yüklenen Excel dosyalarının doğrudan kontrolü (2026-10-20)
+- En son iki XLSM bu çalışma ortamında bulundu ve dosya parmak izleri alındı:
+  - Temel: `03-Temel Eğitim Taşıma Ödeme.xlsmdüzeltildi (1).xlsm`, SHA-256 `37a7818881aae52e8b2fcf95f30a75e1f302dfce1e91e2345f3473668a4d5296`.
+  - Özel: `02-Özel Eğitim Hakediş Ödeme (1)(2).xlsm`, SHA-256 `c31cb024ac1eb59f3b88d2ee12234be98d1f07056884374d8dad108f674d7d1e`.
+- Güncel kaynak satırları okundu: Temel `Hesaplama Bilgileri` 4–8; Özel `Hesaplama` 4–6. Kaynak formüller doğrulandı: Temel `T=I*6/100`, `U=K*9.48/1000`, `V=P+Q+R+S+T+U+M`, `W=O-V`; Özel `AC=(I*6/100)+(R*6/100)`, `AD=(K*9.48/1000)+(T*9.48/1000)`, `AE=M+V+Y+Z+AA+AB+AC+AD`, `AF=O+X`, `AG=AF-AE`.
+- Eski `CurrentXlsmSourceParityTests` içinde Temel/Özel için önceki yüklemeden kalmış satır vektörleri vardı. Bunlar son Excel'in kaynak satırlarıyla değiştirildi: Temel 4–8 için beş vektör; Özel 4–6 için üç vektör. Temel ve Özel test çekirdekleri ayrı tutuldu.
+- Test verileri xUnit `MemberData` ile veriliyor; `InlineData` içine decimal argüman koymaktan kaynaklanan eski CS0182/CS3016 hata riski kullanılmadı.
+- Kod değişikliği yapılmadı; yalnızca kaynak Excel'lerden alınan son satırların regresyon vektörleri ve belgeler güncellendi. Yeni testler henüz CI'da doğrulanmış değil.
+- CI kontrolü: run `39398873252` yeni test commit'i için çalışıyor; son kontrol sırasında sonuç bekleniyor. PR #3 taslak/açık/birleştirilmemiştir; mergeability şu an GitHub API'de `false` göründüğünden olası çakışma ayrıca araştırılmalı; birleştirme yapılmayacak.
+- Açık işler: CI test sonuçlarını incele; başarısızsa kaynak satır formülleriyle test girdilerini eşleştirerek düzelt. Ardından en son XLSM'lerin formül önbelleği ile LibreOffice yeniden hesaplamasını karşılaştır, VBA'yı masaüstü Excel'de çalıştırma sınırını açık tut ve 4 PDF × 2 program kabul matrisine devam et.
