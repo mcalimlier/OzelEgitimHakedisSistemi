@@ -764,3 +764,10 @@ Yüzdeler ölçüm sistemiyle hesaplanmış kesin istatistik değil, iş paketle
 - Özel Eğitim AP3 Kasım düzeltmesi ayrı XLSM kopyasında doğrulandı; orijinal dosya korunuyor.
 - İlerleme tahminleri (resmî kabul değil): Temel Eğitim çekirdeği %87; Özel Eğitim çekirdeği %90; ortak hesaplama/rapor zinciri %86; PDF/icmal %87; arşiv/veri modeli %86; WPF/UI %83; test/CI/dağıtım %98; genel %87. Çekirdek yüzdeleri kaynak yaması hazırlandığı için bir puan artırıldı; gerçek Excel/VBA kabul kapıları hâlâ açık.
 - Sıradaki adım: bu son doküman commit'inden sonra CI durumunu kontrol et; sonra workbook kopyalarında Excel VBA Compile/Run ve başlık/ay silme senaryolarını test et. Ardından hesaplama hücreleri ve 8 PDF kabul matrisini kapat. Gerçek Excel/VBA ve PDF kanıtı olmadan iki çekirdek %100 olarak işaretlenmeyecek. PR açık/taslak kalacak; merge/release yok.
+
+
+## Ek doğrulama — statik yama testleri genişletildi (20.10.2026 20:00 +03:00)
+
+- VBA yama paketi 15/15 statik kontrolle yeniden üretildi. Kontroller yedi aylık blokta 11 ayın sütun eşleşmesini, Temel Eğitim Temmuz N/Z/AL sütunlarını, Özel Eğitim AP=Kasım/AQ=Aralık sütunlarını, tüm hedeflerin ClearContents öncesi doğrulanmasını ve Özel Eğitim aktarım yordamlarının dört fail-closed ay/başlık kontrolünü kapsar.
+- Bu testler kaynak metin ve eşleme modeline yönelik statik testlerdir; Excel çalışma zamanı veya VBA derlemesi değildir.
+- İlerleme tahminleri değiştirilmedi: Temel Eğitim %86, Özel Eğitim %89. Yama henüz resmî XLSM'lere uygulanmadığı ve gerçek Excel kabulü yapılmadığı için yüzde artışı verilmedi.
