@@ -508,3 +508,12 @@ Yüzdeler mühendislik tahminidir; resmi kabul oranı değildir.
 - Yeni test commit'i: `90c68135fa954bb6ac39a6ddfbf4ccef730fabfe`. İlk CI sorgusunda run henüz görünmedi; test sonucu beklemede/doğrulanmamış.
 - Önceki commit `0256ef5ed5dd710d43148f9d0398588b5c203712` için Windows CI run `39447861062` görülmüştü; yeni commit için ayrıca sonuç alınmalı.
 - Devam: yeni commit CI sonucunu kontrol et; ardından gerçek workbook alan/etiket envanterini ve WPF çoklu hat seçiminden dört PDF'ye kapsam aktarımını uçtan uca doğrula. PR #3 taslak kalacak, merge/release yapılmayacak.
+
+
+## Hat sayısı testi derleme düzeltmesi — son durum
+
+- CI run `39448833948` başarısız oldu. Log, `RouteDraftCacheTests.cs(146,6)` satırında `CS3016: Arrays as attribute arguments are not CLS-compliant` gösterdi. Önceki `MemberData` denemesi de aynı derleyici hatasını çözmedi.
+- Test, attribute tabanlı parametreli test yerine tek `[Fact]` içinde farklı seçili hat sayılarını döngüyle doğrulayacak biçimde yeniden yazıldı.
+- Yeni commit: `c9a424270bc261e41362347ef035d521a6a1f626`.
+- Bu commit için CI run `39449190810` kuyruğa alındı; nihai sonuç henüz doğrulanmadı.
+- Bir sonraki adım: run `39449190810` sonucunu ve gerekirse logunu kontrol et. Başarılı değilse düzeltmeden sonra yeniden doğrula. CI başarılı olduktan sonra hat seçimi servis testinden WPF uçtan uca kapsamına geç.
