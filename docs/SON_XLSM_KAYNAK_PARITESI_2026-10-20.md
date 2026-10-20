@@ -179,7 +179,7 @@ Bu kriterler ürün kabul şartıdır; sonraki geliştirme/devam notlarında kor
 ### Kullanıcı akışı ve esneklik
 - Hakediş Oluştur ekranı temel ve özel eğitim için ayrı hesaplama çekirdeklerini kullanmalı; kullanıcı her iki program türünde de İKN (İhale Kayıt Numarası) oluşturabilmeli/seçebilmeli.
 - Kullanıcı İKN altında firmaları/yüklenicileri ve firmaya bağlı birden çok hattı tanımlayıp yönetebilmeli.
-- Bir firma altında 5 hat varsa kullanıcı seçtiği dönem için bu hatların yalnızca istediği alt kümesini (ör. 3/5) hakedişe dahil edebilmeli. Seçilmeyen hatlar için hakediş üretilmemeli.
+- Kullanıcı, firma altındaki hatlardan hakedişe dahil etmek istediklerinin herhangi bir sayısını seçebilmeli: tek bir hat, istediği birden çok hat (ör. 5 hattan 3'ü) veya firmanın tüm hatları. Yalnızca seçilen hatlar ilgili dönem hakedişine dahil edilmeli; seçilmeyen hatlar için hesaplama/belge üretilmemeli.
 - Seçilen her hat için, yalnızca o hakedişe uygulanacak hat-bazlı özel düzenlemeler yapılabilmeli. Bu düzenlemeler diğer hatlara, diğer dönemlere veya diğer firmalara sızmamalı; önce/sonra değerleri ve gerekçesi denetlenebilir olmalı.
 - Kullanıcı Temel Eğitim ve Özel Eğitim İKN kayıtlarını tek bir birleşik tabloda görüntüleyebilmeli; birleşik görünüm yalnızca listeleme/arama kolaylığıdır, program türünü ve her programın kendi alan/formül anlamını kaybetmemelidir.
 - Akış basit ve anlaşılır olmalı: program türü ve dönem → İKN → firma/yüklenici → hatları seç → hat bazında gerekiyorsa özel düzenleme → ön izleme/hesap kontrolü → dört resmî PDF'yi üret. Kullanıcı birden fazla hattı tek seferde seçip toplu işlem yapabilmeli, ancak her hat için ayrı hesaplama ve belge kimliği korunmalı.
