@@ -214,3 +214,11 @@ Bu kriterler ürün kabul şartıdır; sonraki geliştirme/devam notlarında kor
 - Ayrı bir düzeltilmiş kopya üretildi: `02-Ozel_Egitim_Hakedis_AP3_Kasim_Duzeltme.xlsm`. AP3 formülü ve önbellek değeri Kasım 2026'ya çevrildi; AQ3 `=Anasayfa!I9` / Aralık 2026 olarak korundu.
 - ZIP/XLSM doğrulaması: tüm 47 arşiv parçası korundu; `xl/vbaProject.bin` SHA-256 orijinal ile aynı (`80a75b85adc3bb864747bbbe9ff5ea5089359aaf0f64022d8ba256dccec46310`). Yalnızca `xl/worksheets/sheet8.xml` içindeki AP3 formül/cached başlık değeri değişti.
 - Orijinal dosya değiştirilmedi. Bu kopya henüz Microsoft Excel masaüstünde açılıp yeniden hesaplanmadı; VBA compile/run ve PDF kabulü açık kalır.
+
+## Güncel HEAD CI doğrulaması — 20.10.2026 20:30 +03:00
+
+- Etkin dal: `feature/official-payment-document-templates`; HEAD `626feba9c4b879e542fc89fded0511d564c2a973`.
+- Güncel PR workflow run [39465630481](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39465630481) tamamlandı ve başarılı. Başarılı adımlar: tam çözüm/WPF derlemesi, UI sözleşmesi ve kompakt yerleşim statik kontrolleri, test projelerinin derlenmesi ve test çözümü, PDF smoke üretimi/doğrulaması ve Windows EXE publish hazırlığı.
+- PDF smoke çıktısı ve EXE/test paketi artefaktlarının yüklenmesi ortam sınırlaması nedeniyle atlandı. Bu, derleme/test adımlarının başarılı olduğu bilgisinden ayrı tutulmalıdır.
+- Bu koşu Microsoft Excel masaüstünde VBA derlemesi/çalıştırması, gerçek UserForm etkileşimi veya Excel'den üretilmiş 8 PDF'nin alan-alan karşılaştırması değildir. Gerçek Excel/VBA ve 8/8 PDF kabulü açık kalır.
+- PR #3 açık/taslak ve ana dala birleştirilmemiştir.
