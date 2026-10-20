@@ -173,3 +173,11 @@ Bu oranlar mühendislik tahminidir, kabul sertifikası değildir. Genel proje %9
 - Bu koşu sırasında bir tutar metni assertion'ı gerçek icmal D sütununu (fiyat farkı + kesinti) dikkate alacak şekilde düzeltildi. Sonrasında yeni koşu geçti.
 - Son commit a0bce9e063492095493392c3ee40f10c02c648f6 yalnızca CA1307 uyarılarını gidermek için Assert.Contains çağrılarına StringComparison.Ordinal ekledi; bu son küçük commit için CI bekleniyor.
 - Kaynak PDF'ler aynı dosya içindeki güncel Excel/VBA makrolarının çalıştırılmasıyla elde edilmiş referanslar değildir. Gerçek masaüstü Excel/VBA ve dört resmi PDF'nin kaynakla görsel kabulü açık.
+
+
+## Kapanış durumu — 2026-10-20, güncel XLSM + PDF regresyonları
+- Son yüklenen Temel/Özel XLSM dosyalarının hash, formül ve satır 4–8 / 4–6 vektörleri güncellendi. LibreOffice yeniden hesaplama karşılaştırması 279 sayısal hücrede tolerans üstü fark göstermedi.
+- Yeni WPF testi son XLSM satır 4 girdileriyle iki programın dört ayrı PDF çıktısını (toplam sekiz) üretip A4 boyutu ve temel rapor/icmal tutarlarını kontrol ediyor.
+- CI run [39401000133](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39401000133) başarılı: 215/215 Core, 6/6 WPF; tam çözüm/WPF derlemesi, UI statik kontrolleri, PDF smoke ve Windows EXE publish geçti. Artefakt yükleme adımları ortam kısıtlaması nedeniyle atlandı.
+- Son kaynak-parite, risk ve devam-notu düzeltmeleri dokümantasyon odaklıdır. Güncel HEAD 2e68e2674f85ce9976a6a33486d84a737b39d77a için CI run [39401156074](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39401156074) başlamış durumda; son sonuç henüz görülmedi.
+- PR #3 açık/taslak/birleştirilmemiştir. Bu turda geliştirme/test hazırlığı yaklaşık %90'a getirildi. Kalan kritik kabul: Excel masaüstünde VBA makrolarını çalıştırma; dört PDF × iki program için gerçek kaynak çıktısıyla alan alan karşılaştırma; UI DPI/yazıcı/temiz profil denemeleri. Bunlar yapılmadan 8/8 resmî kabul tamamlanmış sayılmayacak.
