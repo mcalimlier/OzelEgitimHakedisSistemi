@@ -257,7 +257,6 @@
                                                                 <TextBlock Text="{Binding TenderNumber}" FontSize="11.5" FontWeight="SemiBold"/>
                                                                 <TextBlock Text="{Binding TenderNumber, StringFormat='İKN: {0}'}" FontSize="10" Foreground="{StaticResource Text600Brush}"/>
                                                             </StackPanel>
-                                                            <TextBlock Text="{Binding TenderNumber, StringFormat='İKN: {0}'}" FontSize="10" Foreground="{StaticResource Text600Brush}"/>
                                                             <TextBlock Text="{Binding WorkName}" FontSize="10.5" Foreground="{StaticResource Text600Brush}" TextTrimming="CharacterEllipsis"/>
                                                         </StackPanel>
                                                     </DataTemplate>
