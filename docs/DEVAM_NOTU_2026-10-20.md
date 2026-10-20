@@ -296,3 +296,40 @@ Bu bölüm devam notlarının kalıcı ürün kriteridir. Yeni oturumlarda ve he
 - Kod commit'i: `449537fa6f18dd2354a8129c7f7259f1d64ed088`.
 - Doğrulama: bu düzeltmenin CI koşusu henüz sonuçlanmadı; sonuç görülmeden başarı beyanı yapılmayacak.
 - Açık risk: A/B → A/C seçimi ve dönem değişiminde B taslağının sıfırlanması için gerçek etkileşimli regresyon testi henüz eklenmedi/çalıştırılmadı.
+
+
+## Devam notu — hat taslakları, CI ve çekirdek ilerlemesi (2026-10-20, 14:xx +03:00)
+
+### GitHub ve doğrulama
+- PR #3: açık, taslak, birleştirilmemiş. Dal: `feature/official-payment-document-templates`; gözlenen PR head `76d118107c2d77b4b5bf38774c1c298425b9774c`; base `feature/wpf-contract-entry-v0.5`.
+- Kod commit'i `449537fa6f18dd2354a8129c7f7259f1d64ed088` için Windows Build run [39433352479](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39433352479) ve PR run [39433360848](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39433360848) başarıyla tamamlandı.
+- Bu sonuçlar derleme/CI test akışının başarılı olduğunu gösterir; Microsoft Excel/VBA masaüstü paritesi, etkileşimli WPF/DPI kabulü veya 8/8 gerçek Excel PDF karşılaştırması anlamına gelmez.
+
+### Hat taslak ön incelemesi
+- `ResetMonthlyInputsForNewMonth()`, yalnızca görünür satırları değil `_multiRouteDraftCache.Values` içindeki seçimi geçici kaldırılmış hatları da sıfırlıyor. Hat program türüne göre asgari ücret desteği varsayılanı yeniden kuruluyor.
+- Ay değişimi algısı `ProgressPeriodMonthComboBox_SelectionChanged` üzerinden `_lastSelectedPaymentMonthKey` karşılaştırmasına bağlı. `ClearProgressEntryFields()` hem görünür satırları hem taslak cache'ini temizliyor.
+- `UpdateMultiRouteDraftRows()` görünür listeyi seçili hatlarla sınırlandırıyor ve satırları tam rota anahtarıyla geri yüklüyor. Bu, taslak izolasyonu için doğru yönde; ancak A/B → A/C → A/B etkileşim senaryosunun otomatik regresyon testi henüz mevcut değil.
+- Açık test: seçili hat değişimi sırasında tek-hat global giriş alanlarının önceki hat taslağına doğru kaydedilmesi; ay değişince seçili olmayan hat taslaklarının da sıfırlanması; çıktıya yalnızca seçili hatların girmesi. Bu davranışlar WPF seviyesinde veya test edilebilir ayrı bir sınıf üzerinden doğrulanmalı; statik kaynak metni araması tek başına kabul kanıtı değildir.
+
+### Çekirdek ilerleme tahmini
+Yüzdeler mühendislik tahminidir; resmî kabul/sertifika değildir.
+
+| Çekirdek | İlerleme | Kalan ana kabul kapısı |
+|---|---:|---|
+| Temel Eğitim / Ortaöğretim hesaplama | %85 | Excel/VBA sonrası T4, U4, W4, D15, D28 eşleşmesi |
+| Özel Eğitim hesaplama | %87 | Excel/VBA sonrası AC4:AG4 ve D28 eşleşmesi |
+| Hakediş raporu ve formül zinciri | %82 | Kaynak Excel raporundaki tüm finansal alanların alan-alan karşılaştırması |
+| İcmal ve VBA aktarımı | %78 | Makro sonrası İcmal Verileri/İcmal hücreleri ve olası tekrar sayımı kararı |
+| Dört PDF × iki program | %72 | Gerçek Excel PDF'leriyle 8/8 görsel ve finansal kabul |
+| Çoklu hat / taslak izolasyonu | %78 | A/B→A/C→A/B ve dönem sınırı regresyonları |
+| Arşiv, kimlik ve veri modeli | %86 | Hat/dönem bazlı uçtan uca arşiv ve denetim izi kabulü |
+| WPF / iş akışı / DPI | %83 | Gerçek Windows masaüstü, DPI, klavye ve etkileşim kabulü |
+| Test, CI ve dağıtım | %96 | Masaüstü kabulü ve kullanılabilir artefaktın ayrıca doğrulanması |
+| **Genel mühendislik ilerlemesi** | **%82** | Excel/VBA paritesi ve 8 PDF kabul matrisi |
+
+### Sıradaki teknik iş
+1. Çoklu hat taslak cache'ini test edilebilir hale getirecek en küçük güvenli tasarım belirlenmeli; test yalnızca kaynak kodu metni aramamalı.
+2. Ay seçimi temizlenip yeniden seçildiğinde cache'in önceki döneme ait değer taşıyıp taşımadığı ve seçili hat değişimindeki tek-hat giriş aktarımı doğrulanmalı.
+3. Temel ve Özel Eğitim için kaynak workbook sayfa/alan → hücre/formül → VBA aktarımı → model → PDF alanı envanteri tamamlanmalı.
+4. Gerçek Microsoft Excel/VBA masaüstü çalıştırması ve kaynak Excel'den üretilmiş sekiz PDF bulunmadığı sürece bu kabul kapıları açık işaretlenmeli.
+5. PR #3 taslak kalmalı; ana dala birleştirme veya yayınlama yapılmamalı.
