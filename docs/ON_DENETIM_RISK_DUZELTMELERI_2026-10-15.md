@@ -1,5 +1,7 @@
 # OEHS — Ön Denetim Risklerinin Uygulama ve Doğrulama Kaydı
 
+> **Kaynak önceliği — 20.10.2026:** Kullanıcının en son yüklediği Temel Eğitim ve Özel Eğitim XLSM dosyaları, bu 15.10.2026 tarihli risk kaydındaki tarihsel varsayımlardan üstündür. Aşağıdaki eski sonuç veya test beklentisi son XLSM/VBA ile çelişirse eski kural düzeltilmeli ya da tarihsel olarak işaretlenmelidir.
+
 **Tarih:** 15.10.2026  
 **Kapsam:** İlk beş riskin teknik durumu/düzeltmeleri ve hesaplama sabitlerinin onaylı yönetimi.
 
@@ -9,13 +11,15 @@
 
 **Sonuç: Önleyici hesaplama mantığı ve regresyon testleri mevcut.**
 
-`ProgressPaymentReportService.CalculateWorkbookMonthlyPaymentAmount`, A satırını hizmet tutarları ve iskontolar üzerinden hesaplayıp ham I+R fiyat farkını ayrı B satırında tutar. Böylece fiyat farkının A içine yazılıp B satırında yeniden eklenmesi önlenir. C=A+B ve E=C−D testlerle kontrol edilir.
+**Eski karar metni düzeltilmiştir: son XLSM ile çelişen önceki “fiyat farkını A'dan çıkarıp ayrı B'ye eklemek mükerrerliği önler” açıklaması geçerli kural değildir.** En son yüklenen Excel'in formül zinciri esas alınır; kaynak formüller ve aktarım makroları satır/sütun bazında eşleştirilmeden rapor toplamı yeniden tasarlanmaz.
 
-İlgili testler:
+Kaynakta aylık aktarım `K+T` değerini kaydeder; K/T formülleri fiyat farkını zaten içerir. Ayrıca Hakediş Raporu'nda `D7=I+R`, `D8=D6+D7`, `D11=D8-D10` zinciri bulunur. Dolayısıyla fiyat farkının aylık `K+T` içinde bulunması ve raporda ayrıca eklenmesi, kaynak Excel davranışında bir risk/çelişki olarak açıkça tutulmalıdır; bunu “mükerrerliği önleyen düzeltilmiş mantık” diye belgelemek yanlıştır. Kodun mevcut rapor hesabı, en son XLSM'nin aynı girdiyle doğrulanmış sonuçlarıyla karşılaştırılmalıdır.
+
+İlgili otomatik testler tek başına kaynak Excel kabulü değildir:
 - `ProgressPaymentWorkbookFormulaTests.ReportTotals_ShouldKeepCumulativeWorkAndPriceDifferenceSeparate`
 - `ProgressPaymentReportTests` içindeki rapor toplamı ve negatif fiyat farkı senaryoları.
 
-Kabul öncesinde gerçek XLSM'deki D6, D7, D8, D10 ve D11 hücreleri aynı veri örneğiyle izlenmelidir. Kaynak Excel'in hücre anlamları ile C# eşlemesi arasındaki fark, sözleşmeye uygunluk teyit edilmeden kapatılmamalıdır.
+**Kabul koşulu:** En son Temel ve Özel Eğitim XLSM dosyalarındaki ilgili hücre formülleri ile VBA aktarım sırası ayrı ayrı incelensin; aynı girdiyle hücre sonuçları ve dört PDF karşılaştırılsın. Çelişen eski test beklentisi varsa test, son XLSM formülü ve somut sonuç esas alınarak güncellensin; C# davranışı sessizce Excel'den farklılaştırılmasın.
 
 ## R-02 — Negatif fiyat farkı ve ek kesin teminat
 
