@@ -352,3 +352,33 @@ Yüzdeler mühendislik tahminidir; resmî kabul/sertifika değildir.
 - Çoklu hat/taslak izolasyonu: önceki tahmin `%78`; testler eklenmiş olsa da CI henüz tamamlanmadığından kabul oranı şimdilik değiştirilmedi.
 - Genel mühendislik tahmini: `%82`; resmî kabul oranı değildir.
 - Sıradaki adım: run `39434121985` ve ilişkili PR CI sonuçlarını kontrol etmek; ardından gerçek WPF entegrasyon testine ve XLSM→PDF alan envanterine devam etmek.
+
+
+## Devam notu — cache regresyonu ve CI teyidi (2026-10-20, 14:xx +03:00)
+
+- PR #3 dalı `feature/official-payment-document-templates` üzerinde `RouteDraftCache` değişikliklerini içeren kod commit'i `42f01c2234208f0cc65b139c13d6ddd87f5025dc` için Windows Build run [39434130917](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39434130917) **başarılı** tamamlandı. Tam çözüm/WPF derlemesi, UI sözleşme/yerleşim kontrolleri, test projeleri, Test Solution, PDF smoke ve EXE publish adımları geçti; artefakt yüklemeleri ortam kısıtları nedeniyle atlandı.
+- Cache regresyon testlerini içeren commit `94e5b5273f3b9093a87e5bd069a990b819d75c90` için PR workflow [39434099709](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39434099709) **başarılı**. En güncel devam-notu commit'i `cb2291107527ea93c968528e02452be6e2023595` için run [39434257910](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39434257910) da kontrol edildi; tüm zorunlu build/test/PDF smoke/publish adımları başarılı, artifact yükleme adımları ortam kısıtları nedeniyle atlandı.
+- Kod/test sonucu, cache'in seçimi geçici kaldırılan rotaları koruması ve dönem değişiminde tüm cache kayıtlarını sıfırlaması için otomatik testlerin geçtiğini doğrular. Bu testler gerçek WPF seçim etkileşimini ve üretilen her PDF'nin yalnız seçili rotaya ait olmasını uçtan uca kanıtlamaz.
+- PR #3 açık/taslak/birleştirilmemiştir; merge/release yapılmadı.
+
+### Çekirdek ilerlemesi — kanıta göre
+Yüzdeler mühendislik tahminidir; resmi kabul oranı değildir.
+
+| Çekirdek | İlerleme | Sonraki kabul kapısı |
+|---|---:|---|
+| Temel Eğitim / Ortaöğretim hesaplama | %85 | Excel/VBA T4, U4, W4, D15, D28 karşılaştırması |
+| Özel Eğitim hesaplama | %87 | Excel/VBA AC4:AG4 ve D28 karşılaştırması |
+| Hakediş raporu / formül zinciri | %82 | Kaynak Excel raporlarıyla alan alan karşılaştırma |
+| İcmal / VBA aktarımı | %78 | Kaynak makro aktarımı ve muhtemel tekrar sayımı kararının doğrulanması |
+| Dört PDF × iki program | %72 | Gerçek Excel örnekleriyle 8/8 finansal ve görsel kabul |
+| Çoklu hat / taslak izolasyonu | %80 | Saf cache testleri CI'da geçti; WPF uçtan uca seçim/çıktı kabulü açık |
+| Arşiv / kimlik / veri modeli | %86 | Arşivden geri yükle/düzenle/yeniden hesapla ve denetim izi |
+| WPF / iş akışı / DPI | %83 | Windows masaüstünde etkileşim, DPI ve klavye kabulü |
+| Test / CI / dağıtım | %97 | Güncel CI geçti; gerçek masaüstü kabulü ve indirilebilir artefakt hâlâ açık |
+| **Genel mühendislik tahmini** | **%83** | Excel/VBA paritesi, gerçek WPF kabulü ve 8 PDF kabul matrisi |
+
+### Sıradaki adım
+1. Seçili rotaların hesaplama/kaydetme/PDF üretim zincirine nasıl aktarıldığını inceleyip cache testinin kapsamadığı sınırı netleştir.
+2. Test edilebilir en küçük saf seçim→çıktı filtrelemesi bileşeni gerekiyorsa ekle ve otomatik test et; WPF koduna bağla.
+3. Tam XLSM worksheet envanteri ve kaynak sayfa/alan → hücre/formül → VBA → model → PDF eşlemesini yalnız kaynak dosyalar mevcutsa tamamla.
+4. Microsoft Excel/VBA masaüstü kabulü ve gerçek Excel kaynaklı 8 PDF karşılaştırmasını tamamlanmış gibi göstermeden açık tut.
