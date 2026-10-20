@@ -68,4 +68,12 @@
 - HEAD `626feba9c4b879e542fc89fded0511d564c2a973` için PR run [39465630481](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39465630481) başarılı: tam çözüm/WPF derleme, UI statik kontrolleri, test çözümü, PDF smoke ve Windows EXE publish adımları başarılı.
 - Smoke PDF/EXE artefaktlarının yüklenmesi ortam sınırlaması nedeniyle atlandı. Bu CI, Excel/VBA masaüstü kabulü ve 8/8 gerçek PDF karşılaştırması değildir.
 - PR #3 açık/taslak kalır; merge/release yapılmadı.
+## Otonom VBA hata günlüğü adayı — v3
 
+- Yerel yama paketi: `OEHS_VBA_Guvenli_Ay_Aktarim_Yamasi_v3_2026-10-20.zip`; SHA-256 `39d50277faccb59b7ad1e53584efcd75bc935cc11c72bd7d5f9c3e5fddf24117`.
+- Yeni `OEHS_ErrorLog.bas` adayı, hata zamanı, çalışma kitabı, yordam adı, hata numarası/açıklamasını `OEHS_VBA_Error.log` dosyasına en iyi çabayla yazar; çalışma kitabı klasörüne yazılamazsa TEMP klasörünü dener.
+- Temel Eğitim ve Özel Eğitim aday Module1/Module2 hata etiketlerine log çağrıları eklendi. Temel Eğitim LoginForm'da çıkış ve sosyal bağlantı yordamları açık hata yoluna geçirildi; Temel/Özel Eğitim `Worksheet_Change` ve Temel Eğitim `Workbook_Open` hata yollarına log çağrısı eklendi.
+- Statik regresyon: **45/45 PASS**. Kontroller kaynak metni, yordam sınır sayımı, log çağrısı ve önceki 39 kontrolü kapsar. Bu bir VBA derlemesi/çalıştırması değildir.
+- Aday `.frm/.cls` kodu orijinal VBA projesine aktarılmadı; UserForm `.frx` kontrol tasarımı ve gerçek click olay bağlantıları doğrulanmadı. Kopya XLSM'de Excel VBA IDE `Debug > Compile`, hata senaryoları ve log dosyası yazımı doğrulanmadan üretim kabulü verilmemelidir.
+- Son doğrulanmış HEAD `c70cbe6b94592b501e6a7885b579f2a270e98f3f` için PR CI [39466840508](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39466840508) ve push CI [39466831941](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39466831941) başarılıdır. Bunlar Windows uygulama build/test/smoke kapılarıdır; VBA masaüstü kabulü ve 8/8 gerçek Excel PDF kabulü açık kalır.
+- PR #3 açık/taslak; merge/release yapılmadı.
