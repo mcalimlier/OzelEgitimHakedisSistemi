@@ -108,3 +108,15 @@ Kaynak RAR arşivleri tekrar çıkarılarak XLSM satır 3 başlıklarıyla birli
 ### Ek doğrulama sınırı
 - Orijinal XLSM değiştirilmedi; düzeltilmiş ayrı kopya dosya düzeyinde doğrulandı.
 - Formül ve cached başlık doğrulandı; Microsoft Excel'de VBA derlemesi/çalıştırması ve PDF kabulü henüz yapılmadı.
+
+
+## VBA-09 — Güvenli ay bazlı temizleme ve aktarım yaması hazırlandı (20.10.2026)
+
+Ayrı bir aday kaynak yaması oluşturuldu; orijinal XLSM dosyalarına içe aktarılmadı.
+
+- Temel Eğitim AyVerileriniSil: E4'ten seçili ayı alır; D3:N3, P3:Z3, AB3:AL3 başlıklarında ilgili ayı önceden bulur. Üç hedef de çözülmeden hiçbir hücre temizlenmez. Yalnızca seçili sütunların 4:103 satırları temizlenir. Böylece tüm ayların silinmesi engellenir ve Temmuz Z/AL sütunlarının eski temizleme aralıklarından dışarıda kalması düzeltilir.
+- Özel Eğitim AyVerileriniSil: E5'ten seçili ayı alır; D:N, P:Z, AB:AL ve AN:AX bloklarının dördünde de başlık eşleşmesi gerekir; bir hedef bulunamazsa işlem kapalı-güvenli biçimde iptal edilir.
+- Özel Eğitim'in dört statik ay eşlemeli aktarım prosedürüne tanınmayan ay için Case Else eklendi; yazmadan önce hedef sütun başlığı seçili ayla karşılaştırılır.
+- İndirilebilir aday yama paketi: OEHS_VBA_Guvenli_Ay_Aktarim_Yamasi_2026-10-20.zip. İçinde iki .bas kaynak adayı, açıklama ve statik test sonuçları bulunur.
+- Statik kontrol: 9/9 yapısal kontrol geçti. Bu sonuç VBA derlemesi veya Excel çalışma zamanı testi değildir. Orijinal XLSM'ler değiştirilmedi; yama Excel'de derlenip çalıştırılmadan resmî kabul edilmiş sayılamaz.
+- Kalan gerçek kabul kapıları: Excel VBA IDE Compile; boş/geçersiz ay ve bozuk başlık testleri; önceki/sonraki ayların korunması; Temel Temmuz N/Z/AL; Özel Kasım AP/Aralık AQ; aktarım ve PDF çıktıları.
