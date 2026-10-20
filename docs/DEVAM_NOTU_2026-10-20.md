@@ -517,3 +517,14 @@ Yüzdeler mühendislik tahminidir; resmi kabul oranı değildir.
 - Yeni commit: `c9a424270bc261e41362347ef035d521a6a1f626`.
 - Bu commit için CI run `39449190810` kuyruğa alındı; nihai sonuç henüz doğrulanmadı.
 - Bir sonraki adım: run `39449190810` sonucunu ve gerekirse logunu kontrol et. Başarılı değilse düzeltmeden sonra yeniden doğrula. CI başarılı olduktan sonra hat seçimi servis testinden WPF uçtan uca kapsamına geç.
+
+
+## Eşzamanlı teknik çalışma ve son CI durumu
+
+- Beş inceleme hattı paralel yürütüldü: CI/build, hat seçim güvenliği, WPF hakediş akışı, Excel alan/sayfa adları, PDF/Excel-VBA kabulü. Bunlar aynı feature dalında sıralı commit'lerle ilerleyen teknik iş hatlarıdır; ayrı ajan/branch olarak sunulmamalıdır.
+- Test düzeltme commit'i `c9a424270bc261e41362347ef035d521a6a1f626` için run `39449190810` başarılı tamamlandı. Tam çözüm/WPF, UI kontrolleri, test derlemesi, Test Solution, PDF smoke ve Windows EXE publish adımları başarılıdır. Artefakt upload adımları ortam kısıtı nedeniyle atlandı.
+- Yakınındaki run `39449236230` da başarılı tamamlandı; aynı şekilde EXE/deneme paketi artefakt upload'ı atlandı.
+- Sonraki test genişletmesi commit'i `458daa9df4d4d4ba5010c81095a18573c43f155c`: hat seçimi regresyon testi 12 yerine 37 kayıtlı hatla, 1,2,3,5,8,12,20,36 ve 37 seçim sayısını deniyor. Bu commit için workflow sorgusunda henüz run görünmüyor; **bu yeni test genişletmesinin CI sonucu doğrulanmış değildir**.
+- Testlerin amacı herhangi bir sabit hat sınırı koymak değildir; üretimde seçilebilir hat sayısı veri modelindeki gerçek hat sayısına göre dinamik olmalıdır.
+- Açık kritik işler: WPF'de İKN/program türü/firma/dönem/hat akışının uçtan uca doğrulanması; hat başına giriş izolasyonu; seçilmeyen hatların toplam, arşiv ve dört PDF'ye girmediğinin testi; gerçek Excel/VBA ile 8 PDF'nin alan alan kabulü; kaynak değişken/sayfa adlarının tam envanter eşlemesi.
+- Sonraki adım: commit `458daa9` için CI sonucunu al; ardından WPF çoklu hat akışında test edilebilir en küçük bağımsız doğrulama katmanını belirleyip regresyon testlerini ekle. PR #3 taslak kalacak; merge/release yok.
