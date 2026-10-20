@@ -43,13 +43,14 @@ public sealed class ProgressPaymentInputBoundaryTests
         };
     }
 
-    [Theory]
-    [MemberData(nameof(InvalidInputs))]
-    public void Calculate_ShouldRejectNegativeValuesForFieldsWithNonNegativeContract(
-        ProgressPaymentInput input)
+    [Fact]
+    public void Calculate_ShouldRejectNegativeValuesForFieldsWithNonNegativeContract()
     {
-        Assert.Throws<ArgumentOutOfRangeException>(
-            () => ProgressPaymentCalculator.Calculate(input));
+        foreach (var input in InvalidInputs())
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(
+                () => ProgressPaymentCalculator.Calculate(input));
+        }
     }
 
     public static TheoryData<TransportationProgramType> ProgramTypes() => new()
@@ -58,56 +59,58 @@ public sealed class ProgressPaymentInputBoundaryTests
         TransportationProgramType.SpecialEducation
     };
 
-    [Theory]
-    [MemberData(nameof(ProgramTypes))]
-    public void ZeroAmountsAndZeroWorkDays_ShouldRemainAValidBoundary(
-        TransportationProgramType programType)
+    [Fact]
+    public void ZeroAmountsAndZeroWorkDays_ShouldRemainAValidBoundary()
     {
-        var input = new ProgressPaymentInput(
-            WorkDays: 0m,
-            DailyPrice: 0m,
-            DiscountAmount: 0m,
-            PriceDifference: 0m,
-            ContractAmount: 0m,
-            IsVatExempt: false,
-            TaxDebt: 0m,
-            SocialSecurityDebt: 0m,
-            MinimumWageSupport: 0m,
-            InspectionPenalty: 0m,
-            GuideWorkDays: 0m,
-            GuideDailyPrice: 0m,
-            GuideDiscountAmount: 0m,
-            GuidePriceDifference: 0m,
-            ProgramType: programType);
+        foreach (var programType in ProgramTypes())
+        {
+            var input = new ProgressPaymentInput(
+                WorkDays: 0m,
+                DailyPrice: 0m,
+                DiscountAmount: 0m,
+                PriceDifference: 0m,
+                ContractAmount: 0m,
+                IsVatExempt: false,
+                TaxDebt: 0m,
+                SocialSecurityDebt: 0m,
+                MinimumWageSupport: 0m,
+                InspectionPenalty: 0m,
+                GuideWorkDays: 0m,
+                GuideDailyPrice: 0m,
+                GuideDiscountAmount: 0m,
+                GuidePriceDifference: 0m,
+                ProgramType: programType);
 
-        var result = ProgressPaymentCalculator.Calculate(input);
+            var result = ProgressPaymentCalculator.Calculate(input);
 
-        Assert.Equal(0m, result.TransportNetAmount);
-        Assert.Equal(0m, result.GuideNetAmount);
-        Assert.Equal(0m, result.TotalDeductions);
-        Assert.Equal(0m, result.NetPayable);
+            Assert.Equal(0m, result.TransportNetAmount);
+            Assert.Equal(0m, result.GuideNetAmount);
+            Assert.Equal(0m, result.TotalDeductions);
+            Assert.Equal(0m, result.NetPayable);
+        }
     }
 
-    [Theory]
-    [MemberData(nameof(ProgramTypes))]
-    public void NegativePriceDifference_ShouldRemainSignedRatherThanBeClamped(
-        TransportationProgramType programType)
+    [Fact]
+    public void NegativePriceDifference_ShouldRemainSignedRatherThanBeClamped()
     {
-        var input = new ProgressPaymentInput(
-            WorkDays: 1m,
-            DailyPrice: 100m,
-            DiscountAmount: 0m,
-            PriceDifference: -10m,
-            ContractAmount: 1000m,
-            IsVatExempt: false,
-            TaxDebt: 0m,
-            SocialSecurityDebt: 0m,
-            MinimumWageSupport: 0m,
-            ProgramType: programType);
+        foreach (var programType in ProgramTypes())
+        {
+            var input = new ProgressPaymentInput(
+                WorkDays: 1m,
+                DailyPrice: 100m,
+                DiscountAmount: 0m,
+                PriceDifference: -10m,
+                ContractAmount: 1000m,
+                IsVatExempt: false,
+                TaxDebt: 0m,
+                SocialSecurityDebt: 0m,
+                MinimumWageSupport: 0m,
+                ProgramType: programType);
 
-        var result = ProgressPaymentCalculator.Calculate(input);
+            var result = ProgressPaymentCalculator.Calculate(input);
 
-        Assert.Equal(90m, result.TransportNetAmount);
-        Assert.Equal(-0.6m, result.AdditionalGuarantee);
+            Assert.Equal(90m, result.TransportNetAmount);
+            Assert.Equal(-0.6m, result.AdditionalGuarantee);
+        }
     }
 }
