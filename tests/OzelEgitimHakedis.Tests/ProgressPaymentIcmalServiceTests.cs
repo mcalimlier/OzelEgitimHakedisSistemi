@@ -44,7 +44,7 @@ public sealed class ProgressPaymentIcmalServiceTests
     }
 
     [Fact]
-    public void FindPreviousDeduction_ShouldCarryBasicProgramDespiteSourceLookupRangeDefect()
+    public void FindPreviousDeduction_ShouldCarryBasicProgramForNovemberUsingItsOwnIdentityScope()
     {
         var previous = History(1, new DateOnly(2026, 10, 31), 200m) with
         {
