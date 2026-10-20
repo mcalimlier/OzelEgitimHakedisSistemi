@@ -139,14 +139,11 @@ public sealed class RouteDraftCacheTests
     }
 
 
+    public static IEnumerable<object[]> SelectedRouteCounts =>
+        new[] { 1, 2, 3, 4, 5, 8, 12 }.Select(count => new object[] { count });
+
     [Theory]
-    [InlineData(1)]
-    [InlineData(2)]
-    [InlineData(3)]
-    [InlineData(4)]
-    [InlineData(5)]
-    [InlineData(8)]
-    [InlineData(12)]
+    [MemberData(nameof(SelectedRouteCounts))]
     public void OutputSelection_ShouldIncludeExactlyTheRequestedNumberOfSelectedRoutes(int selectedCount)
     {
         const int totalRoutes = 12;
