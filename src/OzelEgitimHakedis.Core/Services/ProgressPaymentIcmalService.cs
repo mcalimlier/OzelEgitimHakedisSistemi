@@ -19,17 +19,18 @@ public static class ProgressPaymentIcmalService
     }
 
     /// <summary>
-    /// True when the month can be matched in the source workbook's Anasayfa!I6:I15
-    /// lookup range. July remains on the printed form but returns zero in the
-    /// source workbook's current C/D month formulas.
+    /// True when the month falls within the default Special Education icmal
+    /// lookup range. Use the program-specific overload for Basic/Secondary, whose
+    /// visible C/D month headers include July even though its E21 lookup does not.
     /// </summary>
     public static bool IsMonthInWorkbookLookupRange(DateOnly month) =>
         IsMonthInWorkbookLookupRange(month, TransportationProgramType.SpecialEducation);
 
     /// <summary>
-    /// Basic/Secondary uses a dynamically searched month header in its icmal
-    /// transfer macros, so July is a valid period there. Special Education's
-    /// current C/D lookup range ends in June and treats July as a zero placeholder.
+    /// Basic/Secondary uses a dynamically searched month header for the visible
+    /// icmal rows, so July is a valid row there. Special Education's current C/D
+    /// lookup range ends in June and treats July as a zero placeholder. This method
+    /// describes visible icmal rows, not the narrower E21 prior-deduction lookup.
     /// </summary>
     public static bool IsMonthInWorkbookLookupRange(
         DateOnly month,
@@ -111,6 +112,14 @@ public static class ProgressPaymentIcmalService
         DateOnly currentPeriod,
         TransportationProgramType programType)
     {
+        if (!Enum.IsDefined(programType))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(programType),
+                programType,
+                "Taşımalı eğitim program türü tanımlı bir değer olmalıdır.");
+        }
+
         if (currentPeriod.Month is 7 or 8)
             return null;
 
