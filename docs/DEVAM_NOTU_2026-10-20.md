@@ -48,3 +48,12 @@ Bu oranlar mühendislik tahminidir, kabul sertifikası değildir. Genel proje %9
 3. **Fetch origin** yap; ardından yerel değişiklikler güvence altındaysa **Pull origin** yap.
 4. PR #3'ü taslak bırak; **Merge** veya yayınlama yapma.
 5. Pull sonrasında yerel commit varsa veya GitHub Desktop çakışma gösterirse çözmeden devam etme; sonraki oturumda durumunu bildir.
+
+## Ek çalışma kaydı — 2026-10-20, yeni XLSM testleri
+- Kullanıcının en yeni yüklediği Temel Eğitim ve Özel Eğitim XLSM dosyaları için kaynak satır vektörlerini test kapsamına alma çalışması başlatıldı.
+- İlk test commit'i `cde5a21657348152654b934d21375c63508c6f52` CI'da derlenemedi: xUnit `InlineData` üzerinde `decimal` literal'ları C# attribute argümanı olamadığından CS0182/CS3016 oluştu. CI run: [39389511886](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39389511886). Bu bir test altyapısı/derleme hatasıdır; hesaplama motorunda başarısızlık kanıtı değildir.
+- Hata düzeltildi: test verileri `InlineData` yerine `MemberData` üzerinden sağlanıyor. Düzeltme commit'i: `0a028af494986e978ade9225c8b080fecab69262`.
+- Düzeltme commit'i için yeni CI run [39389957851](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39389957851) başlatıldı. Bu not güncellenirken checkout aşaması sürüyor; test sonucu henüz doğrulanmadı.
+- PR #3 halen açık, taslak ve birleştirilmemiş; son doğrulanan head `0a028af494986e978ade9225c8b080fecab69262`.
+- Yeni vektörlerin gerçek Excel/VBA masaüstü kabulü olmadığı açıkça korunmalı. CI geçse bile bu yalnızca derleme/uygulama test kanıtıdır.
+- Sıradaki adım: run 39389957851 sonucunu bekleyip derleme/test hatalarını düzeltmek; sonra hem kaynak vektörlerinin beklenen hücrelerle gerçekten doğru eşlendiğini hem de dört PDF × iki program kabul matrisindeki açık işleri sürdürmek.
