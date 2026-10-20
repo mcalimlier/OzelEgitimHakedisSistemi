@@ -171,3 +171,36 @@ Bu pano işleri ayrı doğrulama alanlarına böler; aynı formül veya kabul ö
 - Açık kabul kapıları değişmedi: Microsoft Excel masaüstünde VBA'nın çalıştırılması; Temel için T4/U4/W4 ve D15/D28; Özel için AC4:AG4 ve D28; kaynak Excel ile OEHS arasında sekiz PDF'nin alan/tutar/görsel karşılaştırması; Windows DPI ve etkileşimli masaüstü kabulü.
 - İcmal C8/D8/E8 içindeki olası fiyat farkı tekrar sayımı kaynak davranışı olarak belgeli kalır. Formül/makro çıktısı ve iş sahibi kararı olmadan hesaplama değiştirilmez.
 - Ana dala birleştirme veya yayınlama yapılmadı; bunun için açık onay gerekir.
+
+## Kalıcı ürün kriteri — Hakediş Oluştur ekranı TEHYS'in kalbidir (20.10.2026)
+
+Bu kriterler ürün kabul şartıdır; sonraki geliştirme/devam notlarında korunmalı, testlere ve ekran tasarımına yansıtılmalıdır.
+
+### Kullanıcı akışı ve esneklik
+- Hakediş Oluştur ekranı temel ve özel eğitim için ayrı hesaplama çekirdeklerini kullanmalı; kullanıcı her iki program türünde de İKN (İhale Kayıt Numarası) oluşturabilmeli/seçebilmeli.
+- Kullanıcı İKN altında firmaları/yüklenicileri ve firmaya bağlı birden çok hattı tanımlayıp yönetebilmeli.
+- Bir firma altında 5 hat varsa kullanıcı seçtiği dönem için bu hatların yalnızca istediği alt kümesini (ör. 3/5) hakedişe dahil edebilmeli. Seçilmeyen hatlar için hakediş üretilmemeli.
+- Seçilen her hat için, yalnızca o hakedişe uygulanacak hat-bazlı özel düzenlemeler yapılabilmeli. Bu düzenlemeler diğer hatlara, diğer dönemlere veya diğer firmalara sızmamalı; önce/sonra değerleri ve gerekçesi denetlenebilir olmalı.
+- Kullanıcı Temel Eğitim ve Özel Eğitim İKN kayıtlarını tek bir birleşik tabloda görüntüleyebilmeli; birleşik görünüm yalnızca listeleme/arama kolaylığıdır, program türünü ve her programın kendi alan/formül anlamını kaybetmemelidir.
+- Akış basit ve anlaşılır olmalı: program türü ve dönem → İKN → firma/yüklenici → hatları seç → hat bazında gerekiyorsa özel düzenleme → ön izleme/hesap kontrolü → dört resmî PDF'yi üret. Kullanıcı birden fazla hattı tek seferde seçip toplu işlem yapabilmeli, ancak her hat için ayrı hesaplama ve belge kimliği korunmalı.
+
+### Kaynak Excel terminolojisi — değiştirilemez uyumluluk ilkesi
+- Bir değişken/alan Excel'de hangi adla geçiyorsa, kullanıcıya gösterilen kaynak alan adı ve eşleme envanterinde tam metniyle korunmalı; keyfî sadeleştirme, yeniden adlandırma veya başka terimle değiştirme yapılmamalı.
+- Aynı kavram Temel Eğitim ve Özel Eğitim dosyalarında farklı adlarla geçiyorsa iki ad da kendi program çekirdeğinde ayrı ayrı saklanmalı. Ortak UI etiketi ancak anlamlar ve hesaplama eşlemesi kanıtla aynıysa kullanılabilir; kaynak adları ve hücre eşlemeleri kaybolmamalı.
+- Sol gezinme menüsündeki butonlar kaynak Excel çalışma sayfası adlarıyla uyumlu olmalı. İki programda aynı işlevi gerçekten karşılayan sayfalar tek menü öğesi altında birleştirilebilir; bu durumda her iki sayfa adını açıkça içeren birleşik etiket kullanılmalı (ör. “Hesaplama Bilgileri / Hesaplama”). Farklı hesaplama veya makro davranışı olan sayfalar tek bir ortak ad altında gizlenmemeli.
+- Her kaynak XLSM için sayfa adı → program türü → kaynak alanın tam adı → hücre/formül → VBA makro/aktarım → uygulamadaki alan/model → PDF hedef alanı zincirini içeren izlenebilir eşleme envanteri tutulmalı.
+- Kullanıcıların yıllardır kullandığı Excel terminolojisi, menü sırası ve iş akışı tanıdık kalmalı. Modern görsel tasarım yapılabilir; alışılmış terimler ve işlem anlamları kaybolmamalı.
+
+### Kabul ve regresyon testleri
+1. İKN oluşturma/seçme Temel Eğitim ve Özel Eğitim için ayrı ayrı doğrulanır; birleşik listede program türü her satırda görünür ve filtrelenebilir.
+2. Tek İKN + tek firma + 5 hat senaryosunda yalnızca seçilen 3 hat için hakediş ve dört PDF üretilir; kalan 2 hat için çıktı oluşmadığı test edilir.
+3. Seçilen hatlardan birindeki özel değişiklik yalnızca o hat ve ilgili hakedişi etkiler; diğer 2 seçili hat, seçilmeyen hat ve önceki dönem kayıtları değişmeden kalır.
+4. Arşivden geri açma, düzenleme ve yeniden hesaplama sırasında İKN/program/firma/hat/dönem ilişkisi korunur; değişiklik ve tutar farkı onay/denetim iziyle gösterilir.
+5. Excel kaynak alan adları ve sol menü etiketleri otomatik kontrol edilir; farklı adlar program-özel eşlemede korunur, birleşik etiket iki kaynak sayfa adını da içerir.
+6. Her hakediş için dört PDF'nin tümü aynı İKN/firma/hat/dönem kimliğini ve doğru tutarları taşır. Çoklu hat çalıştırmasında belge setleri hat bazında birbirine karışmaz.
+7. Temel Eğitim ile Özel Eğitim formül, kesinti ve icmal zincirleri ayrı test edilir; birleşik tabloda gösterilmeleri hesaplama çekirdeklerini birleştirme gerekçesi olamaz.
+
+### Uygulama durumu ve açık kabul
+- Bu bölüm, kullanıcının açık ürün talimatını kalıcı kabul kriterine dönüştürür; tek başına mevcut ekranın bu kabulleri geçtiğini kanıtlamaz.
+- Mevcut PR'de İKN/firma/sözleşme/hat iş akışının bazı parçaları ve program türü koruma kontrolleri vardır; yukarıdaki seçmeli çoklu hat, hat-bazlı değişiklik izolasyonu, birleşik İKN tablosu ve kaynak sayfa adlarının menüye tam eşlenmesi uçtan uca ayrıca doğrulanmalıdır.
+- Bu kriterler uygulandığında test ve CI sonuçları kaydedilmeli; gerçek Excel/VBA ve 8 PDF alan-alan kabulü ayrı açık kalmalıdır. PR açık/taslak kalır; onaysız merge/release yapılmaz.
