@@ -813,3 +813,11 @@ Yüzdeler ölçüm sistemiyle hesaplanmış kesin istatistik değil, iş paketle
 - Son yama paketi: `OEHS_VBA_Guvenli_Ay_Aktarim_Yamasi_2026-10-20.zip`; 29/29 statik regresyon kontrolü PASS. Bu, Excel VBA compile/runtime kabulü değildir.
 - Son PR #3 HEAD `412d89ee8c6179170a4dbfdc1298eed0e4e28e85`, PR açık/taslak. HEAD CI run [39464087579](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39464087579) kontrol anında kuyruktaydı; önceki HEAD CI run'larından bazıları tamamlanmış olsa da son HEAD için sonuç bekleniyor.
 - İlerleme değişmedi: Temel Eğitim %86, Özel Eğitim %89, genel %86. Gerçek Excel VBA IDE Compile/Run ve 8/8 PDF kabulü açık.
+
+
+## Son checkpoint — ay silme işlemi geri alma koruması (20.10.2026)
+
+- Temel Eğitim ve Özel Eğitim `AyVerileriniSil` aday yordamları artık ilk hücre temizliğinden önce tüm seçili ay hedeflerinin `.Formula` yedeğini alır. Sayfa korumalıysa veya ay başlıklarından biri bulunamazsa işlem başlamaz. Temizleme sırasında hata oluşursa tüm hedefleri yedekten geri yüklemeyi dener.
+- Yama paketi statik regresyon kontrolleri **33/33 PASS**. Bu sonuç VBA IDE compile/run değildir.
+- Güncel PR #3 HEAD (kontrol anında) `834039da85e27713a41646df5f75a5259e1782f0`; PR açık/taslak, merge edilmedi. Güncel HEAD için CI run'ları [39464375567](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39464375567) ve [39464369155](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39464369155) çalışıyordu.
+- Gerçek Excel VBA IDE derlemesi/çalıştırması ve 8/8 PDF kabulü açık; çekirdek tahminleri Temel %86, Özel %89 olarak korunuyor.
