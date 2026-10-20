@@ -80,6 +80,7 @@ Kapsam: güncel Temel Eğitim ve Özel Eğitim XLSM'leri ile OEHS hesap/rapor zi
 - E21'in kayıtlı sonucu ve `İcmal Verileri!AO4` = **29.963,898156 TL**. Önceki 10.580,582128 TL değeri güncel XLSM'nin önbelleğiyle eşleşmediği için eski beklenti olarak kullanılmamalıdır.
 - Orijinal dosyada `İcmal Verileri!AP3` ve `AQ3` ikisi de `=Anasayfa!I9` (Aralık 2026) olduğundan, Kasım başlığının eksikliği/Aralık tekrarının başlık dizisinde sürdüğü görülüyor. Ayrı düzeltilmiş kopyada AP3 Kasım'a çevrilmiştir; orijinal XLSM değiştirilmemiştir.
 - E21'in Kasım örneğinde Ekim sütunu AO4 ile eşleşmesi, AP3/AQ3 başlık kusurunun sonraki tüm ay aktarım davranışını doğrulamaz.
+- OEHS önceki-kesinti servisi, mevcut XLSM formül davranışını ayrı testlerle koruyacak şekilde güncellendi: Özel Eğitimde Aralık seçiliyken Kasım başlığı bulunmadığından sonuç sıfır; Ocak seçiliyken MATCH ilk yinelenen Aralık başlığı AP'yi seçtiğinden kaynak aktarım eşlemesine göre Kasım verisi döner. Bu, kaynağın mevcut formül davranışına sadakattir; doğru iş kuralı olduğuna dair onay veya Excel masaüstü kabulü değildir.
 
 **Kalan kabul:** Excel masaüstünde Kasım, Aralık, Ocak, Haziran ve Temmuz seçilerek E21 ile AN:AX aktarım hücreleri makro öncesi/sonrası kaydedilmeli. Kaynak dosya ile düzeltilmiş kopya ayrı tutulmalı; orijinal XLSM'ye sessiz düzeltme uygulanmamalıdır.
 
