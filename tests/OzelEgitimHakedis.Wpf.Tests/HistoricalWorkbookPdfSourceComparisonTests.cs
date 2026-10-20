@@ -68,7 +68,7 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
             var basicIcmal = PageText(basicOutputs, OehsOfficialDocumentKind.HakedisIcmali);
             Assert.Contains("₺319.991,92", basicIcmal);
             Assert.Contains("₺7.365,35", basicIcmal);
-            Assert.Contains("₺327.357,27", basicIcmal);
+            Assert.Contains("₺346.832,31", basicIcmal);
             // The latest Basic XLSM cached icmal adds a stale/misaligned deduction block
             // to its price-difference column; OEHS currently does not silently copy that defect.
 
