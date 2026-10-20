@@ -5523,13 +5523,44 @@ public partial class MainWindow : Window
         if (batch.Length == 0)
             batch = new[] { item };
 
-        var archivedPaths = new List<string>();
-        foreach (var payment in batch)
+        var archiveResult = ProgressPaymentArchiveBatchService.Execute(
+            batch,
+            payment =>
+            {
+                if (TryArchiveProgressItem(payment, out var path, out _))
+                    return (Success: true, Path: (string?)path, Error: (string?)null);
+
+                return (Success: false, Path: (string?)null,
+                    Error: $"Hat {payment.RouteNumber}: arşiv kaydı oluşturulamadı.");
+            },
+            path => File.Delete(path));
+
+        if (!archiveResult.Success)
         {
-            if (!TryArchiveProgressItem(payment, out var path, out _))
-                return;
-            archivedPaths.Add(path);
+            ArchiveStatusTextBlock.Text = archiveResult.RollbackFailures.Count == 0
+                ? "ARŞİV İŞLEMİ GERİ ALINDI"
+                : "KISMİ ARŞİV HATASI";
+
+            if (archiveResult.RollbackFailures.Count > 0)
+            {
+                var rollbackDetails = string.Join(Environment.NewLine, archiveResult.RollbackFailures);
+                var message = "Çoklu hat arşivleme tamamlanamadı. Bazı yeni dosyalar geri alınamadı; lütfen arşiv klasörünü kontrol edin."
+                    + Environment.NewLine + rollbackDetails;
+                CalculationStatusTextBlock.Text = message;
+                MessageBox.Show(message, "OEHS — Arşiv Geri Alma Uyarısı",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            else
+            {
+                CalculationStatusTextBlock.Text =
+                    "Çoklu hat arşivleme tamamlanamadı. Bu işlemde oluşturulan önceki arşiv dosyaları geri alındı.";
+            }
+
+            UpdateArchiveView();
+            return;
         }
+
+        var archivedPaths = archiveResult.WrittenPaths.ToList();
 
         _lastCalculatedHistoryId = null;
         UpdateArchiveView();
