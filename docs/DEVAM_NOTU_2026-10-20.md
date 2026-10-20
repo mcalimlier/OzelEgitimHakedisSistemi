@@ -85,3 +85,13 @@ Bu oranlar mühendislik tahminidir, kabul sertifikası değildir. Genel proje %9
 - Commit için Windows CI run [39395383346](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39395383346) kontrol edildi; bu not hazırlanırken çalışma hâlâ sürüyordu. Başarılı olduğu henüz doğrulanmış değildir.
 - Açık risk: program seçimi varsayılanının diğer özet/yardımcı çağrılarındaki etkisi ayrıca gözden geçirilmeli. Gerçek masaüstü kabulü ve Microsoft Excel/VBA eşitliği bu kod değişikliğiyle doğrulanmış sayılmaz.
 - Sonraki adım: Windows CI sonucunu doğrulamak; ardından giriş/ilerleme göstergesi akışını incelemek ve sekiz PDF kabul matrisine devam etmek. Merge/yayınlama yapılmadı.
+
+
+## Ek çalışma kaydı — arşiv düzeltmesinde program türünü koruma (2026-10-20)
+- PR #3 güncel başı f2cc765a03f79e6a2d1e32e278cdec02d1b44261 ve CI run [39395493324](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39395493324) **başarılı** olarak doğrulandı. Tam çözüm/WPF derlemesi, testler, PDF smoke ve Windows EXE publish adımları başarılı.
+- Program türü yardımcı çağrıları gözden geçirilirken SaveArchivedContractCorrection() içinde arşivdeki sözleşmenin ProgramType değerinin global seçim kutusundan tekrar alındığı bulundu. Seçim boşsa veya farklı programa ayarlıysa, arşiv düzeltmesi yanlışlıkla kayıt türünü değiştirebilirdi.
+- Düzeltme: arşiv sözleşmesi düzeltmesi artık archive.Contract.ProgramType değerini koruyor; rehber personel ve yeniden hesaplama davranışı bu kayıtlı programa göre belirleniyor. Kod commit'i: c2f6adda6528f58e780a025fa1172d62a724b6c7.
+- Bu yeni commit için CI henüz görünmüyor; sonraki oturumda run oluşup oluşmadığı ve sonucu kontrol edilmelidir. Bu değişikliğe özel otomatik regresyon testi henüz eklenmedi.
+- Kalan program türü varsayılanı GetSelectedTransportationProgramType() içinde özet/seçici davranışında mevcut. Yeni resmî sözleşme/yüklenici oluşturma kayıtları artık boş seçimde durduruluyor; yine de tüm ekran akışları masaüstünde etkileşimli olarak kabul edilmiş değildir.
+- PR #3 taslak/açık/birleştirilmemiş; merge veya yayınlama yapılmadı. Hesaplama formülleri ve resmî tutarlar değiştirilmedi.
+- Sıradaki adım: commit c2f6adda... için CI'yi doğrula; arşiv program türü koruması için program-özel test eklemenin mevcut test mimarisine uygun yolunu araştır; ardından hazırlık/ilerleme göstergesi ve dört PDF × iki program kabul matrisine devam et.
