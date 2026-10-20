@@ -4726,7 +4726,7 @@ public partial class MainWindow : Window
                     SaveMultiRouteProgressPayment(
                         selectedContract, selectedRoutes, selectedEntries, periodDate);
                 }
-                catch (InvalidOperationException ex)
+                catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
                 {
                     ShowMultiRouteValidation(
                         $"Seçili hat taslakları doğrulanamadı; hakediş üretilmedi. {ex.Message}");
