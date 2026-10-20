@@ -4707,8 +4707,30 @@ public partial class MainWindow : Window
             {
                 MultiRoutePaymentGrid.CommitEdit(DataGridEditingUnit.Cell, true);
                 MultiRoutePaymentGrid.CommitEdit(DataGridEditingUnit.Row, true);
-                SaveMultiRouteProgressPayment(
-                    selectedContract, selectedRoutes, _multiRoutePaymentRows.ToArray(), periodDate);
+                // Commit grid edits, refresh the cache, then cross an explicit
+                // selected-route boundary before any calculation or PDF generation.
+                foreach (var visibleRow in _multiRoutePaymentRows)
+                    _multiRouteDraftCache[visibleRow.RouteKey] = visibleRow;
+
+                try
+                {
+                    var selectedRouteKeys = selectedRoutes.Select(route =>
+                        OehsIdentityService.BuildRouteKey(
+                            route.TenderNumber,
+                            route.RouteNumber,
+                            route.ContractorTaxOrIdentityNumber,
+                            route.ContractNumber,
+                            route.ProgramType));
+                    var selectedEntries = SelectedRouteDrafts.SelectExact(
+                        selectedRouteKeys, _multiRouteDraftCache);
+                    SaveMultiRouteProgressPayment(
+                        selectedContract, selectedRoutes, selectedEntries, periodDate);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    ShowMultiRouteValidation(
+                        $"Seçili hat taslakları doğrulanamadı; hakediş üretilmedi. {ex.Message}");
+                }
                 return;
             }
 
