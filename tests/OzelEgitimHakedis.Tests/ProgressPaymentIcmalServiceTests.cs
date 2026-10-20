@@ -66,14 +66,14 @@ public sealed class ProgressPaymentIcmalServiceTests
     }
 
     [Fact]
-    public void BasicNovember2026_ShouldUseOctoberMonthlyColumnDespiteBrokenSourceE21Formula()
+    public void BasicNovember2026_ShouldCarryOctoberDeductionFromLatestWorkbookCache()
     {
-        // Latest source workbook: the selected period is November 2026 (E4),
-        // and the October monthly column is İcmal Verileri!AC4 = 24,104.02472 TL.
-        // The workbook's E21 formula itself is defective (it uses E5/K17 and AN:AX)
-        // and its cached value is zero. This test preserves OEHS's intended behavior
-        // from the monthly macro layout; it is NOT a claim that literal source E21 matches.
-        var october = History(1, new DateOnly(2026, 10, 31), 24104.02472m) with
+        // Latest Basic XLSM SHA-256:
+        // 37a7818881aae52e8b2fcf95f30a75e1f302dfce1e91e2345f3473668a4d5296.
+        // Anasayfa!E4 = November 2026; Hakediş İcmali!E21's cached result and
+        // İcmal Verileri!AC4 both equal 26,448.176274448 TL. E21 uses the Basic
+        // workbook's E4/I5:I14 and AB:AL lookup chain; do not apply Special's E5/AN:AX map.
+        var october = History(1, new DateOnly(2026, 10, 31), 26448.176274448m) with
         {
             Input = new ProgressPaymentInput(
                 13, 6545m, 0m, 3659.2m, 100000m, true, 0m, 0m, 0m,
@@ -89,22 +89,24 @@ public sealed class ProgressPaymentIcmalServiceTests
         var result = ProgressPaymentIcmalService.FindPreviousDeduction(
             new[] { october, november }, november);
 
-        Assert.Equal(24104.02472m, result);
+        Assert.Equal(26448.176274448m, result);
     }
 
     [Fact]
-    public void SpecialEducationE21_November2026_ShouldCarryOctoberDeductionFromSourceExample()
+    public void SpecialEducationE21_November2026_ShouldCarryOctoberDeductionFromLatestWorkbookCache()
     {
-        // Source workbook: Özel Eğitim, November 2026. Hakediş İcmali!E21
-        // has cached result 10,580.582128 TL, matching İcmal Verileri!AO4
-        // (October 2026). Special Education uses E5 and AN:AX, unlike Basic.
-        var october = History(1, new DateOnly(2026, 10, 31), 10580.582128m);
+        // Latest Special Education XLSM SHA-256:
+        // c31cb024ac1eb59f3b88d2ee12234be98d1f07056884374d8dad108f674d7d1e.
+        // Anasayfa!E5 = November 2026; Hakediş İcmali!E21's cached result and
+        // İcmal Verileri!AO4 both equal 29,963.898156 TL. Special Education
+        // uses E5 and AN:AX, unlike Basic's E4 and AB:AL lookup chain.
+        var october = History(1, new DateOnly(2026, 10, 31), 29963.898156m);
         var november = History(2, new DateOnly(2026, 11, 30), 11201.1393472m);
 
         var result = ProgressPaymentIcmalService.FindPreviousDeduction(
             new[] { october, november }, november);
 
-        Assert.Equal(10580.582128m, result);
+        Assert.Equal(29963.898156m, result);
     }
 
     [Fact]
