@@ -712,3 +712,18 @@ Yüzdeler ölçüm sistemiyle hesaplanmış kesin istatistik değil, iş paketle
 - Güncel mühendislik ilerleme tahminleri (resmî kabul değil): Temel Eğitim/Ortaöğretim hesaplama **%85**; Özel Eğitim hesaplama **%87**; ortak hesaplama motoru/rapor zinciri **%85**; PDF/icmal **%87**; arşiv/veri modeli **%86**; WPF/ekran akışı **%83**; test/CI/dağıtım **%97** (HEAD CI beklemede); genel proje **%85**.
 - Açık kabul kapıları: Excel masaüstünde gerçek VBA compile/run ve yeniden hesaplama; Temel `T4/U4/W4`, rapor `D15/D28`; Özel `AC4:AG4`, rapor `D28`; sekiz PDF'nin gerçek Excel referanslarıyla alan ve tek sayfa A4 karşılaştırması; VBA silme/aktarım risklerinin güvenli kopyada doğrulanması.
 - Sıradaki adım: güncel HEAD CI sonuçlarını kontrol et; başarısızsa kök nedeni düzelt ve yeniden çalıştır. PR açık/taslak kalır.
+
+
+## Devam checkpoint'i — sınır testleri ve son CI (20.10.2026 16:38 +03:00)
+
+- Etkin dal: `feature/official-payment-document-templates`; PR #3 açık/taslak, merge/release yok.
+- Kod HEAD: `8f23994aa9f9c5046487aef6a415fcbfd4d2a3d6`.
+- CI run [39458831198](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39458831198) **success**: **236/236 Core testi**, **6/6 WPF çıktı testi**. Tam çözüm/WPF derleme, UI kontrolleri, test çözümü, PDF smoke ve Windows EXE publish başarılı.
+- Artefaktlar doğrulandı: `OEHS-PDF-Smoke-Review`, `OEHS-Windows-x64`, `OEHS-Arkadas-Deneme-Paketi`. PDF smoke ZIP'inde 16 PDF bulunuyor (8 güncel/sentetik çıktı ve 8 tarihsel fixture); incelenen 16 PDF'nin tamamı tek sayfa A4. Bu yalnızca uygulama smoke çıktısıdır; gerçek Excel/VBA kaynak PDF kabulü değildir.
+- CI hatası düzeltme zinciri: `InlineData`/xUnit teori verileri derleyicide CS3016 verdi; ilk `MemberData` geçişi de CLS uyumsuzluğunu ve `TheoryData` foreach tür uyumsuzluğunu çözmedi. Testler şimdi tipli koleksiyonlar üzerinde `[Fact]`/foreach kullanıyor. Sonuç: 236 Core testi başarılı.
+- Ek sağlamlaştırma: `ProgressPaymentCalculator.Calculate`, enum dışı `TransportationProgramType` değerlerini artık hesaplamaya devam etmek yerine reddediyor; bu durum için sınır testi eklendi. Resmî formül oranları/hesap zinciri değiştirilmedi.
+- Logda kalan analiz uyarıları: CA1822, CA1861, CA1859 ve CA1307. CI başarısını engellemiyorlar; ayrı bir düşük riskli temizlik paketi olarak ele alınabilir.
+- Kaynak workbook'lar LibreOffice ile yeniden dışa aktarıldığında tüm çalışma kitabı sırasıyla 40 ve 23 sayfa çıktı; bazı rapor tabloları birden çok sayfaya bölünüyor. Bu LibreOffice yazdırma davranışıdır, Microsoft Excel/VBA kabulü sayılmaz ve kaynak workbook'lara yazma yapılmadı.
+- İlerleme tahminleri (geliştirme; resmî kabul değil): Temel Eğitim hesaplama **%86**, Özel Eğitim hesaplama **%88**, ortak motor/rapor zinciri **%86**, PDF/icmal **%87**, arşiv/veri modeli **%86**, WPF/ekran **%83**, test/CI/dağıtım **%98**, genel proje **%86**.
+- Resmî kabul ilerlemesi değişmedi: gerçek Microsoft Excel/VBA compile/run yok; Temel `T4/U4/W4`, rapor `D15/D28`; Özel `AC4:AG4`, rapor `D28` ve makro sonrası aktarım/icmal hücreleri Excel'de kaydedilmedi. 4×2 gerçek kaynak PDF alan/görsel kabulü tamamlanmadı. İcmalde fiyat farkı tekrar sayımı riski açık; formül davranışı varsayımla değiştirilmedi.
+- Sıradaki adım: güncel test kodu/CI sonucunu koru; her iki çekirdek için kaynak XLSM hücre zinciri ve VBA transfer davranışıyla test kapsamını genişlet. Gerçek Excel/VBA ve 8/8 kaynak PDF kabulü yapılmadan iki çekirdeğe %100 kabul etiketi verme.
