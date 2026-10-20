@@ -620,3 +620,11 @@ Yüzdeler ölçüm sistemiyle hesaplanmış kesin istatistik değil, iş paketle
 - WPF 1/3/5+ hat seçiminden arşiv ve dört PDF'ye kapsam aktarımını uçtan uca doğrulamak.
 - 8 PDF'nin tutar, dönem, yüklenici, hat, imza ve sayfa düzeni kabulünü ayrı ayrı tamamlamak.
 
+## Devam kaydı — yeniden başlatma doğrulaması (20.10.2026)
+
+- Uzak dal `feature/official-payment-document-templates` ve PR #3 tekrar kontrol edildi; PR açık/taslak durumunda. Ana dala birleştirme veya yayınlama yapılmadı.
+- En güncel erişilebilir doğrulanmış Windows CI run [39451659524](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39451659524) **başarılı**. Tam çözüm/WPF derlemesi, WPF UI sözleşmesi ve kompakt yerleşim kontrolleri, test projelerinin derlenmesi, test çözümü, PDF smoke üretimi/doğrulaması ve Windows EXE hazırlama adımları başarılı. Smoke PDF ve EXE artefaktlarının yüklenmesi ortam kısıtı nedeniyle atlandı; indirilebilir paket yayımlandığı sonucu çıkarılamaz.
+- Bu CI, gerçek Microsoft Excel/VBA masaüstü yeniden hesaplamasını ve 8 PDF'nin kaynak Excel PDF'leriyle görsel/alan bazlı eşitliğini kanıtlamaz. 4×2 resmî PDF kabul matrisi açık kalır.
+- Kaynakta karar gerektiren icmal fiyat farkı/aktarım riskleri korunuyor; kanıt olmadan hesaplama davranışı değiştirilmedi. Temel Eğitim ve Özel Eğitim çekirdekleri ayrı tutuluyor.
+- Sıradaki iş: güncel PR başı ve CI ile eşleşen commit'i kesinleştirmek; son kaynak Excel hücreleri ve VBA aktarım zincirleriyle her program için bağımsız kabul testlerini güçlendirmek; 8 PDF'nin tutar, dönem, yüklenici, hat, imza ve tek sayfa A4 yerleşimini gerçek Excel referanslarıyla kapatmak.
+
