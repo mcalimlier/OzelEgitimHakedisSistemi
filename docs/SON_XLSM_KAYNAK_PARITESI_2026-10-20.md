@@ -73,7 +73,7 @@ Bu sonuç LibreOffice yeniden hesaplaması ile kaynak önbelleğinin karşılaş
 - CurrentBasicWorkbookDiscrepancyTests: Temel Eğitim son dosyasının satır 4–8 vektörleri.
 - CurrentXlsmSourceParityTests: Özel Eğitim son dosyasının satır 4–6 vektörleri.
 - Testler [Fact] altında doğrudan kaynak satırlarından kurulan tuple vektörlerini döngüyle doğrular; attribute argümanı olarak dizi veya decimal veri kullanılmaz.
-- Windows CI run 39399443926 ve 39399513703 başarılı tamamlandı: tam çözüm/WPF derlemesi, test adımları, PDF smoke ve Windows EXE publish başarılı. Son test sonucu 215/215 Core ve 5/5 WPF testtir. Bu otomatik CI kanıtı masaüstü Excel/VBA veya 4×2 PDF kabulü değildir.
+- Windows CI run 39399443926 ve 39399513703 başarılı tamamlandı: tam çözüm/WPF derlemesi, test adımları, PDF smoke ve Windows EXE publish başarılı. Son XLSM regresyonları ve güncel kaynak-PDF testi bulunan run 39400709937 de başarılı: 215/215 Core ve 6/6 WPF testi geçti; PDF smoke ve Windows EXE publish başarılı. Sonraki commit yalnızca Assert.Contains çağrılarına açık StringComparison.Ordinal ekledi; bu küçük uyarı temizliği için CI yeniden çalıştırılıyor. Bu otomatik CI kanıtı masaüstü Excel/VBA veya 4×2 PDF kabulü değildir.
 - Dört PDF × iki program için aynı girdiyle alan/tutar/güzergâh/dönem/imza/sayfa karşılaştırması açık kalır.
 - VBA'nın Excel masaüstünde çalıştırılması ve gerçek yazıcı kabulü ayrıca yapılmalıdır.
 
