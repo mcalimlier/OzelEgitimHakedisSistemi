@@ -1,83 +1,72 @@
-# OEHS — Denenebilir hakediş örnekleri
+# Hakediş Deneme Vektörleri
 
-Bu örnekler uygulamanın hesaplama davranışını hızlıca denemek için hazırlanmış **sentetik test verileridir**. Resmî hakediş veya mevzuat onayı yerine geçmez. Gerçek ödeme dosyasına aktarmayın. Hesaplamalar program türüne göre ayrıdır; aynı verileri iki programa girince aynı sonuç beklenmemelidir.
+Bu dosya, OEHS geliştirme çalışması sırasında sentetik hesaplama girdilerini ve C# hesaplama çekirdeği için beklenen sonuçları kaydetmek amacıyla oluşturulmuştur. Resmî ödeme örneği değildir; kaynak Excel/VBA ile bire bir kabul testi olarak değerlendirilmemelidir.
 
-## Örnek 1 — Temel / Ortaöğretim
+## Temel / Ortaöğretim
 
-Taşıma programı: **Temel / Ortaöğretim**
+- Çalışma günü: 1
+- Günlük taşıma fiyatı: 100,00 TL
+- İskonto: 0,00 TL
+- Fiyat farkı: 20,00 TL
+- Sözleşme bedeli: 1.000,00 TL
+- KDV istisnası: Hayır
+- Vergi borcu, SGK borcu, asgari ücret desteği ve denetim cezası: 0,00 TL
+- Program türü: Temel / Ortaöğretim
 
-| Girdi | Değer |
+Beklenen C# çekirdek sonuçları:
+
+| Kalem | Tutar |
 |---|---:|
-| Çalışma günü | 1 |
-| Günlük taşıma fiyatı | 100,00 TL |
-| İskonto | 0,00 TL |
-| Fiyat farkı (KDV hariç) | 20,00 TL |
-| Sözleşme bedeli | 1.000,00 TL |
-| KDV istisnası | Hayır |
-| Vergi borcu | 0,00 TL |
-| SGK borcu | 0,00 TL |
-| Asgari ücret desteği | 0,00 TL |
-| Rehber personel gün/fiyat/fiyat farkı | 20 gün / 200,00 TL / 50,00 TL (Temel programda hesaba katılmaması kontrolü için) |
-
-Beklenen temel kontroller (varsayılan hesaplama sabitleriyle):
-
-| Sonuç | Beklenen |
-|---|---:|
-| Taşıma hizmeti | 100,00 TL |
-| Taşıma KDV'si | 12,00 TL |
-| Taşıma tevkifatı | 6,00 TL |
-| Ek kesin teminat | 1,20 TL |
-| Damga vergisi | 1,1376 TL |
+| Hizmet tutarı | 100,00 TL |
+| Fiyat farkı dâhil matrah | 120,00 TL |
+| KDV (%10) | 12,00 TL |
+| Tevkifat (KDV'nin %50'si) | 6,00 TL |
+| Ek kesin teminat (20 × %6) | 1,20 TL |
+| Damga vergisi (120 × 9,48/1000) | 1,1376 TL |
 | Toplam kesinti | 8,3376 TL |
 | Net ödenecek | 123,6624 TL |
-| Rehber hizmeti / rehber KDV'si / rehber tevkifatı | 0,00 TL |
 
-Kaynak davranış kontrolü: Temel/Ortaöğretim için (T=I\times6\%), (U=K\times9{,}48/1000); rehber alanları bu programın hesabına eklenmez. Bu örnekte K=100+20=120 TL olduğundan taşıma KDV'si 12 TL, tevkifat 6 TL'dir. Ekranda para yuvarlaması görülebilir; test karşılaştırması yuvarlanmamış ara değerler üzerinden yapılır.
+Temel / Ortaöğretim hesabında rehber personel alanları girilse de bu programın hesaplamasına dâhil edilmemelidir. Bu vektör, sentetik bir C# kontrolüdür; Excel/VBA kabulü değildir.
 
-## Örnek 2 — Özel Eğitim
+## Özel Eğitim
 
-Taşıma programı: **Özel Eğitim**
+- Çalışma günü: 1
+- Günlük taşıma fiyatı: 100,00 TL
+- Taşıma fiyat farkı: 100,00 TL
+- Rehber fiyat farkı: 50,00 TL
+- İskontolar ve diğer kesintiler: 0,00 TL
+- KDV istisnası: Hayır
+- Program türü: Özel Eğitim
 
-| Girdi | Değer |
+Kaynak formül davranışı: `AC = (I × 6%) + (R × 6%)`.
+
+| Kalem | Tutar |
 |---|---:|
-| Çalışma günü | 1 |
-| Günlük taşıma fiyatı | 100,00 TL |
-| İskonto | 0,00 TL |
-| Taşıma fiyat farkı (KDV hariç) | 100,00 TL |
-| Sözleşme bedeli | 1.000,00 TL |
-| KDV istisnası | Hayır |
-| Vergi borcu / SGK borcu / asgari ücret desteği | 0,00 TL |
-| Rehber çalışma günü | 0 |
-| Rehber günlük fiyat / iskonto | 0,00 TL / 0,00 TL |
-| Rehber fiyat farkı (KDV hariç) | 50,00 TL |
-
-Beklenen temel kontroller (varsayılan hesaplama sabitleriyle):
-
-| Sonuç | Beklenen |
-|---|---:|
+| Taşıma matrahı | 200,00 TL |
+| Rehber matrahı | 50,00 TL |
+| Taşıma KDV'si (%10) | 20,00 TL |
+| Rehber KDV'si (%20) | 10,00 TL |
+| Taşıma tevkifatı | 10,00 TL |
+| Rehber tevkifatı | 9,00 TL |
 | Ek kesin teminat | 9,00 TL |
+| Damga vergisi | 2,37 TL |
+| Toplam kesinti | 30,37 TL |
+| Net ödenecek | 249,63 TL |
 
-Kaynak davranış kontrolü: Özel Eğitim için (AC=(I\times6\%)+(R\times6\%)); bu örnekte (I=100), (R=50), dolayısıyla ek kesin teminat (9,00) TL olmalıdır. Rehber fiyat farkı sıfırlanırsa bu değer (6,00) TL olur. Bu örnek, program ayrımını ve rehber fiyat farkının ek kesin teminata etkisini sınamak içindir; bütün ödeme belgesi tutarlarının kabulü değildir.
+Rehber fiyat farkı sıfırlanırsa ek kesin teminat `100 × 6% + 0 × 6% = 6,00 TL` olur. Bu örnek de sentetik C# kontrolüdür; Excel/VBA ile doğrulanmış resmî örnek değildir.
 
-## Örnek 3 — Negatif fiyat farkı sınaması
+## Negatif fiyat farkı kontrolü — Temel / Ortaöğretim
 
-Bu, sınır davranışını denetleyen sentetik bir testtir; gerçek ödeme kararında ayrıca kaynak Excel, sözleşme ve mevzuat incelenmelidir.
+- Çalışma günü: 10
+- Günlük taşıma fiyatı: 1.000,00 TL
+- Fiyat farkı: -500,00 TL
+- İskonto: 0,00 TL
+- Sözleşme bedeli: 10.000,00 TL
+- KDV istisnası: Hayır
+- Diğer kesintiler: 0,00 TL
 
-| Girdi | Değer |
-|---|---:|
-| Program | Temel / Ortaöğretim |
-| Çalışma günü / günlük fiyat | 10 gün / 1.000,00 TL |
-| İskonto / fiyat farkı | 0,00 TL / -500,00 TL |
-| Sözleşme bedeli | 10.000,00 TL |
-| Vergi borcu / SGK borcu / destek | 0,00 TL / 0,00 TL / 0,00 TL |
+Mevcut kaynak-formül davranışını karşılaştırmak için beklenen sentetik C# sonuçları: toplam matrah 9.500,00 TL; KDV 950,00 TL; tevkifat 475,00 TL; ek kesin teminat -30,00 TL; damga vergisi 90,06 TL; brüt 10.450,00 TL; toplam kesinti 535,06 TL; net 9.914,94 TL. Negatif teminatın resmî ödeme bakımından uygulanabilirliği ayrıca mevzuat ve sözleşme açısından karara bağlanmalıdır.
 
-Mevcut kaynak formül davranışına göre test beklentileri: toplam tutar 9.500,00 TL; ek kesin teminat -30,00 TL; damga vergisi 90,06 TL; tevkifat 475,00 TL; brüt tutar 10.450,00 TL; toplam kesinti 535,06 TL; net ödenecek 9.914,94 TL. Negatif ek kesin teminatı sıfırlayan bir varsayım eklenmemiştir.
+## Doğrulama sınırı
 
-## Nasıl denenecek?
-
-1. Uygulamayı test verisiyle açın; gerçek kurum/kişi bilgisi girmeyin.
-2. Taşıma programını açıkça seçin.
-3. Önce örnek 1'i kaydetmeden hesaplayın ve beklenen değerlerle karşılaştırın.
-4. Yeni bir test kaydında programı **Özel Eğitim** seçerek örnek 2'yi deneyin.
-5. Çıktı üretirseniz dört PDF'nin dönem, yüklenici/hat, tutar ve sayfa düzenini ayrı ayrı kontrol edin. Bu örnekler için PDF çıktısının kaynak XLSM ile birebir aynı olduğu iddia edilmez.
-6. Herhangi bir farkta program türünü, tüm girdileri, hesaplama sabitlerini ve sonuç ekranını kaydedin; resmî tutarları değiştirmeden önce farkın kaynağı belirlenmelidir.
+Bu vektörler kod/test geliştirmesine yardımcı olmak için hazırlanmıştır. Microsoft Excel'de makroları çalıştırarak alınmış sonuçlar veya dört resmî PDF'nin kaynak Excel ile bire bir eşleştiğine dair kanıt değildir. Resmî kabul için aynı girdilerin Excel/VBA sonuçları ve dört PDF çıktısı ile karşılaştırılması gerekir.
