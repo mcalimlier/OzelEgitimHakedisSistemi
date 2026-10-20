@@ -1290,6 +1290,12 @@ public partial class MainWindow : Window
         }
 
         var contractRoutes = _routes.Where(x => IsRouteForContract(x, contract)).ToArray();
+        // Do not silently treat routes without a tax/identity number as eligible for
+        // contractor selection: matching by a blank identifier could mix businesses.
+        // Keep them out of the payment selection until their identity data is fixed,
+        // and explicitly disclose the excluded count in the UI below.
+        var routesMissingContractorIdentity = contractRoutes.Count(x =>
+            string.IsNullOrWhiteSpace(x.ContractorTaxOrIdentityNumber));
         var previousContractor = preserveSelection
             ? ProgressContractorComboBox.SelectedItem as ContractorDraft
             : null;
@@ -1353,9 +1359,12 @@ public partial class MainWindow : Window
             ProgressContractorTextBlock.Text = selectedFirm is null
                 ? (firms.Length == 0 ? "Bu sözleşmede firmaya bağlı hat bulunamadı." : "Devam etmek için firmayı seçin.")
                 : $"{selectedFirm.Name} • {visibleRoutes.Length} hat";
-            ProgressRouteRelationTextBlock.Text = selectedFirm is null
-                ? "Önce yüklenici firmayı seçiniz."
+            var routeSelectionMessage = selectedFirm is null
+                ? (firms.Length == 0 ? "Vergi/T.C. kimlik numarası doğrulanmış firma bulunamadı." : "Önce yüklenici firmayı seçiniz.")
                 : visibleRoutes.Length == 0 ? "Bu firmaya bağlı hat bulunamadı." : "Yalnızca seçilen firmaya ait hatlar listeleniyor.";
+            ProgressRouteRelationTextBlock.Text = routesMissingContractorIdentity > 0
+                ? $"{routeSelectionMessage} UYARI: {routesMissingContractorIdentity} hat firma vergi/T.C. kimlik numarası eksik olduğu için seçime alınmadı; ödeme öncesi hat kaydını düzeltin."
+                : routeSelectionMessage;
         }
         finally
         {
