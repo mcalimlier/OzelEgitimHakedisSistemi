@@ -72,7 +72,7 @@ Bu sonuç LibreOffice yeniden hesaplaması ile kaynak önbelleğinin karşılaş
 
 - CurrentBasicWorkbookDiscrepancyTests: Temel Eğitim son dosyasının satır 4–8 vektörleri.
 - CurrentXlsmSourceParityTests: Özel Eğitim son dosyasının satır 4–6 vektörleri.
-- Test verileri xUnit MemberData üzerinden sağlanır; decimal değerler InlineData içine yerleştirilmez.
+- Testler [Fact] altında doğrudan kaynak satırlarından kurulan tuple vektörlerini döngüyle doğrular; attribute argümanı olarak dizi veya decimal veri kullanılmaz.
 - CI test sonucu bu belge oluşturulurken henüz kesinleşmemiştir.
 - Dört PDF × iki program için aynı girdiyle alan/tutar/güzergâh/dönem/imza/sayfa karşılaştırması açık kalır.
 - VBA'nın Excel masaüstünde çalıştırılması ve gerçek yazıcı kabulü ayrıca yapılmalıdır.
@@ -82,3 +82,7 @@ Bu sonuç LibreOffice yeniden hesaplaması ile kaynak önbelleğinin karşılaş
 1. Yeni regresyon testlerinin Windows CI sonucunu kontrol et; başarısızsa yalnızca son XLSM hücreleri ve gerçek formül eşlemesiyle düzelt.
 2. Her iki kaynak workbook'un dört çıktı sayfasını aynı kaynak satırı/dönemle PDF'ye aktar ve OEHS'nin dört PDF'siyle ayrı ayrı karşılaştır.
 3. Kaynak Excel icmal formülü veya makro aktarımı ile OEHS arasında fark bulunursa hücre formülü, VBA aktarımı, örnek sonuç ve test kanıtını birlikte kaydet; sessiz düzeltme yapma.
+
+
+## Son test uygulama notu — 20.10.2026
+İlk MemberData düzenlemesi de Windows CI'da CS3016 verdi; bu nedenle testler daha basit ve derleyici açısından güvenli bir düzene alındı: tek [Fact], tipli tuple kaynak vektörleri ve foreach ile hücre sonuçlarının doğrulanması. Güncel commit: 15e3e88755ef768fdb6352c8bacb56f6ce99cafe. Bu commit için yeni CI sonucu henüz görünmüyor.
