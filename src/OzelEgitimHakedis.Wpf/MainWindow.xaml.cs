@@ -28,6 +28,9 @@ public partial class MainWindow : Window
     private readonly ObservableCollection<ContractorDraft> _contractors = new();
     private readonly ObservableCollection<ProgressPaymentHistoryData> _progressHistory = new();
     private readonly ObservableCollection<MultiRoutePaymentDraftRow> _multiRoutePaymentRows = new();
+    // Holds unsaved route drafts even while a route is temporarily deselected.
+    // The visible collection remains limited to the current selection.
+    private readonly Dictionary<string, MultiRoutePaymentDraftRow> _multiRouteDraftCache = new(StringComparer.Ordinal);
     private string? _lastProgressDefaultsRouteKey;
     private readonly ObservableCollection<HistoryRow> _historyRows = new();
     private readonly ObservableCollection<SummaryRow> _summaryRows = new();
@@ -6537,11 +6540,7 @@ public partial class MainWindow : Window
             if (!_editingHistoryId.HasValue && !IsArchiveEditing &&
                 !string.IsNullOrWhiteSpace(_lastProgressDefaultsRouteKey))
             {
-                var previousDraft = _multiRoutePaymentRows.FirstOrDefault(row =>
-                    string.Equals(
-                        row.RouteKey,
-                        _lastProgressDefaultsRouteKey,
-                        StringComparison.Ordinal));
+                _multiRouteDraftCache.TryGetValue(_lastProgressDefaultsRouteKey, out var previousDraft);
                 if (previousDraft is not null)
                 {
                     if (TryParseWorkDays(WorkDaysTextBox.Text, out var workDays))
@@ -6583,9 +6582,11 @@ public partial class MainWindow : Window
             return;
         }
 
-        var existingRows = _multiRoutePaymentRows.ToDictionary(
-            row => row.RouteKey,
-            StringComparer.Ordinal);
+        // Cache all drafts for this unsaved payment form, not just currently
+        // selected routes. The grid/output path below still uses selected routes only.
+        foreach (var visibleRow in _multiRoutePaymentRows)
+            _multiRouteDraftCache[visibleRow.RouteKey] = visibleRow;
+        var existingRows = _multiRouteDraftCache;
         var seedRouteKey = _lastProgressDefaultsRouteKey;
         var seedWorkDays = TryParseWorkDays(WorkDaysTextBox.Text, out var parsedWorkDays)
             ? parsedWorkDays
@@ -6650,6 +6651,7 @@ public partial class MainWindow : Window
                 row.InspectionPenalty = ReadDecimal(InspectionPenaltyTextBox);
             }
 
+            _multiRouteDraftCache[routeKey] = row;
             nextRows.Add(row);
         }
 
@@ -7775,6 +7777,7 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         _lastSelectedPaymentMonthKey = null;
         ProgressPeriodMonthComboBox.SelectedItem = null;
         _multiRoutePaymentRows.Clear();
+        _multiRouteDraftCache.Clear();
         MultiRouteEntryBorder.Visibility = Visibility.Collapsed;
         SetGlobalMonetaryFieldsVisible(true);
         _lastProgressDefaultsRouteKey = null;
