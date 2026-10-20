@@ -805,3 +805,11 @@ Yüzdeler ölçüm sistemiyle hesaplanmış kesin istatistik değil, iş paketle
 - Güncel PR #3 HEAD `079dac7b456402ddfb6785409a87bfe80c642c6f`; PR açık/taslak, merge edilmedi. HEAD için CI run 39463875901 kuyrukta. Önceki run'lar da bazıları devam ediyor; yalnız HEAD'e uygun tamamlanmış CI sonucu ayrıca doğrulanmalı.
 - İlerleme tahmini değişmedi: Temel %86, Özel %89, genel %86. Gerçek Excel/VBA derleme/çalıştırma ve 8/8 gerçek PDF kabulü açık olduğu için %100 iddiası yok.
 - Sonraki adımlar: HEAD CI sonucunu doğrula; aday modülleri kopya XLSM'lere Excel VBA IDE'de compile et; ay silme/aktarımı test et; hesaplama hücrelerini yeniden hesaplatıp kaydet; sekiz PDF'yi Excel referans çıktılarıyla karşılaştır. PR #3 taslak/açık kalmalı.
+
+
+## Son checkpoint — statik test 29/29 (20.10.2026)
+
+- Özel Eğitim Module1 adayına `Option Explicit` eklendi. Dışa aktarma formundaki ButtonName/AllowMultiSelect satırlarının birleşmesi ilk regresyon testinde yakalandı, düzeltildi ve yeni kontrol eklendi.
+- Son yama paketi: `OEHS_VBA_Guvenli_Ay_Aktarim_Yamasi_2026-10-20.zip`; 29/29 statik regresyon kontrolü PASS. Bu, Excel VBA compile/runtime kabulü değildir.
+- Son PR #3 HEAD `412d89ee8c6179170a4dbfdc1298eed0e4e28e85`, PR açık/taslak. HEAD CI run [39464087579](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39464087579) kontrol anında kuyruktaydı; önceki HEAD CI run'larından bazıları tamamlanmış olsa da son HEAD için sonuç bekleniyor.
+- İlerleme değişmedi: Temel Eğitim %86, Özel Eğitim %89, genel %86. Gerçek Excel VBA IDE Compile/Run ve 8/8 PDF kabulü açık.
