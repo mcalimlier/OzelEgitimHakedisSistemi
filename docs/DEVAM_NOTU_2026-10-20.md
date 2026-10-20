@@ -113,3 +113,13 @@ Bu oranlar mühendislik tahminidir, kabul sertifikası değildir. Genel proje %9
 - Güncel test commit'i için workflow run henüz bulunamadı; yeni testin CI sonucu beklemede/doğrulanmamış kabul edilmeli. Önceki başarılı CI, bu yeni testin çalıştığını kanıtlamaz.
 - Hesap sonuçları uygulama C# çekirdeğinin sentetik girdilerle doğrulamasıdır; Microsoft Excel/VBA aynı girdilerle çalıştırılmış değildir ve dört PDF'nin Excel çıktılarıyla tam paritesi hâlâ açık kabul maddesidir.
 - Sonraki adım: güncel `bfc8fa6` başı için CI sonucunu izle; başarısızlık varsa logları incele ve düzelt. Ardından dört PDF × iki program kaynak Excel kabul matrisine devam et. PR birleştirilmesin/yayınlanmasın.
+
+
+## Ek çalışma kaydı — 2026-10-20, son XLSM önceliği ve eski kural düzeltmeleri
+- Kullanıcının talimatı doğrultusunda kaynak hiyerarşisi netleştirildi: en son yüklenen Temel Eğitim ve Özel Eğitim XLSM/VBA, eski GitHub dokümanı/testi/sentetik vektörle çelişirse üstündür.
+- `docs/XLSM_KAYNAK_INCELEMESI_VE_HAKEDIS_AKISI.md` içinde eski “negatif fiyat farklarında taşıma ve rehber fiyat farklarını netle, yalnızca pozitifse %6 teminat uygula” metni kaldırılarak son Excel formüllerine göre Temel `T=I×%6`, Özel `AC=I×%6+R×%6` kuralı yazıldı; hukuki karar ayrı risk olarak korundu.
+- `docs/ON_DENETIM_RISK_DUZELTMELERI_2026-10-15.md` içindeki eski R-01 açıklaması, fiyat farkını aylık K+T'den çıkarıp ayrı eklemenin mükerrerliği önlediğini iddia ediyordu. Bu metin düzeltildi: kaynak K/T zaten fiyat farkını içeriyor; rapor D7/D8 zinciri ayrıca fiyat farkı eklediğinden kaynak davranışı/olası mükerrerlik risk olarak kaydedildi.
+- Sentetik `ORNEK_HAKEDIS_DENEME_VEKTORLERI.md` dosyasına son Excel ile çelişirse yetkili kabul kuralı sayılamayacağı açıkça eklendi.
+- Tarihsel yol haritası sonuçları en son XLSM kabulinden ayrıldı.
+- CI run 39398001399, kaynak ve test derleme aşamalarını geçti; Windows EXE publish adımı devam ederken kontrol edildi. Nihai CI sonucu henüz doğrulanmış değil.
+- Açık işler: gerçek son XLSM/VBA aynı-girdi sonuçları; 4 PDF × 2 program alan bazlı kabul; arayüz DPI/etkileşimli masaüstü kabulü. PR #3 taslak/açık/birleştirilmemiş kalacak.
