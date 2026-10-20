@@ -382,3 +382,18 @@ Yüzdeler mühendislik tahminidir; resmi kabul oranı değildir.
 2. Test edilebilir en küçük saf seçim→çıktı filtrelemesi bileşeni gerekiyorsa ekle ve otomatik test et; WPF koduna bağla.
 3. Tam XLSM worksheet envanteri ve kaynak sayfa/alan → hücre/formül → VBA → model → PDF eşlemesini yalnız kaynak dosyalar mevcutsa tamamla.
 4. Microsoft Excel/VBA masaüstü kabulü ve gerçek Excel kaynaklı 8 PDF karşılaştırmasını tamamlanmış gibi göstermeden açık tut.
+
+
+## Devam notu — seçili hatların çıktı sınırı (20.10.2026)
+
+- Yeni Core servisi `SelectedRouteDrafts.SelectExact` eklendi. Seçili hat kimliklerine ait taslakları tam ve kararlı anahtar üzerinden çözümler; seçili olmayan ama cache'te duran taslakları çıktı listesinin dışında bırakır. Eksik taslak veya yinelenen seçili kimlikte işlem kapalı hata verir.
+- WPF çoklu-hakediş kaydetme yolunda DataGrid düzenlemeleri commit edildikten sonra görünür taslaklar cache'e yazılıyor ve hesaplama/çıktı servisine yalnızca seçili hatların taslakları geçiriliyor. Taslak çözümlemesi başarısızsa hakediş üretimi durdurulup doğrulama mesajı gösteriliyor.
+- Yeni regresyon testleri: seçili A/C rotalarında cache'te bulunan B rotasının hariç tutulması; seçili rota taslağı eksikse başarısız-kapalı davranış; yinelenen rota kimliğinin reddi.
+- Kod commit'leri: Core `d4f1455779d0864b629dbc396cd7d0ff1f6e58c8`, WPF `4db5571ea9720b52c0e9e2f6549d9db3f4d29126`, test `f13d6c7606884808045733d2deaca377b691c40c`.
+- CI durumu bu not yazılırken çalışıyor: WPF commit'i için run [39435034032](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39435034032), test commit'i için run [39435071706](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39435071706). Bu yeni değişiklikler için başarı henüz iddia edilmiyor.
+- Kapsam sınırı: bu saf servis testleri seçili rota kimliklerini sınar; Windows üzerinde gerçek WPF etkileşimi ve sekiz PDF'nin Excel/VBA çıktısıyla alan alan karşılaştırılması ayrı kabul kapısıdır.
+
+### İlerleme güncellemesi
+- Çoklu hat / taslak izolasyonu: %82 (çıktı sınırı kodlandı; yeni CI ve WPF uçtan uca kabul bekleniyor).
+- Test / CI / dağıtım: %97 (önceki koşular başarılı; yeni kod/test CI'sı bekleniyor).
+- Genel mühendislik tahmini: %83 (Excel/VBA paritesi ve 8 PDF kabulü değişmedi, açık).
