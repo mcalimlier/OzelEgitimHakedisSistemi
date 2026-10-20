@@ -539,3 +539,14 @@ Yüzdeler mühendislik tahminidir; resmi kabul oranı değildir.
 - **Hakediş Oluştur kabul durumu %100 değildir.** Açık kritik kapsam: İKN altındaki firma seçiminin bağımsız ve anlaşılır olması; seçilen firma/hatların sözleşme ve program türüyle doğru filtrelenmesi; dönem değişiminde görünür ve gizli tüm taslakların izolasyonu; seçilmeyen hatların hesap, arşiv ve dört PDF'ye hiç girmediğinin uçtan uca testi; Temel/Özel değişken ve Excel sayfa adlarının tam eşleme envanteri; gerçek Excel/VBA ile 8 PDF alan bazlı karşılaştırması.
 - Sonraki adım: WPF hakediş ekranında İKN ve firma seçim modelini inceleyip, mevcut veri modelinin aynı İKN altında birden çok firmayı destekleyip desteklemediğini doğrula. Desteklemiyorsa sözleşme/hat kimliğini bozmadan ilişki modelini tasarla ve testle; Excel hesap çekirdeklerini birleştirme.
 - PR #3 taslak kalır; ana dala merge/release yok.
+
+## 2026-10-20 — Firma seçimi ve CI doğrulaması devamı
+
+- Hakediş Oluştur ekranına `ProgressContractorComboBox` eklendi. Seçilen İKN/sözleşmenin firma seçenekleri, o sözleşmeye bağlı hatlardan ve program türünden türetiliyor.
+- Birden fazla firma varsa varsayılan firma seçilmiyor; kullanıcı açık seçim yapmadan hat listesi boş kalıyor. Tek firma varsa otomatik seçiliyor.
+- Firma değiştiğinde hat listesi seçili firmanın kimlik numarasına göre filtreleniyor; önceki seçili hatlar yalnızca aynı firma/hat anahtarıyla eşleşirse korunuyor.
+- Son kod commit'i: `96751fb40ce1f74a5bdb1f917aa1fb57eeaaf25c`.
+- Windows CI run `39450875012` tamamlandı: **success**. WPF Release derlemesi ve mevcut workflow adımları geçti. Derleyici/analiz uyarıları mevcut; bunlar bu değişiklikte derlemeyi durdurmadı.
+- Bu CI sonucu, masaüstü UI E2E testinin, gerçek Excel/VBA hesaplama eşitliğinin veya sekiz PDF'nin görsel kabulünün tamamlandığı anlamına gelmez.
+- Açık kabul işleri: firma kimliği eksik hat verisinin davranışı; farklı firma/İKN/dönem değişiminde gerçek UI senaryoları; seçilen hatların yalnızca hesaplama/arşiv/PDF'ye gittiğinin uçtan uca doğrulanması; iki güncel Excel'in gerçek Excel/VBA sonuçlarıyla karşılaştırma; dört PDF türünün her programda tutar/dönem/yüklenici/hat/imza/sayfa düzeni kontrolü.
+- PR #3 açık/taslak. Ana dala birleştirme veya yayınlama yapılmadı.
