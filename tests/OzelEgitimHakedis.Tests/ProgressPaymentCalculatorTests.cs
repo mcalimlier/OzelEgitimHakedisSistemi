@@ -79,6 +79,20 @@ public sealed class ProgressPaymentCalculatorTests
     }
 
     [Fact]
+    public void SpecialEducationProgram_ShouldReduceAdditionalGuaranteeWhenGuidePriceDifferenceIsZero()
+    {
+        var input = new ProgressPaymentInput(
+            WorkDays: 1, DailyPrice: 100m, DiscountAmount: 0m, PriceDifference: 100m,
+            ContractAmount: 1000m, IsVatExempt: false, TaxDebt: 0m,
+            SocialSecurityDebt: 0m, MinimumWageSupport: 0m,
+            GuidePriceDifference: 0m, ProgramType: TransportationProgramType.SpecialEducation);
+
+        var result = ProgressPaymentCalculator.Calculate(input);
+
+        Assert.Equal(6m, result.AdditionalGuarantee);
+    }
+
+    [Fact]
     public void SpecialEducationProgram_ShouldKeepGuideAndMinimumWageSupportInCalculation()
     {
         var input = new ProgressPaymentInput(
