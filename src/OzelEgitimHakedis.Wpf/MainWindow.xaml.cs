@@ -2447,7 +2447,9 @@ public partial class MainWindow : Window
             ContractDate = ContractDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(ContractDatePicker.SelectedDate.Value) : archive.Contract.ContractDate,
             ContractWorkDays = contractWorkDays,
             TransportDailyPrice = transportDailyPrice,
-            ProgramType = GetSelectedTransportationProgramType()
+            // An archive correction edits the archived contract; it must not change
+            // the education program based on a possibly blank/global UI selector.
+            ProgramType = archive.Contract.ProgramType
         };
 
         var hasGuide = HasGuideStaff(updatedContract.ProgramType);
