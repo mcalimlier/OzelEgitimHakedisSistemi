@@ -332,45 +332,45 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
         IReadOnlyList<OehsOfficialDocumentOutput> outputs)
     {
         var report = PageText(outputs, OehsOfficialDocumentKind.HakedisRaporu);
-        Assert.Contains("146.640,60 TL", report);
-        Assert.Contains("1.403,57 TL", report);
-        Assert.Contains("148.044,18 TL", report);
-        Assert.Contains("54.725,903 TL", report);
-        Assert.Contains("93.318,27 TL", report);
-        Assert.Contains("968,87 TL", report);
-        Assert.Contains("92.349,40 TL", report);
+        Assert.Contains("146.640,60 TL", report, StringComparison.Ordinal);
+        Assert.Contains("1.403,57 TL", report, StringComparison.Ordinal);
+        Assert.Contains("148.044,18 TL", report, StringComparison.Ordinal);
+        Assert.Contains("54.725,903 TL", report, StringComparison.Ordinal);
+        Assert.Contains("93.318,27 TL", report, StringComparison.Ordinal);
+        Assert.Contains("968,87 TL", report, StringComparison.Ordinal);
+        Assert.Contains("92.349,40 TL", report, StringComparison.Ordinal);
         Assert.Contains("1 Numaralı Kaynak Test Güzergâhı Hattı Taşıma İşi", report, StringComparison.Ordinal);
         Assert.Contains("31.10.2026 TARİHİNE KADAR YAPILAN İŞİN", report, StringComparison.Ordinal);
         Assert.DoesNotContain("30.04.2026 TARİHİNE KADAR YAPILAN İŞİN", report, StringComparison.Ordinal);
 
         var service = PageText(outputs, OehsOfficialDocumentKind.HizmetIsleriHakedisRaporu);
-        Assert.Contains("19.10.2026", service);
-        Assert.Contains("Sözleşme Tarihi ve No.su", service);
-        Assert.Contains("181 İş Günü", service);
-        Assert.Contains("M.Y.H.B.Y. Örnek No: 4", service);
+        Assert.Contains("19.10.2026", service, StringComparison.Ordinal);
+        Assert.Contains("Sözleşme Tarihi ve No.su", service, StringComparison.Ordinal);
+        Assert.Contains("181 İş Günü", service, StringComparison.Ordinal);
+        Assert.Contains("M.Y.H.B.Y. Örnek No: 4", service, StringComparison.Ordinal);
         Assert.Contains("No.su" + Environment.NewLine + ":" + Environment.NewLine + "1", service, StringComparison.Ordinal);
         Assert.Contains("Kaynak Test Güzergâhı Hattı Öğrenci Taşıma İşi", service, StringComparison.Ordinal);
         Assert.Contains("Örnek Öğrenci Taşıma İşi", service, StringComparison.Ordinal);
         Assert.Contains("İşyeri Teslim Tarihi" + Environment.NewLine + ":" + Environment.NewLine + "14.09.2026", service, StringComparison.Ordinal);
 
         var acceptance = PageText(outputs, OehsOfficialDocumentKind.KabulTutanagi);
-        Assert.Contains("01.10.2026 / 31.10.2026", acceptance);
-        Assert.Contains("181 İş Günü", acceptance);
-        Assert.Contains("14.09.2026", acceptance);
-        Assert.Contains("25.06.2027", acceptance);
+        Assert.Contains("01.10.2026 / 31.10.2026", acceptance, StringComparison.Ordinal);
+        Assert.Contains("181 İş Günü", acceptance, StringComparison.Ordinal);
+        Assert.Contains("14.09.2026", acceptance, StringComparison.Ordinal);
+        Assert.Contains("25.06.2027", acceptance, StringComparison.Ordinal);
         Assert.Contains("Kaynak Test Güzergâhı Hattı Öğrenci Taşıma İşi", acceptance, StringComparison.Ordinal);
 
         var icmal = PageText(outputs, OehsOfficialDocumentKind.HakedisIcmali);
-        Assert.Contains("Hizmet Alımı İşi Eylül 2026", icmal);
-        Assert.Contains("₺54.725,90", icmal);
-        Assert.Contains("₺1.403,57", icmal);
-        Assert.Contains("₺56.129,48", icmal);
-        Assert.Contains("₺93.318,27", icmal);
-        Assert.Contains("₺94.721,85", icmal);
-        Assert.Contains("603,02", icmal);
-        Assert.Contains("968,87", icmal);
-        Assert.Contains("1.571,89", icmal);
-        Assert.Contains("149.279,43", icmal);
+        Assert.Contains("Hizmet Alımı İşi Eylül 2026", icmal, StringComparison.Ordinal);
+        Assert.Contains("₺54.725,90", icmal, StringComparison.Ordinal);
+        Assert.Contains("₺1.403,57", icmal, StringComparison.Ordinal);
+        Assert.Contains("₺56.129,48", icmal, StringComparison.Ordinal);
+        Assert.Contains("₺93.318,27", icmal, StringComparison.Ordinal);
+        Assert.Contains("₺94.721,85", icmal, StringComparison.Ordinal);
+        Assert.Contains("603,02", icmal, StringComparison.Ordinal);
+        Assert.Contains("968,87", icmal, StringComparison.Ordinal);
+        Assert.Contains("1.571,89", icmal, StringComparison.Ordinal);
+        Assert.Contains("149.279,43", icmal, StringComparison.Ordinal);
         Assert.Contains("Kaynak Test Güzergâhı Hattı Öğrenci Taşıma İşi", icmal, StringComparison.Ordinal);
     }
 
@@ -378,42 +378,42 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
         IReadOnlyList<OehsOfficialDocumentOutput> outputs)
     {
         var report = PageText(outputs, OehsOfficialDocumentKind.HakedisRaporu);
-        Assert.Contains("192.009,97 TL", report);
-        Assert.Contains("7.365,35 TL", report);
-        Assert.Contains("199.375,32 TL", report);
-        Assert.Contains("219.312,85 TL", report);
-        Assert.Contains("1.890,08 TL", report);
-        Assert.Contains("12.300,77 TL", report);
-        Assert.Contains("207.012,08 TL", report);
+        Assert.Contains("192.009,97 TL", report, StringComparison.Ordinal);
+        Assert.Contains("7.365,35 TL", report, StringComparison.Ordinal);
+        Assert.Contains("199.375,32 TL", report, StringComparison.Ordinal);
+        Assert.Contains("219.312,85 TL", report, StringComparison.Ordinal);
+        Assert.Contains("1.890,08 TL", report, StringComparison.Ordinal);
+        Assert.Contains("12.300,77 TL", report, StringComparison.Ordinal);
+        Assert.Contains("207.012,08 TL", report, StringComparison.Ordinal);
         Assert.Contains("1 Numaralı Kaynak Test Güzergâhı Hattı Taşıma İşi", report, StringComparison.Ordinal);
         Assert.Contains("30.09.2026 TARİHİNE KADAR YAPILAN İŞİN", report, StringComparison.Ordinal);
 
         var service = PageText(outputs, OehsOfficialDocumentKind.HizmetIsleriHakedisRaporu);
-        Assert.Contains("19.10.2026", service);
-        Assert.Contains("Sözleşme Tarihi ve No.su", service);
-        Assert.Contains("14.09.2026-25.06.2027 Tarihleri Arasıdır.", service);
-        Assert.Contains("M.Y.H.B.Y. Örnek No: 4", service);
+        Assert.Contains("19.10.2026", service, StringComparison.Ordinal);
+        Assert.Contains("Sözleşme Tarihi ve No.su", service, StringComparison.Ordinal);
+        Assert.Contains("14.09.2026-25.06.2027 Tarihleri Arasıdır.", service, StringComparison.Ordinal);
+        Assert.Contains("M.Y.H.B.Y. Örnek No: 4", service, StringComparison.Ordinal);
         Assert.Contains("No.su" + Environment.NewLine + ":" + Environment.NewLine + "1", service, StringComparison.Ordinal);
         Assert.Contains("Kaynak Test Güzergâhı Hattı Öğrenci Taşıma İşi", service, StringComparison.Ordinal);
         Assert.Contains("Örnek Öğrenci Taşıma İşi", service, StringComparison.Ordinal);
         Assert.Contains("İşyeri Teslim Tarihi" + Environment.NewLine + ":" + Environment.NewLine + "14.09.2026", service, StringComparison.Ordinal);
 
         var acceptance = PageText(outputs, OehsOfficialDocumentKind.KabulTutanagi);
-        Assert.Contains("14.09.2026 / 30.09.2026", acceptance);
-        Assert.Contains("181", acceptance);
-        Assert.DoesNotContain("181 İş Günü", acceptance);
-        Assert.Contains("25.06.2027", acceptance);
+        Assert.Contains("14.09.2026 / 30.09.2026", acceptance, StringComparison.Ordinal);
+        Assert.Contains("181", acceptance, StringComparison.Ordinal);
+        Assert.DoesNotContain("181 İş Günü", acceptance, StringComparison.Ordinal);
+        Assert.Contains("25.06.2027", acceptance, StringComparison.Ordinal);
         Assert.Contains("Kaynak Test Güzergâhı Hattı Öğrenci Taşıma İşi", acceptance, StringComparison.Ordinal);
 
         var icmal = PageText(outputs, OehsOfficialDocumentKind.HakedisIcmali);
-        Assert.Contains("Hizmet Alımı İşi Eylül 2026", icmal);
-        Assert.Contains("₺199.375,32", icmal);
+        Assert.Contains("Hizmet Alımı İşi Eylül 2026", icmal, StringComparison.Ordinal);
+        Assert.Contains("₺199.375,32", icmal, StringComparison.Ordinal);
         Assert.Contains("Kaynak Test Güzergâhı Hattı Öğrenci Taşıma İşi", icmal, StringComparison.Ordinal);
         // The historical Excel PDF prints 19.670,30 and 219.045,63. OEHS currently
         // recalculates the deduction column as 12.300,77 instead of the stale AB4
         // snapshot value 12.304,95, so the generated icmal differs by 4,19 TL.
-        Assert.Contains("₺19.666,12", icmal);
-        Assert.Contains("₺219.041,44", icmal);
+        Assert.Contains("₺19.666,12", icmal, StringComparison.Ordinal);
+        Assert.Contains("₺219.041,44", icmal, StringComparison.Ordinal);
         Assert.DoesNotContain("₺19.670,30", icmal, StringComparison.Ordinal);
         Assert.DoesNotContain("₺219.045,63", icmal, StringComparison.Ordinal);
     }
