@@ -1,6 +1,6 @@
 # PDF 4 × 2 Kabul Matrisi
 
-> **GÜNCEL DURUM — 20.10.2026:** Son XLSM satırlarıyla sekiz A4 PDF üretip tutar/sayfa kontrolleri yapan WPF regresyonu CI run [39401253948](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39401253948) içinde başarılıdır (215/215 Core, 6/6 WPF). Bu, gerçek Excel/VBA çıktısıyla 8/8 resmî kabul anlamına gelmez. Son XLSM'lerin hash/formül/vectör kaynağı [SON_XLSM_KAYNAK_PARITESI_2026-10-20.md](SON_XLSM_KAYNAK_PARITESI_2026-10-20.md), geçerli masaüstü test prosedürü [EXCEL_MASAUSTU_KABUL_LISTESI.md](EXCEL_MASAUSTU_KABUL_LISTESI.md) dosyasıdır. Önceki tarihli notlar aşağıda tarihsel kayıt olarak korunur; güncel kaynakla çelişen beklentiler geçerli değildir.
+> **GÜNCEL DURUM — 20.10.2026, HEAD `b6db48694d957f8ca1eaa003e57bceb617da8795`:** En güncel Windows CI [39464941718](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39464941718) başarılı tamamlandı: tam çözüm/WPF derlemesi, test çözümü, PDF smoke üretimi ve Windows EXE publish adımları başarılı. Bu CI, sentetik/regresyon PDF doğrulamasıdır; gerçek Microsoft Excel/VBA çıktılarıyla 8/8 resmî PDF kabulü hâlâ açık ve tamamlanmış sayılmaz. Son XLSM hash/formül/vectör kaynağı [SON_XLSM_KAYNAK_PARITESI_2026-10-20.md](SON_XLSM_KAYNAK_PARITESI_2026-10-20.md), masaüstü kabul prosedürü [EXCEL_MASAUSTU_KABUL_LISTESI.md](EXCEL_MASAUSTU_KABUL_LISTESI.md) dosyasıdır. Aşağıdaki eski CI atıfları tarihsel kayıt olarak korunur.
 
 ---
 
