@@ -149,3 +149,10 @@ Bu oranlar mühendislik tahminidir, kabul sertifikası değildir. Genel proje %9
 - Güncel testleri içeren sonraki PR CI run [39399138327](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39399138327) şu an tam çözüm derleme aşamasında; sonuç henüz doğrulanmış değil.
 - Son XLSM dosyalarının 279 sayısal hücresinde LibreOffice yeniden hesaplama farkı 0; bu bulgu VBA'nın Microsoft Excel'de çalıştırılması değildir.
 - Sıradaki adım: run 39399138327'nin derleme/test sonucunu kontrol et; yeni testler başarısızsa logdaki somut alan/hücre eşlemesini düzelt. PR taslak/açık kalacak; merge/yayın yok.
+
+
+## Son test kodu revizyonu — 2026-10-20
+- Run 39399138327 de eski/önceki commit ağacında CS3016 ile başarısız oldu; hata satırları MemberData attribute kullanımına işaret ediyordu.
+- Son düzenleme: MemberData ve InlineData kaldırıldı. Temel satır 4–8 ile Özel satır 4–6 kaynak girdileri [Fact] içinde tipli tuple'lar olarak tanımlanıyor ve foreach ile karşılaştırılıyor.
+- Son test commit'leri: Özel Eğitim d147068121d84c73af80e4d5ed4f896fba0c965b; Temel Eğitim 15e3e88755ef768fdb6352c8bacb56f6ce99cafe.
+- Bu yeni test düzeni için CI sonucu henüz görünmüyor; başarı iddiası yok.
