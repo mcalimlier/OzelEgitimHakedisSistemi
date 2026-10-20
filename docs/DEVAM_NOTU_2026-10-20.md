@@ -495,3 +495,16 @@ Yüzdeler mühendislik tahminidir; resmi kabul oranı değildir.
 - İlk CI sorgusunda bu commit için workflow run henüz görünmedi; test sonucu **beklemede/doğrulanmamış**. CI görülmeden başarı iddiası yapılmamalı.
 - Bu, çekirdek servis katmanı regresyonudur; WPF etkileşiminden PDF ve arşive kadar uçtan uca kabul testi değildir.
 - Sonraki adım: commit için CI run'ını tekrar kontrol et. CI başarılı olursa WPF tarafında 1/3/5 hat seçimi, hat bazlı giriş izolasyonu ve dört PDF'de seçili hatların kapsamı test edilsin. CI başarısızsa logdan nedeni belirle ve düzelt.
+
+
+## Güncel son XLSM'ler alındı ve kaynak sayfa adları doğrulandı
+
+- Kullanıcı son kaynak dosyaları yeniden sağladı: `02-Özel Eğitim Hakediş Ödeme SON.xlsm`, `03-Temel Eğitim Taşıma Ödeme SON.xlsm`, ayrıca iki VBA RAR arşivi. XLSM'ler doğrudan açılarak sayfa adları okundu.
+- **Özel Eğitim** sayfaları (kaynakta tam yazıldığı biçimde): `Anasayfa`, `İhale Verileri`, `Hesaplama`, `Hakediş Raporu`, `Hizmetişleri Hakediş Raporu`, `Hizmet İşleri K. Tutanağı`, `Hakediş İcmali`, `İcmal Verileri`.
+- **Temel Eğitim** sayfaları (kaynakta tam yazıldığı biçimde): `Anasayfa`, `İhale Verileri`, `Hesaplama Bilgileri`, `Hakediş Raporu`, `Hizmet İşleri Hakediş Raporu`, `Hizmet İşleri K. Tutanağı`, `Hakediş İcmali`, `İcmal Verileri`, `Ayarlar`, `Data`, `Users`.
+- Menü uyumu için belirgin kritik fark: Özel Eğitim sayfası `Hizmetişleri Hakediş Raporu` (bitişik yazım); Temel Eğitim sayfası `Hizmet İşleri Hakediş Raporu` (ayrı yazım). Bu fark kaynak metni olarak korunmalı; ortak menü varsa birleşik etiket iki kaynak adını da açıkça göstermeli. `Hesaplama` ve `Hesaplama Bilgileri` de ayrı çekirdek etiketleridir.
+- VBA RAR dosyaları mevcut ancak bu ortamda RAR çıkarma aracı yok; arşiv içindeki kodlar henüz okunmadı. VBA parity iddiası için bu kodlar açılmalı ve XLSM'deki gerçek hücre/formül davranışlarıyla karşılaştırılmalı.
+- Hat seçimi testi güncellendi: sabit 1/3/5 varsayımı kaldırıldı. `OutputSelection_ShouldIncludeExactlyTheRequestedNumberOfSelectedRoutes` artık 12 mevcut taslaktan 1, 2, 3, 4, 5, 8 ve 12 hat seçimini sınar. Bu, seçimin bu sayılara sabitlenmediğini regresyon testinde kontrol eder; üretimdeki hat sayısına sabit bir limit getirmez.
+- Yeni test commit'i: `90c68135fa954bb6ac39a6ddfbf4ccef730fabfe`. İlk CI sorgusunda run henüz görünmedi; test sonucu beklemede/doğrulanmamış.
+- Önceki commit `0256ef5ed5dd710d43148f9d0398588b5c203712` için Windows CI run `39447861062` görülmüştü; yeni commit için ayrıca sonuç alınmalı.
+- Devam: yeni commit CI sonucunu kontrol et; ardından gerçek workbook alan/etiket envanterini ve WPF çoklu hat seçiminden dört PDF'ye kapsam aktarımını uçtan uca doğrula. PR #3 taslak kalacak, merge/release yapılmayacak.
