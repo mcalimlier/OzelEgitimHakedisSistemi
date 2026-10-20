@@ -287,3 +287,12 @@ Bu bölüm devam notlarının kalıcı ürün kriteridir. Yeni oturumlarda ve he
 - Kod commit'i: `7da224211daaeb45c49938ff29681f28ba2495fc`.
 - Doğrulama: bu değişiklikten sonra yeni Windows CI koşusu henüz sonuçlanmadı. Bu nedenle derleme/test başarısı şimdilik iddia edilmiyor. Sonraki adım CI sonucunu kontrol etmek ve gerekiyorsa düzeltmektir.
 - Açık risk: gerçek etkileşimli WPF testiyle A/B seç → A/C seç → B taslağını geri getir senaryosu henüz çalıştırılmadı. Çoklu hakediş kaydetme yolu seçili hat listesini ve görünür satırları kullanmaya devam eder; bu davranış CI ve testle teyit edilmelidir.
+
+
+## Dönem değişiminde önbellek izolasyonu — 20.10.2026
+
+- İnceleme sırasında ek bir risk bulundu: dönem değişiminde görünen satırlar sıfırlanırken geçici olarak seçili olmayan hatların önbellekteki aylık değerleri korunabiliyordu. Bu değerler aynı formda tekrar seçilince sonraki döneme taşınabilirdi.
+- `ResetMonthlyInputsForNewMonth` artık önbellekteki tüm hat taslaklarını sıfırlıyor; asgari ücret desteği davranışı her satırın kendi program türü üzerinden belirleniyor. Böylece seçili olmayan satır da dönem sınırını geçemez.
+- Kod commit'i: `449537fa6f18dd2354a8129c7f7259f1d64ed088`.
+- Doğrulama: bu düzeltmenin CI koşusu henüz sonuçlanmadı; sonuç görülmeden başarı beyanı yapılmayacak.
+- Açık risk: A/B → A/C seçimi ve dönem değişiminde B taslağının sıfırlanması için gerçek etkileşimli regresyon testi henüz eklenmedi/çalıştırılmadı.
