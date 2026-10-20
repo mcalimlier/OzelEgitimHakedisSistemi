@@ -89,8 +89,7 @@ public sealed class ProgressPaymentInputBoundaryTests
     }
 
     [Theory]
-    [InlineData(TransportationProgramType.BasicOrSecondary)]
-    [InlineData(TransportationProgramType.SpecialEducation)]
+    [MemberData(nameof(ProgramTypes))]
     public void NegativePriceDifference_ShouldRemainSignedRatherThanBeClamped(
         TransportationProgramType programType)
     {
