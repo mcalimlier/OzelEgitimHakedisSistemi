@@ -161,3 +161,13 @@ Bu pano işleri ayrı doğrulama alanlarına böler; aynı formül veya kabul ö
 - HEAD `4e1102e2afcbc9bf5f57069dce474c623dcfa6a5` için Windows CI run [39423199212](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39423199212) tamamlandı: tam çözüm/WPF derleme, UI statik kontrolleri, test çözümü, PDF smoke ve Windows EXE publish başarılı. Paket/artifact yükleme adımları ortam kısıtları nedeniyle atlanmıştır.
 - Bu CI sonucu Microsoft Excel/VBA masaüstü çalıştırması, yazıcı kabulü veya 8/8 gerçek PDF karşılaştırması olarak yorumlanamaz.
 - Ana dala birleştirme ve yayınlama için açık onay gerekir.
+
+## Devam notu — CI ve fiyat farkı regresyonu doğrulaması (20.10.2026)
+
+- Etkin PR #3 dalı: `feature/official-payment-document-templates`; HEAD `1ce386eec50aa875995d7ace62a709ef53b47ddc`. PR açık/taslak ve birleştirilmemiş durumda.
+- Güncel HEAD için Windows workflow run [39423654004](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39423654004) başarılı tamamlandı. Tam çözüm ve WPF derlemesi, UI statik kontrolleri, test projelerinin derlenmesi/çalıştırılması, PDF smoke üretimi ve Windows EXE publish adımları başarılı.
+- Fiyat farkının taşıma matrahına dâhil olduğu sentetik Temel/Ortaöğretim regresyonuna açık assertion'lar eklendi: taşıma neti 120, KDV 12, tevkifat 6, brüt 132 TL; ek teminat 1,20, damga vergisi 1,1376, toplam kesinti 8,3376 ve net ödeme 123,6624 TL. Bu sentetik regresyondur; resmî hakediş örneği değildir.
+- CI çıktısının yüklenmesi ve EXE artefaktı bazı adımlarda ortam kısıtı nedeniyle atlanmıştır. Bu, build/test başarısını değiştirmez; ancak indirilebilir paket yayımlandığı anlamına gelmez.
+- Açık kabul kapıları değişmedi: Microsoft Excel masaüstünde VBA'nın çalıştırılması; Temel için T4/U4/W4 ve D15/D28; Özel için AC4:AG4 ve D28; kaynak Excel ile OEHS arasında sekiz PDF'nin alan/tutar/görsel karşılaştırması; Windows DPI ve etkileşimli masaüstü kabulü.
+- İcmal C8/D8/E8 içindeki olası fiyat farkı tekrar sayımı kaynak davranışı olarak belgeli kalır. Formül/makro çıktısı ve iş sahibi kararı olmadan hesaplama değiştirilmez.
+- Ana dala birleştirme veya yayınlama yapılmadı; bunun için açık onay gerekir.
