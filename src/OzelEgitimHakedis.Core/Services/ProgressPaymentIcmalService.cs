@@ -49,12 +49,12 @@ public static class ProgressPaymentIcmalService
     }
 
     /// <summary>
-    /// Returns the prior calendar month's deduction from payment dates.
-    /// The source workbooks use different period/range conventions: Basic/Secondary
-    /// uses Anasayfa!E4 and monthly deductions in İcmal Verileri!AB:AL (confirmed by
-    /// KesintiToplamlariniAktar), while Special Education uses E5 and AN:AX.
-    /// OEHS resolves the equivalent prior-month row from history, scoped by program,
-    /// tender, contract, route, and contractor instead of reusing either workbook's bad lookup.
+    /// Returns the prior calendar month's deduction from payment history.
+    /// The source workbooks use different cells and monthly columns: Basic/Secondary
+    /// uses Anasayfa!E4 with İcmal Verileri!AB:AL; Special Education uses E5 with AN:AX.
+    /// Both source E21 formulas match the selected month against a September-June list.
+    /// The visible icmal row cycle can include July for Basic, but that does not make July
+    /// valid for the E21 previous-deduction lookup. Keep those two ranges distinct.
     /// </summary>
     public static decimal FindPreviousDeduction(
         IEnumerable<ProgressPaymentHistoryData> payments,
@@ -64,7 +64,7 @@ public static class ProgressPaymentIcmalService
         ArgumentNullException.ThrowIfNull(current);
 
         if (!current.PeriodDate.HasValue ||
-            !IsMonthInWorkbookLookupRange(current.PeriodDate.Value, current.Input.ProgramType) ||
+            !IsPreviousDeductionLookupMonth(current.PeriodDate.Value) ||
             !HasCompleteIdentity(current))
         {
             return 0m;
@@ -101,6 +101,12 @@ public static class ProgressPaymentIcmalService
             .Select(x => x.Calculation.TotalDeductions)
             .FirstOrDefault();
     }
+
+    // Source E21 formulas use a September-through-June month list in both XLSM files.
+    // This is intentionally narrower than Basic's visible icmal period rows, which
+    // include a July placeholder/row. For July the source E21 formula returns zero.
+    private static bool IsPreviousDeductionLookupMonth(DateOnly month) =>
+        month.Month >= 9 || month.Month <= 6;
 
     // Missing identity components must not collapse into an empty composite key:
     // otherwise unrelated incomplete records could inherit a previous deduction.
