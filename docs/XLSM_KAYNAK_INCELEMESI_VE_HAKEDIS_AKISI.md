@@ -1,5 +1,7 @@
 # Orijinal XLSM İncelemesi ve Hakediş İş Akışı
 
+> **Kaynak önceliği (20.10.2026):** Bu dosyanın tarihsel XLSM/PDF gözlemleri arka plan niteliğindedir. Kullanıcının en son yüklediği Temel Eğitim ve Özel Eğitim XLSM dosyaları ile bunların formülleri/VBA akışı çelişirse, en son XLSM geçerlidir. Eski dosya adlarına, hücre sonuçlarına veya geçmiş kabul varsayımlarına dayanarak yeni Excel davranışı çıkarımı yapılmaz.
+
 **Kaynak dosya:** Özel Eğitim Hakediş Ödeme Programı (2).xlsm  
 **Kaynak yaklaşımı:** Çalışma kitabındaki formüller ve VBA aktarım davranışı esas alınır. Dört PDF'nin tamamı aynı ödeme anlık görüntüsünden üretilmelidir.
 
@@ -40,8 +42,9 @@ Orijinal D11 formülü IF(D7<0,H2-ABS(D7),H2+D7), H2 ise Hesaplama K+T toplamıd
 Kaynak Hesaplama!AC formülü =(I*6/100)+R*6/100 olduğundan negatif I/R için matematiksel olarak negatif ek kesin teminat kesintisi üretir. Bu formül kayıtta aynen belgelenmiştir; ancak 4735 sayılı Kamu İhale Sözleşmeleri Kanunu'nun 12. maddesi, ek kesin teminatı **fiyat farkı nedeniyle sözleşme bedelinde artış meydana gelmesi halinde** artış tutarının %6'sı olarak tanımlar. Bu nedenle OEHS'de:
 
 - I/R fiyat farkları negatif olabilir ve K/T, KDV, tevkifat ve damga hesabında işaretli kalır.
-- Taşıma ve rehberin işaretli fiyat farkları ek kesin teminat için netlenir; yalnızca net toplam pozitifse %6 teminat hesaplanır. Net negatif tutar yükleniciye eksi kesinti/kredi oluşturmaz.
-- Kaynak Excel'deki gibi J/S iskontoları AC tabanından düşülmez.
+- **Yetkili kaynak formülü aynen uygulanır:** Temel Eğitim için `T = I × %6`; Özel Eğitim için `AC = (I × %6) + (R × %6)`. Taşıma ve rehber fiyat farkları birbirine netlenmez; negatif I/R bileşenleri de kaynak Excel formülünde işaretli olarak kalır. `MAX(0, I+R)` veya yalnızca pozitif toplam üzerinden hesaplama, son Excel formülünün davranışı değildir ve uygulanmamalıdır.
+- J/S iskontoları AC teminat tabanından düşülmez.
+- Bu teknik eşleştirme, negatif ek kesin teminatın hukuken nasıl uygulanacağına dair onay değildir. Hukuki/ihale yorumu ayrı karar olarak kaydedilir; Excel'deki hesap formülü bu karar beklenirken sessizce değiştirilmez.
 
 Kaynak ile mevzuatın farklılaştığı bu istisna, hesaplama servisinde ve negatif/karma işaretli fiyat farkı testlerinde açıkça belirtilmelidir.
 
