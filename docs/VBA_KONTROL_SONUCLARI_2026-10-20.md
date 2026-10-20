@@ -43,3 +43,8 @@
 3. Temel Eğitim `T4/U4/W4`, rapor `D15/D28`; Özel Eğitim `AC4:AG4`, rapor `D15/D28` değerlerinin gerçek yeniden hesaplamadan sonra kaydı.
 4. Her iki programın dört PDF'sinin, toplam **8 PDF**, gerçek Excel çıktılarıyla tutar, dönem, yüklenici, hat, imza ve sayfa düzeni açısından karşılaştırılması.
 5. PR #3 açık/taslak kalmalı; açık onay olmadan merge/release yok.
+
+## Son yama genişletmesi
+- Özel Eğitim `Module1` adayına `Option Explicit` eklendi; değişkenler ve parametreler mevcut modül içinde bildirilmiş olarak kontrol edildi.
+- Dışa aktarma penceresindeki `.ButtonName` ve `.AllowMultiSelect` satırlarının yanlışlıkla birleşmesini yakalayan bir statik regresyon testi eklendi. Bu test ilk denemede hatayı yakaladı; satır ayrımı düzeltildi.
+- Son statik regresyon sonucu: **29/29 PASS**. Bu sonuç VBA IDE derlemesi değildir.
