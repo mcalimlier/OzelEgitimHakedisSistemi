@@ -95,3 +95,11 @@ Bu oranlar mühendislik tahminidir, kabul sertifikası değildir. Genel proje %9
 - Kalan program türü varsayılanı GetSelectedTransportationProgramType() içinde özet/seçici davranışında mevcut. Yeni resmî sözleşme/yüklenici oluşturma kayıtları artık boş seçimde durduruluyor; yine de tüm ekran akışları masaüstünde etkileşimli olarak kabul edilmiş değildir.
 - PR #3 taslak/açık/birleştirilmemiş; merge veya yayınlama yapılmadı. Hesaplama formülleri ve resmî tutarlar değiştirilmedi.
 - Sıradaki adım: commit c2f6adda... için CI'yi doğrula; arşiv program türü koruması için program-özel test eklemenin mevcut test mimarisine uygun yolunu araştır; ardından hazırlık/ilerleme göstergesi ve dört PDF × iki program kabul matrisine devam et.
+
+
+## Ek çalışma kaydı — CI doğrulaması ve manuel deneme vektörleri (2026-10-20)
+- Program türünü arşiv düzeltmesinde koruyan kod commit'i c2f6adda6528f58e780a025fa1172d62a724b6c7 için Windows CI [39396174391](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39396174391) **başarılı** tamamlandı: çözüm/WPF derlemesi, statik UI kontrolleri, testler, PDF smoke ve Windows EXE publish başarılı.
+- Kullanıcının uygulamada deneyebilmesi için `docs/ORNEK_HAKEDIS_DENEME_VEKTORLERI.md` eklendi. Temel/Ortaöğretim, Özel Eğitim ve negatif fiyat farkı senaryoları sentetik veri ve beklenen sonuçlarla belgelendi. Bu vektörler resmî örnek değildir ve Excel/VBA masaüstü paritesi iddiası taşımaz.
+- Deneme vektörleri dosya commit'i: 19f06b828bc2b891a546fd8fa840356ba2bfc0bd. Bu commit sonrası CI ayrıca kontrol edilmelidir.
+- Güncel PR #3 taslak/açık/birleştirilmemiştir. Resmî hesap formülleri değiştirilmedi. Dört PDF × iki programın gerçek Excel karşılaştırmalı görsel kabulü hâlâ açık.
+- Sonraki adım: yeni dokümantasyon commit'i için CI'yi kontrol et; sonra test projesine kaynak XLSM hücre vektörlerini gerçek giriş alanlarıyla ilişkilendiren sağlam test eklemenin yolunu araştır ve UI/çıktı kabulüne devam et.
