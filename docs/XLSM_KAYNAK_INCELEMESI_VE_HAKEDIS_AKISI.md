@@ -150,3 +150,10 @@ Arşivden açılan bir hakediş düzeltildiğinde OEHS güncel girdilerden yenid
 - Arşivde veya hakediş geçmişinde kayıtlı bir hakediş düzenlenirken bir alan değiştiği anda üstte “DEĞİŞİKLİK ALGILANDI” uyarısı ve net ödeme önizlemesi güncellenir. Bu önizleme kaydedilmemiştir; son kayıt öncesi eski/yeni tutarları gösteren ayrı onay gerekir.
 - Onay verilirse seçilen arşiv dosyası aynı revision numarasıyla güncellenir ve eşleşen ana hakediş geçmişi satırı da senkronize edilir. Onay reddedilirse dosya değiştirilmez ve düzeltme ekranı kullanıcının tekrar gözden geçirebilmesi için açık kalır. Arşivi bulunmayan geçmiş satırları normal kayıt düzenleme akışında kalır.
 - İhale, yüklenici, hat ve hakediş panellerinde alan aralıkları daraltıldı; yazı boyutu korunarak gereksiz dikey boşluk azaltıldı. Uzun kayıt listelerinde kayıtlara erişimi kaybetmemek için kaydırma yalnızca gerekli olduğu yerlerde tutulur.
+
+
+## Güncel kaynak doğrulaması — 20.10.2026
+
+En son yüklenen iki XLSM'nin dosya parmak izleri, kaynak formülleri, satır 4–8 / 4–6 sonuçları ve LibreOffice yeniden hesaplama karşılaştırması ayrı belgede tutuluyor: [Son XLSM kaynak paritesi](SON_XLSM_KAYNAK_PARITESI_2026-10-20.md).
+
+Bu yeni kanıt, önceki 17–19 Ekim tarihli tarihsel XLSM gözlemlerinin yerine geçer. Tarihsel bulgular yalnızca kendi dosya kopyaları için geçerlidir; son Excel'lerin formül davranışı hakkında çelişki doğarsa son XLSM ve bu yeni kaynak paritesi belgesi esas alınır.
