@@ -30,7 +30,7 @@ public partial class MainWindow : Window
     private readonly ObservableCollection<MultiRoutePaymentDraftRow> _multiRoutePaymentRows = new();
     // Holds unsaved route drafts even while a route is temporarily deselected.
     // The visible collection remains limited to the current selection.
-    private readonly Dictionary<string, MultiRoutePaymentDraftRow> _multiRouteDraftCache = new(StringComparer.Ordinal);
+    private readonly RouteDraftCache<MultiRoutePaymentDraftRow> _multiRouteDraftCache = new();
     private string? _lastProgressDefaultsRouteKey;
     private readonly ObservableCollection<HistoryRow> _historyRows = new();
     private readonly ObservableCollection<SummaryRow> _summaryRows = new();
@@ -1150,7 +1150,7 @@ public partial class MainWindow : Window
         // A month change starts a fresh draft for every route, including routes
         // temporarily deselected from the visible grid. Otherwise their cached
         // prior-month adjustments could reappear when selected again.
-        foreach (var row in _multiRouteDraftCache.Values)
+        _multiRouteDraftCache.ResetAll(row =>
         {
             row.WorkDays = 0;
             row.DiscountAmount = 0m;
@@ -1175,7 +1175,7 @@ public partial class MainWindow : Window
                 draftRoute.ProgramType != TransportationProgramType.BasicOrSecondary;
             row.MinimumWageSupport = 0m;
             row.InspectionPenalty = 0m;
-        }
+        });
 
         _lastCalculatedHistoryId = null;
         ArchiveCurrentProgressButton.Visibility = Visibility.Collapsed;
