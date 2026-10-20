@@ -10,7 +10,7 @@ namespace OzelEgitimHakedis.Tests;
 /// </summary>
 public sealed class ProgressPaymentInputBoundaryTests
 {
-    public static TheoryData<ProgressPaymentInput> InvalidInputs()
+    public static IReadOnlyList<ProgressPaymentInput> InvalidInputs()
     {
         var valid = new ProgressPaymentInput(
             WorkDays: 0m,
@@ -29,7 +29,7 @@ public sealed class ProgressPaymentInputBoundaryTests
             GuidePriceDifference: 0m,
             ProgramType: TransportationProgramType.SpecialEducation);
 
-        return new TheoryData<ProgressPaymentInput>
+        return new ProgressPaymentInput[]
         {
             valid with { WorkDays = -1m },
             valid with { GuideWorkDays = -1m },
@@ -53,7 +53,7 @@ public sealed class ProgressPaymentInputBoundaryTests
         }
     }
 
-    public static TheoryData<TransportationProgramType> ProgramTypes() => new()
+    public static IReadOnlyList<TransportationProgramType> ProgramTypes() => new[]
     {
         TransportationProgramType.BasicOrSecondary,
         TransportationProgramType.SpecialEducation
