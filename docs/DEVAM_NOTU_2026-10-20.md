@@ -440,3 +440,12 @@ Yüzdeler mühendislik tahminidir; resmi kabul oranı değildir.
 - Yeni CI koşuları: [39435976702](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39435976702) ve [39436015389](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39436015389) bu not yazılırken çalışıyordu. Önceki paralel koşular [39435827410](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39435827410) ve [39435857812](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39435857812) da derleme/EXE yayın adımlarını geçerek sonlandırma aşamasındaydı; son durumları nihai başarı olarak burada varsayılmıyor.
 - Beş teknik hat paralel incelendi: hesaplama/XLSM, çoklu hat, PDF üretimi, WPF/UI ve arşiv/CI. Kod değişiklikleri tek feature dalında sıralı olarak kaydedildi; beş bağımsız ajan/branch varmış gibi sunulmaz.
 - Açık engel: kaynak XLSM dosyaları bu GitHub dalında yok; formül/önbellek vektör testleri mevcut olsa da programın ham XLSM dosyasını kendiliğinden okuyup Microsoft Excel/VBA ile bire bir kıyasladığı iddia edilemez. Gerçek workbook dosyaları uygulama/repo erişimine alınabildiğinde okuyucu ve otomatik karşılaştırma hattı bağlanmalıdır.
+
+
+## Hızlandırılmış devam — hatalı rota anahtarı koruması (20.10.2026)
+
+- WPF çoklu-hat kaydetme yolundaki hata yakalama genişletildi: seçili rota anahtarı boş/bozuksa `ArgumentException` artık arayüz olay akışından dışarı taşmak yerine kullanıcıya doğrulama mesajı olarak gösterilir; hakediş üretilmez.
+- `OutputSelection_ShouldRejectBlankRouteKey` regresyon testi eklendi.
+- Commit'ler: WPF `bf05a6fd63bdb792d9b93819626937319c74bd1f`; test `164cea0044227431887d1a6bfd5c645d0481e9c5`.
+- İlgili önceki koşular [39435909317](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39435909317) ve [39435976702](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39435976702) başarılı tamamlandı. Yeni iki commit için henüz yeni CI sonucu görünmüyor; başarı iddiası yapılmıyor.
+- Devam eden öncelikler değişmedi: son commit CI; 1/3/5 hat WPF uçtan uca seçim/çıktı testi; XLSM ham kaynak erişimi; iki program için 8 PDF'nin Excel/VBA karşılaştırması. PR #3 açık/taslak kalır.
