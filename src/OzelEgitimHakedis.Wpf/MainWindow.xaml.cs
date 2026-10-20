@@ -882,10 +882,18 @@ public partial class MainWindow : Window
         VatExemptCheckBox.IsChecked = false;
     }
 
-    private TransportationProgramType GetSelectedTransportationProgramType()
+    private bool TryGetSelectedTransportationProgramType(out TransportationProgramType programType)
     {
         var tag = (TransportProgramTypeComboBox.SelectedItem as ComboBoxItem)?.Tag?.ToString();
-        return Enum.TryParse<TransportationProgramType>(tag, ignoreCase: true, out var programType)
+        return Enum.TryParse<TransportationProgramType>(tag, ignoreCase: true, out programType);
+    }
+
+    private TransportationProgramType GetSelectedTransportationProgramType()
+    {
+        // Existing selector/summary code needs a stable value during initial view
+        // setup. Save handlers use TryGetSelectedTransportationProgramType and
+        // explicitly reject missing selection before creating official records.
+        return TryGetSelectedTransportationProgramType(out var programType)
             ? programType
             : TransportationProgramType.SpecialEducation;
     }
@@ -2625,7 +2633,17 @@ public partial class MainWindow : Window
         }
 
         var editingContractor = FindContractorByKey(_editingContractorKey);
-        var contractorProgramType = editingContractor?.ProgramType ?? GetSelectedTransportationProgramType();
+        if (editingContractor is null &&
+            !TryGetSelectedTransportationProgramType(out _))
+        {
+            ContractorStatusTextBlock.Text = "Önce TAŞIMA PROGRAMI alanından Özel Eğitim veya Temel / Ortaöğretim programını seçin. Firma kaydedilmedi.";
+            return;
+        }
+
+        var contractorProgramType = editingContractor?.ProgramType ??
+            (TryGetSelectedTransportationProgramType(out var selectedContractorProgram)
+                ? selectedContractorProgram
+                : throw new InvalidOperationException("Yeni firma için taşıma programı seçilmelidir."));
         var duplicate = _contractors.FirstOrDefault(x =>
             x.ProgramType == contractorProgramType &&
             string.Equals(
@@ -3567,6 +3585,16 @@ public partial class MainWindow : Window
 
         ClearContractValidationVisuals();
 
+        // A new contract must be explicitly assigned to a transport program.
+        // Do not let the legacy fallback in GetSelectedTransportationProgramType()
+        // silently classify an unselected program as Special Education.
+        if (_editingContractTender is null &&
+            !TryGetSelectedTransportationProgramType(out _))
+        {
+            ShowContractValidation("Önce TAŞIMA PROGRAMI alanından Özel Eğitim veya Temel / Ortaöğretim programını seçin.");
+            return;
+        }
+
         var errors = new List<string>();
         if (string.IsNullOrWhiteSpace(TenderNumberTextBox.Text))
         {
@@ -3639,7 +3667,10 @@ public partial class MainWindow : Window
             oldContract?.BankAccountNumber ?? string.Empty,
             contractWorkDays,
             transportDailyPrice,
-            GetSelectedTransportationProgramType());
+            oldContract?.ProgramType ??
+                (TryGetSelectedTransportationProgramType(out var selectedProgramType)
+                    ? selectedProgramType
+                    : throw new InvalidOperationException("Yeni sözleşme için taşıma programı seçilmelidir.")));
 
         var duplicateTarget = _contracts.FirstOrDefault(x =>
             string.Equals(
