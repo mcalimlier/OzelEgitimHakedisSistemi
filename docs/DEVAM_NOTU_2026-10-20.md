@@ -698,3 +698,17 @@ Yüzdeler ölçüm sistemiyle hesaplanmış kesin istatistik değil, iş paketle
   - Genel proje: **%85**
 - İki hesaplama çekirdeği %100 kabul edilmiş sayılmayacak: Microsoft Excel/VBA masaüstü yeniden hesaplaması, kaynak hücre sonuçları ve 4×2 gerçek PDF kabul matrisi hâlâ açık.
 - Sıradaki adım: run `39457544904` sonucunu kontrol et; başarısızsa hatayı düzelt. Sonra VBA statik raporundaki aktarım/silme risklerini güvenli kopyada doğrulamaya yönelik test planını ayrıntılandır; resmî hesap mantığını kaynak kanıtı olmadan değiştirme.
+
+
+## Devam checkpoint'i — CI derleme hatası düzeltildi, doğrulama bekliyor (20.10.2026 16:35 +03:00)
+
+- PR #3 açık/taslak; merge veya release yapılmadı.
+- Güncel kod HEAD: `388dff84ca89a98c03723f081edbfc61d1116316`.
+- Yeni `ProgressPaymentInputBoundaryTests.cs` dosyası, her iki program için negatif iş günü/fiyat/sözleşme/kesinti alanlarının reddi; sıfır değer sınırı ve negatif fiyat farkı işaretinin korunması testlerini kapsar.
+- İlk CI denemeleri `InlineData(TransportationProgramType...)` ile `CS3016 Arrays as attribute arguments is not CLS-compliant` hatası verdi. Test verisi `MemberData`/xUnit `TheoryData<TransportationProgramType>` biçimine çevrildi; ikinci bir düzenlemede kalan InlineData çağrısı da kaldırıldı.
+- Güncel HEAD için CI run [39457978172](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39457978172) ve [39457970055](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39457970055) kontrol anında queued/in_progress; sonuçları doğrulanmadan başarılı kabul etme.
+- Başarısız önceki run'lar [39457599420](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39457599420) ve [39457588845](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39457588845) yalnızca bu yeni testteki attribute derleme hatasını gösterdi; bu hatalar düzeltilmek üzere takip edildi.
+- Formül/ödeme davranışında değişiklik yapılmadı. Negatif fiyat farkı kaynak Excel formülünde işaretli kalır; test bunu sıfırlamamayı doğrular.
+- Güncel mühendislik ilerleme tahminleri (resmî kabul değil): Temel Eğitim/Ortaöğretim hesaplama **%85**; Özel Eğitim hesaplama **%87**; ortak hesaplama motoru/rapor zinciri **%85**; PDF/icmal **%87**; arşiv/veri modeli **%86**; WPF/ekran akışı **%83**; test/CI/dağıtım **%97** (HEAD CI beklemede); genel proje **%85**.
+- Açık kabul kapıları: Excel masaüstünde gerçek VBA compile/run ve yeniden hesaplama; Temel `T4/U4/W4`, rapor `D15/D28`; Özel `AC4:AG4`, rapor `D28`; sekiz PDF'nin gerçek Excel referanslarıyla alan ve tek sayfa A4 karşılaştırması; VBA silme/aktarım risklerinin güvenli kopyada doğrulanması.
+- Sıradaki adım: güncel HEAD CI sonuçlarını kontrol et; başarısızsa kök nedeni düzelt ve yeniden çalıştır. PR açık/taslak kalır.
