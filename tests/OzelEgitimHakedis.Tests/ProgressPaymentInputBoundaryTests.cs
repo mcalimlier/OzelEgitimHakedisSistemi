@@ -52,9 +52,14 @@ public sealed class ProgressPaymentInputBoundaryTests
             () => ProgressPaymentCalculator.Calculate(input));
     }
 
+    public static TheoryData<TransportationProgramType> ProgramTypes() => new()
+    {
+        TransportationProgramType.BasicOrSecondary,
+        TransportationProgramType.SpecialEducation
+    };
+
     [Theory]
-    [InlineData(TransportationProgramType.BasicOrSecondary)]
-    [InlineData(TransportationProgramType.SpecialEducation)]
+    [MemberData(nameof(ProgramTypes))]
     public void ZeroAmountsAndZeroWorkDays_ShouldRemainAValidBoundary(
         TransportationProgramType programType)
     {
