@@ -190,3 +190,40 @@ Bu oranlar mühendislik tahminidir, kabul sertifikası değildir. Genel proje %9
 - Bu turdaki değişiklikler belge/kabul-prosedürü güncellemeleridir; hesaplama motoru veya resmi tutar formülleri değiştirilmedi.
 - Önceki CI run [39401253948](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39401253948) başarılıydı (215/215 Core, 6/6 WPF). Bu turdaki yeni doküman değişikliklerinin CI sonucu son commit için ayrıca kontrol edilecek.
 - Açık kalanlar: gerçek Excel masaüstünde VBA sonrası değerler; kaynak Excel PDF'leriyle 8/8 alan/tutar/görsel karşılaştırması; Windows'ta etkileşimli DPI/yazıcı kabulü. PR taslak kalacak.
+
+
+## Kalıcı kabul şartı — Hakediş Oluştur (asla unutulmayacak)
+
+Bu bölüm devam notlarının kalıcı ürün kriteridir. Yeni oturumlarda ve her kod değişikliğinden sonra korunmalı; kapsamı daraltılmamalı ve yalnızca belgeye yazılmış olması uygulandığı anlamına gelmemelidir.
+
+- **İKN ve program türü:** Kullanıcı Temel Eğitim/Ortaöğretim ve Özel Eğitim için kendi İKN kayıtlarını oluşturup seçebilmeli. Birleşik İKN listesi iki programı aynı tabloda gösterebilir; her satır program türünü göstermeli ve filtrelenebilmelidir. Bu görünüm hesaplama çekirdeklerini birleştirmez.
+- **Firma ve hatlar:** Seçilen İKN altında firmalar/yükleniciler ve onlara bağlı istenen sayıda hat tanımlanabilmeli. Kullanıcı bir hat, seçtiği herhangi sayıda hat veya tüm hatlar için hakediş oluşturabilmeli. Yalnızca seçilen hatlar hesaba ve belge üretimine girmeli; seçilmeyen hatlar için çıktı oluşmamalı.
+- **Hat bazlı geçici düzenleme:** Seçili hattın dönemlik iş günü, fiyat farkı, iskonto ve ilgili diğer girişlerinde yapılan özel değişiklik yalnızca o hat + dönem + hakediş taslağına uygulanmalı. Diğer hatlara, başka firmalara, önceki/sonraki dönemlere veya kalıcı ana hat/sözleşme tanımına açık kullanıcı onayı olmadan sızmamalı. Önce/sonra değerleri ve gerekçe denetlenebilir olmalı.
+- **Çoklu seçim ve belge kimliği:** Çoklu hat seçimi toplu iş akışı olarak desteklenmeli, fakat hesaplama, hakediş numarası, arşiv kaydı ve dört PDF seti her hat için ayrı kimliği korumalı. Bir hattın tutarı/kimliği başka hattın belgesine karışmamalı.
+- **Kaynak Excel adları:** Excel'de alan/değişken hangi tam adla geçiyorsa kaynak eşleme envanterinde ve uygun kullanıcı etiketinde aynen korunmalı. Temel ve Özel Eğitim dosyalarında adlar farklıysa her iki ad kendi çekirdeğinde saklanmalı. Sol menü kaynak çalışma sayfası adlarıyla uyumlu olmalı; iki gerçekten eşdeğer sayfa tek menü öğesinde birleştirilirse etiket her iki kaynak sayfa adını da içermeli. Sayfa adı → program → tam alan adı → hücre/formül → VBA aktarımı → model alanı → PDF hedefi zinciri izlenebilir tutulmalı.
+- **Tanıdık iş akışı:** Program/dönem → İKN → firma/yüklenici → hat(lar) → gerekiyorsa hat bazlı düzenleme → hesap ön izlemesi/kontrol → dört resmî PDF. Modern tasarım, kullanıcıların yıllardır bildiği Excel terimlerini veya işlem sırasını belirsizleştirmemeli.
+- **Programlara özel hesap:** Temel Eğitim/Ortaöğretim ve Özel Eğitim hesaplama, kesinti, rehber personel ve icmal zincirleri ayrı kalmalı. Yalnızca kanıtlanmış ortak davranış paylaşılmalı; kaynak Excel ile çelişen tutar sessizce değiştirilmemeli.
+
+### Zorunlu regresyon/kabul senaryoları
+1. Her iki program için ayrı İKN oluşturma/seçme; birleşik listede program türünün görünmesi ve filtrelenmesi.
+2. Tek İKN + tek firma + 5 hat: yalnızca seçilen herhangi bir alt küme (ör. 1, 3 veya 5 hat) için hesap ve dört PDF; seçilmeyenler için sıfır çıktı.
+3. Bir seçili hatta yapılan özel değişiklik yalnızca o hattı etkiler; kardeş hatlar ve önceki/sonraki dönem arşivleri değişmeden kalır.
+4. Arşivden açma/düzeltme/yeniden hesaplama, İKN-program-firma-hat-dönem ilişkisini ve değişiklik izini korur.
+5. Kaynak Excel alan adları ve sol menü eşlemeleri otomatik kontrol edilir; programlar arası farklı adlar kaybolmaz.
+6. Çoklu hat için her hattın kendi hakediş numarası, arşiv kimliği ve dört PDF seti doğru kimlik/tutar/dönem taşır.
+7. Temel ve Özel hesaplama/rapor/icmal testleri bağımsızdır; birleşik İKN listesi ortak hesap motoru gerekçesi değildir.
+
+### Beş çekirdek — yürütme ve kanıt durumu
+- **Çekirdek 1 / Temel Eğitim hesaplama:** son XLSM satır 4–8 kaynak vektörleri var; Microsoft Excel/VBA ile T4/U4/W4 ve Hakediş Raporu D15/D28 eşitliği hâlâ açık.
+- **Çekirdek 2 / Özel Eğitim hesaplama:** son XLSM satır 4–6 kaynak vektörleri var; Excel/VBA ile AC4:AG4 ve Hakediş Raporu D28 eşitliği hâlâ açık.
+- **Çekirdek 3 / Hakediş rapor zinciri:** C# rapor testleri var; aynı girdi için gerçek Excel raporundaki tüm finansal alanların alan-alan karşılaştırması açık.
+- **Çekirdek 4 / İcmal ve aktarım:** program-özel ay aralığı ve kimlik testleri var; C8/D8/E8 olası tekrar sayımının VBA aktarımıyla doğrulanması ve karar kaydı açık.
+- **Çekirdek 5 / Hakediş Oluştur + dört PDF + WPF:** kodda çoklu hat seçimi/hat bazlı taslak satırları mevcut; ancak 1/3/tüm hat senaryoları, hat değişikliği izolasyonu, Excel sayfa adları/menü eşlemesi ve 8/8 gerçek Excel PDF kabulü kanıtlanmadan bu çekirdek tamamlandı sayılmaz.
+- Bu çekirdeklerin ilerleme yüzdesi, yalnızca kabul kanıtıyla artırılmalı. Otomatik CI, Excel/VBA masaüstü ve görsel PDF kabulünün yerine geçmez.
+
+### Bu devam turu — 2026-10-20
+- PR #3 başı ve uzak dosyalar yeniden okundu: dal `feature/official-payment-document-templates`, HEAD `ed449a2157765e1d607405b51c284fea3208b7e2`; PR açık/taslak/birleştirilmemiş.
+- HEAD için Windows workflow run [39426585405](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39426585405) kontrol sırasında çalışıyor; bu nedenle bu HEAD için CI başarısı henüz iddia edilemez.
+- Mevcut WPF kodu `UpdateMultiRouteDraftRows` içinde seçilen hatlardan satır üretiyor; mevcut bir satır aynı route key ile korunuyor, yeni hatlara tek hat için girilmiş fiyat farkı/iskonto/kesinti kopyalanmıyor. Bu iyi bir izolasyon korumasıdır; uçtan uca UI ve arşiv/PDF kabul testleri hâlâ gereklidir.
+- Bu nottaki kalıcı kabul şartları kullanıcı talimatının devam notlarına da yazılmıştır. Bu belge değişikliği işlevin tamamlandığını kanıtlamaz.
+- Sıradaki adım: hat bazlı izolasyon ve seçilen hat alt kümesi davranışını bağımsız testlerle güçlendir; kaynak sayfa adları/menü eşlemesini denetle; her kod commit'i sonrası Windows CI sonucunu kontrol et. Gerçek Excel/VBA ve 8/8 PDF kabulini açık tut. Ana dala birleştirme/yayınlama yapma.
