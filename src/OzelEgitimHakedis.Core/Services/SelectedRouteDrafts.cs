@@ -22,8 +22,8 @@ public static class SelectedRouteDrafts
                 throw new ArgumentException("Selected route keys cannot be empty.", nameof(selectedRouteKeys));
             if (!seen.Add(key))
                 throw new InvalidOperationException($"Duplicate selected route key: '{key}'.");
-            if (!drafts.TryGetValue(key, out var draft))
-                throw new InvalidOperationException($"No draft exists for selected route key: '{key}'.");
+            if (!drafts.TryGetValue(key, out var draft) || draft is null)
+                throw new InvalidOperationException($"No valid draft exists for selected route key: '{key}'.");
             selected.Add(draft);
         }
 
