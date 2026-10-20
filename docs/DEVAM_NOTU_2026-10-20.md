@@ -486,3 +486,12 @@ Yüzdeler mühendislik tahminidir; resmi kabul oranı değildir.
 - Mevcut WPF'de ihale/dosya seçimi, yüklenici bilgisi, çoklu hat seçimi, `MultiRoutePaymentGrid`, `RouteDraftCache` ve `SelectedRouteDrafts.SelectExact` var. Bu, gereksinimlerin tümünün uçtan uca kabul edildiği anlamına gelmez.
 - Açık geliştirme işi: 1/3/5 hat WPF uçtan uca senaryoları; her hatta ayrı değişiklik izolasyonu; seçilmeyen hatların dört PDF ve arşive girmediği doğrulaması; ortak İKN tablosunda program türü ayrımı; tam XLSM sayfa/alan envanteri ve menü eşlemesi.
 - Bir sonraki adım: güncel branch HEAD/CI'yi yeniden doğrula; sonra çoklu-hat akışının WPF testlerini ekle. Kod değişiklikleri ve testler tek feature dalında sıralı ilerletilsin. PR #3 taslak kalacak; merge/release yok.
+
+
+## Hakediş Oluştur — seçili hat sayısı regresyonu (20.10.2026)
+
+- `RouteDraftCacheTests.cs` içine `OutputSelection_ShouldIncludeExactlyOneThreeOrFiveSelectedRoutes` teorik testi eklendi: 1, 3 ve 5 seçili hat için yalnızca seçili anahtarların sonuç listesine girmesi, seçili hat sayısının korunması ve seçili olmayan taslakların toplamı etkilememesi doğrulanıyor.
+- Test commit'i: `0256ef5ed5dd710d43148f9d0398588b5c203712`.
+- İlk CI sorgusunda bu commit için workflow run henüz görünmedi; test sonucu **beklemede/doğrulanmamış**. CI görülmeden başarı iddiası yapılmamalı.
+- Bu, çekirdek servis katmanı regresyonudur; WPF etkileşiminden PDF ve arşive kadar uçtan uca kabul testi değildir.
+- Sonraki adım: commit için CI run'ını tekrar kontrol et. CI başarılı olursa WPF tarafında 1/3/5 hat seçimi, hat bazlı giriş izolasyonu ve dört PDF'de seçili hatların kapsamı test edilsin. CI başarısızsa logdan nedeni belirle ve düzelt.
