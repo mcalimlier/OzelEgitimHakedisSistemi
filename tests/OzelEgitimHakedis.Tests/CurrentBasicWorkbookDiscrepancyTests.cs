@@ -5,109 +5,38 @@ using Xunit;
 namespace OzelEgitimHakedis.Tests;
 
 /// <summary>
-/// Calculation-sheet regression vectors based on the current Basic/Secondary XLSM formulas.
-/// Report D28 is deliberately excluded until captured source-row values are available.
+/// Source-cell vectors transcribed from the latest uploaded Basic/Secondary XLSM:
+/// 03-Temel Eğitim Taşıma Ödeme.xlsmdüzeltildi (1).xlsm
+/// SHA-256 37a7818881aae52e8b2fcf95f30a75e1f302dfce1e91e2345f3473668a4d5296.
+/// Cached values are asserted; this is not desktop Excel/VBA execution.
 /// </summary>
 public sealed class CurrentBasicWorkbookParityTests
 {
-    [Fact]
-    public void CurrentBasicRows5And6_ShouldMatchCalculationFormulaChain()
-    {
-        var examples = new[]
-        {
-            new
-            {
-                Input = new ProgressPaymentInput(
-                    WorkDays: 15m,
-                    DailyPrice: 6545m,
-                    DiscountAmount: 250m,
-                    PriceDifference: 1501m,
-                    ContractAmount: 100000m,
-                    IsVatExempt: false,
-                    TaxDebt: 1500m,
-                    SocialSecurityDebt: 1500m,
-                    MinimumWageSupport: 1500m,
-                    InspectionPenalty: 1500m,
-                    ProgramType: TransportationProgramType.BasicOrSecondary),
-                SourceTransportNet = 99426m,
-                SourceGross = 109368.6m,
-                SourceStampTax = 942.55848m,
-                SourceTotalDeductions = 12003.91848m,
-                SourceNet = 97364.68152m
-            },
-            new
-            {
-                Input = new ProgressPaymentInput(
-                    WorkDays: 15m,
-                    DailyPrice: 6135m,
-                    DiscountAmount: 330m,
-                    PriceDifference: 1502m,
-                    ContractAmount: 100000m,
-                    IsVatExempt: false,
-                    TaxDebt: 1500m,
-                    SocialSecurityDebt: 1500m,
-                    MinimumWageSupport: 1500m,
-                    InspectionPenalty: 1500m,
-                    ProgramType: TransportationProgramType.BasicOrSecondary),
-                SourceTransportNet = 93197m,
-                SourceGross = 102516.7m,
-                SourceStampTax = 883.50756m,
-                SourceTotalDeductions = 11633.47756m,
-                SourceNet = 90883.22244m,
-                
-            }
-        };
-
-        foreach (var example in examples)
-        {
-            var result = ProgressPaymentCalculator.Calculate(example.Input);
-
-            Assert.Equal(example.SourceTransportNet, result.TransportNetAmount);
-            Assert.Equal(example.SourceGross, result.GrossAmount);
-
-            // Latest Basic XLSM: T=I*6%; U=K*9.48/1000. The legacy manual input is ignored.
-            Assert.Equal(example.Input.PriceDifference * 0.06m, result.AdditionalGuarantee);
-            Assert.Equal(example.SourceStampTax, result.StampTax);
-            Assert.Equal(example.SourceTotalDeductions, result.TotalDeductions);
-            Assert.Equal(example.SourceNet, result.NetPayable);
-
-            // This synthetic vector validates the calculation-sheet formula chain only.
-            // Report D28 parity must use a captured row from the source XLSM, not inferred totals.
-        }
-    }
-
-    [Fact]
-    public void CurrentBasicRow4_ShouldMatchCalculationSheetFormulaChain()
+    [Theory]
+    [InlineData(16, 19539.1608, 7365.35, 319991.9228, 31999.19228, 15999.59614, 351991.11508, 441.921, 3033.523428144, 19475.040568144, 332516.074511856)]
+    [InlineData(16, 6545, 7366.35, 112086.35, 11208.635, 5604.3175, 123294.985, 441.981, 1062.578598, 7108.877098, 116186.107902)]
+    [InlineData(16, 6135, 7367.35, 105527.35, 10552.735, 5276.3675, 116080.085, 442.041, 1000.399278, 6718.807778, 109361.277222)]
+    [InlineData(16, 4857.1601, 7368.35, 85082.9116, 8508.29116, 4254.14558, 93591.20276, 442.101, 806.586001968, 5502.832581968, 88088.370178032)]
+    [InlineData(16, 2810, 7369.35, 52329.35, 5232.935, 2616.4675, 57562.285, 442.161, 496.082238, 3554.710738, 54007.574262)]
+    public void LatestBasicRows4To8_ShouldMatchWorkbookCalculationCells(
+        decimal workDays, decimal dailyPrice, decimal priceDifference,
+        decimal sourceTransportNet, decimal sourceVat, decimal sourceWithholding,
+        decimal sourceGross, decimal sourceGuarantee, decimal sourceStampTax,
+        decimal sourceDeductions, decimal sourceNet)
     {
         var input = new ProgressPaymentInput(
-            WorkDays: 15m,
-            DailyPrice: 14606m,
-            DiscountAmount: 100m,
-            PriceDifference: 1500m,
-            ContractAmount: 100000m,
-            IsVatExempt: false,
-            TaxDebt: 1500m,
-            SocialSecurityDebt: 1500m,
-            MinimumWageSupport: 1500m,
-            InspectionPenalty: 1500m,
-            ProgramType: TransportationProgramType.BasicOrSecondary);
-
+            WorkDays: workDays, DailyPrice: dailyPrice, DiscountAmount: 0m,
+            PriceDifference: priceDifference, ContractAmount: 100000m, IsVatExempt: false,
+            TaxDebt: 0m, SocialSecurityDebt: 0m, MinimumWageSupport: 0m,
+            InspectionPenalty: 0m, ProgramType: TransportationProgramType.BasicOrSecondary);
         var result = ProgressPaymentCalculator.Calculate(input);
-
-        // Latest workbook's Hesaplama Bilgileri row 4: K=220490, L=22049,
-        // M=11024.5, T=I*6%=90, U=K*9.48/1000=2090.2452.
-        // LibreOffice cached/recalculated values are not Excel/VBA acceptance.
-        Assert.Equal(220490m, result.TransportNetAmount);
-        Assert.Equal(22049m, result.TransportVat);
-        Assert.Equal(11024.5m, result.TransportWithholding);
-        Assert.Equal(242539m, result.GrossAmount);
-
-        // Source formulas T=I*6%, U=K*9.48/1000, V includes T+U+M, W=O-V.
-        Assert.Equal(90m, result.AdditionalGuarantee);
-        Assert.Equal(2090.2452m, result.StampTax);
-        Assert.Equal(19204.7452m, result.TotalDeductions);
-        Assert.Equal(223334.2548m, result.NetPayable);
-
-        // Report D28 is not asserted from a synthetic fixture; use a captured Excel row for parity.
+        Assert.Equal(sourceTransportNet, result.TransportNetAmount);
+        Assert.Equal(sourceVat, result.Vat);
+        Assert.Equal(sourceWithholding, result.Withholding);
+        Assert.Equal(sourceGross, result.GrossAmount);
+        Assert.Equal(sourceGuarantee, result.AdditionalGuarantee);
+        Assert.Equal(sourceStampTax, result.StampTax);
+        Assert.Equal(sourceDeductions, result.TotalDeductions);
+        Assert.Equal(sourceNet, result.NetPayable);
     }
 }
