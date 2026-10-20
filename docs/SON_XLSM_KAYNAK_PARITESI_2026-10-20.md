@@ -85,7 +85,7 @@ Bu sonuç LibreOffice yeniden hesaplaması ile kaynak önbelleğinin karşılaş
 
 
 ## Son test uygulama notu — 20.10.2026
-İlk MemberData düzenlemesi de Windows CI'da CS3016 verdi; bu nedenle testler daha basit ve derleyici açısından güvenli bir düzene alındı: tek [Fact], tipli tuple kaynak vektörleri ve foreach ile hücre sonuçlarının doğrulanması. Güncel commit: 15e3e88755ef768fdb6352c8bacb56f6ce99cafe. Bu commit için yeni CI sonucu henüz görünmüyor.
+İlk MemberData düzenlemesi de Windows CI'da CS3016 verdi; bu nedenle testler daha basit ve derleyici açısından güvenli bir düzene alındı: tek [Fact], tipli tuple kaynak vektörleri ve foreach ile hücre sonuçlarının doğrulanması. Güncel kaynak test düzenlemesini izleyen CI kontrolleri daha sonraki commitlerde tamamlandı; en güncel kontrol durumu aşağıdaki ek nottadır.
 
 
 ## Son XLSM'lerdeki icmal riskleri — formül zinciri ve aktarım ayrı ayrı
@@ -104,3 +104,11 @@ Bu sonuç LibreOffice yeniden hesaplaması ile kaynak önbelleğinin karşılaş
 Önceki tarihsel kopyalarda raporlanan AB4/V4 farkı 4,19 TL bu en son dosyaya doğrudan taşınmamalıdır: son dosyada AD4=V4 görülüyor. Tarihsel bulgu yalnızca eski kopya için geçerlidir.
 
 Bu bulgular, son XLSM'lerde **icmal formül zincirinin ayrı kabul edilmesi gerektiğini** gösterir. Kaynak Excel'in davranışını sessizce düzeltmeyin. Aynı hat/dönemle VBA aktarım makroları masaüstü Excel'de çalıştırılmalı, dört PDF yeniden üretilmeli ve kaynak formülünün iş sahibince onaylanmış davranışıyla OEHS çıktısı karşılaştırılmalıdır.
+
+
+## CI doğrulaması — güncel durum 20.10.2026 14:06 +03:00
+
+- Etkin PR dalı: `feature/official-payment-document-templates`; HEAD `101cef71e39dc59200d517fef2167b27b81942f3`.
+- HEAD için Windows workflow run [39411288804](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39411288804) tamamlandı ve **başarılı**. Çözüm/WPF derleme, UI statik kontrolleri, test derlemeleri ve çalıştırılması, PDF smoke üretimi ve Windows EXE publish adımları başarılı.
+- CI raporunda artefakt yükleme adımları ortam sınırlaması nedeniyle atlandı; bu durum derleme/test başarısından ayrı tutulmalıdır.
+- Bu CI sonucu otomatik testlerin başarılı olduğunu doğrular; Microsoft Excel masaüstünde VBA çalıştırılması, kaynak Excel'den dört gerçek PDF'nin üretilmesi ve OEHS ile 4×2 alan alan kabul karşılaştırması hâlâ yapılmadı.
