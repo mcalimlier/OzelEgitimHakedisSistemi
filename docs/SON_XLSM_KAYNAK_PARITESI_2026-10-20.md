@@ -112,3 +112,25 @@ Bu bulgular, son XLSM'lerde **icmal formül zincirinin ayrı kabul edilmesi gere
 - HEAD için Windows workflow run [39411288804](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39411288804) tamamlandı ve **başarılı**. Çözüm/WPF derleme, UI statik kontrolleri, test derlemeleri ve çalıştırılması, PDF smoke üretimi ve Windows EXE publish adımları başarılı.
 - CI raporunda artefakt yükleme adımları ortam sınırlaması nedeniyle atlandı; bu durum derleme/test başarısından ayrı tutulmalıdır.
 - Bu CI sonucu otomatik testlerin başarılı olduğunu doğrular; Microsoft Excel masaüstünde VBA çalıştırılması, kaynak Excel'den dört gerçek PDF'nin üretilmesi ve OEHS ile 4×2 alan alan kabul karşılaştırması hâlâ yapılmadı.
+
+
+## Devam notu — TEHYS Prestij Kart Stili ve hakediş oluşturma (2026-10-20)
+
+### Tasarım kararı
+- Kullanıcı, hakediş oluşturma ekranı için lacivert ağırlıklı, vurucu altın sarısı başlık/kenar/eylem vurguları taşıyan **1. tasarım: Prestij Kart Stili** yaklaşımını seçti.
+- Görsel hedef: İKN/sözleşme, firma, dönem, hat seçimi ve hesap özeti panellerinin birbirinden net ayrılması; yatay alanın etkin kullanılması; yoğun Excel benzeri kontrol edilebilirliğin korunması.
+- Mevcut WPF ana penceresi zaten TEHYS markasını, Navy/Gold kaynaklarını ve İKN seçimi/ihale özeti kontrollerini içeriyor. Tasarım mevcut kontrol ağacına uygulanmalı; yeni, bağımsız ve işlevsiz bir ekran olarak bırakılmamalı.
+
+### Uygulama kuralları
+- XAML kontrol adları, event handler'lar ve bağlı ViewModel/hesaplama davranışı değiştirilmeden önce bağımlılıkları incelenmeli.
+- Temel Eğitim ve Özel Eğitim hesaplama çekirdekleri ayrı kalmalı. Kaynak XLSM sayfa adları, hücre adresleri ve değişken isimleri yeniden adlandırılmamalı; ortaklaştırma yalnızca arayüz etiket/yerleşiminde yapılmalı.
+- Hat bazlı düzenleme yalnızca o hakediş taslağına uygulanmalı; sözleşme/ana hat tanımı açık bir kullanıcı işlemi olmadan sessizce değiştirilmemeli.
+- Görsel tutar örnekleri gerçek hesaplama sonucu gibi gösterilmemeli.
+
+### Doğrulama durumu ve açık işler
+- Bu not tasarım kararını ve uygulama ölçütlerini kaydeder; Prestij Kart Stili'nin tüm hakediş oluşturma ekranına uygulandığını veya yeni testlerin çalıştığını iddia etmez.
+- Son gözlenen PR #3 açık/taslak/birleştirilmemiş durumda. HEAD: `460538f2fd7e20b6d5a043870c42786e738e856e`.
+- HEAD için workflow/status sorgusunda yeni CI kaydı görünmedi; dolayısıyla bu HEAD'in CI başarısı doğrulanmış değildir.
+- Sonraki teknik adım: mevcut XAML'de hakediş oluşturma görünümünün kontrol hiyerarşisini ve ilgili event handler/ViewModel bağlantılarını saptamak; küçük, geriye uyumlu bir görsel değişiklik yapmak; Windows CI ve WPF testlerini çalıştırıp sonuçları buraya kaydetmek.
+- Microsoft Excel/VBA ile aynı girdiden 8 PDF'nin alan alan kabulü hâlâ açık; icmaldeki olası fiyat farkı tekrar sayımı kaynak davranışıyla karşılaştırılmadan değiştirilmemeli.
+- Ana dala merge veya yayınlama yapılmayacak.
