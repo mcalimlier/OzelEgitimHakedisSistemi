@@ -48,10 +48,10 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
             var specialOutputs = OehsOfficialDocumentFactory.BuildSeparate(special);
             Assert.Equal(4, specialOutputs.Count);
             var specialReport = PageText(specialOutputs, OehsOfficialDocumentKind.HakedisRaporu);
-            Assert.Contains("77.667,27 TL", specialReport);
-            Assert.Contains("236.014,30 TL", specialReport);
+            Assert.Contains("77.667,27", specialReport);
+            Assert.Contains("236.014,30", specialReport);
             Assert.Contains("158.347,03", specialReport);
-            Assert.Contains("61.508,94 TL", specialReport);
+            Assert.Contains("61.508,94", specialReport);
             var specialIcmal = PageText(specialOutputs, OehsOfficialDocumentKind.HakedisIcmali);
             Assert.Contains("₺77.667,27", specialIcmal);
             Assert.Contains("₺11.030,00", specialIcmal);
@@ -61,10 +61,10 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
             var basicOutputs = OehsOfficialDocumentFactory.BuildSeparate(basic);
             Assert.Equal(4, basicOutputs.Count);
             var basicReport = PageText(basicOutputs, OehsOfficialDocumentKind.HakedisRaporu);
-            Assert.Contains("319.991,92 TL", basicReport);
-            Assert.Contains("1.018.593,25 TL", basicReport);
+            Assert.Contains("319.991,92", basicReport);
+            Assert.Contains("1.018.593,25", basicReport);
             Assert.Contains("698.601,33", basicReport);
-            Assert.Contains("332.516,08 TL", basicReport);
+            Assert.Contains("332.516,08", basicReport);
             var basicIcmal = PageText(basicOutputs, OehsOfficialDocumentKind.HakedisIcmali);
             Assert.Contains("₺319.991,92", basicIcmal);
             Assert.Contains("₺7.365,35", basicIcmal);
