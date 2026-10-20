@@ -163,7 +163,7 @@ Bu oranlar mühendislik tahminidir, kabul sertifikası değildir. Genel proje %9
 - Son kaynak satır testleri: Temel satır 4–8 (5 vektör) ve Özel satır 4–6 (3 vektör). Testler [Fact] içinde tipli tuple vektörleriyle çalışır; CS3016 attribute hatası giderildi.
 - Test sayıları: **215/215 Core**, **5/5 WPF**. Tam çözüm/WPF derlemesi, statik UI kontrolleri, PDF smoke üretimi ve Windows EXE publish başarılı. EXE/arkadaş paketi artefakt yükleme adımları atlandı; fiziksel/masaüstü kabul yapılmadı.
 - Son XLSM formül önbelleği ile LibreOffice yeniden hesaplaması karşılaştırması: 279 sayısal hücrede tolerans üstü fark 0.
-- Yeni kritik açık bulgu: Temel Eğitim icmalinde aylık fiyat farkı + kesinti aktarım hücreleri kaynak satırındaki I/V ile aynı değil; Özel Eğitim icmalinde K+T aylık tutarına I+R ayrıca ekleniyor. İcmal VBA aktarımı Excel masaüstünde çalıştırılmadan kaynak kusuru/önbellek etkisi ayrıştırılmış sayılmaz; hesap davranışı sessizce değiştirilmedi.
+- Son XLSM'lerdeki güncel icmal bulgusu: Temel Eğitimde P4/Q4/R4=I4 ve AD4=V4 eşleşiyor; ancak C8=K4 (fiyat farkı dahil) iken D8=R4+AD4 fiyat farkını tekrar ve kesintileri aynı sütunda ekliyor. Özel Eğitimde de C8=K+T iken D8=I+R ayrıca ekleniyor. Tarihsel AB4/V4 farkı yalnızca eski kopyaya aittir. Kaynak makrolar masaüstü Excel'de çalıştırılmadan neden/niyet kesinleştirilmeyecek; kod sessizce değiştirilmedi.
 - PR #3 taslak/açık/birleştirilmemiş kalacak. Sıradaki iş: son XLSM'nin dört çıktı sayfasını aynı girdilerle OEHS dört PDF'siyle alan alan karşılaştırmak ve gerçek Excel/VBA aktarım sonucunu doğrulamak.
 
 
