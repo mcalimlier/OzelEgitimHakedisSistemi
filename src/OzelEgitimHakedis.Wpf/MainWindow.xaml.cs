@@ -6557,9 +6557,20 @@ public partial class MainWindow : Window
                     previousDraft.GuidePriceDifference = ReadDecimal(GuidePriceDifferenceTextBox);
                     previousDraft.TaxDebt = ReadDecimal(TaxDebtTextBox);
                     previousDraft.SocialSecurityDebt = ReadDecimal(SocialSecurityDebtTextBox);
+                    var draftRoute = _routes.FirstOrDefault(route =>
+                        string.Equals(
+                            OehsIdentityService.BuildRouteKey(
+                                route.TenderNumber,
+                                route.RouteNumber,
+                                route.ContractorTaxOrIdentityNumber,
+                                route.ContractNumber,
+                                route.ProgramType),
+                            previousDraft.RouteKey,
+                            StringComparison.Ordinal));
                     previousDraft.MinimumWageSupportEnabled =
-                        previousDraft.MinimumWageSupportEnabled &&
-                        MinimumWageSupportEnabledCheckBox.IsChecked == true;
+                        draftRoute is not null &&
+                        (draftRoute.ProgramType != TransportationProgramType.BasicOrSecondary ||
+                         MinimumWageSupportEnabledCheckBox.IsChecked == true);
                     previousDraft.MinimumWageSupport = previousDraft.MinimumWageSupportEnabled
                         ? ReadDecimal(MinimumWageSupportTextBox)
                         : 0m;
