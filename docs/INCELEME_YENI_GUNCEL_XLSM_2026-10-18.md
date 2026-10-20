@@ -1,3 +1,7 @@
+> **TARİHSEL KAYIT — GÜNCEL KABUL KAYNAĞI DEĞİL.** Bu belge eski tarihli XLSM kopyalarına ve o tarihteki bulgulara dayanır. Son yüklenen Excel dosyalarıyla çelişen formül, hücre adresi, tutar, kaynak hash'i veya test beklentisi geçerli değildir. Güncel kaynak kimliği, satır vektörleri ve bilinen icmal farkları için [SON_XLSM_KAYNAK_PARITESI_2026-10-20.md](SON_XLSM_KAYNAK_PARITESI_2026-10-20.md) esas alınmalıdır. Bu belge yalnızca geçmiş inceleme izi olarak korunur; güncel davranış için kopyalanmamalıdır.
+
+---
+
 # Yeni Güncel XLSM Kaynak İncelemesi — 18.10.2026
 
 ## Kaynak önceliği
