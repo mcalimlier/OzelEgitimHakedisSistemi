@@ -183,3 +183,12 @@ Tarihsel Temel/Ortaöğretim ​`Hizmet İşleri Hakediş Raporu!F15` formülü 
 - Tarihsel kaynak PDF'lerinde Temel/Ortaöğretim Hakediş Raporu alt tarihi `16.10.2026`, diğer raporlardaki üretim tarihi `19.10.2026`; Özel Eğitim Hakediş Raporu ise sabit `24.06.2026` alt tarihi gösteriyor. OEHS `GeneratedDate` kullanarak güncel üretim tarihini tutarlı gösterir. Bu tarih farkları kaynak dosya durumuna aittir; resmî hesap tutarlarına müdahale edilmedi.
 - Kaynak `İşyeri Teslim Tarihi` formülü bitiş tarihi sütununu çekiyor; OEHS başlangıç tarihini kullanıyor. Bu kaynak formül kusuru açıkça belgeli ve karar verilene kadar değiştirilmedi.
 - **Sıradaki iş:** en yeni XLSM'nin aynı örneği gerçek Excel'de yeniden hesaplanıp VBA makroları çalıştırılarak tarihsel/yenilenmiş değer farkları doğrulanmalı. `Hakediş İcmali`ndeki fiyat farkını ikinci kez ekleme davranışı için kaynak davranışını koruma veya düzeltme kararı alınmadan kod değişikliği yapılmamalı. PR taslak ve birleştirilmemiş kalacak.
+
+
+## Ek güncel kaynak kanıtı — 20.10.2026 XLSM'leri
+
+- Son yüklenen dosyalar artık doğrudan okunup SHA-256 ile sabitlendi. Yetkili kaynak vektörleri ve formül özeti: [SON_XLSM_KAYNAK_PARITESI_2026-10-20.md](SON_XLSM_KAYNAK_PARITESI_2026-10-20.md).
+- Temel Eğitim satır 4–8 ve Özel Eğitim satır 4–6 kaynak sonuçları C# regresyon testlerine aktarıldı. Eski yüklemeye dayanan test vektörleri yenileriyle değiştirildi; program çekirdekleri ayrı tutuldu.
+- Her iki son XLSM'nin formül önbelleği, LibreOffice Calc ile ayrı XLSX kopyalarında yeniden hesaplanan sayısal sonuçlarla karşılaştırıldı: 279 sayısal hücre, 0 fark (tolerans 0,000001 TL). Bu sonuç masaüstü Microsoft Excel/VBA makro kabulü değildir.
+- Windows CI run [39398873252](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39398873252) önceki test commit'inde CS3016 nedeniyle başarısız oldu. Test vektörleri MemberData biçimine alındı; yeni CI run [39399075572](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39399075572) kuyruğa alındı. Bu yeni çalışmanın sonucu henüz doğrulanmış değil.
+- Sekiz PDF kabul hücresinin durumu değişmedi: gerçek aynı-girdi Excel/VBA PDF referansı ve alan alan karşılaştırma olmadan hiçbiri kapatılmış sayılmaz.
