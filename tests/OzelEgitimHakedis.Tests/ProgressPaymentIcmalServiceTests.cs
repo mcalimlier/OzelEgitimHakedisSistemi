@@ -192,13 +192,30 @@ public sealed class ProgressPaymentIcmalServiceTests
     }
 
     [Fact]
-    public void FindPreviousDeduction_ShouldUseNovemberDespiteMissingSourceHeader()
+    public void SpecialEducationDecember_ShouldReturnZeroBecauseNovemberHeaderIsMissing()
     {
+        // Latest Special XLSM has no November label in İcmal Verileri!AN3:AX3.
+        // E21's MATCH of the previous month therefore fails and IFERROR returns zero.
         var november = History(1, new DateOnly(2026, 11, 30), 180m);
         var december = History(2, new DateOnly(2026, 12, 31), 250m);
 
         var result = ProgressPaymentIcmalService.FindPreviousDeduction(
             new[] { november, december }, december);
+
+        Assert.Equal(0m, result);
+    }
+
+    [Fact]
+    public void SpecialEducationJanuary_ShouldFollowFirstDuplicateDecemberHeaderToNovemberData()
+    {
+        // In the latest source workbook AP3 and AQ3 both display December, but the
+        // transfer macro maps AP to November and AQ to December. MATCH returns AP first.
+        var november = History(1, new DateOnly(2026, 11, 30), 180m);
+        var december = History(2, new DateOnly(2026, 12, 31), 250m);
+        var january = History(3, new DateOnly(2027, 1, 31), 300m);
+
+        var result = ProgressPaymentIcmalService.FindPreviousDeduction(
+            new[] { november, december, january }, january);
 
         Assert.Equal(180m, result);
     }
