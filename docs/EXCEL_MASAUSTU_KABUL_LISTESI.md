@@ -1,79 +1,50 @@
-# Excel Masaüstü Kabul Kontrol Listesi
+# Excel Masaüstü Kabul Kontrol Listesi — SON XLSM (20.10.2026)
 
-Tarih: 18.10.2026  
-Amaç: Kaynak XLSM ile OEHS arasındaki finansal davranışı tahminle değil, aynı veriyle gerçek Excel/VBA çıktısı üzerinden karşılaştırmak.
+**Bu listedeki kaynak:** [SON_XLSM_KAYNAK_PARITESI_2026-10-20.md](SON_XLSM_KAYNAK_PARITESI_2026-10-20.md). Eski listelerde geçen E4/K16/AB4 gibi adresler yeni dosyada doğrulanmadan kullanılmamalıdır. Bu liste son yüklenen dosyaları temel alır; geçmiş XLSM'lerle ilgili listeler güncel kabul için geçersizdir.
 
-## Kullanım ve güvenlik
+## 1. Güvenli test hazırlığı
+- [ ] Son Temel ve Özel Eğitim XLSM dosyalarının ayrı kopyalarını oluştur; orijinalleri değiştirme.
+- [ ] Dosya adı, boyut, SHA-256, Excel sürümü, hesaplama modu, tarih/saat ve test kullanıcısını kaydet.
+- [ ] VBA kodunu ve makro adını incelemeden makro çalıştırma. Toplu temizleme/silme makrolarını çalıştırma.
+- [ ] Excel'de tam yeniden hesaplama yap; makro öncesi hücre değerlerini ve formülleri kaydet.
+- [ ] Makroyu yalnızca test kopyasında çalıştır; makro sonrası hücreleri, seçili dönemi ve seçili hattı tekrar kaydet.
 
-- Orijinal iki XLSM dosyasını değiştirmeyin. Her program için ayrı bir test kopyası oluşturun.
-- Makroları yalnızca yetkili/güvenilir çalışma ortamında etkinleştirin.
-- Her testte dosya adı, SHA-256, Excel sürümü, hesaplama modu, seçili dönem, hat anahtarı ve test zamanı kaydedilsin.
-- Her senaryodan önce tam yeniden hesaplama yapın; makro öncesi ve sonrası değerleri ayrı kaydedin.
-- Kaynak Excel ve OEHS aynı hakediş girdilerini kullanmalı. Ekran görüntüsü tek başına yeterli değil; hücre adresi ve sayısal değer de yazılmalı.
-- Kaynak Excel PDF'leri yoksa dört PDF kabul kapısı kapatılmış sayılmaz.
+## 2. Güncel kaynak kimliği
+- [ ] Temel Eğitim: SHA-256 `37a7818881aae52e8b2fcf95f30a75e1f302dfce1e91e2345f3473668a4d5296`.
+- [ ] Özel Eğitim: SHA-256 `c31cb024ac1eb59f3b88d2ee12234be98d1f07056884374d8dad108f674d7d1e`.
+- [ ] Kaynak dosyanın hash'i farklıysa bu listedeki beklenen değerleri otomatik kabul etme; önce kaynak değişikliğini kayda al.
 
-## A. Temel Eğitim / Ortaöğretim
+## 3. Temel Eğitim / Ortaöğretim — kaynak satırları 4–8
+- [ ] `Hesaplama Bilgileri!K4:W8` aralığındaki K, L, M, O, T, U, V, W sonuçlarını kaydet.
+- [ ] Formül zincirini doğrula: `K=(G*H)+I-J`; `T=I*6%`; `U=K*9.48/1000`; `V=P+Q+R+S+T+U+M`; `W=O-V`.
+- [ ] Özellikle satır 4: K=319.991,9228; T=441,921; U=3.033,523428144; V=19.475,040568144; W=332.516,074511856.
+- [ ] İcmal aktarımı sonrası ilgili satırdaki `P4/Q4/R4` ve `AD4` değerlerini kaydet; son kaynakta P/Q/R'nin I ile, AD'nin V ile eşleştiğini doğrula.
+- [ ] İcmalde C8=K4 ve D8=R4+AD4, E8=C8+D8 olup olmadığını kaydet. Bu zincir I fiyat farkını C içinde ve D içinde tekrar sayıyor olabilir; farkı gizleme, Excel/VBA makro sonrası sonucu ayrı kaydet.
 
-### Senaryo B1 — E21 önceki ay aktarımı
-- [ ] Anasayfa!E4 seçili dönemini Kasım 2026 yap.
-- [ ] Hat anahtarını Anasayfa!K16 üzerinden doğrula; K17 boşken E21'in hangi anahtarı kullandığını not et.
-- [ ] İcmal Verileri!AB3:AL3 aylık başlıklarını, AB4:AL4 ilgili hat kesintilerini ve AM4 toplamını kaydet.
-- [ ] Makro öncesi Hakediş İcmali!E21 değerini kaydet.
-- [ ] İlgili aylık aktarım makrosunu çalıştır; makro sonrası E21 ve AB:AM hücrelerini kaydet.
-- [ ] OEHS'nin Ekim 2026 kesintisini Kasım icmaline taşıma sonucuyla karşılaştır. Beklenti varsayımı ile literal kaynak E21 davranışını ayrı raporla.
+## 4. Özel Eğitim — kaynak satırları 4–6
+- [ ] `Hesaplama!K4:AG6` içinde K, T, AC, AD, AE, AF, AG sonuçlarını kaydet.
+- [ ] Formül zincirini doğrula: `K=(G*H)+I-J`; `T=(P*Q)+R-S`; `AC=I*6%+R*6%`; `AD=K*9.48/1000+T*9.48/1000`; `AE=M+V+Y+Z+AA+AB+AC+AD`; `AF=O+X`; `AG=AF-AE`.
+- [ ] Özellikle satır 4: K=43.630,00; T=34.037,27; AC=661,80; AD=736,2857196; AE=27.328,7843196; AG=61.508,9396804.
+- [ ] İcmal C8, D8 ve E8 hücrelerini kaydet. Son dosyada C8=K+T, D8=I+R, E8=C8+D8 örüntüsünü doğrula; fiyat farkı ikinci kez ekleniyorsa kayda al, otomatik olarak onaylı davranış sayma.
 
-### Senaryo B2 — Teminat/damga ve net tutar
-- [ ] Aynı örnek hat için Hesaplama Bilgileri!I4, K4, T4, U4, V4, W4 değerlerini kaydet.
-- [ ] T5:W6 aralığını da kaydet; yalnız tek satırdan genelleme yapma.
-- [ ] Hakediş Raporu!D6, D7, D8, D10, D11, D28 değerlerini makro öncesi/sonrası kaydet.
-- [ ] D28 ile W değerini ayrı ayrı karşılaştır; farkı otomatik olarak hata veya resmî tutar kabul etme.
-- [ ] T'nin elle girilen sabit mi, kalan örnek veri mi, yoksa eksik formül mü olduğunu workbook/VBA davranışıyla doğrula.
+## 5. Dört PDF × iki program — 8/8 kabul
+Her program için aynı test girdisi ve aynı dönem/hatla dört PDF üret:
+- [ ] Hakediş Raporu
+- [ ] Hizmet İşleri Hakediş Raporu
+- [ ] Hizmet İşleri Kabul Tutanağı
+- [ ] Hakediş İcmali
 
-## B. Özel Eğitim
+Her PDF için:
+- [ ] Dönem, yüklenici, hat/iş adı, sözleşme tarihleri ve iş günü bilgileri.
+- [ ] Brüt tutar, fiyat farkı, KDV, tevkifat, ek kesin teminat, damga vergisi, kesintiler ve net tutar.
+- [ ] İmza/unvan alanları, taşma/kesilme, sayfa yönü ve A4 ölçüsü.
+- [ ] Excel PDF'si ve OEHS PDF'si yan yana kontrol edildi; fark varsa hücre/formül/alan bazında not edildi.
+- [ ] PDF dosya adı, boyutu ve SHA-256 kaydedildi.
 
-### Senaryo S1 — İcmal ay başlıkları
-- [ ] Anasayfa!E5 dönemini sırayla Kasım 2026, Aralık 2026, Ocak 2027, Haziran 2027 ve Temmuz 2027 yap.
-- [ ] Anasayfa!K17 hat anahtarını ve ilgili hat numarasını kaydet.
-- [ ] Her dönem için İcmal Verileri!AN3:AX3 başlıklarını ve AN4:AX4 değerlerini makro öncesi/sonrası kaydet.
-- [ ] Hakediş İcmali!E21 değerini her dönem için kaydet.
-- [ ] Kasım atlanan/Aralık tekrarlanan başlık kusurunun gerçek Excel/VBA aktarımında da oluşup oluşmadığını belirle.
+## 6. Sonuç kaydı ve kapatma ölçütü
+- [ ] Kaynak formül önbelleği, Excel tam hesaplama sonucu ve VBA sonrası sonuç ayrı sütunlarda saklandı.
+- [ ] Excel formülü ile VBA aktarımı veya OEHS arasında fark varsa hiçbir tutar sessizce değiştirilmedi; kaynak hücre, beklenen/gerçek değer ve karar sahibi kaydedildi.
+- [ ] 8/8 PDF için finansal ve görsel kabul kanıtı mevcut.
+- [ ] Test sonucu, Excel sürümü ve test kopyası hash'i devam notuna eklendi.
 
-### Senaryo S2 — Rapor D28 ile hesaplama neti
-- [ ] Aynı hakediş için Hesaplama!AG4:AG6 değerlerini kaydet.
-- [ ] Hakediş Raporu!D6, D7, D8, D10, D11, D28 değerlerini kaydet.
-- [ ] Satır 4, 5 ve 6 için D28-AG farkını ayrı hesapla ve raporla.
-- [ ] Makroları çalıştırmadan ve çalıştırdıktan sonraki sonuçları ayrı tut.
-
-## C. Dört PDF — her iki programda aynı hakediş
-
-Her program ve test hakedişi için:
-- [ ] Hakediş Raporu PDF
-- [ ] Hizmet İşleri Hakediş Raporu PDF
-- [ ] Hizmet İşleri Kabul Tutanağı PDF
-- [ ] Hakediş İcmali PDF
-
-Dört PDF birlikte kontrol edilmeli:
-- [ ] Tutarlar: kaynak hücreler ve OEHS hesap sonuçlarıyla uyum
-- [ ] Dönem / hizmet başlangıç-bitiş tarihleri
-- [ ] Yüklenici ve sözleşme/ihale bilgileri
-- [ ] Hat numarası ve güzergâh adı
-- [ ] İmza adları ve imza alanları
-- [ ] Sayfa boyutu, yönü, kesilme/taşma ve sayfa sayısı
-- [ ] İcmal ay sırası Eylül–Temmuz; programlar arası kural birleştirilmemeli
-
-## Sonuç kayıt şablonu
-
-Her senaryo için aşağıdakiler yazılmalı:
-- Program / test senaryosu:
-- Kaynak XLSM dosyası ve SHA-256:
-- Excel sürümü ve tarih/saat:
-- Seçili dönem / hat:
-- Makro öncesi hücre değerleri:
-- Makro sonrası hücre değerleri:
-- OEHS karşılıkları:
-- Farklar ve farkın yönü:
-- Dört PDF kontrolü (var/yok ve bulgular):
-- Sonuç: geçti / kaldı / karar bekliyor
-- Karar gerekiyorsa seçenekler ve karar sahibi:
-
-**Kabul kuralı:** Gerçek Excel/VBA çıktısı olmadan bu kontrol listesi tamamlanmış sayılmaz. LibreOffice yeniden hesaplaması ve sentetik PDF smoke çıktıları bu kanıtın yerine geçmez.
+**Kabul sınırı:** LibreOffice yeniden hesaplama testi veya C# PDF regresyonu, masaüstü Excel/VBA çalıştırması ve gerçek Excel PDF'lerinin görsel kabulü yerine geçmez. Bu kanıtlar yoksa kabul tamamlanmış sayılmaz.
