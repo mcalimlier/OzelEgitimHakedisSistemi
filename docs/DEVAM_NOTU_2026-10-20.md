@@ -528,3 +528,14 @@ Yüzdeler mühendislik tahminidir; resmi kabul oranı değildir.
 - Testlerin amacı herhangi bir sabit hat sınırı koymak değildir; üretimde seçilebilir hat sayısı veri modelindeki gerçek hat sayısına göre dinamik olmalıdır.
 - Açık kritik işler: WPF'de İKN/program türü/firma/dönem/hat akışının uçtan uca doğrulanması; hat başına giriş izolasyonu; seçilmeyen hatların toplam, arşiv ve dört PDF'ye girmediğinin testi; gerçek Excel/VBA ile 8 PDF'nin alan alan kabulü; kaynak değişken/sayfa adlarının tam envanter eşlemesi.
 - Sonraki adım: commit `458daa9` için CI sonucunu al; ardından WPF çoklu hat akışında test edilebilir en küçük bağımsız doğrulama katmanını belirleyip regresyon testlerini ekle. PR #3 taslak kalacak; merge/release yok.
+
+
+## 37 hatlık kabul testi — CI doğrulandı (20.10.2026)
+
+- Commit `458daa9df4d4d4ba5010c81095a18573c43f155c` için Windows CI run [39449499001](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39449499001) başarılı tamamlandı.
+- Tam çözüm ve WPF derlemesi, UI sözleşmesi/yerleşim kontrolleri, test derlemeleri, Test Solution, PDF smoke ve Windows EXE publish adımları başarılıdır.
+- Hat seçimi testi 37 farklı hat taslağında 1, 2, 3, 5, 8, 12, 20, 36 ve 37 seçiminin yalnızca seçilen anahtarları ve toplamı döndürdüğünü doğrular. Bu, servis düzeyi regresyonudur; WPF arayüzü üzerinden gerçek kullanıcı akışının uçtan uca otomasyonu değildir.
+- Bu CI, yalnızca commit `458daa9` kapsamını doğrular. Sonraki devam notu commit'i için workflow sonucu ayrıca kontrol edilmelidir.
+- **Hakediş Oluştur kabul durumu %100 değildir.** Açık kritik kapsam: İKN altındaki firma seçiminin bağımsız ve anlaşılır olması; seçilen firma/hatların sözleşme ve program türüyle doğru filtrelenmesi; dönem değişiminde görünür ve gizli tüm taslakların izolasyonu; seçilmeyen hatların hesap, arşiv ve dört PDF'ye hiç girmediğinin uçtan uca testi; Temel/Özel değişken ve Excel sayfa adlarının tam eşleme envanteri; gerçek Excel/VBA ile 8 PDF alan bazlı karşılaştırması.
+- Sonraki adım: WPF hakediş ekranında İKN ve firma seçim modelini inceleyip, mevcut veri modelinin aynı İKN altında birden çok firmayı destekleyip desteklemediğini doğrula. Desteklemiyorsa sözleşme/hat kimliğini bozmadan ilişki modelini tasarla ve testle; Excel hesap çekirdeklerini birleştirme.
+- PR #3 taslak kalır; ana dala merge/release yok.
