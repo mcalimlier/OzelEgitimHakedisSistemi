@@ -475,3 +475,14 @@ Yüzdeler mühendislik tahminidir; resmi kabul oranı değildir.
 6. Formül farklarını sessizce değiştirme; kanıt ve karar gerektiren icmal konularını ayrı tut.
 
 **Oturum sonu:** Bu not güncellendi. Kullanıcı bu akşam devam etmeyebilir; sonraki oturum bu nottan başlamalı. Herhangi bir merge/release yapılmamalı.
+
+
+## Hakediş Oluştur ana iş akışı — gereksinim ve kabul sözleşmesi (20.10.2026)
+
+- Kullanıcının kritik ürün beklentisi netleştirildi: **Hakediş Oluştur programın kalbidir**; Temel Eğitim ve Özel Eğitim İKN'leri, yüklenicileri, hatları ve dönemleri karıştırmadan hem tek hat hem seçili hat grubu hesaplamasını desteklemelidir.
+- Yeni belge: [HAKEDIS_OLUSTUR_URUN_KABUL_SOZLESMESI_2026-10-20.md](HAKEDIS_OLUSTUR_URUN_KABUL_SOZLESMESI_2026-10-20.md). İçerik: IKN/ihale-yüklenici-dönem akışı, ortak tabloda iki programı gösterme, beş hattan seçilen üç hattı hesaplama, hat bazında bağımsız taslak ve değişiklik, seçilmeyen hatların hesap/PDF/arşive girmemesi, dönem izolasyonu, fail-closed doğrulamalar ve zorunlu kabul testleri.
+- Kaynak adı kuralı kayda alındı: Excel'deki alan/değişken adları tam metinle korunmalı; Temel ve Özel Eğitim farklı ad kullanıyorsa kendi çekirdeğinde ayrı saklanmalı. Kaynak sayfa adları değiştirilmeyecek; sol menü eşlemesi iki son XLSM'nin gerçek sayfa envanteri doğrulandıktan sonra yapılacak.
+- Yeni gereksinim belgesi commit'i: `54b8f2c250fb0de33f8a12b095d50f0480c57c30`. Bu dokümantasyon commit'ine özel CI henüz doğrulanmadı; önceki CI [39436841637](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39436841637) başarılı ve son görülen kod akışını doğruluyor.
+- Mevcut WPF'de ihale/dosya seçimi, yüklenici bilgisi, çoklu hat seçimi, `MultiRoutePaymentGrid`, `RouteDraftCache` ve `SelectedRouteDrafts.SelectExact` var. Bu, gereksinimlerin tümünün uçtan uca kabul edildiği anlamına gelmez.
+- Açık geliştirme işi: 1/3/5 hat WPF uçtan uca senaryoları; her hatta ayrı değişiklik izolasyonu; seçilmeyen hatların dört PDF ve arşive girmediği doğrulaması; ortak İKN tablosunda program türü ayrımı; tam XLSM sayfa/alan envanteri ve menü eşlemesi.
+- Bir sonraki adım: güncel branch HEAD/CI'yi yeniden doğrula; sonra çoklu-hat akışının WPF testlerini ekle. Kod değişiklikleri ve testler tek feature dalında sıralı ilerletilsin. PR #3 taslak kalacak; merge/release yok.
