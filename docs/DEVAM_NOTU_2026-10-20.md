@@ -740,3 +740,16 @@ Yüzdeler ölçüm sistemiyle hesaplanmış kesin istatistik değil, iş paketle
 - İlerleme tahminleri (resmî kabul değil): Temel Eğitim hesaplama **%86**, Özel Eğitim hesaplama **%88**, ortak hesaplama motoru/rapor zinciri **%86**, PDF/icmal **%87**, arşiv/veri modeli **%86**, WPF/ekran **%83**, test/CI/dağıtım **%98**, genel **%86**.
 - Açık kabul kapıları aynı: Microsoft Excel VBA IDE compile/run; Temel `T4/U4/W4`, rapor `D15/D28`; Özel `AC4:AG4`, rapor `D28`; gerçek 8 PDF alan/görsel kabulü; VBA veri silme/aktarım davranışının yedekli kopyada testi. İcmal başlık uyuşmazlığı karar kaydıyla izlenmeli.
 - Sıradaki adım: yeni docs-only CI sonuçlarını doğrula. Ardından güvenli VBA düzeltme taslağını oluştururken kaynak XLSM'leri değiştirmeden, önce hedef sütun eşlemesini ve mevcut buton/makro bağlantılarını koru. Her iki çekirdek gerçek Excel/VBA ve PDF kabul kapıları kapanana kadar %100 sayılmayacak.
+
+
+## Devam checkpoint'i — Özel Eğitim AP3 Kasım başlığı düzeltildi (20.10.2026 17:00 +03:00)
+
+- Etkin dal: `feature/official-payment-document-templates`; PR #3 açık/taslak, birleştirilmedi.
+- Kontrol edilen HEAD, bu devam notu güncellemesinden önce `5c286170fb226a0ae759e52bf109f49bfe31c518` idi. Windows CI run [39460887955](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39460887955) bu HEAD için **success** tamamlandı. Bu sonuç yeni dokümantasyon commit'leri için otomatik olarak geçerli sayılmaz; sonraki CI ayrıca kontrol edilmeli.
+- Kullanıcı talimatına göre Özel Eğitim kaynak dosyasındaki `İcmal Verileri!AP3` Kasım olmalıdır. Ayrı kopyada `AP3 = Anasayfa!I8` (Kasım), `AQ3 = Anasayfa!I9` (Aralık) olarak düzeltildi.
+- Düzeltilmiş dosya: `/mnt/data/02-Ozel_Egitim_Hakedis_AP3_Kasim_Duzeltme.xlsm`. Orijinal XLSM üzerine yazılmadı.
+- Dosya düzeyinde doğrulama: AP3 formülü ve cached başlık Kasım 2026; AQ3 Aralık 2026. XLSM içindeki 47 arşiv parçası korundu ve VBA projesinin SHA-256'sı orijinalle aynı (`80a75b85adc3bb864747bbbe9ff5ea5089359aaf0f64022d8ba256dccec46310`). Yalnızca `xl/worksheets/sheet8.xml` içindeki AP3 hücresi değişti.
+- Repo dokümanları güncellendi: `docs/VBA_KAYNAK_STATIK_INCELEME_2026-10-20.md` ve `docs/SON_XLSM_KAYNAK_PARITESI_2026-10-20.md`. Yeni dokümantasyon commit'lerinin CI sonucu kontrol edilmeli.
+- Henüz yapılmayan doğrulama: düzeltilmiş kopyayı Microsoft Excel masaüstünde açıp yeniden hesaplama, VBA IDE Compile/Debug, makro aktarımı ve 4×2 gerçek PDF kabulü. Dosya düzeyindeki kontrol bunların yerine geçmez.
+- İlerleme tahmini (mühendislik; resmî kabul değil): Temel Eğitim çekirdeği **%86**, Özel Eğitim çekirdeği **%89** (başlık eşlemesi düzeltildi; Excel/VBA ve çıktı kabul kapıları açık). Ortak motor/rapor zinciri **%86**, PDF/icmal **%87**, arşiv/veri modeli **%86**, WPF/UI **%83**, test/CI/dağıtım **%98**, genel **%86**.
+- Sonraki işler: (1) güncel HEAD ve CI sonucunu doğrula; (2) VBA-01/07 seçili aya özgü güvenli temizleme davranışını ve Özel Eğitim aktarım hedef doğrulamasını kaynak kopyada test edilebilir bir patch olarak hazırla; (3) gerçek Excel/VBA ve 8/8 PDF kabul kanıtı olmadan iki çekirdeğe %100 etiketi verme. PR açık/taslak kalır; merge/release yok.
