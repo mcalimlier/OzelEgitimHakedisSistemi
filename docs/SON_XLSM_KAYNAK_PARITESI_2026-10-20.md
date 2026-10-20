@@ -222,3 +222,15 @@ Bu kriterler ürün kabul şartıdır; sonraki geliştirme/devam notlarında kor
 - PDF smoke çıktısı ve EXE/test paketi artefaktlarının yüklenmesi ortam sınırlaması nedeniyle atlandı. Bu, derleme/test adımlarının başarılı olduğu bilgisinden ayrı tutulmalıdır.
 - Bu koşu Microsoft Excel masaüstünde VBA derlemesi/çalıştırması, gerçek UserForm etkileşimi veya Excel'den üretilmiş 8 PDF'nin alan-alan karşılaştırması değildir. Gerçek Excel/VBA ve 8/8 PDF kabulü açık kalır.
 - PR #3 açık/taslak ve ana dala birleştirilmemiştir.
+
+## Güncel kaynak-parite ve icmal regresyonu — 20.10.2026 20:56 +03:00
+
+- Kod/test HEAD: `d932661c86fb0b471ada2ee426b99db0fa0135ee`.
+- Windows CI [39470245406](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39470245406) **başarılı**: tam çözüm/WPF derlemesi, UI statik kontrolleri, PDF smoke üretimi ve EXE hazırlama/yükleme adımları tamamlandı. Test sonuçları: Core **238/238 PASS**, WPF output **6/6 PASS**. Bu sonuç Microsoft Excel/VBA masaüstü derlemesi veya 8/8 gerçek Excel PDF kabulü değildir.
+- En son kaynak XLSM'ler yeniden açılarak yalnızca önbelleğe alınmış hücreler/formül metinleri okundu; Excel'de tam yeniden hesaplama yapılmadı:
+  - Temel Eğitim SHA-256 `37a7818881aae52e8b2fcf95f30a75e1f302dfce1e91e2345f3473668a4d5296`: `Anasayfa!E4=Kasım 2026`; `Hakediş İcmali!E21` ve `İcmal Verileri!AC4` önbelleği **26.448,176274448 TL**. E21, E4 + I5:I14 + AB:AL eşlemesini kullanır. Önceki testteki 24.104,02472 TL ve E5/K17/AN:AX açıklaması güncel kaynak için eskidir.
+  - Özel Eğitim SHA-256 `c31cb024ac1eb59f3b88d2ee12234be98d1f07056884374d8dad108f674d7d1e`: `Anasayfa!E5=Kasım 2026`; `Hakediş İcmali!E21` ve `İcmal Verileri!AO4` önbelleği **29.963,898156 TL**. E21, E5 + I6:I15 + AN:AX eşlemesini kullanır. Önceki testteki 10.580,582128 TL beklentisi güncel kaynak için eskidir.
+- Kaynak E21 sınır testleri güncellendi: Temel Eğitim'de Temmuz görünür icmal dönemi olsa da E21'in seçili ay listesi Eylül-Haziran olduğundan Temmuz sonucu sıfır; Özel Eğitim'de Kasım başlığı AN:AX içinde eksik ve Aralık iki kez yer alıyor, bu yüzden Aralık seçili E21 sıfır döndürüyor ve Ocak seçili ilk Aralık başlığı AP üzerinden aktarım eşlemesine göre Kasım verisini okuyor. Bu, **mevcut XLSM davranışının paritesi** olarak kodlandı; başlık kusurunun doğru iş kuralı olduğu anlamına gelmez.
+- Özel Eğitim `İcmal Verileri!AP3` ve `AQ3` orijinal dosyada hâlâ `=Anasayfa!I9` (Aralık) başlığını gösterir. Ayrı düzeltilmiş kopya mevcut; orijinal XLSM değiştirilmedi.
+- PR #3 açık/taslak ve birleştirilmemiş durumda. Ana dala merge/release yapılmadı.
+- Açık kabul kapıları: Excel VBA IDE `Debug > Compile`, gerçek makro ve UserForm olay testleri, seçili ay silme/geri yükleme hata senaryoları, gerçek Excel yeniden hesaplaması, Temel için T4/U4/W4 ve D15/D28; Özel için AC4:AG4 ve D15/D28; aynı girdilerle toplam 8 PDF'nin alan/tutar/imza/dönem/hat/sayfa karşılaştırması.
