@@ -216,8 +216,11 @@ public sealed class ProgressPaymentIcmalServiceTests
     }
 
     [Fact]
-    public void FindPreviousDeduction_ShouldCarryJuneDeductionIntoJulyForBasicProgram()
+    public void FindPreviousDeduction_ShouldReturnZeroForJulyBasicBecauseSourceE21MonthListEndsInJune()
     {
+        // Basic's visible icmal row cycle supports July, but the source E21
+        // formula matches Anasayfa!E4 against I5:I14 (September-June). For July
+        // that MATCH fails and IFERROR returns zero; do not carry June into E21.
         var june = History(1, new DateOnly(2027, 6, 30), 180m) with
         {
             Input = new ProgressPaymentInput(
@@ -234,7 +237,7 @@ public sealed class ProgressPaymentIcmalServiceTests
         var result = ProgressPaymentIcmalService.FindPreviousDeduction(
             new[] { june, july }, july);
 
-        Assert.Equal(180m, result);
+        Assert.Equal(0m, result);
     }
 
     [Fact]
