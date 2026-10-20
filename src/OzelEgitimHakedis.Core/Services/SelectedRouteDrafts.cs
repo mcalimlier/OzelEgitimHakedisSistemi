@@ -27,6 +27,9 @@ public static class SelectedRouteDrafts
             selected.Add(draft);
         }
 
+        if (selected.Count == 0)
+            throw new InvalidOperationException("At least one route must be selected for payment output.");
+
         return selected;
     }
 }
