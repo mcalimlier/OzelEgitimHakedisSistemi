@@ -561,3 +561,22 @@ Yüzdeler mühendislik tahminidir; resmi kabul oranı değildir.
 - Diğer açık kabul işleri değişmedi: gerçek Microsoft Excel/VBA yeniden hesaplaması; Temel ve Özel Eğitim için 4'er PDF'nin gerçek Excel çıktılarıyla tutar, dönem, yüklenici, hat, imza ve sayfa düzeni karşılaştırması; WPF gerçek masaüstü/DPI kabulü.
 - PR #3 açık/taslak kalmalı; ana dala birleştirme veya yayınlama yapılmamalı.
 
+## İlerleme yüzdeleri — 2026-10-20 (kanıta dayalı tahmin)
+
+Bu yüzdeler resmi kabul ölçütlerine göre yaklaşık mühendislik ilerleme tahminidir; CI başarı yüzdesi veya gerçek Excel/VBA kabulü değildir. Herhangi bir madde için gerekli kanıt bulunmuyorsa tamamlanmış sayılmamıştır.
+
+| İş paketi | Tahmini ilerleme | Gerekçe / kalan kabul |
+|---|---:|---|
+| Temel Eğitim hesaplama çekirdeği | 75% | Formül zinciri ve test altyapısı var; gerçek Excel/VBA hücre karşılaştırması ve icmal kabulü açık |
+| Özel Eğitim hesaplama çekirdeği | 75% | Ayrı formül zinciri mevcut; gerçek Excel/VBA hücre karşılaştırması ve icmal kabulü açık |
+| Firma/İKN/hat seçimi ve taslak izolasyonu | 70% | Filtreleme ve servis testleri var; eksik kimlik uyarısı eklendi; gerçek WPF uçtan uca senaryolar açık |
+| Dört PDF şablonunun entegrasyonu | 55% | Şablon/üretim akışı üzerinde çalışma var; 8 çıktının kaynak Excel ile alan ve görsel kabulü açık |
+| Otomatik test ve CI | 65% | Servis testleri ve önceki bir CI başarısı var; son kod commit'inin CI sonucu bekleniyor, UI E2E kapsamı eksik |
+| Excel/VBA ile resmî kabul | 25% | LibreOffice ile sayısal formül kontrolü geçmişte yapılmış; gerçek Excel/VBA yeniden hesaplama ve 8 PDF eşleştirmesi tamamlanmadı |
+| **Genel proje tahmini** | **60%** | Ağırlıklı mühendislik tahmini; resmi ödeme kabulü veya üretime hazır olma oranı değildir |
+
+- Son kod commit'i: `d34f789f49f1914e23965f79f6509a485bb38e31`.
+- CI run `39451659524` son kontrol sırasında hâlâ `in_progress`; sonuç başarılı/başarısız olarak raporlanamaz.
+- Yüzdeler gerçek Excel/VBA ve 8 PDF kabulü tamamlanana kadar yükseltilmemelidir. Yeni kanıt geldikçe her paketin gerekçesiyle birlikte güncelle.
+- PR #3 açık/taslak; ana dala birleştirme veya yayınlama yapılmamalı.
+
