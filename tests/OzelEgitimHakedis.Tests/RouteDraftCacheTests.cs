@@ -142,7 +142,7 @@ public sealed class RouteDraftCacheTests
     [Fact]
     public void OutputSelection_ShouldSupportDifferentRequestedRouteCountsWithoutFixedLimit()
     {
-        const int totalRoutes = 12;
+        const int totalRoutes = 37;
         var cache = Enumerable.Range(1, totalRoutes).ToDictionary(
             index => $"R{index}",
             index => new Draft
@@ -153,7 +153,7 @@ public sealed class RouteDraftCacheTests
             },
             StringComparer.Ordinal);
 
-        foreach (var selectedCount in new[] { 1, 2, 3, 4, 5, 8, 12 })
+        foreach (var selectedCount in new[] { 1, 2, 3, 5, 8, 12, 20, 36, totalRoutes })
         {
             var selectedKeys = Enumerable.Range(1, selectedCount)
                 .Select(index => $"R{index}")
