@@ -123,3 +123,9 @@ Bu oranlar mühendislik tahminidir, kabul sertifikası değildir. Genel proje %9
 - Tarihsel yol haritası sonuçları en son XLSM kabulinden ayrıldı.
 - CI run 39398001399, kaynak ve test derleme aşamalarını geçti; Windows EXE publish adımı devam ederken kontrol edildi. Nihai CI sonucu henüz doğrulanmış değil.
 - Açık işler: gerçek son XLSM/VBA aynı-girdi sonuçları; 4 PDF × 2 program alan bazlı kabul; arayüz DPI/etkileşimli masaüstü kabulü. PR #3 taslak/açık/birleştirilmemiş kalacak.
+
+
+## Düzeltme kaydı — 2026-10-20, Hakediş Raporu D6 zinciri
+- Kod incelemesinde `ProgressPaymentReportService` güncel dönemin hizmet tabanını (I/R hariç) ve ham I+R fiyat farkını ayrı hesaplıyor; aylık geçmiş K+T toplamı, D6/D7/D8 zinciriyle uyumlu biçimde kuruluyor.
+- Önceki notta bu Hakediş Raporu zincirini icmaldeki olası çift ekleme riskiyle karıştıran ifade vardı. R-01 ve kaynak inceleme belgesi düzeltildi: rapor ile icmal ayrı kabul edilir; birinin davranışı diğerine genellenmez.
+- Bu doküman düzeltmeleri için yeni CI sonucu henüz alınmadı; kaynak/test mantığı değişmedi, yalnızca açıklama düzeltildi.
