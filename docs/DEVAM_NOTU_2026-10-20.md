@@ -677,3 +677,24 @@ Yüzdeler ölçüm sistemiyle hesaplanmış kesin istatistik değil, iş paketle
 - CI logunda `ProgressPaymentArchiveBatchServiceTests.cs` için CA1861 analiz uyarısı görüldü; derleme/test başarısızlığı değildir. İstenirse test kodu sadeleştirmesi ayrı ve küçük bir iş olarak yapılabilir.
 - **Sıradaki işler:** (1) WPF smoke testinden üretilen 8 PDF'nin gerçek kaynak Excel çıktılarıyla karşılaştırma kayıtlarını kapatmak için kaynak kabul kanıtını elde edilebilir hale getirmek; (2) hesaplama çekirdeklerinde eksik kalan gerçek Excel/VBA ve icmal aktarım kanıtlarını tamamlamak; (3) güvenli, kaynakla temellendirilen regresyon kapsamını artırmak ve her yeni commit'in CI sonucunu yeniden kontrol etmek.
 - İlerleme yüzdesi yalnızca yeni doğrulanmış kabul kanıtıyla artırılacak. Bu checkpoint'te iki çekirdek için %100 kabul iddiası yoktur.
+
+
+## Devam checkpoint'i — VBA statik bulguları ve sınır testi (20.10.2026 16:30 +03:00)
+
+- PR #3 açık/taslak; ana dala birleştirme/yayınlama yapılmadı.
+- Güncel kod HEAD: `674325135e6e47caa56ec2cc61c9f86a8f9d57f4`.
+- Önceki HEAD `40df5efac3c2f1e515f416c73ba04459e9ea44ba` için Windows CI [39456869410](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39456869410) **success**; en güncel test commit'i için run [39457544904](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39457544904) kontrol anında **queued**. Yeni testin geçip geçmediği henüz doğrulanmadı.
+- Yeni test dosyası: `tests/OzelEgitimHakedis.Tests/ProgressPaymentInputBoundaryTests.cs`. Her iki programda negatif gün/fiyat/sözleşme/kesinti alanlarının reddedilmesini, sıfır tutarlı sınır durumunu ve negatif fiyat farkının işaretinin korunmasını test eder. Bu yalnızca test kapsamı artışıdır; hesaplama formülleri değiştirilmedi.
+- VBA arşivleri için statik rapor: `docs/VBA_KAYNAK_STATIK_INCELEME_2026-10-20.md`. En yüksek riskler: iki programda `AyVerileriniSil` tüm aylık blokları temizliyor; Özel Eğitim aktarım makrolarında geçersiz ay/hedef sütun koruması ve kısmi aktarım geri alma akışı eksik. Gerçek workbook üzerinde doğrulama yapılmadan kaynak makrolara otomatik değişiklik uygulanmadı.
+- Son doğrulanmış otomatik test: 232/232 Core ve 6/6 WPF (HEAD `d89b6c8...`). Yeni test commit'i için sonuç bekleniyor.
+- İlerleme tahminleri (kanıta dayalı, resmî kabul değil):
+  - Temel Eğitim/Ortaöğretim hesaplama çekirdeği: **%85**
+  - Özel Eğitim hesaplama çekirdeği: **%87**
+  - Ortak hesaplama motoru ve rapor formül zinciri: **%85**
+  - Dört PDF / icmal: **%87**
+  - Arşiv ve veri modeli: **%86**
+  - WPF / ekran akışı: **%83**
+  - Test / CI / dağıtım: **%97** (yeni HEAD CI'si beklemede)
+  - Genel proje: **%85**
+- İki hesaplama çekirdeği %100 kabul edilmiş sayılmayacak: Microsoft Excel/VBA masaüstü yeniden hesaplaması, kaynak hücre sonuçları ve 4×2 gerçek PDF kabul matrisi hâlâ açık.
+- Sıradaki adım: run `39457544904` sonucunu kontrol et; başarısızsa hatayı düzelt. Sonra VBA statik raporundaki aktarım/silme risklerini güvenli kopyada doğrulamaya yönelik test planını ayrıntılandır; resmî hesap mantığını kaynak kanıtı olmadan değiştirme.
