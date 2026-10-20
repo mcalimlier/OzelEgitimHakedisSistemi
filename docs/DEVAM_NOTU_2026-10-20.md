@@ -783,3 +783,14 @@ Yüzdeler ölçüm sistemiyle hesaplanmış kesin istatistik değil, iş paketle
 
 - Özel Eğitim `TumFiyatFarkiAktarimlari` için yama adayı güncellendi: alt makroları çağırmadan önce hem taşıma fiyat farkı (P:Z) hem rehber fiyat farkı (AB:AL) hedef başlıkları doğrulanıyor; hata halinde başarı mesajı gösterilmiyor.
 - Statik test sayısı 18/18 PASS oldu. Excel VBA IDE derlemesi ve gerçek çalışma zamanı testi hâlâ yapılmadı; resmi XLSM dosyaları değiştirilmedi.
+
+
+## Devam checkpoint'i — yazdırma/dışa aktarma korumaları genişletildi (20.10.2026)
+
+- Aday VBA yama paketi genişletildi; şimdi Temel Module1 + Roller + Module2 ve Özel Module1 + Module2 içeriyor. ZIP: `OEHS_VBA_Guvenli_Ay_Aktarim_Yamasi_2026-10-20.zip`.
+- Temel Eğitim `SayfaYazdir` önceki ScreenUpdating durumunu başarı/hata yollarında geri yüklüyor. Her iki Module2 dışa aktarma makrosu artık bileşen bazında başarısızlık sayıp raporluyor; hatalar gizlenerek koşulsuz başarı mesajı gösterilmiyor.
+- Statik regresyon kontrolleri 27/27 PASS. Bu VBA compile/runtime sonucu değildir.
+- Temel Eğitim Module2 içinde kaynakta bulunan sabit kullanıcı adı/şifre korunmuştur; README ve inceleme raporunda güvenlik riski olarak işaretlendi. Kimlik doğrulama davranışı, gereksinimler doğrulanmadan değiştirilmedi.
+- Güncel kod HEAD'i bir önceki kontrolde `739b84ef6d269704e3a556cae1cba550e0ee7973` idi; son dokümantasyon commit'i `6fc76e28a7009b862fdaa2ad73a635d4de494eb2` ile dal ilerledi. Bu son commit için CI ayrıca kontrol edilmeli.
+- İlerleme tahminleri değişmedi: Temel Eğitim %86, Özel Eğitim %89; gerçek Excel/VBA IDE Compile/Run ve 8/8 PDF kabulü açık.
+- Sonraki adım: yeni CI sonuçlarını kontrol et; VBA aday modüllerini workbook kopyalarında compile/run et; ay temizleme, AP/AQ ve çıktı senaryolarını kaydet; sekiz PDF'yi gerçek Excel çıktılarıyla karşılaştır. PR #3 açık/taslak kalacak; merge/release yok.
