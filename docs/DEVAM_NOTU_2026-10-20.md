@@ -771,3 +771,9 @@ Yüzdeler ölçüm sistemiyle hesaplanmış kesin istatistik değil, iş paketle
 - VBA yama paketi 15/15 statik kontrolle yeniden üretildi. Kontroller yedi aylık blokta 11 ayın sütun eşleşmesini, Temel Eğitim Temmuz N/Z/AL sütunlarını, Özel Eğitim AP=Kasım/AQ=Aralık sütunlarını, tüm hedeflerin ClearContents öncesi doğrulanmasını ve Özel Eğitim aktarım yordamlarının dört fail-closed ay/başlık kontrolünü kapsar.
 - Bu testler kaynak metin ve eşleme modeline yönelik statik testlerdir; Excel çalışma zamanı veya VBA derlemesi değildir.
 - İlerleme tahminleri değiştirilmedi: Temel Eğitim %86, Özel Eğitim %89. Yama henüz resmî XLSM'lere uygulanmadığı ve gerçek Excel kabulü yapılmadığı için yüzde artışı verilmedi.
+
+
+## Ek VBA statik kontrolleri — 17/17 (20.10.2026)
+
+- Yama paketi artık 3 aday modül içeriyor: Temel Eğitim Module1 ve Roller; Özel Eğitim Module1. `Roller.bas` için `Option Explicit` ve `i As Long` eklendi. Özel Eğitim `SayfaYazdir`, yazdırma hatasında önceki `Application.ScreenUpdating` değerini geri yükleyip başarı mesajı göstermeyecek şekilde ele alındı.
+- Statik test sonucu 17/17 PASS. VBA IDE compile ve Excel çalışma zamanı hâlâ açık kabul kapısıdır. Kaynak XLSM dosyaları değişmedi.
