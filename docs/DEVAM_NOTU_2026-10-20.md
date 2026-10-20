@@ -628,3 +628,11 @@ Yüzdeler ölçüm sistemiyle hesaplanmış kesin istatistik değil, iş paketle
 - Kaynakta karar gerektiren icmal fiyat farkı/aktarım riskleri korunuyor; kanıt olmadan hesaplama davranışı değiştirilmedi. Temel Eğitim ve Özel Eğitim çekirdekleri ayrı tutuluyor.
 - Sıradaki iş: güncel PR başı ve CI ile eşleşen commit'i kesinleştirmek; son kaynak Excel hücreleri ve VBA aktarım zincirleriyle her program için bağımsız kabul testlerini güçlendirmek; 8 PDF'nin tutar, dönem, yüklenici, hat, imza ve tek sayfa A4 yerleşimini gerçek Excel referanslarıyla kapatmak.
 
+## Devam kaydı — Windows CI kapanışı (20.10.2026)
+
+- Devam notu commit'i `d02324b2921ad0b544e8dd049fd65e4a10180f1a` için Windows CI run [39452852437](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39452852437) artık **başarılı** tamamlandı.
+- Doğrulanan adımlar: tam çözüm derlemesi, WPF derlemesi, UI sözleşmesi/kompakt yerleşim kontrolleri, test projelerinin derlenmesi, `Test Solution`, PDF smoke üretimi ve doğrulaması, Windows EXE publish hazırlama. Bazı artifact yükleme adımları ortam kısıtı nedeniyle atlandı.
+- Bu turda kaynak hesaplama formüllerini değiştiren kod değişikliği yapılmadı; çünkü Temel Eğitim ve Özel Eğitim icmalindeki fiyat farkı tekrar sayımı, VBA'nın masaüstü Excel'de çalıştırılmasıyla teyit edilmesi gereken kaynak davranışıdır.
+- Kabul durumu değişmedi: son XLSM'lerle kaynak vektörü regresyonları ve sentetik PDF smoke mevcut; gerçek Microsoft Excel/VBA yeniden hesaplaması ve kaynak Excel PDF'leriyle 8/8 alan/görsel karşılaştırması açık. Bu nedenle proje %100 veya resmî kabul tamamlandı olarak raporlanamaz.
+- Sonraki iş: Excel masaüstü kabul listesine göre Temel Eğitim `T4/U4/W4`, `Hakediş Raporu!D15/D28`; Özel Eğitim `AC4:AG4`, `Hakediş Raporu!D28` ve VBA sonrası icmal aktarım hücrelerini kaydetmek, ardından her PDF'yi aynı girdilerle karşılaştırmak. Gerçek Excel çalıştırması mümkün değilse bu blokaj açık tutulacak; kod varsayımla değiştirilmeyecek.
+
