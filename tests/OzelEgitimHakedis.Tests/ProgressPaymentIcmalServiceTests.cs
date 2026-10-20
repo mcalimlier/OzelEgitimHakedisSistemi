@@ -146,6 +146,15 @@ public sealed class ProgressPaymentIcmalServiceTests
     }
 
     [Fact]
+    public void MonthLookupRange_ShouldRejectUndefinedProgramType()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            ProgressPaymentIcmalService.IsMonthInWorkbookLookupRange(
+                new DateOnly(2027, 7, 1),
+                (TransportationProgramType)999));
+    }
+
+    [Fact]
     public void MonthLookupRange_ShouldRemainProgramSpecificForJuly()
     {
         var july = new DateOnly(2027, 7, 1);
