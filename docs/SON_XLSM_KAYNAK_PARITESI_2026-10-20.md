@@ -3,6 +3,8 @@
 **Tarih:** 20.10.2026  
 **Durum:** Dosya baytları ve hücre formülleri doğrudan incelendi; kaynak satır vektörleri C# regresyon testlerine aktarıldı. CI sonucu ve Microsoft Excel/VBA masaüstü çalıştırması ayrı doğrulama kapılarıdır.
 
+**Son CI kontrolü — 20.10.2026:** HEAD `b6db48694d957f8ca1eaa003e57bceb617da8795` için [Windows CI 39464941718](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39464941718) başarılıdır (tam çözüm/WPF derlemesi, test çözümü, PDF smoke üretimi ve Windows EXE publish adımları). Bu sonuç Excel/VBA masaüstü çalıştırmasını veya sekiz gerçek Excel PDF'sinin görsel kabulünü doğrulamaz.
+
 ## Yetkili kaynak dosyaları
 
 | Program | Dosya | SHA-256 |
