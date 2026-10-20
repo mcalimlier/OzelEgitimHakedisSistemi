@@ -141,3 +141,11 @@ Bu oranlar mühendislik tahminidir, kabul sertifikası değildir. Genel proje %9
 - Kod değişikliği yapılmadı; yalnızca kaynak Excel'lerden alınan son satırların regresyon vektörleri ve belgeler güncellendi. Yeni testler henüz CI'da doğrulanmış değil.
 - CI kontrolü: run `39398873252` yeni test commit'i için çalışıyor; son kontrol sırasında sonuç bekleniyor. PR #3 taslak/açık/birleştirilmemiştir; mergeability şu an GitHub API'de `false` göründüğünden olası çakışma ayrıca araştırılmalı; birleştirme yapılmayacak.
 - Açık işler: CI test sonuçlarını incele; başarısızsa kaynak satır formülleriyle test girdilerini eşleştirerek düzelt. Ardından en son XLSM'lerin formül önbelleği ile LibreOffice yeniden hesaplamasını karşılaştır, VBA'yı masaüstü Excel'de çalıştırma sınırını açık tut ve 4 PDF × 2 program kabul matrisine devam et.
+
+
+## Ek CI durumu — son XLSM test düzeltmeleri (2026-10-20)
+- Run [39398873252](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39398873252) ve [39399075572](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39399075572), test dosyalarındaki MemberData dönüşümü henüz dal birleşim commit'ine yansımadan alınmış checkout nedeniyle CS3016 ile başarısız oldu. Loglar, iki test dosyasında attribute argümanı olarak dizi kullanıldığını gösteriyor.
+- Bu hata son test dosyalarında düzeltildi: veriler artık xUnit MemberData üzerinden sunuluyor ve decimal değerler doğrudan InlineData attribute'larına yazılmıyor.
+- Güncel testleri içeren sonraki PR CI run [39399138327](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39399138327) şu an tam çözüm derleme aşamasında; sonuç henüz doğrulanmış değil.
+- Son XLSM dosyalarının 279 sayısal hücresinde LibreOffice yeniden hesaplama farkı 0; bu bulgu VBA'nın Microsoft Excel'de çalıştırılması değildir.
+- Sıradaki adım: run 39399138327'nin derleme/test sonucunu kontrol et; yeni testler başarısızsa logdaki somut alan/hücre eşlemesini düzelt. PR taslak/açık kalacak; merge/yayın yok.
