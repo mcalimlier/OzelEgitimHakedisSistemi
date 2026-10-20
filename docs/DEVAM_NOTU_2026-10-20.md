@@ -156,3 +156,12 @@ Bu oranlar mühendislik tahminidir, kabul sertifikası değildir. Genel proje %9
 - Son düzenleme: MemberData ve InlineData kaldırıldı. Temel satır 4–8 ile Özel satır 4–6 kaynak girdileri [Fact] içinde tipli tuple'lar olarak tanımlanıyor ve foreach ile karşılaştırılıyor.
 - Son test commit'leri: Özel Eğitim d147068121d84c73af80e4d5ed4f896fba0c965b; Temel Eğitim 15e3e88755ef768fdb6352c8bacb56f6ce99cafe.
 - Bu yeni test düzeni için CI sonucu henüz görünmüyor; başarı iddiası yok.
+
+
+## Son doğrulama — güncel XLSM regresyonları geçti (2026-10-20)
+- CI run [39399443926](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39399443926) ve [39399513703](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39399513703) başarılı tamamlandı.
+- Son kaynak satır testleri: Temel satır 4–8 (5 vektör) ve Özel satır 4–6 (3 vektör). Testler [Fact] içinde tipli tuple vektörleriyle çalışır; CS3016 attribute hatası giderildi.
+- Test sayıları: **215/215 Core**, **5/5 WPF**. Tam çözüm/WPF derlemesi, statik UI kontrolleri, PDF smoke üretimi ve Windows EXE publish başarılı. EXE/arkadaş paketi artefakt yükleme adımları atlandı; fiziksel/masaüstü kabul yapılmadı.
+- Son XLSM formül önbelleği ile LibreOffice yeniden hesaplaması karşılaştırması: 279 sayısal hücrede tolerans üstü fark 0.
+- Yeni kritik açık bulgu: Temel Eğitim icmalinde aylık fiyat farkı + kesinti aktarım hücreleri kaynak satırındaki I/V ile aynı değil; Özel Eğitim icmalinde K+T aylık tutarına I+R ayrıca ekleniyor. İcmal VBA aktarımı Excel masaüstünde çalıştırılmadan kaynak kusuru/önbellek etkisi ayrıştırılmış sayılmaz; hesap davranışı sessizce değiştirilmedi.
+- PR #3 taslak/açık/birleştirilmemiş kalacak. Sıradaki iş: son XLSM'nin dört çıktı sayfasını aynı girdilerle OEHS dört PDF'siyle alan alan karşılaştırmak ve gerçek Excel/VBA aktarım sonucunu doğrulamak.
