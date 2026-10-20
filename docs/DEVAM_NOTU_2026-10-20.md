@@ -753,3 +753,14 @@ Yüzdeler ölçüm sistemiyle hesaplanmış kesin istatistik değil, iş paketle
 - Henüz yapılmayan doğrulama: düzeltilmiş kopyayı Microsoft Excel masaüstünde açıp yeniden hesaplama, VBA IDE Compile/Debug, makro aktarımı ve 4×2 gerçek PDF kabulü. Dosya düzeyindeki kontrol bunların yerine geçmez.
 - İlerleme tahmini (mühendislik; resmî kabul değil): Temel Eğitim çekirdeği **%86**, Özel Eğitim çekirdeği **%89** (başlık eşlemesi düzeltildi; Excel/VBA ve çıktı kabul kapıları açık). Ortak motor/rapor zinciri **%86**, PDF/icmal **%87**, arşiv/veri modeli **%86**, WPF/UI **%83**, test/CI/dağıtım **%98**, genel **%86**.
 - Sonraki işler: (1) güncel HEAD ve CI sonucunu doğrula; (2) VBA-01/07 seçili aya özgü güvenli temizleme davranışını ve Özel Eğitim aktarım hedef doğrulamasını kaynak kopyada test edilebilir bir patch olarak hazırla; (3) gerçek Excel/VBA ve 8/8 PDF kabul kanıtı olmadan iki çekirdeğe %100 etiketi verme. PR açık/taslak kalır; merge/release yok.
+
+
+## Devam checkpoint'i — güvenli ay bazlı VBA yaması hazır (20.10.2026 20:00 +03:00)
+
+- En son kontrol edilen PR #3 HEAD: 3ffa93e639658e6eab9736dabf69b7eb8982ad49; PR açık/taslak, birleştirilmedi.
+- Dokümantasyon commit'leri için güncel CI kontrolleri tamamlandı: run 39461941572 ve 39461933083 başarıyla sonuçlandı; run 39461903221, 39461888261, 39461868701 ve 39461860299 da success. Yeni VBA yama dokümanı eklendikten sonra yeni CI koşuları ayrıca kontrol edilmeli.
+- İki VBA modülü için kaynak düzeyinde yama adayı üretildi: /mnt/data/OEHS_VBA_Guvenli_Ay_Aktarim_Yamasi_2026-10-20.zip. Temel Eğitim yalnız seçili ay sütunlarını temizler; tüm hedefler bulunamazsa hiçbir hücre silinmez. P:Z ve AB:AL blokları Temmuz sütunlarını içerir. Özel Eğitim aynı güvenli davranışı dört aylık blokta uygular; dört aktarım yordamında geçersiz ay için fail-closed Case Else ve yazma öncesi başlık kontrolü bulunur.
+- Statik kontroller: 9/9 PASS. Bu yalnızca kaynak metni/yapısal kontroldür; Excel VBA derlemesi ve gerçek makro çalışması yapılmış değildir. Resmî XLSM dosyaları bu yama ile değiştirilmedi.
+- Özel Eğitim AP3 Kasım düzeltmesi ayrı XLSM kopyasında doğrulandı; orijinal dosya korunuyor.
+- İlerleme tahminleri (resmî kabul değil): Temel Eğitim çekirdeği %87; Özel Eğitim çekirdeği %90; ortak hesaplama/rapor zinciri %86; PDF/icmal %87; arşiv/veri modeli %86; WPF/UI %83; test/CI/dağıtım %98; genel %87. Çekirdek yüzdeleri kaynak yaması hazırlandığı için bir puan artırıldı; gerçek Excel/VBA kabul kapıları hâlâ açık.
+- Sıradaki adım: bu son doküman commit'inden sonra CI durumunu kontrol et; sonra workbook kopyalarında Excel VBA Compile/Run ve başlık/ay silme senaryolarını test et. Ardından hesaplama hücreleri ve 8 PDF kabul matrisini kapat. Gerçek Excel/VBA ve PDF kanıtı olmadan iki çekirdek %100 olarak işaretlenmeyecek. PR açık/taslak kalacak; merge/release yok.
