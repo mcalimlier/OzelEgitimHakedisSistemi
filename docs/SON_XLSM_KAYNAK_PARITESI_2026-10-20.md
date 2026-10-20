@@ -134,3 +134,30 @@ Bu bulgular, son XLSM'lerde **icmal formül zincirinin ayrı kabul edilmesi gere
 - Sonraki teknik adım: mevcut XAML'de hakediş oluşturma görünümünün kontrol hiyerarşisini ve ilgili event handler/ViewModel bağlantılarını saptamak; küçük, geriye uyumlu bir görsel değişiklik yapmak; Windows CI ve WPF testlerini çalıştırıp sonuçları buraya kaydetmek.
 - Microsoft Excel/VBA ile aynı girdiden 8 PDF'nin alan alan kabulü hâlâ açık; icmaldeki olası fiyat farkı tekrar sayımı kaynak davranışıyla karşılaştırılmadan değiştirilmemeli.
 - Ana dala merge veya yayınlama yapılmayacak.
+
+## Beş çekirdekli geliştirme ve kabul panosu — 20.10.2026
+
+Bu pano işleri ayrı doğrulama alanlarına böler; aynı formül veya kabul ölçütü programlar arasında kanıt olmadan ortaklaştırılmaz. Yüzdeler otomatik test sayısından türetilmez; ilgili kabul kapısı kanıtlanmadan %90 kabul edilmez.
+
+| Çekirdek | Kapsam | Mevcut kanıt | %90 kabul kapısı | Durum |
+|---|---|---|---|---|
+| 1 — Temel Eğitim hesaplama | Son XLSM satır 4–8; K/L/M/O/T/U/V/W; rapor D15/D28 zinciri | Kaynak vektörleri ve C# regresyon testi; CI koşusu 39423199212 başarılı | Son dosya hash'iyle Excel masaüstü tam hesaplama ve VBA sonrası T4/U4/W4, D15/D28 değerleri eşleşmeli | Otomatik kaynak vektörleri var; Excel/VBA kapısı açık |
+| 2 — Özel Eğitim hesaplama | Son XLSM satır 4–6; K/T/AC/AD/AE/AF/AG ve rapor D28 | Kaynak vektörleri ve C# regresyon testi; CI koşusu 39423199212 başarılı | Excel masaüstü tam hesaplama ve VBA sonrası AC4:AG4 ile D28 eşleşmeli | Otomatik kaynak vektörleri var; Excel/VBA kapısı açık |
+| 3 — Hakediş rapor zinciri | Kümülatif dönem, ham fiyat farkı, D6/D7/D8/D10/D11 ve net ödeme | `ProgressPaymentReportService` kaynak formül açıklamaları | Aynı kimlik/dönem için Excel raporu ve OEHS raporundaki her finansal alan karşılaştırılmalı; D28 ayrı doğrulanmalı | Kaynak zinciri kodda belgeli; alan-alan Excel karşılaştırması açık |
+| 4 — İcmal ve aktarım | Program-özel ay aralığı, önceki ay kesintisi, C8/D8/E8 ve aktarım makroları | `ProgressPaymentIcmalService` testleri; kaynakta olası fiyat farkı tekrar sayımı belgeli | Makro sonrası İcmal Verileri ve İcmal hücreleri karşılaştırılmalı; çift sayım kararı kaynak sahibiyle kayıt altına alınmalı | Otomatik testler var; kaynak davranışına ilişkin karar ve Excel/VBA kanıtı açık |
+| 5 — Dört PDF ve WPF akışı | İki program × dört PDF; dönem, yüklenici, hat, imza, tutar, A4/sayfa ve arayüz | Windows CI: tam derleme/test/PDF smoke başarılı | Aynı test girdisiyle Excel PDF'si ve OEHS PDF'si 8/8 görsel ve finansal olarak karşılaştırılmalı; Windows DPI/masaüstü kontrolü yapılmalı | Otomatik smoke var; 8/8 gerçek PDF ve masaüstü kabulü açık |
+
+### Ortak test yürütme kuralları
+
+1. **Kaynak vektörü çekirdeği:** Testler yalnızca son yüklenen iki XLSM'nin hash'i ve yukarıdaki satır sonuçlarıyla güncellenir. Tarihsel kopyadan gelen beklentiler güncel kaynak gibi kullanılmaz.
+2. **Rapor çekirdeği:** Hesaplama sayfası AG/W ile Hakediş Raporu D28 aynı sonuç varsayılmaz. Hücre zincirleri ayrı test edilir.
+3. **İcmal çekirdeği:** Kaynak Excel'deki şüpheli formül sessizce düzeltilmez. Excel formülü, VBA'nın aktardığı değer ve OEHS sonucu ayrı ayrı kaydedilir.
+4. **PDF çekirdeği:** PDF smoke üretimi dosyanın üretilebildiğini gösterir; kaynak Excel PDF'siyle görsel/finansal eşitlik kanıtı değildir.
+5. **Arayüz çekirdeği:** Derleme ve statik XAML kontrolleri gerçek Windows masaüstü, DPI, klavye/odak ve iş akışı kabulünün yerine geçmez.
+
+### Güncel doğrulama notu
+
+- PR #3 başlığı açık/taslak ve ana dala birleştirilmemiştir.
+- HEAD `4e1102e2afcbc9bf5f57069dce474c623dcfa6a5` için Windows CI run [39423199212](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39423199212) tamamlandı: tam çözüm/WPF derleme, UI statik kontrolleri, test çözümü, PDF smoke ve Windows EXE publish başarılı. Paket/artifact yükleme adımları ortam kısıtları nedeniyle atlanmıştır.
+- Bu CI sonucu Microsoft Excel/VBA masaüstü çalıştırması, yazıcı kabulü veya 8/8 gerçek PDF karşılaştırması olarak yorumlanamaz.
+- Ana dala birleştirme ve yayınlama için açık onay gerekir.
