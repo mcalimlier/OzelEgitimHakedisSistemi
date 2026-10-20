@@ -141,11 +141,16 @@ public sealed class RouteDraftCacheTests
 
     [Theory]
     [InlineData(1)]
+    [InlineData(2)]
     [InlineData(3)]
+    [InlineData(4)]
     [InlineData(5)]
-    public void OutputSelection_ShouldIncludeExactlyOneThreeOrFiveSelectedRoutes(int selectedCount)
+    [InlineData(8)]
+    [InlineData(12)]
+    public void OutputSelection_ShouldIncludeExactlyTheRequestedNumberOfSelectedRoutes(int selectedCount)
     {
-        var cache = Enumerable.Range(1, 5).ToDictionary(
+        const int totalRoutes = 12;
+        var cache = Enumerable.Range(1, totalRoutes).ToDictionary(
             index => $"R{index}",
             index => new Draft
             {
