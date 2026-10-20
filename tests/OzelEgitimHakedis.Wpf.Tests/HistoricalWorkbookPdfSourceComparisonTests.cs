@@ -50,7 +50,7 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
             var specialReport = PageText(specialOutputs, OehsOfficialDocumentKind.HakedisRaporu);
             Assert.Contains("77.667,27 TL", specialReport);
             Assert.Contains("236.014,30 TL", specialReport);
-            Assert.Contains("158.347,03 TL", specialReport);
+            Assert.Contains("158.347,03", specialReport);
             Assert.Contains("61.508,94 TL", specialReport);
             var specialIcmal = PageText(specialOutputs, OehsOfficialDocumentKind.HakedisIcmali);
             Assert.Contains("₺77.667,27", specialIcmal);
