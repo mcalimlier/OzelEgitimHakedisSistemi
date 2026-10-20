@@ -583,6 +583,34 @@
                                     <TextBlock Text="HAKEDİŞ OLUŞTUR" Style="{StaticResource PageTitle}"/>
                                     <TextBlock Text="Dönem hesabını girin, sonucu kontrol edin ve ödeme tutarını oluşturun." Style="{StaticResource PageSubtitle}"/>
 
+                                    <!-- Hibrit arayüz: ortak iş akışı; programlara özel hesaplama motorları korunur. -->
+                                    <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="10" Padding="9" Margin="0,0,0,8">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" Margin="2">
+                                                <TextBlock Text="01  /  PROGRAM VE DÖNEM" Foreground="{StaticResource Gold500Brush}" FontSize="10" FontWeight="Bold"/>
+                                                <TextBlock Text="Program türünü ve hakediş dönemini doğrulayın." Foreground="#D5E1EC" FontSize="10.5" TextWrapping="Wrap" Margin="0,3,4,0"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" Margin="6,0,2,0">
+                                                <TextBlock Text="02  /  SÖZLEŞME VE HAT" Foreground="{StaticResource Gold500Brush}" FontSize="10" FontWeight="Bold"/>
+                                                <TextBlock Text="İhale, yüklenici ve ilgili hatları seçin." Foreground="#D5E1EC" FontSize="10.5" TextWrapping="Wrap" Margin="0,3,4,0"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2" Margin="6,0,2,0">
+                                                <TextBlock Text="03  /  HESAPLAMA" Foreground="{StaticResource Gold500Brush}" FontSize="10" FontWeight="Bold"/>
+                                                <TextBlock Text="Girişleri ve hesaplanan tutarları kontrol edin." Foreground="#D5E1EC" FontSize="10.5" TextWrapping="Wrap" Margin="0,3,4,0"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="3" Margin="6,0,2,0">
+                                                <TextBlock Text="04  /  RESMÎ RAPORLAR" Foreground="{StaticResource Gold500Brush}" FontSize="10" FontWeight="Bold"/>
+                                                <TextBlock Text="Dört PDF çıktısını gözden geçirip kaydedin." Foreground="#D5E1EC" FontSize="10.5" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+
                                     <Border Style="{StaticResource CardCompact}" Padding="8" Margin="0,0,0,8">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
