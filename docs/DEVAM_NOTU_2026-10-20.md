@@ -74,3 +74,14 @@ Bu oranlar mühendislik tahminidir, kabul sertifikası değildir. Genel proje %9
 - Sınır: CI, gerçek masaüstünde görsel/etkileşimli kabul testi veya farklı DPI/ekran çözünürlüklerinde manuel gözlem yerine geçmez. Dört PDF için kaynak örnekleriyle tam görsel fark kabulü ve Microsoft Excel/VBA ile gerçek parite hâlâ açık.
 - PR #3 açık, taslak ve birleştirilmemiş durumda. Bu oturumda merge/publish yapılmadı.
 - Sonraki adım: UI kaynaklarında giriş akışının program seçimi olmadan açılmaması ve geçici hesap tutucu/ilerleme göstergesi davranışını kod + CI kontrolleri üzerinden incelemek; ardından dört PDF × iki program kabul matrisini ilerletmek.
+
+
+## Ek çalışma kaydı — program seçimi güvenlik kontrolü (2026-10-20)
+- PR dalı ve mevcut commit/CI kontrol edildi; çalışma dalı `feature/official-payment-document-templates`, PR #3 açık/taslak/birleştirilmemiş durumda.
+- `MainWindow.xaml.cs` içinde program seçimi boşsa `GetSelectedTransportationProgramType()` fonksiyonunun `SpecialEducation` varsayılanı verdiği tespit edildi. Bu değer başlangıç özetlerinde hâlâ korunuyor; tüm çağrıları tek hamlede nullable yapıp ekran akışlarını bozmak yerine yeni resmî kayıt noktaları korundu.
+- Yeni sözleşme kaydına, program seçimi yoksa kaydı durduran ve kullanıcıya program seçmesini bildiren kontrol eklendi.
+- Yeni yüklenici kaydına aynı kontrol eklendi. Mevcut sözleşme/yüklenici düzenlemesinde kayıtlı program türü korunuyor.
+- Değişiklik commit'i: [fdad3ef](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/commit/fdad3ef58cc0ae23d565ec686934102476f6e11b).
+- Commit için Windows CI run [39395383346](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39395383346) kontrol edildi; bu not hazırlanırken çalışma hâlâ sürüyordu. Başarılı olduğu henüz doğrulanmış değildir.
+- Açık risk: program seçimi varsayılanının diğer özet/yardımcı çağrılarındaki etkisi ayrıca gözden geçirilmeli. Gerçek masaüstü kabulü ve Microsoft Excel/VBA eşitliği bu kod değişikliğiyle doğrulanmış sayılmaz.
+- Sonraki adım: Windows CI sonucunu doğrulamak; ardından giriş/ilerleme göstergesi akışını incelemek ve sekiz PDF kabul matrisine devam etmek. Merge/yayınlama yapılmadı.
