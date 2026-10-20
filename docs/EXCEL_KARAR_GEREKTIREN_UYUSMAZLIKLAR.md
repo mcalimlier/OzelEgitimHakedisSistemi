@@ -57,32 +57,31 @@ Kapsam: güncel Temel Eğitim ve Özel Eğitim XLSM'leri ile OEHS hesap/rapor zi
 
 ## Karar 3 — Temel Eğitim Hakediş İcmali!E21
 
+**Önceki analiz notu 20.10.2026'da yeni XLSM ile karşılaştırıldı ve geçersiz bulundu.** Aşağıdaki eski 24.104,02472 TL, E5/K17 ve sıfır önbellek iddiaları son dosya için kullanılmamalıdır.
+
 **Güncel kaynak kanıtı**
-- Seçili dönem Anasayfa!E4=Kasım 2026; İcmal Verileri!AC4=24.104,02472 TL (Ekim aylık kesinti).
-- Kaynak E21 formülü E5 (bugünün tarihi) ve K17 kullanıyor; aylık makro E4 ve AB:AM kullanıyor. Kaynak E21 önbellek değeri 0.
-- OEHS testi, aylık makro düzenine göre önceki ay AC4 değerinin taşınmasını bekliyor. Test adı bu beklentinin literal E21 paritesi olmadığını açıkça belirtiyor.
+- Kaynak dosya: `03-Temel Eğitim Taşıma Ödeme SON(1).xlsm`; SHA-256 `37a7818881aae52e8b2fcf95f30a75e1f302dfce1e91e2345f3473668a4d5296`.
+- `Anasayfa!E4` = Kasım 2026.
+- `Hakediş İcmali!E21` array formula, `Anasayfa!E4`, `Anasayfa!I5:I14`, `Anasayfa!K16` ve `İcmal Verileri!AB3:AL3` aralığını kullanır; E5/K17/AN:AX kullanmaz.
+- E21'in kayıtlı sonucu ve `İcmal Verileri!AC4` = **26.448,176274448 TL**. Bu değerler dosyanın önbellek sonuçlarıdır; Excel masaüstünde yeni bir tam hesaplama yapılmış değildir.
+- Kaynak E21'in seçili ay listesi Eylül–Haziran'dır. Temel Eğitim'in görünür icmal satır döngüsünün Temmuz'u içerebilmesi, E21 önceki-kesinti aramasının Temmuz'u kabul ettiği anlamına gelmez. Temmuz seçildiğinde E21'deki MATCH listede ayı bulamaz ve IFERROR sıfır döndürür.
+- OEHS'de `FindPreviousDeduction` bu ayrımı koruyacak şekilde düzeltildi: görünür Temel Eğitim icmal döneminde Temmuz bulunabilir, ancak E21 önceki-kesinti eşlemesi Temmuz'da sıfır döndürür. Bu davranış için regresyon testi eklendi.
 
-**Karar gerektiren soru:** OEHS, kaynak E21 formülündeki davranışı mı aynen taklit etmeli, yoksa aylık aktarım makrosunun AB:AM düzenini ve Kasım için Ekim kesintisini mi izlemeli?
-
-**Olası yollar**
-1. Excel masaüstünde makroları çalıştırıp E21 ve aylık aktarım hücrelerini karşılaştır; makro çıktısını esas al.
-2. Kaynak E21'i bugünkü tarih/yanlış anahtar yüzünden hatalı kabul et; OEHS'de aylık aktarım mantığını uygula ve kaynak farkını resmî karar olarak kaydet.
-
-Kullanıcının önceki kararı: ay takvim sırası Eylül–Temmuz olarak korunacak; gerçek Excel/VBA karşılaştırması olmadan davranış değiştirilmemeli. Nihai karar hâlâ Excel yürütme kanıtı bekliyor.
+**Kalan kabul:** Kaynak E21 formülünün Excel masaüstünde tam yeniden hesaplanması ve VBA aktarım makrosu sonrası hücrelerin karşılaştırılması hâlâ gereklidir.
 
 ## Karar 4 — Özel Eğitim icmal ay başlıkları
 
+**Önceki analizdeki E21 tutarı güncel XLSM ile uyuşmadığından düzeltilmiştir; başlık kusuru ise orijinal kaynakta hâlâ görünmektedir.**
+
 **Güncel kaynak kanıtı**
-- İcmal Verileri!AN3:AX3 dizisinde Kasım başlığı atlanıyor, Aralık başlığı iki kez görünüyor.
-- Kasım seçiliyken E21 önbellek değeri 10.580,582128 TL ve AO4 Ekim değeriyle eşleşiyor.
-- Bu tek örnek Aralık ve sonraki ayların eşleşmesini kanıtlamıyor.
+- Kaynak dosya: `02-Özel Eğitim Hakediş Ödeme SON(1).xlsm`; SHA-256 `c31cb024ac1eb59f3b88d2ee12234be98d1f07056884374d8dad108f674d7d1e`.
+- `Anasayfa!E5` = Kasım 2026.
+- `Hakediş İcmali!E21` formülü `Anasayfa!E5`, `Anasayfa!I6:I15`, `Anasayfa!K17` ve `İcmal Verileri!AN3:AX3` aralığını kullanır.
+- E21'in kayıtlı sonucu ve `İcmal Verileri!AO4` = **29.963,898156 TL**. Önceki 10.580,582128 TL değeri güncel XLSM'nin önbelleğiyle eşleşmediği için eski beklenti olarak kullanılmamalıdır.
+- Orijinal dosyada `İcmal Verileri!AP3` ve `AQ3` ikisi de `=Anasayfa!I9` (Aralık 2026) olduğundan, Kasım başlığının eksikliği/Aralık tekrarının başlık dizisinde sürdüğü görülüyor. Ayrı düzeltilmiş kopyada AP3 Kasım'a çevrilmiştir; orijinal XLSM değiştirilmemiştir.
+- E21'in Kasım örneğinde Ekim sütunu AO4 ile eşleşmesi, AP3/AQ3 başlık kusurunun sonraki tüm ay aktarım davranışını doğrulamaz.
 
-**Karar gerektiren soru:** Başlık kusuru gerçek Excel/VBA aktarım çıktısında da var mı ve düzeltme kaynak XLSM'de mi, OEHS eşlemesinde mi yapılmalı?
-
-**Olası yollar**
-1. Excel'de Kasım, Aralık, Ocak, Haziran ve Temmuz seçip aktarım makroları sonrası AN:AX hücrelerini kaydet.
-2. Kanıtlanan sütun kaymasına göre OEHS eşlemesini düzelt, ancak kaynak farkını ayrı karar kaydı olarak tut.
-3. Kaynak XLSM formül/başlık düzeltmesi için ayrı onay al.
+**Kalan kabul:** Excel masaüstünde Kasım, Aralık, Ocak, Haziran ve Temmuz seçilerek E21 ile AN:AX aktarım hücreleri makro öncesi/sonrası kaydedilmeli. Kaynak dosya ile düzeltilmiş kopya ayrı tutulmalı; orijinal XLSM'ye sessiz düzeltme uygulanmamalıdır.
 
 ## Kabul öncesi gerekli kanıt
 
