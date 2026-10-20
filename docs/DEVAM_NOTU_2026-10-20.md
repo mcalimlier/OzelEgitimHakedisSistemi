@@ -647,3 +647,16 @@ Yüzdeler ölçüm sistemiyle hesaplanmış kesin istatistik değil, iş paketle
 - Doğrulama: Windows CI run [39455000953](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39455000953) başarılı. Tam çözüm/WPF derlemesi, UI kontrolleri, test çözümü, PDF smoke ve EXE publish adımları geçti. Core testleri **232/232**, WPF çıktı testleri **6/6** başarılı.
 - Bu sonuçlar CI ve otomatik regresyonu doğrular; Microsoft Excel/VBA masaüstü yeniden hesaplaması ve gerçek Excel PDF'leriyle 8/8 görsel alan kabulü yerine geçmez. İcmal fiyat farkı aktarımı bu nedenle resmî hesapta sessizce değiştirilmedi.
 - PR #3 açık/taslak kalır; ana dala birleştirme ve yayınlama yapılmadı.
+
+
+## Devam checkpoint'i — sohbetler arası kaldığı yer (20.10.2026)
+
+- **Etkin repo/dal:** mcalimlier/OzelEgitimHakedisSistemi / feature/official-payment-document-templates
+- **Kontrol edilen PR başı:** d9f542e386f24c711e6e79624027f0358e0f4ec2; PR #3 açık/taslak, birleştirilmedi.
+- **En son doğrulanmış Windows CI:** [39455447750](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39455447750), commit d9f542e386f24c711e6e79624027f0358e0f4ec2, sonuç **success**. Workflow build işi tamamlandı; önceki aynı kaynak başındaki CI run [39455440633](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39455440633) ayrı bir çalışmadır ve yeni başarılı run'ın sonucunu geçersiz kılmaz.
+- **Önceden doğrulanan otomatik kapsam:** 232/232 Core ve 6/6 WPF testleri; tam çözüm derlemesi, UI kontrolleri, PDF smoke ve Windows EXE publish adımları başarılı. Son commit yalnızca devam notu/izleme güncellemesidir.
+- **Kodda son iş:** çoklu hat arşivlemesi için toplu geri alma, beklenmeyen yazım/geri alma istisnaları testleri ve CI'nın yakaladığı C# yerel değişken kapsam hatası düzeltildi.
+- **İki hesaplama çekirdeği:** ayrı tutulur. Temel Eğitim kaynak testleri son XLSM satır 4–8 vektörlerini; Özel Eğitim kaynak testleri satır 4–6 vektörlerini kapsar. Hesaplama formülleri bu checkpoint'te değiştirilmedi.
+- **Kalan kabul kapıları:** (1) Microsoft Excel masaüstünde VBA makrolarını gerçek dosyalarda çalıştırıp yeniden hesaplamak; (2) Temel T4/U4/W4, Hakediş Raporu D15/D28; Özel AC4:AG4, Hakediş Raporu D28 ve VBA aktarım/icmal hücrelerini kaydetmek; (3) iki programın PDF 4/5/6/7 belgelerini gerçek kaynak PDF'leriyle 8/8 alan ve görsel karşılaştırmadan geçirmek; (4) icmal fiyat farkı tekrar sayımı konusunda kaynak formülü ve makro aktarımını ayırarak kanıt toplamak.
+- **Önemli kısıt:** kaynak Excel/VBA masaüstü çalıştırması ve gerçek kaynak PDF görselleri olmadan resmî hesap davranışı değiştirilmeyecek ve iki çekirdeğe %100 kabul etiketi verilmeyecek.
+- **Bir sonraki eylem:** mevcut dalda kod/test tarafındaki güvenli regresyon açıklarını kapatmaya devam et; CI sonucunu gerçek Excel/VBA ve 8 PDF kabulünden ayrı raporla. Dosyaları tekrar isteme veya kaynakları sohbet başına baştan inceleme; bu notu başlangıç noktası olarak kullan.
