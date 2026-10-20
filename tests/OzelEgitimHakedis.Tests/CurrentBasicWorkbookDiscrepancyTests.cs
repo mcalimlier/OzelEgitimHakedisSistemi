@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using OzelEgitimHakedis.Core.Models;
 using OzelEgitimHakedis.Core.Services;
 using Xunit;
@@ -12,12 +13,18 @@ namespace OzelEgitimHakedis.Tests;
 /// </summary>
 public sealed class CurrentBasicWorkbookParityTests
 {
+    public static IEnumerable<object[]> LatestBasicRows =>
+        new[]
+        {
+            new object[] { 16m, 19539.1608m, 7365.35m, 319991.9228m, 31999.19228m, 15999.59614m, 351991.11508m, 441.921m, 3033.523428144m, 19475.040568144m, 332516.074511856m },
+            new object[] { 16m, 6545m, 7366.35m, 112086.35m, 11208.635m, 5604.3175m, 123294.985m, 441.981m, 1062.578598m, 7108.877098m, 116186.107902m },
+            new object[] { 16m, 6135m, 7367.35m, 105527.35m, 10552.735m, 5276.3675m, 116080.085m, 442.041m, 1000.399278m, 6718.807778m, 109361.277222m },
+            new object[] { 16m, 4857.1601m, 7368.35m, 85082.9116m, 8508.29116m, 4254.14558m, 93591.20276000001m, 442.101m, 806.586001968m, 5502.832581968m, 88088.37017803201m },
+            new object[] { 16m, 2810m, 7369.35m, 52329.35m, 5232.935m, 2616.4675m, 57562.284999999996m, 442.161m, 496.082238m, 3554.710738m, 54007.574261999995m }
+        };
+
     [Theory]
-    [InlineData(16, 19539.1608, 7365.35, 319991.9228, 31999.19228, 15999.59614, 351991.11508, 441.921, 3033.523428144, 19475.040568144, 332516.074511856)]
-    [InlineData(16, 6545, 7366.35, 112086.35, 11208.635, 5604.3175, 123294.985, 441.981, 1062.578598, 7108.877098, 116186.107902)]
-    [InlineData(16, 6135, 7367.35, 105527.35, 10552.735, 5276.3675, 116080.085, 442.041, 1000.399278, 6718.807778, 109361.277222)]
-    [InlineData(16, 4857.1601, 7368.35, 85082.9116, 8508.29116, 4254.14558, 93591.20276, 442.101, 806.586001968, 5502.832581968, 88088.370178032)]
-    [InlineData(16, 2810, 7369.35, 52329.35, 5232.935, 2616.4675, 57562.285, 442.161, 496.082238, 3554.710738, 54007.574262)]
+    [MemberData(nameof(LatestBasicRows))]
     public void LatestBasicRows4To8_ShouldMatchWorkbookCalculationCells(
         decimal workDays, decimal dailyPrice, decimal priceDifference,
         decimal sourceTransportNet, decimal sourceVat, decimal sourceWithholding,
