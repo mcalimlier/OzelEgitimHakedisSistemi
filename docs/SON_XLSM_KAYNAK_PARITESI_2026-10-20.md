@@ -88,17 +88,19 @@ Bu sonuç LibreOffice yeniden hesaplaması ile kaynak önbelleğinin karşılaş
 İlk MemberData düzenlemesi de Windows CI'da CS3016 verdi; bu nedenle testler daha basit ve derleyici açısından güvenli bir düzene alındı: tek [Fact], tipli tuple kaynak vektörleri ve foreach ile hücre sonuçlarının doğrulanması. Güncel commit: 15e3e88755ef768fdb6352c8bacb56f6ce99cafe. Bu commit için yeni CI sonucu henüz görünmüyor.
 
 
-## Son XLSM'lerdeki icmal riskleri — kaynak önbelleği ve formül ayrı ayrı
+## Son XLSM'lerdeki icmal riskleri — formül zinciri ve aktarım ayrı ayrı
 
 **Özel Eğitim**
 - Anasayfa!E5 = Kasım 2026.
 - Hesaplama!K4 = 43.630,00 TL; Hesaplama!T4 = 34.037,27 TL; K+T = 77.667,27 TL.
 - Hakediş Raporu!D11 = 77.667,27 TL; D8−D10 da aynı değeri verir.
-- Hakediş İcmali!C8 = 77.667,27 TL ve D8 = 11.030,00 TL; E8 = C8+D8 = 88.697,27 TL. D8, İcmal Verileri'ndeki güncel taşıma fiyat farkı I=7.530 TL ile rehber fiyat farkı R=3.500 TL'yi toplar. Böylece fiyat farkı, C8 içindeki K+T tutarında zaten bulunmasına rağmen ayrı sütunda bir kez daha eklenmiş olur.
+- Hakediş İcmali!C8 = 77.667,27 TL ve D8 = 11.030,00 TL; E8 = C8+D8 = 88.697,27 TL. D8, İcmal Verileri'ndeki taşıma fiyat farkı I=7.530 TL ile rehber fiyat farkı R=3.500 TL'yi toplar. Böylece fiyat farkı, C8 içindeki K+T tutarında zaten bulunmasına rağmen ayrı sütunda bir kez daha eklenir.
 
 **Temel Eğitim**
-- Hesaplama Bilgileri!K4 = 319.991,9228 TL; İcmal Verileri!F4 = 319.991,9228 TL eşleşir.
-- Hakediş İcmali!C8 = 319.991,9228 TL; D8 = 26.840,390568144 TL; E8 = 346.832,313368144 TL.
-- İcmal Verileri'nde ilgili ay için fiyat farkı aktarım hücresi R4 = 7.367,35 TL, kesinti aktarım hücresi AD4 = 19.473,040568144 TL; toplam D8 = R4+AD4 olur. Hesaplama Bilgileri!I4 = 7.365,35 TL ve V4 = 19.475,040568144 TL olduğundan aktarılmış değerler hesaplama satırıyla aynı değil; kaynak aktarım alanları yenilenmemiş veya başka seçili ay/satır bağlamından kalmış olabilir.
+- Hesaplama Bilgileri!I4 = 7.365,35 TL; K4 = 319.991,9228 TL; V4 = 19.475,040568144 TL.
+- İcmal Verileri!P4/Q4/R4 = 7.365,35 TL; AD4 = 19.475,040568144 TL. Bu son dosyada ilgili aktarılmış değerler I4 ve V4 ile eşleşir.
+- Hakediş İcmali!C8 = 319.991,9228 TL; D8 = 26.840,390568144 TL (= R4 + AD4 = fiyat farkı + kesintiler); E8 = 346.832,313368144 TL. C8'deki K4 aylık hizmet toplamı I4 fiyat farkını zaten içerdiğinden, D8'de fiyat farkının ayrıca eklenmesi kaynak formül zincirinde tekrar sayım oluşturur. D sütununun aynı zamanda AD4 kesintisini içermesi de sütun başlığıyla anlam farkı doğurur.
 
-Bu bulgular, son XLSM'lerde **icmal formülü ile aktarılmış hücrelerin ayrı ayrı kabul edilmesi gerektiğini** gösterir. Makrolar masaüstü Excel'de çalıştırılmadığı için eski aktarım hücrelerinin neden güncellenmediği kesinleştirilmemiştir. Kaynak formülü sessizce değiştirmeyin; aynı hat/dönemle aktarım makrolarını Excel'de çalıştırıp İcmal Verileri'ndeki ilgili aylık K+T, I/R ve kesinti bloklarını yeniden kontrol edin. Ardından Hakediş İcmali C/D/E satırlarını ve dört PDF'yi tekrar karşılaştırın.
+Önceki tarihsel kopyalarda raporlanan AB4/V4 farkı 4,19 TL bu en son dosyaya doğrudan taşınmamalıdır: son dosyada AD4=V4 görülüyor. Tarihsel bulgu yalnızca eski kopya için geçerlidir.
+
+Bu bulgular, son XLSM'lerde **icmal formül zincirinin ayrı kabul edilmesi gerektiğini** gösterir. Kaynak Excel'in davranışını sessizce düzeltmeyin. Aynı hat/dönemle VBA aktarım makroları masaüstü Excel'de çalıştırılmalı, dört PDF yeniden üretilmeli ve kaynak formülünün iş sahibince onaylanmış davranışıyla OEHS çıktısı karşılaştırılmalıdır.
