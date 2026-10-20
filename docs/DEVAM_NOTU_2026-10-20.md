@@ -57,3 +57,11 @@ Bu oranlar mühendislik tahminidir, kabul sertifikası değildir. Genel proje %9
 - PR #3 halen açık, taslak ve birleştirilmemiş; son doğrulanan head `0a028af494986e978ade9225c8b080fecab69262`.
 - Yeni vektörlerin gerçek Excel/VBA masaüstü kabulü olmadığı açıkça korunmalı. CI geçse bile bu yalnızca derleme/uygulama test kanıtıdır.
 - Sıradaki adım: run 39389957851 sonucunu bekleyip derleme/test hatalarını düzeltmek; sonra hem kaynak vektörlerinin beklenen hücrelerle gerçekten doğru eşlendiğini hem de dört PDF × iki program kabul matrisindeki açık işleri sürdürmek.
+
+
+## Ek çalışma kaydı — 2026-10-20, arayüz başlangıç boyutu ve CI testi
+- Kullanıcı arayüzünün uzman incelemesi istendi; yalnızca kullanıcı tek tek bildirdiğinde değil, taşma/yoğunluk/kullanılabilirlik risklerini proaktif inceleme ilkesi benimsendi.
+- `MainWindow.xaml` başlangıç penceresi 2168×997 DIP'ten 1440×900 DIP'e alındı ve başlangıç konumu `CenterScreen` yapıldı. Minimum boyut 1024×600 DIP olarak korundu. Bu yalnızca ilk ekran açılışını düzeltir; içerik taşması ve %100/%125/%150 DPI kabulü ayrıca doğrulanmalıdır.
+- Yeni eklenen `LatestUploadedWorkbookParityTests.cs` CI run [39389957851](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39389957851) içinde CS3016 ve xUnit1026 hataları verdi. Test vektörleri bu oturumda Excel kaynağına karşı bağımsız doğrulanamadığı için, hesaplama kodunu değiştirmek yerine derlemeyi bozan ve henüz güvenilir kaynak paritesi kanıtı olmayan test dosyası kaldırıldı. Bu, Excel/VBA parite testinin tamamlandığı anlamına gelmez; yeniden, doğrulanmış kaynak hücreleriyle eklenmesi gerekir.
+- CI'nin yeni XAML değişikliği ve test dosyasının kaldırılması sonrasındaki sonucu henüz doğrulanmadı.
+- Son commit'ler: UI `99598930437ea92104fdab8d96787d2b7db5116a`; test dosyasının kaldırılması `fd11996ad3b3295113a8fff596aee409ab1c228f`. Sonraki adımda gerçek dal başı ve yeni CI run kontrol edilmelidir.
