@@ -6530,7 +6530,46 @@ public partial class MainWindow : Window
                                  !IsArchiveEditing;
         if (!showMultiRouteGrid)
         {
-            _multiRoutePaymentRows.Clear();
+            // Hiding the multi-route editor is a presentation change, not a
+            // request to discard the user's unsaved per-route draft values.
+            // Before switching modes, capture the visible single-route inputs
+            // back into the route row that owns those values.
+            if (!_editingHistoryId.HasValue && !IsArchiveEditing &&
+                !string.IsNullOrWhiteSpace(_lastProgressDefaultsRouteKey))
+            {
+                var previousDraft = _multiRoutePaymentRows.FirstOrDefault(row =>
+                    string.Equals(
+                        row.RouteKey,
+                        _lastProgressDefaultsRouteKey,
+                        StringComparison.Ordinal));
+                if (previousDraft is not null)
+                {
+                    decimal ReadDecimal(TextBox box) =>
+                        TryParseDecimalOrZero(box.Text, out var value) ? value : 0m;
+
+                    if (TryParseWorkDays(WorkDaysTextBox.Text, out var workDays))
+                        previousDraft.WorkDays = Math.Max(0, workDays);
+                    if (TryParseWorkDays(GuideWorkDaysTextBox.Text, out var guideWorkDays))
+                        previousDraft.GuideWorkDays = Math.Max(0, guideWorkDays);
+                    previousDraft.DiscountAmount = ReadDecimal(DiscountTextBox);
+                    previousDraft.PriceDifference = ReadDecimal(PriceDifferenceTextBox);
+                    previousDraft.GuideDiscountAmount = ReadDecimal(GuideDiscountTextBox);
+                    previousDraft.GuidePriceDifference = ReadDecimal(GuidePriceDifferenceTextBox);
+                    previousDraft.TaxDebt = ReadDecimal(TaxDebtTextBox);
+                    previousDraft.SocialSecurityDebt = ReadDecimal(SocialSecurityDebtTextBox);
+                    previousDraft.MinimumWageSupportEnabled =
+                        previousDraft.MinimumWageSupportEnabled &&
+                        MinimumWageSupportEnabledCheckBox.IsChecked == true;
+                    previousDraft.MinimumWageSupport = previousDraft.MinimumWageSupportEnabled
+                        ? ReadDecimal(MinimumWageSupportTextBox)
+                        : 0m;
+                    previousDraft.InspectionPenalty = ReadDecimal(InspectionPenaltyTextBox);
+                }
+            }
+
+            // Keep the keyed draft cache while the grid is hidden. Rows are
+            // re-used only when their full route identity matches a later
+            // selection, so another contract/program cannot inherit these values.
             MultiRouteEntryBorder.Visibility = Visibility.Collapsed;
             SetGlobalMonetaryFieldsVisible(true);
             return;
