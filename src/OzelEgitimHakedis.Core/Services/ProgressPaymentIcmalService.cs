@@ -111,7 +111,7 @@ public static class ProgressPaymentIcmalService
         DateOnly currentPeriod,
         TransportationProgramType programType)
     {
-        if (currentPeriod.Month < 9 && currentPeriod.Month > 6)
+        if (currentPeriod.Month is 7 or 8)
             return null;
 
         if (currentPeriod.Month == 9)
