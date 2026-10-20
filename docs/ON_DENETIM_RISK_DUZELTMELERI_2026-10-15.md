@@ -7,20 +7,22 @@
 
 > Bu kayıt teknik uygulama ve test bulgularını özetler; tek başına %100 mevzuat uyumu veya belirli bir ödeme dosyasına ilişkin kesin hukuki görüş değildir. İlgili sözleşme, idari/teknik şartname ve ödeme tarihinde yürürlükteki mevzuat ayrıca doğrulanmalıdır.
 
-## R-01 — Fiyat farkının iki kez hesaba katılması
+## R-01 — Hakediş Raporu toplam zinciri ve fiyat farkı
 
-**Sonuç: Önleyici hesaplama mantığı ve regresyon testleri mevcut.**
+**Sonuç: Kaynak hücre zinciri ile C# rapor servisi ayrımı korunmalı; icmaldeki ayrı fiyat farkı davranışı bundan farklı bir kabul konusudur.**
 
-**Eski karar metni düzeltilmiştir: son XLSM ile çelişen önceki “fiyat farkını A'dan çıkarıp ayrı B'ye eklemek mükerrerliği önler” açıklaması geçerli kural değildir.** En son yüklenen Excel'in formül zinciri esas alınır; kaynak formüller ve aktarım makroları satır/sütun bazında eşleştirilmeden rapor toplamı yeniden tasarlanmaz.
+Hakediş Raporu'nda kaynak mantığı:
+- A/D6 = önceki dönemlerin K+T toplamı + güncel dönemin hizmet tabanı (güncel ham I+R hariç).
+- B/D7 = güncel dönemin ham fiyat farkı I+R.
+- C/D8 = A+B; D/D10 = önceki dönemlerin K+T toplamı; E/D11 = C−D.
+- C# `ProgressPaymentReportService` bunu `CalculateWorkbookMonthlyPaymentAmount` (güncel hizmet tabanı), `CalculateWorkbookPriceDifference` (ham I+R) ve `CalculateWorkbookMonthlyPaymentTotal` (taban + ham fark) metotlarıyla ayrı ayrı temsil eder.
 
-Kaynakta aylık aktarım `K+T` değerini kaydeder; K/T formülleri fiyat farkını zaten içerir. Ayrıca Hakediş Raporu'nda `D7=I+R`, `D8=D6+D7`, `D11=D8-D10` zinciri bulunur. Dolayısıyla fiyat farkının aylık `K+T` içinde bulunması ve raporda ayrıca eklenmesi, kaynak Excel davranışında bir risk/çelişki olarak açıkça tutulmalıdır; bunu “mükerrerliği önleyen düzeltilmiş mantık” diye belgelemek yanlıştır. Kodun mevcut rapor hesabı, en son XLSM'nin aynı girdiyle doğrulanmış sonuçlarıyla karşılaştırılmalıdır.
+Önceki revizyonda bu zincir “kaynakta fiyat farkı iki kez ekleniyor” diye hatalı özetlenmişti. Hakediş Raporu için güncel dönemin I+R bileşeni A/D6'dan çıkarılıp B/D7'de bir kez ekleniyorsa, bu rapor zincirinde tek kez sayılır. **Bu sonuç Hakediş İcmali için otomatik genellenmemelidir:** icmalin aylık tutar/fiyat farkı/kesinti sütunları ve VBA aktarımı ayrı doğrulanmalıdır.
 
-İlgili otomatik testler tek başına kaynak Excel kabulü değildir:
-- `ProgressPaymentWorkbookFormulaTests.ReportTotals_ShouldKeepCumulativeWorkAndPriceDifferenceSeparate`
-- `ProgressPaymentReportTests` içindeki rapor toplamı ve negatif fiyat farkı senaryoları.
+İlgili test:
+- `ProgressPaymentWorkbookFormulaTests.ReportTotals_ShouldMatchExcelCurrentPriceDifferenceAndCumulativeTotals`
 
-**Kabul koşulu:** En son Temel ve Özel Eğitim XLSM dosyalarındaki ilgili hücre formülleri ile VBA aktarım sırası ayrı ayrı incelensin; aynı girdiyle hücre sonuçları ve dört PDF karşılaştırılsın. Çelişen eski test beklentisi varsa test, son XLSM formülü ve somut sonuç esas alınarak güncellensin; C# davranışı sessizce Excel'den farklılaştırılmasın.
-
+**Kabul koşulu:** Son yüklenen Temel ve Özel Eğitim XLSM dosyalarındaki D6/D7/D8/D10/D11 hücreleri ve icmal formülleri ayrı ayrı aynı-girdi sonuçlarıyla karşılaştırılmalı. Kaynak Excel'in hesaplanmış sonuçları görülmeden rapor veya icmal formülleri birbirine benzetilmemeli.
 ## R-02 — Negatif fiyat farkı ve ek kesin teminat
 
 **Sonuç: Kaynak XLSM formülü ve mevcut C# kodu işaretli sonucu koruyor; mevzuatla yorum farkı açık karar olarak tutuluyor.**
