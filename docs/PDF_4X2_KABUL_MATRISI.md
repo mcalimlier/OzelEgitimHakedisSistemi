@@ -204,3 +204,11 @@ Tarihsel Temel/Ortaöğretim ​`Hizmet İşleri Hakediş Raporu!F15` formülü 
 - Eski source-vector test metotları son XLSM satırlarıyla değiştirildiği için test sayısı önceki CI'daki 223'ten 215'e indi; son testlerde 8 gerçek kaynak satırı 2 program-özel test içinde döngüyle doğrulanıyor. Eski yükleme vektörleri artık geçerli kabul edilmiyor.
 - Arkadaş test paketi ve EXE artefakt yükleme adımları CI ortamı kısıtlaması nedeniyle atlandı; hazırlama adımları başarılı. CI, masaüstü Excel/VBA veya 4×2 PDF görsel kabulü yerine geçmez.
 - Güncel PR başı bu ekleme öncesinde bfe1c5d7... idi; son kaynak ve test düzeltmeleri dalda. PR #3 açık/taslak/birleştirilmemiş durumda.
+
+
+## Son yüklenen XLSM'lerle PDF üretim regresyonu — 20.10.2026
+
+- WPF testine son Temel satır 4 ve Özel satır 4 girdileri eklendi; iki program için dört ayrı PDF çıktısı oluşturuluyor (toplam sekiz), içerik tutarları ve A4 ölçüleri denetleniyor.
+- [Windows CI run 39400709937](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39400709937) başarılı: 215/215 Core, 6/6 WPF test; tam çözüm/WPF derlemesi, UI statik kontrolleri, PDF smoke ve Windows EXE publish geçti.
+- Son commit a0bce9e063492095493392c3ee40f10c02c648f6 yalnızca xUnit string karşılaştırmalarına StringComparison.Ordinal ekleyerek CA1307 uyarılarını gideriyor; bu commit için yeni CI sonucu bekleniyor.
+- Kaynak Excel icmal formül riskleri ve masaüstü Excel/VBA kabulü açık; bu test otomatik PDF üretimini doğrular, kaynak Excel'deki makroların çalıştırıldığını kanıtlamaz.
