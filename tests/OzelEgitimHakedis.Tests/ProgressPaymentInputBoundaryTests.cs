@@ -44,6 +44,19 @@ public sealed class ProgressPaymentInputBoundaryTests
     }
 
     [Fact]
+    public void Calculate_ShouldRejectUndefinedProgramType()
+    {
+        var input = InvalidInputs()[0] with
+        {
+            WorkDays = 0m,
+            ProgramType = (TransportationProgramType)999
+        };
+
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => ProgressPaymentCalculator.Calculate(input));
+    }
+
+    [Fact]
     public void Calculate_ShouldRejectNegativeValuesForFieldsWithNonNegativeContract()
     {
         foreach (var input in InvalidInputs())
