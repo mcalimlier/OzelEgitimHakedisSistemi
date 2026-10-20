@@ -33,3 +33,10 @@ V4 aday yamasının statik invariant test kaydı **46/46 PASS** olarak mevcuttur
 
 ## Sıradaki adım
 Excel masaüstü ortamında test kopyalarında derleme ve makro senaryoları; ardından 8 nihai PDF'nin alan alan karşılaştırması. PR açık kalmalı, ana dala merge/yayın yapılmamalıdır.
+
+
+## Güncel GitHub doğrulaması — 20.10.2026
+
+- HEAD `fb26351fcfca2d203447e8790f01990af97340c4` için Windows workflow run [39483180045](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39483180045) **başarılı** tamamlandı.
+- Bu sonuç Windows CI build/test/PDF smoke akışının bu commit için başarılı olduğunu doğrular; Microsoft Excel VBA Project Compile, gerçek Excel makro çalıştırması, UserForm etkileşimli/DPI kabulü ve gerçek Excel çıktılarıyla 8/8 PDF karşılaştırması yerine geçmez.
+- PR #3 açık ve taslak durumda; ana dala birleştirme veya yayınlama yapılmadı.
