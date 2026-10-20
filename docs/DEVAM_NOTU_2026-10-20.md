@@ -794,3 +794,14 @@ Yüzdeler ölçüm sistemiyle hesaplanmış kesin istatistik değil, iş paketle
 - Güncel kod HEAD'i bir önceki kontrolde `739b84ef6d269704e3a556cae1cba550e0ee7973` idi; son dokümantasyon commit'i `6fc76e28a7009b862fdaa2ad73a635d4de494eb2` ile dal ilerledi. Bu son commit için CI ayrıca kontrol edilmeli.
 - İlerleme tahminleri değişmedi: Temel Eğitim %86, Özel Eğitim %89; gerçek Excel/VBA IDE Compile/Run ve 8/8 PDF kabulü açık.
 - Sonraki adım: yeni CI sonuçlarını kontrol et; VBA aday modüllerini workbook kopyalarında compile/run et; ay temizleme, AP/AQ ve çıktı senaryolarını kaydet; sekiz PDF'yi gerçek Excel çıktılarıyla karşılaştır. PR #3 açık/taslak kalacak; merge/release yok.
+
+
+## Devam checkpoint'i — kritik formüller ve sayfa referansları kontrol edildi (20.10.2026)
+
+- Sabit VBA `Sheets/Worksheets` referansları, çalışma kitabı sayfa adlarıyla karşılaştırıldı: Temel Eğitimde 0, Özel Eğitimde 0 eksik sayfa referansı. Bu statik kontroldür; çalışma zamanı garantisi değildir.
+- Kaynak XLSM'ler salt okunur açılarak kritik formül/cached değerleri doğrulandı. Temel: T4=441.921, U4=3033.523428144, W4=332516.074511856, rapor D15=3033.523428144, D28=332516.08. Özel Eğitim AP3 düzeltilmiş kopya: AC4=661.8, AD4=736.2857196, AE4=27328.7843196, AF4=88837.724, AG4=61508.9396804, rapor D15=736.2857196, D28=61508.94; AP3 Kasım, AQ3 Aralık.
+- Yama paketi 5 VBA kaynak adayı içeriyor; ay bazlı güvenli temizleme, Temel yazdırma ekran durumu koruması, Roller değişken bildirimi ve iki Module2 dışa aktarma hata raporlaması var. Statik regresyon: 27/27 PASS. VBA IDE Compile/Run değildir.
+- Yeni belge `docs/VBA_KONTROL_SONUCLARI_2026-10-20.md` eklendi.
+- Güncel PR #3 HEAD `079dac7b456402ddfb6785409a87bfe80c642c6f`; PR açık/taslak, merge edilmedi. HEAD için CI run 39463875901 kuyrukta. Önceki run'lar da bazıları devam ediyor; yalnız HEAD'e uygun tamamlanmış CI sonucu ayrıca doğrulanmalı.
+- İlerleme tahmini değişmedi: Temel %86, Özel %89, genel %86. Gerçek Excel/VBA derleme/çalıştırma ve 8/8 gerçek PDF kabulü açık olduğu için %100 iddiası yok.
+- Sonraki adımlar: HEAD CI sonucunu doğrula; aday modülleri kopya XLSM'lere Excel VBA IDE'de compile et; ay silme/aktarımı test et; hesaplama hücrelerini yeniden hesaplatıp kaydet; sekiz PDF'yi Excel referans çıktılarıyla karşılaştır. PR #3 taslak/açık kalmalı.
