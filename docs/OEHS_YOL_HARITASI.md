@@ -1,5 +1,7 @@
 # OEHS Yol Haritası
 
+> **20.10.2026 kaynak önceliği:** En son yüklenen Temel Eğitim ve Özel Eğitim XLSM dosyaları yetkili kaynaktır. Bu dosyada yer alan 17–19 Ekim tarihli tarihsel formül aynaları, sentetik örnekler ve eski test beklentileri son Excel ile çelişirse güncellenecek veya tarihsel diye işaretlenecektir. Tarihsel LibreOffice sonuçları son XLSM/VBA kabulü olarak sunulmayacaktır.
+
 ## Güncel kalite kapısı — 2026-10-18
 
 Bu dalda yeni değişiklikler için aşağıdaki doğrulamalar birbirinden ayrı değerlendirilir:
