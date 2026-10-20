@@ -139,12 +139,8 @@ public sealed class RouteDraftCacheTests
     }
 
 
-    public static IEnumerable<object[]> SelectedRouteCounts =>
-        new[] { 1, 2, 3, 4, 5, 8, 12 }.Select(count => new object[] { count });
-
-    [Theory]
-    [MemberData(nameof(SelectedRouteCounts))]
-    public void OutputSelection_ShouldIncludeExactlyTheRequestedNumberOfSelectedRoutes(int selectedCount)
+    [Fact]
+    public void OutputSelection_ShouldSupportDifferentRequestedRouteCountsWithoutFixedLimit()
     {
         const int totalRoutes = 12;
         var cache = Enumerable.Range(1, totalRoutes).ToDictionary(
@@ -157,17 +153,20 @@ public sealed class RouteDraftCacheTests
             },
             StringComparer.Ordinal);
 
-        var selectedKeys = Enumerable.Range(1, selectedCount)
-            .Select(index => $"R{index}")
-            .ToArray();
+        foreach (var selectedCount in new[] { 1, 2, 3, 4, 5, 8, 12 })
+        {
+            var selectedKeys = Enumerable.Range(1, selectedCount)
+                .Select(index => $"R{index}")
+                .ToArray();
 
-        var selected = SelectedRouteDrafts.SelectExact(selectedKeys, cache);
+            var selected = SelectedRouteDrafts.SelectExact(selectedKeys, cache);
 
-        Assert.Equal(selectedCount, selected.Count);
-        Assert.Equal(selectedKeys, selected.Select(draft => draft.RouteKey));
-        Assert.Equal(selectedKeys.Sum(key => cache[key].PriceDifference), selected.Sum(draft => draft.PriceDifference));
-        Assert.All(cache.Values.Where(draft => !selectedKeys.Contains(draft.RouteKey, StringComparer.Ordinal)),
-            draft => Assert.DoesNotContain(draft, selected));
+            Assert.Equal(selectedCount, selected.Count);
+            Assert.Equal(selectedKeys, selected.Select(draft => draft.RouteKey));
+            Assert.Equal(selectedKeys.Sum(key => cache[key].PriceDifference), selected.Sum(draft => draft.PriceDifference));
+            Assert.All(cache.Values.Where(draft => !selectedKeys.Contains(draft.RouteKey, StringComparer.Ordinal)),
+                draft => Assert.DoesNotContain(draft, selected));
+        }
     }
 
     private sealed class Draft
