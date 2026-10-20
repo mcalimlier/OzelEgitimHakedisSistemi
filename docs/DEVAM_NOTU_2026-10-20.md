@@ -397,3 +397,36 @@ Yüzdeler mühendislik tahminidir; resmi kabul oranı değildir.
 - Çoklu hat / taslak izolasyonu: %82 (çıktı sınırı kodlandı; yeni CI ve WPF uçtan uca kabul bekleniyor).
 - Test / CI / dağıtım: %97 (önceki koşular başarılı; yeni kod/test CI'sı bekleniyor).
 - Genel mühendislik tahmini: %83 (Excel/VBA paritesi ve 8 PDF kabulü değişmedi, açık).
+
+
+## Beş çekirdekte paralel çalışma özeti — 20.10.2026
+
+İş akışı beş eş zamanlı teknik hatta bölünerek incelendi; değişiklikler tek feature dalına güvenli sırayla yazıldı:
+
+1. **Hesaplama / XLSM paritesi:** Güncel Temel ve Özel Eğitim formül zinciri ile kaynak satır vektörleri tekrar incelendi. Mevcut testler hesap makinesi ara/sonuçlarını kapsıyor; LibreOffice karşılaştırması Microsoft Excel/VBA kabulü değildir. XLSM dosyaları mevcut Git dalında bulunmadığından uygulama içi ham workbook okuma doğrulaması henüz bağlanmış değil.
+2. **Çoklu hat / taslak izolasyonu:** Seçili hat taslaklarını çözümleyen servis artık eksik, yinelenen ve null taslakları reddediyor. Null taslak için regresyon testi eklendi. Seçili olmayan cache kayıtları hesaplama/çıktı listesine giremez.
+3. **PDF üretimi / kabul:** Windows CI'da PDF smoke üretim adımı ve WPF çıktı testleri geçti. Bu, gerçek Excel/VBA kaynak PDF'leriyle görsel alan alan karşılaştırma anlamına gelmez; 8/8 kabul kapısı açık.
+4. **WPF / UI:** Tam çözüm ve WPF derleme, UI sözleşmesi ve kompakt yerleşim kontrolleri son doğrulama koşularında geçti. Gerçek masaüstü, farklı DPI ve klavye etkileşimi hâlâ ayrıca denenmeli.
+5. **Arşiv / kimlik / CI:** Arşiv iş akışı statik kontrolleri ve çözüm testleri CI'da geçti. Gerçek Windows üzerinde arşiv geri yükleme/düzenleme/yeniden hesaplama ve denetim izi kabulü açık.
+
+### CI teyidi
+- WPF değişikliği: [39435034032](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39435034032) — **başarılı**.
+- Seçili hat regresyon testleri: [39435071706](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39435071706) — **başarılı**.
+- Önceki devam notu: [39435193729](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39435193729) — **başarılı**.
+- Bu turdaki son koruma/test değişiklikleri: Core commit `cb129ea528fa88a18a8cb190e726ce5b0d443973`; test commit `966dbce5fe484f3d5f073da770b9b486791bed61`. Bu iki yeni commit için CI sonucu henüz alınmadı.
+
+### Güncel ilerleme
+| Çekirdek | Tahmini ilerleme | Açık kabul kapısı |
+|---|---:|---|
+| Temel Eğitim / Ortaöğretim hesaplama | %85 | Microsoft Excel/VBA T4, U4, W4, D15, D28 |
+| Özel Eğitim hesaplama | %87 | Microsoft Excel/VBA AC4:AG4 ve D28 |
+| Hakediş raporu / formül zinciri | %82 | Kaynak Excel raporuyla alan alan karşılaştırma |
+| İcmal / VBA aktarımı | %78 | VBA masaüstü aktarımı ve tekrar sayımı riski |
+| Dört PDF × iki program | %72 | Gerçek Excel çıktılarıyla 8/8 karşılaştırma |
+| Çoklu hat / taslak izolasyonu | %84 | Yeni CI ve WPF uçtan uca etkileşim |
+| Arşiv / kimlik / veri modeli | %86 | Windows uçtan uca arşiv kabulü |
+| WPF / iş akışı / DPI | %83 | Gerçek masaüstü/DPI/klavye kabulü |
+| Test / CI / dağıtım | %97 | Son commit CI ve gerçek masaüstü kabulü |
+| **Genel mühendislik tahmini** | **%83** | Excel/VBA ve 8 PDF kabul kapıları |
+
+**Sonraki yürütme sırası:** (a) son iki commit'in CI'sını kontrol et ve hataları gider; (b) XLSM kaynağı mevcutsa otomatik workbook/formül/önbellek doğrulayıcısını gerçek dosyaya bağla, değilse sahte doğrulama iddiası üretme; (c) WPF çıktı testlerini seçili rota sayısı 1/3/5 ve farklı program türleri için genişlet; (d) 8 PDF kabul matrisini gerçek Excel çıktılarıyla kapat. PR #3 taslak kalır; ana dala birleştirme veya yayınlama yapılmaz.
