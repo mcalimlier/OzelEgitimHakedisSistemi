@@ -33,10 +33,20 @@ public static class ProgressPaymentIcmalService
     /// </summary>
     public static bool IsMonthInWorkbookLookupRange(
         DateOnly month,
-        TransportationProgramType programType) =>
-        programType == TransportationProgramType.BasicOrSecondary
+        TransportationProgramType programType)
+    {
+        if (!Enum.IsDefined(programType))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(programType),
+                programType,
+                "Taşımalı eğitim program türü tanımlı bir değer olmalıdır.");
+        }
+
+        return programType == TransportationProgramType.BasicOrSecondary
             ? month.Month >= 9 || month.Month <= 7
             : month.Month >= 9 || month.Month <= 6;
+    }
 
     /// <summary>
     /// Returns the prior calendar month's deduction from payment dates.
