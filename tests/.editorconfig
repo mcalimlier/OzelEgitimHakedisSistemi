@@ -1,5 +1,0 @@
-root = false
-
-[*.cs]
-# xUnit test adları davranışı açıkça ifade etmek için alt çizgi kullanır.
-dotnet_diagnostic.CA1707.severity = none

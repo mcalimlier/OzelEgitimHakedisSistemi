@@ -35,9 +35,10 @@ public static class ProgressPaymentArchiveBatchService
             {
                 result = write(item);
             }
-            catch (Exception ex) when (
-                ex is IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException)
+            catch (Exception ex)
             {
+                // Any ordinary write failure must trigger rollback; limiting this to
+                // a few exception types can leave a partially archived multi-route batch.
                 return Rollback(writtenPaths, rollback, ex.Message);
             }
 
@@ -70,8 +71,9 @@ public static class ProgressPaymentArchiveBatchService
             {
                 rollback(path);
             }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            catch (Exception ex)
             {
+                // Preserve the original write error and report every rollback failure.
                 rollbackFailures.Add($"{Path.GetFileName(path)}: {ex.Message}");
             }
         }
