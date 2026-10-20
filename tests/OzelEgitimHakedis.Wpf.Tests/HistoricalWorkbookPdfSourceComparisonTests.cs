@@ -39,6 +39,132 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
         });
     }
 
+    [Fact]
+    public void LatestUploadedWorkbookRows_ShouldRenderEightA4DocumentsAndExposeIcmalDifference()
+    {
+        RunOnSta(() =>
+        {
+            var special = BuildLatestSpecialEducationContext();
+            var specialOutputs = OehsOfficialDocumentFactory.BuildSeparate(special);
+            Assert.Equal(4, specialOutputs.Count);
+            var specialReport = PageText(specialOutputs, OehsOfficialDocumentKind.HakedisRaporu);
+            Assert.Contains("77.667,27 TL", specialReport);
+            Assert.Contains("236.014,30 TL", specialReport);
+            Assert.Contains("158.347,03 TL", specialReport);
+            Assert.Contains("61.508,94 TL", specialReport);
+            var specialIcmal = PageText(specialOutputs, OehsOfficialDocumentKind.HakedisIcmali);
+            Assert.Contains("₺77.667,27", specialIcmal);
+            Assert.Contains("₺11.030,00", specialIcmal);
+            Assert.Contains("₺88.697,27", specialIcmal); // Source XLSM adds I+R separately after K+T.
+
+            var basic = BuildLatestBasicEducationContext();
+            var basicOutputs = OehsOfficialDocumentFactory.BuildSeparate(basic);
+            Assert.Equal(4, basicOutputs.Count);
+            var basicReport = PageText(basicOutputs, OehsOfficialDocumentKind.HakedisRaporu);
+            Assert.Contains("319.991,92 TL", basicReport);
+            Assert.Contains("1.018.593,25 TL", basicReport);
+            Assert.Contains("698.601,33 TL", basicReport);
+            Assert.Contains("332.516,08 TL", basicReport);
+            var basicIcmal = PageText(basicOutputs, OehsOfficialDocumentKind.HakedisIcmali);
+            Assert.Contains("₺319.991,92", basicIcmal);
+            Assert.Contains("₺7.365,35", basicIcmal);
+            Assert.Contains("₺327.357,27", basicIcmal);
+            // The latest Basic XLSM cached icmal adds a stale/misaligned deduction block
+            // to its price-difference column; OEHS currently does not silently copy that defect.
+
+            SaveToTemporaryA4Pdfs(specialOutputs);
+            SaveToTemporaryA4Pdfs(basicOutputs);
+        });
+    }
+
+    private static OehsOfficialDocumentContext BuildLatestSpecialEducationContext()
+    {
+        var previousInput = new ProgressPaymentInput(
+            WorkDays: 1m, DailyPrice: 156943.457m, DiscountAmount: 0m, PriceDifference: 1403.573m,
+            ContractAmount: 764629.97m, IsVatExempt: true, TaxDebt: 0m, SocialSecurityDebt: 0m,
+            MinimumWageSupport: 0m, ProgramType: TransportationProgramType.SpecialEducation);
+        var previous = History(
+            previousInput, ProgressPaymentCalculator.Calculate(previousInput), 2,
+            new DateOnly(2026, 10, 31), new DateTime(2026, 10, 31, 12, 0, 0, DateTimeKind.Utc));
+
+        var input = new ProgressPaymentInput(
+            WorkDays: 16m, DailyPrice: 2320m, DiscountAmount: 1020m, PriceDifference: 7530m,
+            ContractAmount: 764629.97m, IsVatExempt: false, TaxDebt: 1200m, SocialSecurityDebt: 12560m,
+            MinimumWageSupport: 1362.49m, InspectionPenalty: 2500m,
+            GuideWorkDays: 23m, GuideDailyPrice: 1362.49m, GuideDiscountAmount: 800m,
+            GuidePriceDifference: 3500m, ProgramType: TransportationProgramType.SpecialEducation);
+        var calculation = ProgressPaymentCalculator.Calculate(input);
+        var current = History(
+            input, calculation, 3, new DateOnly(2026, 11, 30),
+            new DateTime(2026, 11, 30, 12, 0, 0, DateTimeKind.Utc));
+        var payments = new[] { previous, current };
+        var totals = ProgressPaymentReportService.Calculate(current, payments);
+        return Context(
+            current, payments, totals,
+            ProgressPaymentReportService.CalculateReportNetPayable(current, totals),
+            26448.176274448m, TransportationProgramType.SpecialEducation,
+            764629.97m, new DateOnly(2026, 9, 1), new DateOnly(2026, 9, 14),
+            new DateOnly(2026, 9, 14), new DateOnly(2027, 6, 25), 181,
+            new DateOnly(2026, 11, 30), new DateOnly(2026, 10, 19));
+    }
+
+    private static OehsOfficialDocumentContext BuildLatestBasicEducationContext()
+    {
+        var previousInput = new ProgressPaymentInput(
+            WorkDays: 1m, DailyPrice: 691235.978m, DiscountAmount: 0m, PriceDifference: 7365.35m,
+            ContractAmount: 2643686m, IsVatExempt: true, TaxDebt: 0m, SocialSecurityDebt: 0m,
+            MinimumWageSupport: 0m, ProgramType: TransportationProgramType.BasicOrSecondary);
+        var previous = History(
+            previousInput, ProgressPaymentCalculator.Calculate(previousInput), 2,
+            new DateOnly(2026, 10, 31), new DateTime(2026, 10, 31, 12, 0, 0, DateTimeKind.Utc));
+
+        var input = new ProgressPaymentInput(
+            WorkDays: 16m, DailyPrice: 19539.1608m, DiscountAmount: 0m, PriceDifference: 7365.35m,
+            ContractAmount: 2643686m, IsVatExempt: false, TaxDebt: 0m, SocialSecurityDebt: 0m,
+            MinimumWageSupport: 0m, InspectionPenalty: 0m,
+            ProgramType: TransportationProgramType.BasicOrSecondary);
+        var calculation = ProgressPaymentCalculator.Calculate(input);
+        var current = History(
+            input, calculation, 3, new DateOnly(2026, 11, 30),
+            new DateTime(2026, 11, 30, 12, 0, 0, DateTimeKind.Utc));
+        var payments = new[] { previous, current };
+        var totals = ProgressPaymentReportService.Calculate(current, payments);
+        return Context(
+            current, payments, totals,
+            ProgressPaymentReportService.CalculateReportNetPayable(current, totals),
+            26448.176274448m, TransportationProgramType.BasicOrSecondary,
+            2643686m, new DateOnly(2026, 8, 26), new DateOnly(2026, 9, 14),
+            new DateOnly(2026, 9, 14), new DateOnly(2027, 6, 25), 181,
+            new DateOnly(2026, 11, 30), new DateOnly(2026, 10, 19));
+    }
+
+    private static void SaveToTemporaryA4Pdfs(IReadOnlyList<OehsOfficialDocumentOutput> outputs)
+    {
+        var directory = Directory.CreateTempSubdirectory("oehs-latest-source-pdf-").FullName;
+        try
+        {
+            foreach (var output in outputs)
+            {
+                Assert.Single(output.Document.Pages);
+                var page = Assert.IsType<FixedPage>(output.Document.Pages[0].Child);
+                Assert.Equal(793.7008d, page.Width, 2);
+                Assert.Equal(1122.5197d, page.Height, 2);
+                var path = Path.Combine(directory, $"{output.Kind}.pdf");
+                PdfVectorWriter.Save(output.Document, path);
+                Assert.True(new FileInfo(path).Length > 1000);
+                using var pdf = PdfReader.Open(path, PdfDocumentOpenMode.Import);
+                Assert.Single(pdf.Pages);
+                Assert.Equal(595.2756d, pdf.Pages[0].Width.Point, 1);
+                Assert.Equal(841.8898d, pdf.Pages[0].Height.Point, 1);
+            }
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+                Directory.Delete(directory, recursive: true);
+        }
+    }
+
     private static OehsOfficialDocumentContext BuildSpecialEducationSourceContext()
     {
         var previousInput = new ProgressPaymentInput(
