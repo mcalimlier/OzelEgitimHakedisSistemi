@@ -48,3 +48,8 @@
 - Özel Eğitim `Module1` adayına `Option Explicit` eklendi; değişkenler ve parametreler mevcut modül içinde bildirilmiş olarak kontrol edildi.
 - Dışa aktarma penceresindeki `.ButtonName` ve `.AllowMultiSelect` satırlarının yanlışlıkla birleşmesini yakalayan bir statik regresyon testi eklendi. Bu test ilk denemede hatayı yakaladı; satır ayrımı düzeltildi.
 - Son statik regresyon sonucu: **29/29 PASS**. Bu sonuç VBA IDE derlemesi değildir.
+
+
+## Veri silme işlemi için geri alma koruması
+- Her iki `AyVerileriniSil` aday yordamı, ilk `ClearContents` öncesinde tüm hedef sütunların `.Formula` yedeklerini alır. Hedef başlıkları eksikse veya sayfa korumalıysa işlem başlamaz. Silme sırasında hata oluşursa yedekleri geri yüklemeyi dener.
+- Bu eklemelerden sonra statik regresyon kontrolü **33/33 PASS** oldu. Excel çalışma zamanı testleri hâlâ gerekli.
