@@ -1147,8 +1147,10 @@ public partial class MainWindow : Window
         SetMinimumWageSupportInputMode((ProgressTenderListBox.SelectedItem as ContractDraftData)?.ProgramType);
         InspectionPenaltyTextBox.Text = "0";
 
-        var selectedProgram = (ProgressTenderListBox.SelectedItem as ContractDraftData)?.ProgramType;
-        foreach (var row in _multiRoutePaymentRows)
+        // A month change starts a fresh draft for every route, including routes
+        // temporarily deselected from the visible grid. Otherwise their cached
+        // prior-month adjustments could reappear when selected again.
+        foreach (var row in _multiRouteDraftCache.Values)
         {
             row.WorkDays = 0;
             row.DiscountAmount = 0m;
@@ -1158,8 +1160,19 @@ public partial class MainWindow : Window
             row.GuidePriceDifference = 0m;
             row.TaxDebt = 0m;
             row.SocialSecurityDebt = 0m;
+            var draftRoute = _routes.FirstOrDefault(route =>
+                string.Equals(
+                    OehsIdentityService.BuildRouteKey(
+                        route.TenderNumber,
+                        route.RouteNumber,
+                        route.ContractorTaxOrIdentityNumber,
+                        route.ContractNumber,
+                        route.ProgramType),
+                    row.RouteKey,
+                    StringComparison.Ordinal));
             row.MinimumWageSupportEnabled =
-                selectedProgram != TransportationProgramType.BasicOrSecondary;
+                draftRoute is not null &&
+                draftRoute.ProgramType != TransportationProgramType.BasicOrSecondary;
             row.MinimumWageSupport = 0m;
             row.InspectionPenalty = 0m;
         }
