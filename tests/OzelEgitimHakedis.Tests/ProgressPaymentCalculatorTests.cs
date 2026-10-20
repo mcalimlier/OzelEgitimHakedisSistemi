@@ -56,6 +56,12 @@ public sealed class ProgressPaymentCalculatorTests
 
         var result = ProgressPaymentCalculator.Calculate(input);
 
+        Assert.Equal(120m, result.TransportNetAmount);
+        // Fiyat farkı taşıma matrahına dahildir: (100 + 20) × %10 = 12 TL KDV.
+        Assert.Equal(12m, result.TransportVat);
+        // Tevkifat, fiyat farkı dahil 120 TL taşıma matrahı üzerinden hesaplanır.
+        Assert.Equal(6m, result.TransportWithholding);
+        Assert.Equal(132m, result.GrossAmount);
         Assert.Equal(1.20m, result.AdditionalGuarantee);
         Assert.Equal(1.20m, result.Deductions.AdditionalGuarantee);
         // Nihai Temel Eğitim Excel'i: U = K*9.48/1000; T = I*6%.
