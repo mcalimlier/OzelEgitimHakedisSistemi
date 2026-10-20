@@ -1,3 +1,7 @@
+> **GÜNCEL XLSM ÖNCELİĞİ:** Bu metin önceki analiz tarihindeki kaynaklara göre hazırlanmıştır. Son yüklenen Excel dosyalarıyla çelişen formül, hücre adresi, tutar veya test beklentisi güncel kural değildir. Geçerli kaynak kimliği ve formüller için [SON_XLSM_KAYNAK_PARITESI_2026-10-20.md](SON_XLSM_KAYNAK_PARITESI_2026-10-20.md) esas alınmalıdır. Bu tarihsel metin yalnızca geçmiş inceleme izi olarak korunur.
+
+---
+
 # Excel Kaynak Uyuşmazlıkları — Karar Kaydı
 
 Tarih: 18.10.2026  
