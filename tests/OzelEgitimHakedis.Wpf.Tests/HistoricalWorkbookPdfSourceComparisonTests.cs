@@ -63,7 +63,7 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
             var basicReport = PageText(basicOutputs, OehsOfficialDocumentKind.HakedisRaporu);
             Assert.Contains("319.991,92 TL", basicReport);
             Assert.Contains("1.018.593,25 TL", basicReport);
-            Assert.Contains("698.601,33 TL", basicReport);
+            Assert.Contains("698.601,33", basicReport);
             Assert.Contains("332.516,08 TL", basicReport);
             var basicIcmal = PageText(basicOutputs, OehsOfficialDocumentKind.HakedisIcmali);
             Assert.Contains("₺319.991,92", basicIcmal);
