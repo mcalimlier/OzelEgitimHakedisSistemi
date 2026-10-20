@@ -1,3 +1,7 @@
+> **GÜNCEL XLSM ÖNCELİĞİ:** Bu metin önceki analiz tarihindeki kaynaklara göre hazırlanmıştır. Son yüklenen Excel dosyalarıyla çelişen formül, hücre adresi, tutar veya test beklentisi güncel kural değildir. Geçerli kaynak kimliği ve formüller için [SON_XLSM_KAYNAK_PARITESI_2026-10-20.md](SON_XLSM_KAYNAK_PARITESI_2026-10-20.md) esas alınmalıdır. Bu tarihsel metin yalnızca geçmiş inceleme izi olarak korunur.
+
+---
+
 # Orijinal XLSM İncelemesi ve Hakediş İş Akışı
 
 > **Kaynak önceliği (20.10.2026):** Bu dosyanın tarihsel XLSM/PDF gözlemleri arka plan niteliğindedir. Kullanıcının en son yüklediği Temel Eğitim ve Özel Eğitim XLSM dosyaları ile bunların formülleri/VBA akışı çelişirse, en son XLSM geçerlidir. Eski dosya adlarına, hücre sonuçlarına veya geçmiş kabul varsayımlarına dayanarak yeni Excel davranışı çıkarımı yapılmaz.
