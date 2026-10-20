@@ -103,3 +103,13 @@ Bu oranlar mühendislik tahminidir, kabul sertifikası değildir. Genel proje %9
 - Deneme vektörleri dosya commit'i: 19f06b828bc2b891a546fd8fa840356ba2bfc0bd. Bu commit sonrası CI ayrıca kontrol edilmelidir.
 - Güncel PR #3 taslak/açık/birleştirilmemiştir. Resmî hesap formülleri değiştirilmedi. Dört PDF × iki programın gerçek Excel karşılaştırmalı görsel kabulü hâlâ açık.
 - Sonraki adım: yeni dokümantasyon commit'i için CI'yi kontrol et; sonra test projesine kaynak XLSM hücre vektörlerini gerçek giriş alanlarıyla ilişkilendiren sağlam test eklemenin yolunu araştır ve UI/çıktı kabulüne devam et.
+
+
+## Ek çalışma kaydı — 2026-10-20, örnek hesapların C# doğrulaması
+- PR başı çalışma öncesi `d37d200c7983d219bbcabeeca2fcd2ab4e9d5a04` idi; bu commit için Windows CI run `39396815108` başarılıydı. PR #3 taslak/açık/birleştirilmemiş durumda.
+- Temel/Ortaöğretim sentetik vektörü C# `ProgressPaymentCalculator` ve mevcut regresyon testiyle doğrulandı: taşıma matrahı 120,00 TL; KDV 12,00 TL; tevkifat 6,00 TL; ek kesin teminat 1,20 TL; damga vergisi 1,1376 TL; toplam kesinti 8,3376 TL; net 123,6624 TL. Önceki test vektörü dokümanındaki KDV 10 TL / tevkifat 5 TL açıklaması aynı matrahla çelişiyordu; doküman düzeltildi.
+- Özel Eğitim sentetik vektöründe `AC=(I*6%)+(R*6%)`: I=100, R=50 için ek kesin teminat 9,00 TL; R=0 için 6,00 TL. Hesap makinesi testlerine rehber fiyat farkı sıfırken 6 TL sonucunu kontrol eden regresyon testi eklendi.
+- Doküman düzeltme commit'i `ea3c054ae4aa0585fc02507db4dd0ea5567740b0`; test commit'i / güncel PR başı `bfc8fa6664b0418ac812139628fc32e89c50bcaa`.
+- Güncel test commit'i için workflow run henüz bulunamadı; yeni testin CI sonucu beklemede/doğrulanmamış kabul edilmeli. Önceki başarılı CI, bu yeni testin çalıştığını kanıtlamaz.
+- Hesap sonuçları uygulama C# çekirdeğinin sentetik girdilerle doğrulamasıdır; Microsoft Excel/VBA aynı girdilerle çalıştırılmış değildir ve dört PDF'nin Excel çıktılarıyla tam paritesi hâlâ açık kabul maddesidir.
+- Sonraki adım: güncel `bfc8fa6` başı için CI sonucunu izle; başarısızlık varsa logları incele ve düzelt. Ardından dört PDF × iki program kaynak Excel kabul matrisine devam et. PR birleştirilmesin/yayınlanmasın.
