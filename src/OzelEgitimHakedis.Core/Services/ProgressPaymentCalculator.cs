@@ -25,6 +25,14 @@ public sealed class ProgressPaymentCalculator
         ProgressPaymentCalculationConstants constants)
     {
         ArgumentNullException.ThrowIfNull(input);
+        if (!Enum.IsDefined(input.ProgramType))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(input),
+                input.ProgramType,
+                "Taşımalı eğitim program türü tanımlı bir değer olmalıdır.");
+        }
+
         ArgumentNullException.ThrowIfNull(constants);
         if (!constants.TryValidate(out var constantsError))
             throw new ArgumentOutOfRangeException(nameof(constants), constantsError);
