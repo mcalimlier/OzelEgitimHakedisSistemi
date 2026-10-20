@@ -430,3 +430,13 @@ Yüzdeler mühendislik tahminidir; resmi kabul oranı değildir.
 | **Genel mühendislik tahmini** | **%83** | Excel/VBA ve 8 PDF kabul kapıları |
 
 **Sonraki yürütme sırası:** (a) son iki commit'in CI'sını kontrol et ve hataları gider; (b) XLSM kaynağı mevcutsa otomatik workbook/formül/önbellek doğrulayıcısını gerçek dosyaya bağla, değilse sahte doğrulama iddiası üretme; (c) WPF çıktı testlerini seçili rota sayısı 1/3/5 ve farklı program türleri için genişlet; (d) 8 PDF kabul matrisini gerçek Excel çıktılarıyla kapat. PR #3 taslak kalır; ana dala birleştirme veya yayınlama yapılmaz.
+
+
+## Hızlandırılmış tur ek notu — seçim sınırı fail-closed (20.10.2026)
+
+- Seçili hat sınırı ikinci kez sıkılaştırıldı: artık seçili rota taslağı null ise veya hiç rota seçilmemişse çıktı kümesi reddedilir. Böylece boş/bozuk seçimle sessizce boş hakediş oluşturulmaz.
+- Ek testler: `OutputSelection_ShouldRejectNullDraftForSelectedRoute` ve `OutputSelection_ShouldRejectEmptySelection`.
+- Son kod/test commit'leri: Core `abe06d26544830ea5520d1b76bb4176b98735b62`; test `457139d845cb702e641a8686be1e611ec63c9748`.
+- Yeni CI koşuları: [39435976702](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39435976702) ve [39436015389](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39436015389) bu not yazılırken çalışıyordu. Önceki paralel koşular [39435827410](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39435827410) ve [39435857812](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39435857812) da derleme/EXE yayın adımlarını geçerek sonlandırma aşamasındaydı; son durumları nihai başarı olarak burada varsayılmıyor.
+- Beş teknik hat paralel incelendi: hesaplama/XLSM, çoklu hat, PDF üretimi, WPF/UI ve arşiv/CI. Kod değişiklikleri tek feature dalında sıralı olarak kaydedildi; beş bağımsız ajan/branch varmış gibi sunulmaz.
+- Açık engel: kaynak XLSM dosyaları bu GitHub dalında yok; formül/önbellek vektör testleri mevcut olsa da programın ham XLSM dosyasını kendiliğinden okuyup Microsoft Excel/VBA ile bire bir kıyasladığı iddia edilemez. Gerçek workbook dosyaları uygulama/repo erişimine alınabildiğinde okuyucu ve otomatik karşılaştırma hattı bağlanmalıdır.
