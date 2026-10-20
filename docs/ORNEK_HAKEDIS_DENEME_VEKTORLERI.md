@@ -24,15 +24,15 @@ Beklenen temel kontroller (varsayılan hesaplama sabitleriyle):
 | Sonuç | Beklenen |
 |---|---:|
 | Taşıma hizmeti | 100,00 TL |
-| Taşıma KDV'si | 10,00 TL |
-| Taşıma tevkifatı | 5,00 TL |
+| Taşıma KDV'si | 12,00 TL |
+| Taşıma tevkifatı | 6,00 TL |
 | Ek kesin teminat | 1,20 TL |
 | Damga vergisi | 1,1376 TL |
 | Toplam kesinti | 8,3376 TL |
 | Net ödenecek | 123,6624 TL |
 | Rehber hizmeti / rehber KDV'si / rehber tevkifatı | 0,00 TL |
 
-Kaynak davranış kontrolü: Temel/Ortaöğretim için (T=I\times6\%), (U=K\times9{,}48/1000); rehber alanları bu programın hesabına eklenmez. Ekranda para yuvarlaması görülebilir; test karşılaştırması yuvarlanmamış ara değerler üzerinden yapılır.
+Kaynak davranış kontrolü: Temel/Ortaöğretim için (T=I\times6\%), (U=K\times9{,}48/1000); rehber alanları bu programın hesabına eklenmez. Bu örnekte K=100+20=120 TL olduğundan taşıma KDV'si 12 TL, tevkifat 6 TL'dir. Ekranda para yuvarlaması görülebilir; test karşılaştırması yuvarlanmamış ara değerler üzerinden yapılır.
 
 ## Örnek 2 — Özel Eğitim
 
