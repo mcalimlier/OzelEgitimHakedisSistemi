@@ -1,7 +1,7 @@
 # OEHS Kaynak Formül ve PDF Smoke Doğrulaması — 20.10.2026
 
 ## Kapsam
-Bu kayıt, yerel çalışma alanındaki son XLSM dosyalarının formül metinleri ve önbelleğe alınmış sonuçları ile son CI PDF smoke arşivinin yapısal kontrolünü belgeler. Microsoft Excel/VBA çalışma zamanı testi veya 8 nihai PDF'nin Excel çıktılarıyla görsel kabulü değildir.
+Bu kayıt, son XLSM dosyalarının formül metinleri ve önbelleğe alınmış sonuçları ile son CI PDF smoke arşivinin yapısal kontrolünü belgeler. Microsoft Excel/VBA çalışma zamanı testi veya 8 nihai PDF'nin Excel çıktılarıyla görsel kabulü değildir.
 
 ## Kaynak dosyalar
 - Temel Eğitim: `03-Temel Eğitim Taşıma Ödeme SON(1).xlsm`
@@ -20,7 +20,7 @@ Bu kayıt, yerel çalışma alanındaki son XLSM dosyalarının formül metinler
 - 16 PDF smoke çıktısı, kabul hedefi olan Temel Eğitim 4 PDF + Özel Eğitim 4 PDF ile aynı şey değildir. Bu nedenle **8/8 gerçek Excel PDF kabulü tamamlanmış değildir**.
 - Temel Eğitim kaynakta W4 = 332516.074511856 iken Hakediş Raporu D28 = 332516.08 (iki ondalığa yuvarlanmış) olarak kayıtlıdır. Bu fark kaynak formülleriyle uyumludur; değiştirilmedi.
 - İcmal C8/D8/E8 zincirinde daha önce işaretlenen olası fiyat farkı tekrar sayımı ayrı karar gerektiren fark olarak kalır; bu testte sessizce değiştirilmedi.
-- Temel Eğitim ve Özel Eğitim ayrı hesaplama kuralları olarak korunur; eski 1.500 TL ek kesin teminat varsayımı kullanılmaz.
+- Temel Eğitim ve Özel Eğitim ayrı hesaplama kuralları olarak korunur.
 
 ## VBA yaması
 V4 aday yamasının statik invariant test kaydı **46/46 PASS** olarak mevcuttur. Bu sonuç VBA derleyicisi veya runtime testi değildir. Kaynak XLSM'lere otomatik içe aktarım yapılmadı.
