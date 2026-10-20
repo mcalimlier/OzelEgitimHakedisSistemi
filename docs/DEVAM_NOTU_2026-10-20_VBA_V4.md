@@ -44,3 +44,15 @@
 2. Excel/VBA masaüstü erişimi olduğunda iki XLSM kopyasında tüm bileşenleri içe aktar, `Debug > Compile` çalıştır ve login, ay aktarımı/silme, yazdırma, sayfa olayları ve hata logunu gerçek veriyle test et.
 3. Temel hücreler `Hesaplama Bilgileri!T4/U4/W4`, `Hakediş Raporu!D15/D28`; Özel hücreler `Hesaplama!AC4:AG4`, `Hakediş Raporu!D15/D28` ve dört PDF/program için alan/görsel kabulü doğrula.
 4. PR #3 açık/taslak bırak; ana dala birleştirme/yayınlama yapma.
+
+
+## Sonraki CI doğrulaması — 20.10.2026 18:40 UTC
+
+- Güncel HEAD: `69f78493714af063b61f5e1d16d52a79950359c0`.
+- Windows CI run [39476117994](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39476117994) **başarılı** tamamlandı.
+- Başarılı adımlar: tam çözüm ve WPF derleme; WPF UI sözleşmesi ve kompakt yerleşim kontrolleri; test projeleri derleme/çalıştırma; PDF smoke dosyalarını üretme/doğrulama; Windows EXE publish hazırlığı.
+- PDF smoke, izole deneme paketi ve EXE yükleme adımları ortam/artefakt kısıtı nedeniyle atlandı. Üretim adımı başarılı olmakla indirilebilir artefaktın varlığı kanıtlanmış değildir.
+- V4 arşiv SHA-256 bu oturumda yeniden hesaplandı: `951ffe1a3e235910d51f499c3fe4a25373813fc08b33e3328969687983aa8de4`. Statik rapor 46/46 PASS; kapsamı VBA metin yapısı ve seçilmiş güvenlik invariantlarıdır.
+- Yerel kaynak dosyaları Windows/ANSI karakter kümesinde okunmalıdır; UTF-8 olarak zorla açmak Türkçe karakterleri bozuk gösterebilir. Bu bir kod değişikliği değildir; bileşenlerin içe aktarımında kaynak kod sayfa kodlaması korunmalıdır.
+- PR #3 açık/taslak ve birleştirilmemiş durumda.
+- Gerçek Microsoft Excel/VBA derlemesi, makro çalıştırması, UserForm görsel kabulü ve Excel kaynaklarıyla 8 PDF alan/görsel karşılaştırması hâlâ açık; bu nedenle %100 kabul verilmedi.
