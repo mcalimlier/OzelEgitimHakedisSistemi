@@ -65,3 +65,12 @@ Bu oranlar mühendislik tahminidir, kabul sertifikası değildir. Genel proje %9
 - Yeni eklenen `LatestUploadedWorkbookParityTests.cs` CI run [39389957851](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39389957851) içinde CS3016 ve xUnit1026 hataları verdi. Test vektörleri bu oturumda Excel kaynağına karşı bağımsız doğrulanamadığı için, hesaplama kodunu değiştirmek yerine derlemeyi bozan ve henüz güvenilir kaynak paritesi kanıtı olmayan test dosyası kaldırıldı. Bu, Excel/VBA parite testinin tamamlandığı anlamına gelmez; yeniden, doğrulanmış kaynak hücreleriyle eklenmesi gerekir.
 - CI'nin yeni XAML değişikliği ve test dosyasının kaldırılması sonrasındaki sonucu henüz doğrulanmadı.
 - Son commit'ler: UI `99598930437ea92104fdab8d96787d2b7db5116a`; test dosyasının kaldırılması `fd11996ad3b3295113a8fff596aee409ab1c228f`. Sonraki adımda gerçek dal başı ve yeni CI run kontrol edilmelidir.
+
+
+## Ek doğrulama — CI tamamlandı (2026-10-20)
+- Arayüz boyutu değişikliğini ve doğrulanmamış test dosyasının kaldırılmasını içeren sonraki Windows CI çalışması [39390508166](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39390508166) **başarılı** tamamlandı. Tam çözüm/WPF derlemesi, statik arayüz kontrolleri, testler, PDF smoke üretimi ve Windows EXE yayın adımları başarılı olarak raporlandı.
+- Bir önceki CI çalışması [39390480654](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39390480654), test dosyası kaldırılmadan önce derlemede başarısız oldu; bu eski başarısızlık yeni başarılı çalışmayla giderilmiş durumda.
+- Ana pencere kaynak kontrolü: `Width=1440`, `Height=900`, `MinWidth=1024`, `MinHeight=600`, `WindowStartupLocation=CenterScreen`; 2168 genişliği artık yok. CI içindeki `Verify compact UI layout` adımı da başarılı.
+- Sınır: CI, gerçek masaüstünde görsel/etkileşimli kabul testi veya farklı DPI/ekran çözünürlüklerinde manuel gözlem yerine geçmez. Dört PDF için kaynak örnekleriyle tam görsel fark kabulü ve Microsoft Excel/VBA ile gerçek parite hâlâ açık.
+- PR #3 açık, taslak ve birleştirilmemiş durumda. Bu oturumda merge/publish yapılmadı.
+- Sonraki adım: UI kaynaklarında giriş akışının program seçimi olmadan açılmaması ve geçici hesap tutucu/ilerleme göstergesi davranışını kod + CI kontrolleri üzerinden incelemek; ardından dört PDF × iki program kabul matrisini ilerletmek.
