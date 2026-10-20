@@ -294,10 +294,16 @@ public sealed class ProgressPaymentIcmalServiceTests
     }
 
     [Fact]
-    public void FindPreviousDeduction_ShouldCrossCalendarYearFromJanuaryToDecember()
+    public void BasicFindPreviousDeduction_ShouldCrossCalendarYearFromDecemberToJanuary()
     {
-        var previousDecember = History(1, new DateOnly(2026, 12, 31), 420m);
-        var currentJanuary = History(2, new DateOnly(2027, 1, 31), 180m);
+        // Basic's source headers map December to its own monthly column. Keep this
+        // generic calendar-boundary case explicitly Basic; Special has a duplicated
+        // December header and its source E21 formula resolves January to November data.
+        var basicInput = new ProgressPaymentInput(
+            1, 1000m, 0m, 0m, 100000m, false, 0m, 0m, 0m,
+            ProgramType: TransportationProgramType.BasicOrSecondary);
+        var previousDecember = History(1, new DateOnly(2026, 12, 31), 420m) with { Input = basicInput };
+        var currentJanuary = History(2, new DateOnly(2027, 1, 31), 180m) with { Input = basicInput };
 
         var result = ProgressPaymentIcmalService.FindPreviousDeduction(
             new[] { previousDecember, currentJanuary }, currentJanuary);
