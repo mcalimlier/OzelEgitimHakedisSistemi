@@ -636,3 +636,14 @@ Yüzdeler ölçüm sistemiyle hesaplanmış kesin istatistik değil, iş paketle
 - Kabul durumu değişmedi: son XLSM'lerle kaynak vektörü regresyonları ve sentetik PDF smoke mevcut; gerçek Microsoft Excel/VBA yeniden hesaplaması ve kaynak Excel PDF'leriyle 8/8 alan/görsel karşılaştırması açık. Bu nedenle proje %100 veya resmî kabul tamamlandı olarak raporlanamaz.
 - Sonraki iş: Excel masaüstü kabul listesine göre Temel Eğitim `T4/U4/W4`, `Hakediş Raporu!D15/D28`; Özel Eğitim `AC4:AG4`, `Hakediş Raporu!D28` ve VBA sonrası icmal aktarım hücrelerini kaydetmek, ardından her PDF'yi aynı girdilerle karşılaştırmak. Gerçek Excel çalıştırması mümkün değilse bu blokaj açık tutulacak; kod varsayımla değiştirilmeyecek.
 
+
+
+## Devam kaydı — iki hesaplama çekirdeği ve arşiv dayanıklılığı (20.10.2026)
+
+- Temel Eğitim ve Özel Eğitim hesaplama yolları ayrı tutuldu; mevcut kaynak XLSM regresyon testleri ve rapor formül testleri değiştirilmeden korundu.
+- Çoklu hat hakediş arşivlemesi için işlem grubu eklendi: bir hat arşivlenemezse aynı işlemde daha önce oluşturulan yeni dosyalar ters sırayla geri alınır; geri alma başarısızlıkları ayrı raporlanır.
+- Arşiv işlem grubu için başarı, boş grup, son yazım hatası, beklenmeyen yazım istisnası ve geri alma hatası testleri eklendi.
+- CI sırasında yakalanan C# CS0136 yerel değişken kapsam hatası, rollbackMessage adıyla düzeltildi.
+- Doğrulama: Windows CI run [39455000953](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39455000953) başarılı. Tam çözüm/WPF derlemesi, UI kontrolleri, test çözümü, PDF smoke ve EXE publish adımları geçti. Core testleri **232/232**, WPF çıktı testleri **6/6** başarılı.
+- Bu sonuçlar CI ve otomatik regresyonu doğrular; Microsoft Excel/VBA masaüstü yeniden hesaplaması ve gerçek Excel PDF'leriyle 8/8 görsel alan kabulü yerine geçmez. İcmal fiyat farkı aktarımı bu nedenle resmî hesapta sessizce değiştirilmedi.
+- PR #3 açık/taslak kalır; ana dala birleştirme ve yayınlama yapılmadı.
