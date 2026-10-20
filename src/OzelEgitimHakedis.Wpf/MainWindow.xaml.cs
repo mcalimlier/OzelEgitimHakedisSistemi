@@ -6544,9 +6544,6 @@ public partial class MainWindow : Window
                         StringComparison.Ordinal));
                 if (previousDraft is not null)
                 {
-                    decimal ReadDecimal(TextBox box) =>
-                        TryParseDecimalOrZero(box.Text, out var value) ? value : 0m;
-
                     if (TryParseWorkDays(WorkDaysTextBox.Text, out var workDays))
                         previousDraft.WorkDays = Math.Max(0, workDays);
                     if (TryParseWorkDays(GuideWorkDaysTextBox.Text, out var guideWorkDays))
