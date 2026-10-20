@@ -146,6 +146,17 @@ public sealed class ProgressPaymentIcmalServiceTests
     }
 
     [Fact]
+    public void MonthLookupRange_ShouldRemainProgramSpecificForJuly()
+    {
+        var july = new DateOnly(2027, 7, 1);
+
+        Assert.True(ProgressPaymentIcmalService.IsMonthInWorkbookLookupRange(
+            july, TransportationProgramType.BasicOrSecondary));
+        Assert.False(ProgressPaymentIcmalService.IsMonthInWorkbookLookupRange(
+            july, TransportationProgramType.SpecialEducation));
+    }
+
+    [Fact]
     public void FindPreviousDeduction_ShouldCarryMayDeductionIntoJune()
     {
         var may = History(1, new DateOnly(2027, 5, 31), 185m);
