@@ -100,8 +100,8 @@ public sealed class ProgressPaymentIcmalServiceTests
         // Anasayfa!E5 = November 2026; Hakediş İcmali!E21's cached result and
         // İcmal Verileri!AO4 both equal 29,963.898156 TL. Special Education
         // uses E5 and AN:AX, unlike Basic's E4 and AB:AL lookup chain.
-        var october = History(1, new DateOnly(2026, 10, 31), 29963.898156m);
-        var november = History(2, new DateOnly(2026, 11, 30), 11201.1393472m);
+        var october = History(1, new DateOnly(2026, 10, 31), 29963.898156m, TransportationProgramType.SpecialEducation);
+        var november = History(2, new DateOnly(2026, 11, 30), 11201.1393472m, TransportationProgramType.SpecialEducation);
 
         var result = ProgressPaymentIcmalService.FindPreviousDeduction(
             new[] { october, november }, november);
@@ -196,8 +196,8 @@ public sealed class ProgressPaymentIcmalServiceTests
     {
         // AP3 is corrected to =Anasayfa!I8 (Kasım), so December E21 now
         // resolves November normally instead of returning zero.
-        var november = History(1, new DateOnly(2026, 11, 30), 180m);
-        var december = History(2, new DateOnly(2026, 12, 31), 250m);
+        var november = History(1, new DateOnly(2026, 11, 30), 180m, TransportationProgramType.SpecialEducation);
+        var december = History(2, new DateOnly(2026, 12, 31), 250m, TransportationProgramType.SpecialEducation);
 
         var result = ProgressPaymentIcmalService.FindPreviousDeduction(
             new[] { november, december }, december);
@@ -209,9 +209,9 @@ public sealed class ProgressPaymentIcmalServiceTests
     public void SpecialEducationJanuary_ShouldCarryDecemberDeductionAfterAp3Correction()
     {
         // AP3=Kasım and AQ3=Aralık; January's previous month is December.
-        var november = History(1, new DateOnly(2026, 11, 30), 180m);
-        var december = History(2, new DateOnly(2026, 12, 31), 250m);
-        var january = History(3, new DateOnly(2027, 1, 31), 300m);
+        var november = History(1, new DateOnly(2026, 11, 30), 180m, TransportationProgramType.SpecialEducation);
+        var december = History(2, new DateOnly(2026, 12, 31), 250m, TransportationProgramType.SpecialEducation);
+        var january = History(3, new DateOnly(2027, 1, 31), 300m, TransportationProgramType.SpecialEducation);
 
         var result = ProgressPaymentIcmalService.FindPreviousDeduction(
             new[] { november, december, january }, january);
@@ -493,7 +493,7 @@ public sealed class ProgressPaymentIcmalServiceTests
             new DateOnly(2027, 5, 31), new DateOnly(2027, 6, 30),
             new DateOnly(2027, 7, 31), new DateOnly(2027, 8, 31)
         };
-        var deductions = periods.Select((period, index) => History(index + 1, period, (index + 1) * 100m)).ToArray();
+        var deductions = periods.Select((period, index) => History(index + 1, period, (index + 1) * 100m, TransportationProgramType.SpecialEducation)).ToArray();
         var expectedPreviousDeduction = new decimal[]
         {
             0m,   // September: first month in fiscal cycle
@@ -520,11 +520,12 @@ public sealed class ProgressPaymentIcmalServiceTests
     private static ProgressPaymentHistoryData History(
         int number,
         DateOnly period,
-        decimal deduction) =>
+        decimal deduction,
+        TransportationProgramType programType = TransportationProgramType.BasicOrSecondary) =>
         new(
             Guid.NewGuid(),
             DateTime.UtcNow,
-            new ProgressPaymentInput(1, 1000m, 0m, 0m, 100000m, false, 0m, 0m, 0m),
+            new ProgressPaymentInput(1, 1000m, 0m, 0m, 100000m, false, 0m, 0m, 0m, ProgramType: programType),
             new ProgressPaymentCalculation(
                 1000m, 0m, 1000m, 0m, 0m, 1000m, 0m, 1000m, deduction, 1000m - deduction, 0m,
                 new DeductionBreakdown(0m, 0m, 0m, 0m, 0m, 0m, 0m)),
