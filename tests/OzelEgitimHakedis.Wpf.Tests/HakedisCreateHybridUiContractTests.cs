@@ -34,7 +34,8 @@ public sealed class HakedisCreateHybridUiContractTests
         Assert.Contains("CalculateProgressButton", named.Keys);
         Assert.Equal("CalculateProgressButton_Click",
             EventName(named["CalculateProgressButton"], "Click"));
-        Assert.Equal("True", (string?)named["MultiRoutePaymentGrid"].Attribute("CanUserAddRows") ?? "True");
+        Assert.Equal("False", (string?)named["MultiRoutePaymentGrid"].Attribute("CanUserAddRows"));
+        Assert.Equal("False", (string?)named["MultiRoutePaymentGrid"].Attribute("CanUserDeleteRows"));
         Assert.Contains(named["MultiRoutePaymentGrid"].Descendants(),
             element => element.Name.LocalName == "DataGridTextColumn"
                 && string.Equals((string?)element.Attribute("Header"), "Taşıma Günlük Fiyat", StringComparison.Ordinal)
