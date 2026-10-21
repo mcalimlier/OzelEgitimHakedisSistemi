@@ -84,3 +84,11 @@ Uygulama kodu: `src/OzelEgitimHakedis.Core/Services/ProgressPaymentIcmalService.
 Önceki kayıtlı örnek testinde Temel Eğitim rapor D28 değeri 332.516,08 TL, hesaplama neti ise 332.516,074511856 TL olarak bulunmuştu; ham değer iki ondalığa yuvarlandığında 332.516,07 TL olur. Özel Eğitim için de bazı eski örneklerde D28, hesaplama AG4'ün iki ondalıklı görünümünden bir kuruş ayrılabiliyor. Bu nedenle mevcut kaynak formül/önbellek kanıtı ile kullanıcının “W4/AG4, D28 ile aynı tutardır” kararı arasında doğrulanması gereken bir fark vardır.
 
 Kod ve testler kullanıcının açık kararına göre W4/AG4 netini doğrudan D28'e bağlayacak şekilde ayarlandı. Bu, masaüstü Excel'de gerçek tam yeniden hesaplama ile doğrulanmış sayılmaz. Temel ve Özel Eğitim örnekleri yeniden hesaplanırken W4/AG4 ham değeri, D28 formülü, D28'in önbellek değeri ve PDF'de gösterilen iki ondalıklı tutar aynı test kaydında saklanmalıdır. Fark görülürse sessizce başka formüle dönülmemeli; kaynak dosya ile kabul kararı arasındaki fark ayrı bir karar olarak açılmalıdır.
+
+
+## Güncel D28 uygulama kararı — program bazlı ayrım
+Son kaynak formül ve kayıtlı örnekler yeniden karşılaştırıldığında iki program için aynı uygulama yapılamaz:
+- **Özel Eğitim:** `Hesaplama!AG4 = AF4-AE4`; mevcut test vektörlerinde D28, AG4'ün iki ondalıklı para gösterimiyle eşleşiyor. Kod D28'i AG4 net sonucuna para hassasiyetinde bağlar.
+- **Temel Eğitim:** `Hesaplama Bilgileri!W4 = O4-V4`; ancak son kaynak örnek testinde ham W4/net `332.516,074511856 TL`, rapor D28 `332.516,08 TL`. W4 iki ondalığa yuvarlandığında `332.516,07 TL` olur. Kaynak rapor D28 zinciri iki ayrı rapor toplamını ayrı ayrı yuvarladığı için bu örnekte 1 kuruş fark üretir.
+
+Bu nedenle **Temel Eğitim D28'i doğrudan W4'e zorlamak mevcut XLSM'nin kayıtlı davranışıyla çelişebilir**. Kaynak Excel tek doğruluk kaynağı olduğundan kod Temel Eğitim için mevcut D28 rapor formül zincirini korur; özel eğitimde AG4 eşlemesi uygulanır. Kullanıcının “W4 ve D28 aynıdır” kararı ile son Temel Eğitim kaynak vektörü arasındaki çelişki masaüstü Excel'de tam yeniden hesaplama ve aynı girdilerle hücre karşılaştırmasıyla kapanmalıdır. Bu not, Temel Eğitim kararının tamamlandığını iddia etmez.
