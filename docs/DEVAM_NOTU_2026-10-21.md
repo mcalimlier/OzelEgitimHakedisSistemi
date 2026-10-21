@@ -66,3 +66,14 @@
 - Kod commit'leri: XAML `403778db95146641e63dda0369560cae80dd2dec`; checkbox durum bildirimi `7e6d066a38c95e0a7f2175fc10fcb8bcaaa213fb`; firma kaydı sonrası kalıcılık uyarısı `fd73de77219c4df01ed71bb042599f63c4354af2`.
 - Son doğrulama: eski UI commit'leri için CI PASS; bu döngüdeki güncel commit CI sonuçları henüz bekleniyor. Gerçek Windows masaüstü, %100/%125/%150 DPI ve ekran görüntüsü karşılaştırması yapılmadı.
 - Başlangıç/son branch: `feature/official-payment-document-templates`. Son kaynak commit `fd73de77219c4df01ed71bb042599f63c4354af2`. Ana dala merge/release yok.
+
+
+## Devam notu — Tasarım 1 hibrit hakediş paneli ve firma KDV tercihi (21.10.2026)
+
+- Hakediş Oluştur üst akışı Tasarım 1'e yaklaştırıldı: dört aşamalı altın/lacivert şerit korunarak İKN/Sözleşme, Firma ve Hakediş Dönemi kartları ayrıştırıldı; dönem seçicisi ve çalışma günü özeti dönem kartına taşındı; firma hatları seçimi ve seçili hat durumu iki ayrı kartta sunuluyor. Mevcut `ProgressRouteComboBox`, `ProgressRouteRelationTextBlock` ve `ProgressPeriodMonthComboBox` kontrolleri yeniden kullanıldı; yeni etkileşimler için ayrı, pasif kontrol üretilmedi. Çoklu hat Excel-hibrit tablosunun hücre düzenleme, sabit ilk sütun ve başlıkla panoya kopyalama özellikleri korundu.
+- KDV istisnası artık `Contractor` / `ContractorDraft` firma kaydında saklanıyor. Firmalar panelindeki kutu firma kaydıyla birlikte kalıcılaşıyor; kayıtlı firmalar kartında Türkçe VAR/YOK durumu gösteriliyor. Yeni tekli ve çoklu hakediş hesap girdileri seçili firmanın KDV durumunu kullanıyor.
+- Eski JSON kayıtları için `Contractor.VatExempt` nullable bırakıldı: özellik bulunmuyorsa eski sözleşme KDV bitinden firma seviyesine tek seferlik geçiş yapılır; yeni kaydedilen açık `false` değeri sonradan eski değere ezilmez. Sözleşme değişikliği ve arşiv düzeltmeleri daha önce düzenlenmiş hakedişlerin kayıtlı `IsVatExempt` değerini sessizce değiştirmeyecek şekilde ayarlandı.
+- Regresyon testleri eklendi: firma KDV alanının JSON true/false kalıcılığı, eski JSON'da alanın yokluğunun ayırt edilmesi ve sözleşme değişikliğinin eski hakediş KDV kararını değiştirmemesi.
+- Doğrulama: commit `5d5e4d58a7b15148b2def397f999b093da64e544` derlemesi XAML'deki taşınmış ListBox kapanış etiketi nedeniyle FAIL verdi. Kapanış etiketi `147c36856733b48f0f7809d223fb60f0e61d3b00` commit'inde düzeltildi; bu commit'in Windows CI sonucu henüz bekleniyor. Önceki başarısız CI sonuçları yeni commit'in sonucu değildir.
+- Açık kabul: gerçek Windows masaüstünde ekran görüntüsüyle birebir piksel karşılaştırması ve %100/%125/%150 DPI testi henüz yapılmadı. Dört resmi PDF'nin alan bazlı tam karşılaştırması da bu UI döngüsünde yapılmadı.
+- Branch `feature/official-payment-document-templates`; son doğrulanmış kaynak SHA, not kaydedilirken `147c36856733b48f0f7809d223fb60f0e61d3b00`. Ana dala merge/release yapılmadı.
