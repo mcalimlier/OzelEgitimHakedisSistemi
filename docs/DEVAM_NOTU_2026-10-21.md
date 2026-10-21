@@ -84,3 +84,13 @@
 - Kod ve test commit'i: `226eb60d8c9cbb2fb27ddcd80d1d0c9a8dd65438`.
 - Windows CI bu SHA için PASS: [run 39665892859](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39665892859). Tam çözüm ve WPF derlemesi, UI sözleşme/statik kontrolleri, test derlemeleri, 246 birim testi ve PDF smoke üretimi geçti. (Toplam test sayısı koşu günlüğünde 246; yeni testler dâhil.)
 - Gerçek masaüstü ekran görüntüsü/DPI karşılaştırması CI kapsamı dışında; bu nedenle Tasarım 1'in piksel düzeyinde klon kabulü henüz PASS sayılmıyor. CI'nin ürettiği EXE yayın/release değildir; ana dala merge veya release yapılmadı.
+
+
+### Devam döngüsü — Hibrit arayüz kabul sözleşmesi (21.10.2026)
+
+- Yeni UI sözleşme testi eklendi: `tests/OzelEgitimHakedis.Wpf.Tests/HakedisCreateHybridUiContractTests.cs`. Test, Tasarım 1'in İKN/Firma/Dönem kartlarını, seçim olaylarını, çoklu hat DataGrid düzenlenebilir alanlarını, hesapla düğmesi bağlantısını ve KDV kutusunun Firma Kaydet akışındaki yerini kaynak XAML üzerinden denetler.
+- Manifest için ayrı statik kabul testi eklendi: `app.manifest` içindeki `PerMonitorV2` ve eski Windows DPI uyumluluk bayrağı kontrol edilir. Bu, manifest konfigürasyonunu doğrular; gerçek %100/%125/%150 ekran görüntüsü testi yerine geçmez.
+- İlk UI test koşusu `39669203060` başarısız oldu: olay adı beklentisi testte yanlış yazılmıştı. Beklenti gerçek XAML olay işleyicisine göre düzeltildi. Sonraki koşuda `c177afe162e98163502fc39a248ee45cfbee7e1e` için derleyici, test dosyası yükleyicisinin `XDocument` yerine dosya yolu döndürmesi gerektiğini gösterdi; tip uyuşmazlığı `8430dc8b9329df9db1a3e80d6c01a7dbe5241c9e` commit'inde düzeltildi.
+- Bu son commit'in Windows CI koşusu `39669671330` son kontrol anında hâlâ `in_progress`; dolayısıyla yeni UI sözleşme ve DPI manifest testleri henüz PASS olarak raporlanamaz. Önceki `b8fe977647944f8dd21ebd6a8691deab9769d57f` commit'inin Windows CI koşusu PASS olmuştu, ancak o koşu yeni DPI manifest testini kapsamıyordu.
+- Açık kabul: gerçek Windows masaüstünde Tasarım 1 piksel karşılaştırması, %100/%125/%150 DPI runtime testi ve sekiz resmî PDF için tam alan matrisi. Bu döngüde PDF üretim koduna ve mali hesap formüllerine dokunulmadı.
+- Ana dal merge/release yapılmadı. Son kod commit'i: `8430dc8b9329df9db1a3e80d6c01a7dbe5241c9e`.
