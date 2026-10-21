@@ -24,6 +24,9 @@ public sealed class HakedisCreateHybridUiContractTests
                 element => (string)element.Attribute(XamlNamespace + "Name")!,
                 StringComparer.Ordinal);
 
+        Assert.Contains("ProgressTenderListBox", named.Keys);
+        Assert.Equal("ProgressTenderListBox_SelectionChanged",
+            EventName(named["ProgressTenderListBox"], "SelectionChanged"));
         Assert.Contains("ProgressContractorComboBox", named.Keys);
         Assert.Contains("ProgressPeriodMonthComboBox", named.Keys);
         Assert.Contains("ProgressWorkDaysCardTextBlock", named.Keys);
