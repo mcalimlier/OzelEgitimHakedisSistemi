@@ -63,26 +63,28 @@ Karşılaştırma hesabı — **iş kuralı kararı değil**:
 
 “Risk doğrulandı”, aritmetik bağımlılıkta aynı fiyat farkının iki yerde bulunduğu anlamına gelir; kaynak Excel'in iş kuralı/çıktısı değiştirilmiş veya resmî olarak geçersiz ilan edilmiş değildir.
 
-## 4. Kod yolu incelemesi
+## 4. Kod yolu incelemesi ve uygulanan düzeltme
 
-`src/OzelEgitimHakedis.Wpf/OehsOfficialDocumentFactory.cs` içindeki `BuildHakedisIcmali` şu anda:
-- `CalculateWorkbookMonthlyPaymentTotal` ile aylık hizmet tutarını alır; bu tutar Temel Eğitimde K, Özel Eğitimde K+T'dir.
-- `CalculateWorkbookPriceDifference` ile fiyat farkını ayrıca alır.
-- Temel Eğitimde ayrıca `Calculation.TotalDeductions` tutarını `difference` değerine ekler; bu, kaynak Temel Eğitim icmalindeki D8 = R + AD davranışını taklit eder.
-- Özel Eğitimde I + R fiyat farkları ayrıca gösterilir.
+Kullanıcının 21.10.2026 tarihli açık kararı: **kanıtlanan mükerrer fiyat farkı bileşenini programda düzelt**. Bu karar, kaynak XLSM dosyalarının değiştirilmesi veya resmî Excel çıktısının geriye dönük değiştirilmesi anlamına gelmez.
 
-Bu nedenle mevcut kod, şüpheli kaynak icmal davranışını bilerek taklit ediyor. Kaynak XLSM formülü ve OEHS çıktısı arasında sessizce ayrışmamak için bu döngüde hesaplama üretim kodunu değiştirmedim.
+`src/OzelEgitimHakedis.Wpf/OehsOfficialDocumentFactory.cs` içindeki `BuildHakedisIcmali` şu şekilde güncellendi:
+- Aylık hizmet tutarı mevcut kaynak transfer mantığıyla korunur: Temel Eğitim K; Özel Eğitim K+T.
+- Temel Eğitim için icmalin ek tutar sütununda `Calculation.TotalDeductions` korunur; yalnızca K içinde zaten bulunan ham fiyat farkı tekrar eklenmez.
+- Özel Eğitim için K+T içinde zaten bulunan I/R fiyat farkları ek tutar sütununa ikinci kez eklenmez; bu sütun 0 olur.
+- İcmal alt toplamındaki kesinti düşümü ayrı tutulur; diğer hesaplama çekirdekleri değiştirilmez.
 
-## 5. Düzeltme kararı ve güvenli uygulama planı
+### Açık ve önemli uyumsuzluk
+Bu değişiklik, kaynak XLSM'nin mevcut `Hakediş İcmali!D8/E8` formül sonucundan bilinçli olarak ayrışabilir. Kaynak Excel'in kayıtlı örneği Temel Eğitimde R4+AD4, Özel Eğitimde I4+R4 tutarlarını D8'e ekliyor. Yeni program davranışı, kullanıcı tarafından seçilen “mükerrer bileşeni düzelt” kararını uygular; kaynak XLSM'nin kendisi değiştirilmemiştir. Bu nedenle **OEHS düzeltme testi ile Excel parite testi ayrı raporlanmalıdır**. Kaynak Excel PDF'siyle tam eşitlik, bu değişiklikten sonra otomatik olarak iddia edilemez.
 
-Üretim kodunda doğrudan “D8 = yalnızca kesinti” veya “D8 = 0” gibi bir değişiklik yapmak, son XLSM ile pariteyi bozar. Diğer yandan mevcut formülü doğru kabul etmek de aynı fiyat farkının iki kez sayılması riskini normalleştirir. Bu çelişki otomatik bir varsayımla kapatılmamalıdır.
+## 5. Düzeltme sonrası test ve güvenli kabul planı
 
-Düzeltme uygulanmadan önce:
-1. Excel masaüstünde kopya XLSM'yi tam hesaplat; seçili ay için `K4`, `T4`, `I4`, `R4`, `AD4`, `C8`, `D8`, `E8` ve `Hakediş Raporu!D15/D28` değerlerini kaydet.
-2. VBA ay aktarım makrosunu çalıştır; aynı hücreleri yeniden kaydet. Özellikle Temel Eğitim `AD4 = V4` ve Özel Eğitim `I/R` ay aktarım eşlemesini doğrula.
-3. Mevcut Excel sonucu, matematiksel alternatif ve ilgili PDF tutarlarını ayrı satırlarda test et.
-4. Kaynak Excel davranışını koruma veya kaynak formülünü düzeltme kararı kayıt altına alındıktan sonra yalnızca ilgili program için kod ve regresyon testi değiştir.
-5. Windows CI testlerini yeniden çalıştır. Gerçek Excel/VBA çalıştırması yapılamadıysa bu kabul kapısı açık kalsın.
+1. Aynı girdilerle programın Temel Eğitim ve Özel Eğitim icmalini ayrı ayrı üret.
+2. Temel Eğitimde K aylık tutarının I fiyat farkını içerdiğini; icmal ek sütununun yalnız kesinti bileşenini taşıdığını; ham I'nin ikinci kez eklenmediğini test et.
+3. Özel Eğitimde K+T aylık tutarının I/R fiyat farklarını içerdiğini; ek sütununun I/R'yi ikinci kez eklemediğini test et.
+4. İcmal A, B ve C toplamlarının yeni kuralla tutarlı olduğunu doğrula; PDF metin kontrolleri yanında gerçek hücre/değer testleri ekle.
+5. Aynı test örnekleri için kaynak XLSM'nin mevcut D8/E8 sonuçlarını ayrıca kaydet; farkı “bilinçli program düzeltmesi / kaynak Excel uyuşmazlığı” olarak açıkça raporla.
+6. Gerçek Excel/VBA yeniden hesaplaması ve PDF kabulü tamamlanana kadar bu iki kapı `OPEN` kalır.
+7. Windows CI'yi değişiklik commit'inde çalıştır; yalnızca o commit'e ait sonuç raporlanır.
 
 ## 6. Çalışma kapsamı dışında kalan kabul kapıları
 
