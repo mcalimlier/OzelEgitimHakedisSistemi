@@ -82,10 +82,27 @@ public sealed class HakedisCreateHybridUiContractTests
             && string.Equals((string?)element.Attribute("Click"), "SaveContractorButton_Click", StringComparison.Ordinal));
     }
 
+    [Fact]
+    public void ApplicationManifest_ShouldDeclarePerMonitorV2DpiAwareness()
+    {
+        var manifest = LoadProjectFile("src", "OzelEgitimHakedis.Wpf", "app.manifest");
+        XNamespace windowsSettings = "http://schemas.microsoft.com/SMI/2016/WindowsSettings";
+        XNamespace legacyWindowsSettings = "http://schemas.microsoft.com/SMI/2005/WindowsSettings";
+
+        Assert.Equal("PerMonitorV2",
+            manifest.Descendants(windowsSettings + "dpiAwareness").Single().Value);
+        Assert.Equal("true",
+            manifest.Descendants(legacyWindowsSettings + "dpiAware").Single().Value);
+    }
+
     private static string EventName(XElement element, string eventAttribute) =>
         (string?)element.Attribute(eventAttribute) ?? string.Empty;
 
-    private static XDocument LoadMainWindowXaml()
+    private static XDocument LoadMainWindowXaml() =>
+        XDocument.Load(LoadProjectFile("src", "OzelEgitimHakedis.Wpf", "MainWindow.xaml"),
+            LoadOptions.PreserveWhitespace);
+
+    private static XDocument LoadProjectFile(params string[] segments)
     {
         var candidates = new[] { Directory.GetCurrentDirectory(), AppContext.BaseDirectory };
         foreach (var candidate in candidates)
@@ -93,7 +110,7 @@ public sealed class HakedisCreateHybridUiContractTests
             var directory = new DirectoryInfo(candidate);
             while (directory is not null)
             {
-                var path = Path.Combine(directory.FullName, "src", "OzelEgitimHakedis.Wpf", "MainWindow.xaml");
+                var path = segments.Aggregate(directory.FullName, Path.Combine);
                 if (File.Exists(path))
                     return XDocument.Load(path, LoadOptions.PreserveWhitespace);
                 directory = directory.Parent;
@@ -101,6 +118,6 @@ public sealed class HakedisCreateHybridUiContractTests
         }
 
         throw new FileNotFoundException(
-            "MainWindow.xaml was not found from the test working directory or test output directory.");
+            $"Project file '{Path.Combine(segments)}' was not found from the test working directory or test output directory.");
     }
 }
