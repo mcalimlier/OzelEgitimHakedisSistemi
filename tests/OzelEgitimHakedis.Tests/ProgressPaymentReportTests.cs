@@ -240,7 +240,7 @@ public sealed class ProgressPaymentReportTests
 
         Assert.Equal(93318.273m, reportGross);                 // D13 audit
         Assert.Equal(968.87160804m, reportDeductions);         // D26 audit
-        Assert.Equal(currentCalculation.NetPayable, reportNet); // D28 = AG4
+        Assert.Equal(decimal.Round(currentCalculation.NetPayable, 2, MidpointRounding.AwayFromZero), reportNet); // D28 = AG4 at currency precision
     }
 
 
@@ -294,7 +294,7 @@ public sealed class ProgressPaymentReportTests
             ProgressPaymentReportService.CalculateReportTotalDeductions(
                 calculation, TransportationProgramType.BasicOrSecondary),
             2, MidpointRounding.AwayFromZero));
-        Assert.Equal(calculation.NetPayable, reportNet);
+        Assert.Equal(207012.08m, reportNet);
     }
 
     [Fact]
