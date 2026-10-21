@@ -85,7 +85,7 @@ public sealed class HakedisCreateHybridUiContractTests
     [Fact]
     public void ApplicationManifest_ShouldDeclarePerMonitorV2DpiAwareness()
     {
-        var manifest = LoadProjectFile("src", "OzelEgitimHakedis.Wpf", "app.manifest");
+        var manifest = XDocument.Load(LoadProjectFile("src", "OzelEgitimHakedis.Wpf", "app.manifest"));
         XNamespace windowsSettings = "http://schemas.microsoft.com/SMI/2016/WindowsSettings";
         XNamespace legacyWindowsSettings = "http://schemas.microsoft.com/SMI/2005/WindowsSettings";
 
@@ -102,7 +102,7 @@ public sealed class HakedisCreateHybridUiContractTests
         XDocument.Load(LoadProjectFile("src", "OzelEgitimHakedis.Wpf", "MainWindow.xaml"),
             LoadOptions.PreserveWhitespace);
 
-    private static XDocument LoadProjectFile(params string[] segments)
+    private static string LoadProjectFile(params string[] segments)
     {
         var candidates = new[] { Directory.GetCurrentDirectory(), AppContext.BaseDirectory };
         foreach (var candidate in candidates)
@@ -112,7 +112,7 @@ public sealed class HakedisCreateHybridUiContractTests
             {
                 var path = segments.Aggregate(directory.FullName, Path.Combine);
                 if (File.Exists(path))
-                    return XDocument.Load(path, LoadOptions.PreserveWhitespace);
+                    return path;
                 directory = directory.Parent;
             }
         }
