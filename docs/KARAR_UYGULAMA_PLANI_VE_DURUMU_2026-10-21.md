@@ -82,12 +82,15 @@ Bu düzeltme kaynak XLSM'nin mevcut D8/E8 formül davranışından bilerek ayrı
 - **OPEN:** Gerekli test/kanıt henüz yok.
 - **BLOCKED:** Gerekli ortam veya veri erişimi yok; engel açıkça belirtilmiş.
 
-## Durum — bu kayıt oluşturulurken
+## Durum — 21.10.2026 güncel kayıt
 
-- İcmal düzeltme kodu ve ilgili sentetik PDF test beklentileri yazıldı.
-- Son test çalışmaları bazı eski test beklentilerinin yanlış program türü veya eski icmal sütun dağılımını kullandığını gösterdi; bunlar düzeltilip yeniden CI'ya gönderildi. En güncel test commit'i için sonuç bekleniyor.
-- Sonraki yalnız-belge commit'leri için ayrı CI sonucu bulunmayabilir. Son kod/test commit'inin run sonucu, test edilen SHA ile birlikte raporlanmalı.
-- Masaüstü Excel/VBA kabulü: OPEN.
-- 8/8 gerçek Excel PDF alan/görsel kabulü: OPEN.
-- AP3/AQ3 12 aylık test ve kaynak/VBA kararının kapanışı: OPEN.
+- İcmal düzeltmesi uygulandı: uygulama “İş Tutarı” bazını fiyat farkından ayırıyor; fiyat farkı bir kez ayrı sütunda gösteriliyor. Temel Eğitimde kaynak kesinti bileşeni korunuyor.
+- Hakediş Raporu D28 için doğrudan W4/AG4 kopyalamasının genel olarak doğru olmadığı doğrulandı: Temel Eğitim W4=332.516,0745 TL iken kaynak D28=332.516,08 TL; Özel Eğitim örneklerinden birinde AG4 yuvarlanmış 87.543,80 TL iken D28=87.543,81 TL. Rapor D28 formülü, brüt ve kesinti taraflarını ayrı yuvarlayacak şekilde uygulandı.
+- Özel Eğitim önceki kesinti araması program türüne göre izole edildi; iki programın geçmiş kayıtları birbirine taşınmıyor.
+- 12 aylık Eylül-Ağustos regresyon testi eklendi; özgün XLSM'deki AP3/AQ3 başlık çelişkisi hâlâ açık kaynak kararıdır.
+- **CI PASS:** [GitHub Actions run 39605188391](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39605188391), test edilen kod/test commit'i `78f26aefe6ae23ac283ba4d25529c6e339dfce2d`. Core testleri 240/240 ve PDF smoke aşamasındaki WPF testleri 6/6 geçti; build ve smoke workflow başarılı.
+- CI çıktıları: `OEHS-PDF-Smoke-Review`, `OEHS-Arkadas-Deneme-Paketi`, `OEHS-Windows-x64` artifact'ları üretildi. Bu PDF'ler smoke/historic test çıktılarıdır; sekiz gerçek Excel PDF'sinin masaüstü Excel örneğiyle kabulü değildir.
+- Masaüstü Excel/VBA yeniden hesaplama ve gerçek makro/UserForm kabulü: OPEN.
+- Sekiz gerçek Excel PDF'sinin alan bazlı/görsel karşılaştırması: OPEN.
+- AP3/AQ3 için özgün XLSM + gerçek VBA'nın 12 aylık kabulü: OPEN.
 - PR #3 açık/taslak; merge/release yok.
