@@ -83,6 +83,7 @@ public static class ProgressPaymentIcmalService
         return payments
             .Where(x => x.Id != current.Id)
             .Where(HasCompleteIdentity)
+            .Where(x => x.Input.ProgramType == current.Input.ProgramType)
             .Where(x => string.Equals(
                 OehsIdentityService.BuildRouteKey(
                     x.TenderNumber ?? string.Empty,
