@@ -81,7 +81,9 @@ public sealed class CurrentXlsmReportNetFormulaTests
             var totals = ProgressPaymentReportService.Calculate(current, new[] { current });
             var reportNet = ProgressPaymentReportService.CalculateReportNetPayable(current, totals);
 
-            Assert.Equal(calculation.NetPayable, reportNet);
+            Assert.Equal(decimal.Round(calculation.NetPayable, 2, MidpointRounding.AwayFromZero), reportNet);
+            Assert.Equal(example.ExpectedReportNet, reportNet);
+            Assert.Equal(example.SourceReportD28, reportNet);
         }
     }
 
