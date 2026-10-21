@@ -853,7 +853,6 @@ public partial class MainWindow : Window
             EndDatePicker.SelectedDate = contract.EndDate.ToDateTime(TimeOnly.MinValue);
             TenderDatePicker.SelectedDate = contract.TenderDate?.ToDateTime(TimeOnly.MinValue);
             ContractDatePicker.SelectedDate = contract.ContractDate?.ToDateTime(TimeOnly.MinValue);
-            VatExemptCheckBox.IsChecked = contract.VatExempt;
             TransportProgramTypeComboBox.SelectedItem = TransportProgramTypeComboBox.Items
                 .OfType<ComboBoxItem>()
                 .FirstOrDefault(item => string.Equals(
@@ -882,7 +881,6 @@ public partial class MainWindow : Window
         EndDatePicker.SelectedDate = null;
         TenderDatePicker.SelectedDate = null;
         ContractDatePicker.SelectedDate = null;
-        VatExemptCheckBox.IsChecked = false;
     }
 
     private bool TryGetSelectedTransportationProgramType(out TransportationProgramType programType)
@@ -1487,8 +1485,8 @@ public partial class MainWindow : Window
         }
 
         ProgressPeriodMonthComboBox.SelectionChanged += ArchiveCorrectionInput_DateChanged;
-        VatExemptCheckBox.Checked += ArchiveCorrectionInput_Toggled;
-        VatExemptCheckBox.Unchecked += ArchiveCorrectionInput_Toggled;
+        ContractorVatExemptCheckBox.Checked += ArchiveCorrectionInput_Toggled;
+        ContractorVatExemptCheckBox.Unchecked += ArchiveCorrectionInput_Toggled;
     }
 
     private void ArchiveCorrectionInput_TextChanged(object? sender, TextChangedEventArgs e) =>
@@ -1582,7 +1580,7 @@ public partial class MainWindow : Window
                 DatePickerDiffers(EndDatePicker, archive.Contract.EndDate) ||
                 DatePickerDiffers(TenderDatePicker, archive.Contract.TenderDate) ||
                 DatePickerDiffers(ContractDatePicker, archive.Contract.ContractDate) ||
-                ((VatExemptCheckBox.IsChecked == true) != archive.Contract.VatExempt),
+                false, // KDV istisnası artık firma kartından yönetilir.
 
             ArchiveCorrectionSection.Contractor =>
                 TextDiffers(ContractorNameTextBox, archive.Contractor.Name) ||
@@ -1649,7 +1647,7 @@ public partial class MainWindow : Window
                 input = input with
                 {
                     ContractAmount = contractAmount,
-                    IsVatExempt = VatExemptCheckBox.IsChecked == true,
+                    IsVatExempt = ContractorVatExemptCheckBox.IsChecked == true,
                     DailyPrice = contractDailyPrice
                 };
                 break;
@@ -1881,7 +1879,7 @@ public partial class MainWindow : Window
                 DatePickerDiffers(EndDatePicker, contract.EndDate) ||
                 DatePickerDiffers(TenderDatePicker, contract.TenderDate) ||
                 DatePickerDiffers(ContractDatePicker, contract.ContractDate) ||
-                ((VatExemptCheckBox.IsChecked == true) != contract.VatExempt),
+                ((ContractorVatExemptCheckBox.IsChecked == true) != contract.VatExempt),
 
             HistoryCorrectionSection.Contractor =>
                 FindContractor(item.ContractorTaxOrIdentityNumber ?? string.Empty, item.Input.ProgramType) is not ContractorDraft contractor ||
@@ -1971,7 +1969,7 @@ public partial class MainWindow : Window
                 {
                     ContractAmount = contractAmount,
                     DailyPrice = contractDailyPrice,
-                    IsVatExempt = VatExemptCheckBox.IsChecked == true
+                    IsVatExempt = ContractorVatExemptCheckBox.IsChecked == true
                 };
                 break;
 
@@ -2475,7 +2473,8 @@ public partial class MainWindow : Window
             ContractorEmailTextBox.Text.Trim(),
             ContractorBankTextBox.Text.Trim(),
             ContractorContactTextBox.Text.Trim(),
-            archive.Contract.ProgramType);
+            archive.Contract.ProgramType,
+            ContractorVatExemptCheckBox.IsChecked == true);
 
         var updatedContract = archive.Contract with
         {
@@ -2570,7 +2569,7 @@ public partial class MainWindow : Window
             ContractAmount = contractAmount,
             StartDate = startDate,
             EndDate = endDate,
-            VatExempt = VatExemptCheckBox.IsChecked == true,
+            VatExempt = archive.Contract.VatExempt,
             TenderDate = TenderDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(TenderDatePicker.SelectedDate.Value) : archive.Contract.TenderDate,
             ContractDate = ContractDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(ContractDatePicker.SelectedDate.Value) : archive.Contract.ContractDate,
             ContractWorkDays = contractWorkDays,
@@ -2796,7 +2795,8 @@ public partial class MainWindow : Window
             ContractorEmailTextBox.Text.Trim(),
             ContractorBankTextBox.Text.Trim(),
             ContractorContactTextBox.Text.Trim(),
-            contractorProgramType);
+            contractorProgramType,
+            ContractorVatExemptCheckBox.IsChecked == true);
 
         if (!ConfirmLiveHistoryCorrection("Yüklenici bilgileri"))
             return;
@@ -2852,29 +2852,37 @@ public partial class MainWindow : Window
         if (_historyCorrectionSection == HistoryCorrectionSection.Contractor)
             RefreshViewsAfterHistoryCorrection();
 
-        var selectedContractForVat = FindContract(
-            TenderNumberTextBox.Text.Trim(),
-            ContractNumberTextBox.Text.Trim(),
-            GetSelectedTransportationProgramType());
-        var vatExemptionPending = selectedContractForVat is null ||
-            selectedContractForVat.VatExempt != (VatExemptCheckBox.IsChecked == true);
-
         ClearContractorButton_Click(sender, e);
-        ContractorStatusTextBlock.Text = vatExemptionPending
-            ? $"Firma kaydedildi: {name}. DİKKAT: KDV istisnası bu işlemle kaydedilmedi; ilgili sözleşmeyi düzenleyip SÖZLEŞMEYİ KAYDET düğmesini kullanın."
-            : $"Firma kaydedildi: {name}. KDV istisnası seçili sözleşmede değişmedi.";
+        ContractorStatusTextBlock.Text = $"Firma ve KDV istisnası kaydedildi: {name}.";
     }
 
-    private void VatExemptCheckBox_Changed(object sender, RoutedEventArgs e)
+    private bool IsVatExemptForCurrentFirm(ContractDraftData? contract)
+    {
+        if (ProgressContractorComboBox.SelectedItem is ContractorDraft selectedFirm)
+            return selectedFirm.VatExempt;
+
+        return contract?.VatExempt == true;
+    }
+
+    private bool HasLegacyContractVatExemption(string taxOrIdentityNumber, TransportationProgramType programType)
+    {
+        var normalizedIdentity = OehsIdentityService.NormalizeIdentity(taxOrIdentityNumber);
+        return _contracts.Any(contract =>
+            contract.VatExempt && contract.ProgramType == programType &&
+            string.Equals(
+                OehsIdentityService.NormalizeIdentity(contract.ContractorTaxOrIdentityNumber),
+                normalizedIdentity,
+                StringComparison.Ordinal));
+    }
+
+    private void ContractorVatExemptCheckBox_Changed(object sender, RoutedEventArgs e)
     {
         if (!IsInitialized || _suppressSelectionEvents || IsArchiveEditing)
             return;
 
-        var selectedState = VatExemptCheckBox.IsChecked == true ? "İSTİSNA VAR" : "İSTİSNA YOK";
+        var selectedState = ContractorVatExemptCheckBox.IsChecked == true ? "İSTİSNA VAR" : "İSTİSNA YOK";
         ContractorStatusTextBlock.Text =
-            $"KDV durumu: {selectedState}. Bu seçim sözleşme alanıdır; henüz kaydedilmedi. " +
-            "Kalıcılaştırmak için İKN / Sözleşme ekranında ilgili sözleşmeyi düzenleyip SÖZLEŞMEYİ KAYDET düğmesine basın. " +
-            "Firma KAYDET düğmesi bu alanı kaydetmez.";
+            $"KDV istisnası firma kartında {selectedState} olarak seçildi; kalıcı olması için FİRMA KAYDET düğmesine basın.";
     }
 
     private void EditContractorButton_Click(object sender, RoutedEventArgs e)
@@ -2892,7 +2900,8 @@ public partial class MainWindow : Window
         ContractorEmailTextBox.Text = contractor.Email;
         ContractorBankTextBox.Text = contractor.BankAccountNumber;
         ContractorContactTextBox.Text = contractor.ContactPerson;
-        ContractorStatusTextBlock.Text = $"Düzenleme modu: {contractor.Name}. DÜZENLE ile kaydedin.";
+        ContractorVatExemptCheckBox.IsChecked = contractor.VatExempt;
+        ContractorStatusTextBlock.Text = $"Düzenleme modu: {contractor.Name}. KDV istisnası firma kartına bağlıdır; DÜZENLE ile kaydedin.";
     }
 
     private void CancelContractorEditButton_Click(object sender, RoutedEventArgs e)
@@ -2927,6 +2936,7 @@ public partial class MainWindow : Window
             ContractorEmailTextBox.Text = original.Email;
             ContractorBankTextBox.Text = original.BankAccountNumber;
             ContractorContactTextBox.Text = original.ContactPerson;
+            ContractorVatExemptCheckBox.IsChecked = original.VatExempt;
         }
 
         ContractorStatusTextBlock.Text = "Firma düzenlemesi iptal edildi; kayıt değiştirilmedi.";
@@ -2990,6 +3000,7 @@ public partial class MainWindow : Window
         ContractorEmailTextBox.Clear();
         ContractorBankTextBox.Clear();
         ContractorContactTextBox.Clear();
+        ContractorVatExemptCheckBox.IsChecked = false;
         SetContractorEditorMode(false);
         ContractorStatusTextBlock.Text = "Yeni firma kaydı için alanlar temizlendi.";
     }
@@ -3189,7 +3200,7 @@ public partial class MainWindow : Window
         ContractSummaryWorkDaysTextBlock.Text = $"{workDaysText} gün • {transportPriceText}/gün";
         var routeCount = contract is null ? 0 : _routes.Count(x => IsRouteForContract(x, contract));
         ContractSummaryVatTextBlock.Text =
-            $"{(VatExemptCheckBox.IsChecked == true ? "KDV İstisnası" : "KDV Uygulanır")} • {routeCount} hat";
+            $"{(ContractorVatExemptCheckBox.IsChecked == true ? "KDV İstisnası" : "KDV Uygulanır")} • {routeCount} hat";
     }
 
     private void HomeTenderListBox_RefreshSelection()
@@ -3812,7 +3823,7 @@ public partial class MainWindow : Window
             contractAmount,
             DateOnly.FromDateTime(StartDatePicker.SelectedDate ?? DateTime.Today),
             DateOnly.FromDateTime(EndDatePicker.SelectedDate ?? DateTime.Today),
-            VatExemptCheckBox.IsChecked == true,
+            oldContract?.VatExempt ?? false,
             TenderDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(TenderDatePicker.SelectedDate.Value) : null,
             ContractDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(ContractDatePicker.SelectedDate.Value) : null,
             oldContract?.ContractorTaxOrIdentityNumber ?? string.Empty,
@@ -3989,7 +4000,8 @@ public partial class MainWindow : Window
                     contractor.Name,
                     OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber),
                     contractor.Address, contractor.Phone, contractor.Email,
-                    contractor.BankAccountNumber, contractor.ContactPerson, contractor.ProgramType));
+                    contractor.BankAccountNumber, contractor.ContactPerson, contractor.ProgramType,
+                    contractor.VatExempt || HasLegacyContractVatExemption(contractor.TaxOrIdentityNumber, contractor.ProgramType)));
             }
 
             _routes.Clear();
@@ -4137,7 +4149,7 @@ public partial class MainWindow : Window
                 x.TransportWorkDays, x.TenderNumber, x.ContractorTaxOrIdentityNumber, x.ContractNumber, x.ProgramType)).ToArray(),
             _contractors.Select(x => new Contractor(
                 x.Name, x.TaxOrIdentityNumber, x.Address, x.Phone, x.Email,
-                x.BankAccountNumber, x.ContactPerson, x.ProgramType)).ToArray(),
+                x.BankAccountNumber, x.ContactPerson, x.ProgramType, x.VatExempt)).ToArray(),
             _progressHistory.ToArray(),
             _contracts.ToArray(),
             _calculationConstants,
@@ -4480,7 +4492,7 @@ public partial class MainWindow : Window
 
         var contractors = _contractors.Select(x => new Contractor(
             x.Name, x.TaxOrIdentityNumber, x.Address, x.Phone, x.Email,
-            x.BankAccountNumber, x.ContactPerson, x.ProgramType)).ToArray();
+            x.BankAccountNumber, x.ContactPerson, x.ProgramType, x.VatExempt)).ToArray();
         var data = new OehsApplicationData(
             contract,
             _routes.Select(x => new RouteData(
@@ -4550,7 +4562,7 @@ public partial class MainWindow : Window
                 row.DiscountAmount,
                 row.PriceDifference,
                 contract.ContractAmount,
-                contract.VatExempt,
+                contractor?.VatExempt ?? contract.VatExempt,
                 row.TaxDebt,
                 row.SocialSecurityDebt,
                 row.MinimumWageSupport,
@@ -4810,7 +4822,7 @@ public partial class MainWindow : Window
                 discount,
                 priceDifference,
                 selectedContract.ContractAmount,
-                selectedContract.VatExempt,
+                (FindContractor(selectedRoute.ContractorTaxOrIdentityNumber, selectedRoute.ProgramType)?.VatExempt) ?? selectedContract.VatExempt,
                 taxDebt,
                 socialSecurityDebt,
                 minimumWageSupport,
@@ -4995,7 +5007,8 @@ public partial class MainWindow : Window
                     x.Email,
                     x.BankAccountNumber,
                     x.ContactPerson,
-                    x.ProgramType)).ToArray(),
+                    x.ProgramType,
+                    x.VatExempt)).ToArray(),
                 _progressHistory.ToArray(),
                 _contracts.ToArray());
 
@@ -5191,8 +5204,8 @@ public partial class MainWindow : Window
         ProgressTenderListBox.SelectionChanged += (_, _) => RefreshCalculationTraceLive();
         ProgressRouteComboBox.SelectionChanged += (_, _) => RefreshCalculationTraceLive();
         ProgressPeriodMonthComboBox.SelectionChanged += (_, _) => RefreshCalculationTraceLive();
-        VatExemptCheckBox.Checked += (_, _) => RefreshCalculationTraceLive();
-        VatExemptCheckBox.Unchecked += (_, _) => RefreshCalculationTraceLive();
+        ContractorVatExemptCheckBox.Checked += (_, _) => RefreshCalculationTraceLive();
+        ContractorVatExemptCheckBox.Unchecked += (_, _) => RefreshCalculationTraceLive();
         MinimumWageSupportEnabledCheckBox.Checked += (_, _) => RefreshCalculationTraceLive();
         MinimumWageSupportEnabledCheckBox.Unchecked += (_, _) => RefreshCalculationTraceLive();
         MultiRoutePaymentGrid.CellEditEnding += (_, _) =>
@@ -5322,7 +5335,7 @@ public partial class MainWindow : Window
             "İhale: " + (selectedContract?.TenderNumber ?? "Seçilmedi"),
             "Hat: " + selectedRouteName,
             "Dönem: " + ((ProgressPeriodMonthComboBox.SelectedItem as ProgressPaymentMonthOption)?.PeriodDate.ToString("MMMM yyyy", culture) ?? "Seçilmedi"),
-            "KDV muafiyeti: " + (selectedContract?.VatExempt == true ? "Evet" : "Hayır"),
+            "KDV muafiyeti: " + (IsVatExemptForCurrentFirm(selectedContract) ? "Evet" : "Hayır"),
             "Girdi durumu: " + (issues.Count == 0 ? "Ön hesaplamaya uygun" : "HESAPLAMA BEKLEMEDE — eski sonuç gösterilmiyor"),
             ""
         };
@@ -5396,12 +5409,12 @@ public partial class MainWindow : Window
             try
             {
                 var input = new ProgressPaymentInput(
-                    g, h, j, i, selectedContract.ContractAmount, selectedContract.VatExempt,
+                    g, h, j, i, selectedContract.ContractAmount, IsVatExemptForCurrentFirm(selectedContract),
                     taxDebt, socialSecurityDebt, minimumWageSupport, inspectionPenalty,
                     p, q, s, r, selectedContract.ProgramType);
                 var result = ProgressPaymentCalculator.Calculate(input, _calculationConstants);
                 var constants = result.AppliedConstants ?? _calculationConstants;
-                var vatLabel = selectedContract.VatExempt ? "KDV muaf" : "KDV dahil";
+                var vatLabel = IsVatExemptForCurrentFirm(selectedContract) ? "KDV muaf" : "KDV dahil";
                 var effectiveTransportVat = constants.TransportVatRate;
                 var effectiveGuideVat = constants.GuideVatRate;
                 var effectiveTransportWithholding = constants.TransportWithholdingShare;
@@ -5465,7 +5478,7 @@ public partial class MainWindow : Window
                 {
                     var rowInput = new ProgressPaymentInput(
                         row.WorkDays, row.DailyPrice, row.DiscountAmount, row.PriceDifference,
-                        selectedContract.ContractAmount, selectedContract.VatExempt,
+                        selectedContract.ContractAmount, IsVatExemptForCurrentFirm(selectedContract),
                         row.TaxDebt, row.SocialSecurityDebt,
                         selectedProgram == TransportationProgramType.BasicOrSecondary && !row.MinimumWageSupportEnabled
                             ? 0m : row.MinimumWageSupport,
@@ -5815,7 +5828,8 @@ public partial class MainWindow : Window
                     x.Email,
                     x.BankAccountNumber,
                     x.ContactPerson,
-                    x.ProgramType)).ToArray(),
+                    x.ProgramType,
+                    x.VatExempt)).ToArray(),
                 _progressHistory.ToArray(),
                 _contracts.ToArray());
 
@@ -5834,7 +5848,9 @@ public partial class MainWindow : Window
                     contractor.Phone,
                     contractor.Email,
                     contractor.BankAccountNumber,
-                    contractor.ContactPerson));
+                    contractor.ContactPerson,
+                    contractor.ProgramType,
+                    contractor.VatExempt || HasLegacyContractVatExemption(contractor.TaxOrIdentityNumber, contractor.ProgramType)));
 
             _routes.Clear();
             foreach (var route in restored.Data.Routes ?? Array.Empty<RouteData>())
@@ -8258,7 +8274,8 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         string Email = "",
         string BankAccountNumber = "",
         string ContactPerson = "",
-        TransportationProgramType ProgramType = TransportationProgramType.SpecialEducation);
+        TransportationProgramType ProgramType = TransportationProgramType.SpecialEducation,
+        bool VatExempt = false);
 
     private sealed record ArchiveRow(
         string FullPath,
