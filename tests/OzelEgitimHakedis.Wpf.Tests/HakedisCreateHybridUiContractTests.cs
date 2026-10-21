@@ -36,6 +36,10 @@ public sealed class HakedisCreateHybridUiContractTests
             EventName(named["CalculateProgressButton"], "Click"));
         Assert.Equal("False", (string?)named["MultiRoutePaymentGrid"].Attribute("CanUserAddRows"));
         Assert.Equal("False", (string?)named["MultiRoutePaymentGrid"].Attribute("CanUserDeleteRows"));
+        Assert.Equal("CellOrRowHeader", (string?)named["MultiRoutePaymentGrid"].Attribute("SelectionUnit"));
+        Assert.Equal("IncludeHeader", (string?)named["MultiRoutePaymentGrid"].Attribute("ClipboardCopyMode"));
+        Assert.Equal("1", (string?)named["MultiRoutePaymentGrid"].Attribute("FrozenColumnCount"));
+        Assert.Equal("False", (string?)named["MultiRoutePaymentGrid"].Attribute("AutoGenerateColumns"));
         Assert.Contains(named["MultiRoutePaymentGrid"].Descendants(),
             element => element.Name.LocalName == "DataGridTextColumn"
                 && string.Equals((string?)element.Attribute("Header"), "Taşıma Günlük Fiyat", StringComparison.Ordinal)
