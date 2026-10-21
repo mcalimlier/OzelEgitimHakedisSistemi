@@ -56,3 +56,13 @@
 - Kaynak kod denetimi KDV istisnası kontrolünün artık Yüklenici/Firma düzenleme kartında olduğunu doğruladı. Ancak gerçek veri modeli `ContractDraftData.VatExempt` alanını sözleşme kaydında saklıyor; `SaveContractorButton_Click` firma verisini kaydediyor ve KDV alanını sözleşmeye yazmıyor. Bu yüzden checkbox'ın firma kaydetme ile kalıcılaşacağı garanti edilmez. Hesaplama semantiğini değiştirmeden, kontrolün sözleşme düzeyindeki niteliğini kullanıcıya açıkça göstermek gerekiyor; firmaya ait kalıcı bir alan eklemek ise veri modeli ve geçmiş kayıtlar için ayrı bir tasarım kararı gerektirir.
 - Henüz gerçek Windows UI/DPI testi yapılmadı. Bulut CI, WPF derleme ve statik UI sözleşmesini doğruladı; ekran görüntüsüyle Tasarım 1 karşılaştırması değildir.
 - Başlangıç noktası: `8f999024384b7d004f335f672602ec154647abe7`. Branch: `feature/official-payment-document-templates`. Ana dala merge/release yok.
+
+
+## Kullanıcı isteği — KDV istisnası davranışı ve Excel-hibrit hakediş alanı (21.10.2026)
+
+- KDV istisnasının veri semantiği açıkça belirtildi: `VatExempt` `ContractDraftData` üzerinde tutulur; `ContractorDraft` alanı değildir. Firma kaydetme işlemi bu değeri kalıcılaştırmaz.
+- Firmalar panelindeki yardım metni açıkça firma/sözleşme ayrımını, ilgili sözleşmenin düzenlenip kaydedilmesi gerektiğini anlatıyor. Checkbox değişince `ContractorStatusTextBlock` henüz kaydedilmedi uyarısı gösteriyor. Firma kaydetme işlemi tamamlandığında, seçili sözleşmedeki kayıtlı değer ile checkbox farklıysa başarı mesajına rağmen KDV'nin kaydedilmediğini belirten açık uyarı veriliyor. Hesaplama semantiği değiştirilmedi.
+- Hakediş oluştur panelindeki çoklu hat girişi Excel-hibrit çalışma alanı olarak güçlendirildi: satır numarası başlıkları, ilk sütunu sabitleme, hücre seçimi, Excel başlıklarıyla panoya kopyalama, daha belirgin seçili hücre, satır/sütun sanallaştırma ve açık hücre düzenleme yönergesi. Günlük fiyat alanları kaynak hat kaydından geldiği için salt okunur tutuldu; kullanıcı girdileri mevcut iki yönlü bağlamalarla hesaplamaya aktarılır. Resmî hesaplama zinciri değiştirilmedi.
+- Kod commit'leri: XAML `403778db95146641e63dda0369560cae80dd2dec`; checkbox durum bildirimi `7e6d066a38c95e0a7f2175fc10fcb8bcaaa213fb`; firma kaydı sonrası kalıcılık uyarısı `fd73de77219c4df01ed71bb042599f63c4354af2`.
+- Son doğrulama: eski UI commit'leri için CI PASS; bu döngüdeki güncel commit CI sonuçları henüz bekleniyor. Gerçek Windows masaüstü, %100/%125/%150 DPI ve ekran görüntüsü karşılaştırması yapılmadı.
+- Başlangıç/son branch: `feature/official-payment-document-templates`. Son kaynak commit `fd73de77219c4df01ed71bb042599f63c4354af2`. Ana dala merge/release yok.
