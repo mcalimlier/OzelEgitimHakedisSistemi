@@ -661,22 +661,39 @@
                                                 <ComboBox x:Name="ProgressPeriodMonthComboBox" Height="30" Margin="0,3,0,4" Style="{StaticResource FieldComboBox}" DisplayMemberPath="DisplayText" SelectionChanged="ProgressPeriodMonthComboBox_SelectionChanged" ToolTip="Sözleşme tarihleri içindeki hakediş ayını seçin."/>
                                                 <TextBlock Text="Seçilen dönemin çalışma günü" Foreground="#D5E1EC" FontSize="10.5"/>
                                                 <TextBlock x:Name="ProgressWorkDaysCardTextBlock" Text="0 gün" Foreground="#F4C247" FontSize="12" FontWeight="Bold" Margin="0,2,0,5"/>
-                                                <TextBlock Text="Tanımlı hatlar (bir veya daha fazla seçin)" Foreground="#D5E1EC" FontSize="10.5" Margin="0,4,0,0"/>
-                                                <ListBox x:Name="ProgressRouteComboBox" Height="91" Margin="0,3,0,0" SelectionMode="Extended" SelectionChanged="ProgressRouteComboBox_SelectionChanged" BorderBrush="#A7B8C8" Background="#FFFFFF" Foreground="#172B3A" ScrollViewer.VerticalScrollBarVisibility="Auto">
-                                                    <ListBox.ItemContainerStyle>
-                                                        <Style TargetType="{x:Type ListBoxItem}">
-                                                            <Setter Property="Foreground" Value="#172B3A"/><Setter Property="Background" Value="#F1F6FB"/><Setter Property="BorderBrush" Value="#D4E0EA"/><Setter Property="BorderThickness" Value="1"/><Setter Property="Padding" Value="6,4"/><Setter Property="Margin" Value="2"/><Setter Property="HorizontalContentAlignment" Value="Stretch"/><Setter Property="VerticalContentAlignment" Value="Center"/>
-                                                            <Style.Triggers><Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="#DCEBFA"/><Setter Property="Foreground" Value="#102A43"/></Trigger></Style.Triggers>
-                                                        </Style>
-                                                    </ListBox.ItemContainerStyle>
-                                                    <ListBox.ItemTemplate>
-                                                        <DataTemplate><CheckBox Content="{Binding DisplayText}" Foreground="#172B3A" FontSize="12" FontWeight="SemiBold" IsChecked="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected, Mode=TwoWay}" Padding="3" VerticalContentAlignment="Center"/></DataTemplate>
-                                                    </ListBox.ItemTemplate>
-                                                </ListBox>
-                                                <TextBlock x:Name="ProgressRouteRelationTextBlock" Text="Bir veya daha fazla hat seçin." Foreground="#C5D7E7" FontSize="10.5" TextWrapping="Wrap" Margin="0,4,0,0"/>
+
                                             </StackPanel>
                                         </Border>
                                     </Grid>
+
+                                    <Border Style="{StaticResource CardCompact}" Padding="8" Margin="0,0,0,8">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="1.3*"/><ColumnDefinition Width="1*"/></Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                                <TextBlock Text="FİRMAYA BAĞLI HATLAR" Foreground="{StaticResource Gold500Brush}" FontSize="11.5" FontWeight="Bold"/>
+                                                <TextBlock Text="Bir veya daha fazla hattı seçin; aşağıdaki Excel-hibrit giriş tablosu seçiminize göre hazırlanır." Style="{StaticResource CardSubtitle}" Margin="0,3,0,5" TextWrapping="Wrap"/>
+                                                <ListBox x:Name="ProgressRouteComboBox" Height="91" Margin="0,3,0,0" SelectionMode="Extended" SelectionChanged="ProgressRouteComboBox_SelectionChanged" BorderBrush="#A7B8C8" Background="#FFFFFF" Foreground="#172B3A" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                                <ListBox.ItemContainerStyle>
+                                                <Style TargetType="{x:Type ListBoxItem}">
+                                                <Setter Property="Foreground" Value="#172B3A"/><Setter Property="Background" Value="#F1F6FB"/><Setter Property="BorderBrush" Value="#D4E0EA"/><Setter Property="BorderThickness" Value="1"/><Setter Property="Padding" Value="6,4"/><Setter Property="Margin" Value="2"/><Setter Property="HorizontalContentAlignment" Value="Stretch"/><Setter Property="VerticalContentAlignment" Value="Center"/>
+                                                <Style.Triggers><Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="#DCEBFA"/><Setter Property="Foreground" Value="#102A43"/></Trigger></Style.Triggers>
+                                                </Style>
+                                                </ListBox.ItemContainerStyle>
+                                                <ListBox.ItemTemplate>
+                                                <DataTemplate><CheckBox Content="{Binding DisplayText}" Foreground="#172B3A" FontSize="12" FontWeight="SemiBold" IsChecked="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected, Mode=TwoWay}" Padding="3" VerticalContentAlignment="Center"/></DataTemplate>
+                                                </ListBox.ItemTemplate>
+                                                
+                                            </StackPanel>
+                                            <Border Grid.Column="1" Background="#0A2A49" BorderBrush="#D9A62E" BorderThickness="1" CornerRadius="9" Padding="9">
+                                                <StackPanel>
+                                                    <TextBlock Text="SEÇİLİ HATLAR" Foreground="#F4C247" FontSize="11.5" FontWeight="Bold"/>
+                                                    <TextBlock Text="Seçim durumu" Foreground="#D5E1EC" FontSize="10.5" Margin="0,5,0,0"/>
+                                                    <TextBlock x:Name="ProgressRouteRelationTextBlock" Text="Bir veya daha fazla hat seçin." Foreground="#C5D7E7" FontSize="10.5" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                                    <TextBlock Text="Çoklu seçimde her hat için ayrı satır oluşur; tek hat seçiminde tek-hat düzenleme alanları etkin kalır." Foreground="#C5D7E7" FontSize="10.5" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
 
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="1.45*"/><ColumnDefinition Width="1*"/></Grid.ColumnDefinitions>
