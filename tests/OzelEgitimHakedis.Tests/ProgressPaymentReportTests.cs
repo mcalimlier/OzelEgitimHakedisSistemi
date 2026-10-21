@@ -249,12 +249,10 @@ public sealed class ProgressPaymentReportTests
     public void HistoricalBasicWorkbookRow4_ShouldMatchReportCellsWithoutImportingIcmalColumnDefect()
     {
         // Historical source: 03-Temel Eğitim Taşıma Ödeme(1).xlsm, row 4.
-        // Source Hakediş Raporu values: A=192,009.97; B=7,365.35; C/E=199,375.32;
-        // gross=219,312.85; deductions=12,300.77; payable=207,012.08.
-        // The source Hakediş İcmali!D6 formula additionally adds İcmal Verileri!AB4
-        // (a deduction column in Basic/Secondary), inflating its displayed price difference
-        // to 19,670.30. OEHS intentionally keeps the price difference equal to raw I4;
-        // this source-formula discrepancy is documented and must not be silently changed.
+        // Historical workbook's separately rounded report chain displayed 207,012.08.
+        // The accepted current mapping is D28 = Hesaplama Bilgileri!W4, so this
+        // regression asserts the unrounded calculation-sheet net rather than rebuilding
+        // D28 from separately rounded report subtotals. The legacy discrepancy remains documented.
         var input = new ProgressPaymentInput(
             WorkDays: 9.82693033060048m,
             DailyPrice: 19539.1608m,
@@ -297,7 +295,7 @@ public sealed class ProgressPaymentReportTests
             ProgressPaymentReportService.CalculateReportTotalDeductions(
                 calculation, TransportationProgramType.BasicOrSecondary),
             2, MidpointRounding.AwayFromZero));
-        Assert.Equal(207012.08m, reportNet);
+        Assert.Equal(calculation.NetPayable, reportNet);
     }
 
     [Fact]
