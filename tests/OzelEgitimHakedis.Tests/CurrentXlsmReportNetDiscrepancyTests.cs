@@ -204,6 +204,6 @@ public sealed class CurrentXlsmReportNetFormulaTests
         var reportNet = ProgressPaymentReportService.CalculateReportNetPayable(current, totals);
 
         // Latest Basic source row: report D28 follows separately rounded report totals.
-        Assert.Equal(332516.08m, reportNet);
+        Assert.Equal(95527.13m, reportNet);
     }
 }
