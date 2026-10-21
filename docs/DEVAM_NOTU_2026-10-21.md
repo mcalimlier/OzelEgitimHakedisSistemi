@@ -48,3 +48,11 @@
 - UI commit'i: `06b201643664e8d6afc89dcdaadac35ba67587b6`; stil ve hibrit grid commit'i: `032febbc31bd78e5c7e055ce2c489112e65de2f2`.
 - CI run [39661935908](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39661935908) ve [39661930041](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39661930041) son kontrolde çalışıyordu; sonuçları yeniden doğrula. Gerçek Windows ekran görüntüsü/DPI testi henüz yok.
 - Sonraki adım: CI sonuçlarını kontrol et; başarısız statik UI sözleşmesi veya XAML derlemesi varsa düzelt. Ardından gerçek Windows ekranında Tasarım 1 ile görsel karşılaştırma yap. Ana dala merge/release yok.
+
+
+## Devam döngüsü — CI doğrulaması ve KDV istisnası davranışı
+
+- CI sonuçları tekrar kontrol edildi: UI commit'i `032febbc31bd78e5c7e055ce2c489112e65de2f2` için [39661935908](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39661935908) ve [39661930041](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39661930041) tamamlandı ve SUCCESS. Her iki çalışmada tam çözüm/WPF derleme, UI sözleşme, kompakt yerleşim, test derleme ve test çözümü adımları başarılı; ikinci çalışmada PDF smoke üretim/doğrulama da başarılı.
+- Kaynak kod denetimi KDV istisnası kontrolünün artık Yüklenici/Firma düzenleme kartında olduğunu doğruladı. Ancak gerçek veri modeli `ContractDraftData.VatExempt` alanını sözleşme kaydında saklıyor; `SaveContractorButton_Click` firma verisini kaydediyor ve KDV alanını sözleşmeye yazmıyor. Bu yüzden checkbox'ın firma kaydetme ile kalıcılaşacağı garanti edilmez. Hesaplama semantiğini değiştirmeden, kontrolün sözleşme düzeyindeki niteliğini kullanıcıya açıkça göstermek gerekiyor; firmaya ait kalıcı bir alan eklemek ise veri modeli ve geçmiş kayıtlar için ayrı bir tasarım kararı gerektirir.
+- Henüz gerçek Windows UI/DPI testi yapılmadı. Bulut CI, WPF derleme ve statik UI sözleşmesini doğruladı; ekran görüntüsüyle Tasarım 1 karşılaştırması değildir.
+- Başlangıç noktası: `8f999024384b7d004f335f672602ec154647abe7`. Branch: `feature/official-payment-document-templates`. Ana dala merge/release yok.
