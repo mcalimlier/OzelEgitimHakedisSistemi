@@ -29,6 +29,32 @@ public sealed class ProgressPaymentPropagationServiceTests
         Assert.Equal(newContract.ContractNumber, result.ContractNumber);
     }
 
+    [Fact]
+    public void ContractChange_ShouldPreserveVatExemptionCapturedOnIssuedPayment()
+    {
+        var oldContract = CreateContract(1000m) with { VatExempt = false };
+        var newContract = CreateContract(1250m) with { VatExempt = true };
+        var payment = CreatePayment();
+        var exemptInput = payment.Input with { IsVatExempt = true };
+        payment = payment with
+        {
+            Input = exemptInput,
+            Calculation = ProgressPaymentCalculator.Calculate(exemptInput)
+        };
+
+        var updated = ProgressPaymentPropagationService.RecalculateForContractChange(
+            new[] { payment },
+            Array.Empty<RouteData>(),
+            oldContract,
+            newContract);
+
+        var result = Assert.Single(updated);
+
+        Assert.True(result.Input.IsVatExempt);
+        Assert.Equal(0m, result.Calculation.TransportVat);
+        Assert.Equal(12500m, result.Calculation.ServiceAmount);
+    }
+
     private static ContractDraftData CreateContract(decimal transportDailyPrice) =>
         new(
             "IHALE-01",
