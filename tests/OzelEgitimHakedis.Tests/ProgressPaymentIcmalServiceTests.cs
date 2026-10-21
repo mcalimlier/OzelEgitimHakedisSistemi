@@ -192,24 +192,23 @@ public sealed class ProgressPaymentIcmalServiceTests
     }
 
     [Fact]
-    public void SpecialEducationDecember_ShouldReturnZeroBecauseNovemberHeaderIsMissing()
+    public void SpecialEducationDecember_ShouldCarryNovemberDeductionAfterAp3Correction()
     {
-        // Latest Special XLSM has no November label in İcmal Verileri!AN3:AX3.
-        // E21's MATCH of the previous month therefore fails and IFERROR returns zero.
+        // AP3 is corrected to =Anasayfa!I8 (Kasım), so December E21 now
+        // resolves November normally instead of returning zero.
         var november = History(1, new DateOnly(2026, 11, 30), 180m);
         var december = History(2, new DateOnly(2026, 12, 31), 250m);
 
         var result = ProgressPaymentIcmalService.FindPreviousDeduction(
             new[] { november, december }, december);
 
-        Assert.Equal(0m, result);
+        Assert.Equal(180m, result);
     }
 
     [Fact]
-    public void SpecialEducationJanuary_ShouldFollowFirstDuplicateDecemberHeaderToNovemberData()
+    public void SpecialEducationJanuary_ShouldCarryDecemberDeductionAfterAp3Correction()
     {
-        // In the latest source workbook AP3 and AQ3 both display December, but the
-        // transfer macro maps AP to November and AQ to December. MATCH returns AP first.
+        // AP3=Kasım and AQ3=Aralık; January's previous month is December.
         var november = History(1, new DateOnly(2026, 11, 30), 180m);
         var december = History(2, new DateOnly(2026, 12, 31), 250m);
         var january = History(3, new DateOnly(2027, 1, 31), 300m);
@@ -217,7 +216,34 @@ public sealed class ProgressPaymentIcmalServiceTests
         var result = ProgressPaymentIcmalService.FindPreviousDeduction(
             new[] { november, december, january }, january);
 
-        Assert.Equal(180m, result);
+        Assert.Equal(250m, result);
+    }
+
+    [Fact]
+    public void SpecialEducationMonthMapping_ShouldCoverAllTwelveMonthsAfterAp3Correction()
+    {
+        var months = Enumerable.Range(0, 12)
+            .Select(index => new DateOnly(2026, 9, 1).AddMonths(index))
+            .ToArray();
+        var payments = months.Select((month, index) =>
+            History(index + 1, new DateOnly(month.Year, month.Month,
+                DateTime.DaysInMonth(month.Year, month.Month)), month.Month * 100m + index))
+            .ToArray();
+
+        foreach (var currentMonth in months)
+        {
+            var current = payments.Single(payment =>
+                payment.PeriodDate!.Value.Year == currentMonth.Year &&
+                payment.PeriodDate.Value.Month == currentMonth.Month);
+            var previousMonth = currentMonth.AddMonths(-1);
+            var expected = currentMonth.Month is 9 or 7 or 8
+                ? 0m
+                : previousMonth.Month * 100m + Array.FindIndex(months, month =>
+                    month.Year == previousMonth.Year && month.Month == previousMonth.Month);
+
+            var result = ProgressPaymentIcmalService.FindPreviousDeduction(payments, current);
+            Assert.Equal(expected, result);
+        }
     }
 
     [Fact]
