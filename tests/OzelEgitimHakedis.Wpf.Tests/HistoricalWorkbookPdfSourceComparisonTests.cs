@@ -53,10 +53,10 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
             Assert.Contains("158.347,03", specialReport, System.StringComparison.Ordinal);
             Assert.Contains("61.508,94", specialReport, System.StringComparison.Ordinal);
             var specialIcmal = PageText(specialOutputs, OehsOfficialDocumentKind.HakedisIcmali);
-            Assert.Contains("₺77.667,27", specialIcmal, System.StringComparison.Ordinal);
-            Assert.Contains("₺0,00", specialIcmal, System.StringComparison.Ordinal);
-            Assert.DoesNotContain("₺11.030,00", specialIcmal, System.StringComparison.Ordinal);
-            Assert.DoesNotContain("₺88.697,27", specialIcmal, System.StringComparison.Ordinal); // I/R already included in K+T.
+            Assert.Contains("₺66.637,27", specialIcmal, System.StringComparison.Ordinal); // K+T base excludes I/R
+            Assert.Contains("₺11.030,00", specialIcmal, System.StringComparison.Ordinal); // I/R appears once
+            Assert.Contains("₺77.667,27", specialIcmal, System.StringComparison.Ordinal); // row total equals K+T
+            Assert.DoesNotContain("₺88.697,27", specialIcmal, System.StringComparison.Ordinal);
 
             var basic = BuildLatestBasicEducationContext();
             var basicOutputs = OehsOfficialDocumentFactory.BuildSeparate(basic);
@@ -67,12 +67,10 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
             Assert.Contains("698.601,33", basicReport, System.StringComparison.Ordinal);
             Assert.Contains("332.516,08", basicReport, System.StringComparison.Ordinal);
             var basicIcmal = PageText(basicOutputs, OehsOfficialDocumentKind.HakedisIcmali);
-            Assert.Contains("₺319.991,92", basicIcmal, System.StringComparison.Ordinal);
-            Assert.Contains("₺19.475,04", basicIcmal, System.StringComparison.Ordinal);
-            Assert.Contains("₺339.466,96", basicIcmal, System.StringComparison.Ordinal);
-            Assert.DoesNotContain("₺26.840,39", basicIcmal, System.StringComparison.Ordinal);
+            Assert.Contains("₺312.626,57", basicIcmal, System.StringComparison.Ordinal); // K base excludes I
+            Assert.Contains("₺26.840,39", basicIcmal, System.StringComparison.Ordinal); // I plus deductions
+            Assert.Contains("₺339.466,96", basicIcmal, System.StringComparison.Ordinal); // I appears once in A+B
             Assert.DoesNotContain("₺346.832,31", basicIcmal, System.StringComparison.Ordinal);
-            // The duplicate raw I price difference is removed; the deduction component remains.
 
             SaveToTemporaryA4Pdfs(specialOutputs);
             SaveToTemporaryA4Pdfs(basicOutputs);
@@ -364,11 +362,12 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
 
         var icmal = PageText(outputs, OehsOfficialDocumentKind.HakedisIcmali);
         Assert.Contains("Hizmet Alımı İşi Eylül 2026", icmal, StringComparison.Ordinal);
-        Assert.Contains("₺54.725,90", icmal, StringComparison.Ordinal);
-        Assert.Contains("₺0,00", icmal, StringComparison.Ordinal);
-        Assert.DoesNotContain("₺1.403,57", icmal, StringComparison.Ordinal);
+        Assert.Contains("₺53.322,33", icmal, StringComparison.Ordinal); // September base service
+        Assert.Contains("₺1.403,57", icmal, StringComparison.Ordinal);  // price difference once
+        Assert.Contains("₺54.725,90", icmal, StringComparison.Ordinal); // September A+B equals K+T
         Assert.DoesNotContain("₺56.129,48", icmal, StringComparison.Ordinal);
-        Assert.Contains("₺93.318,27", icmal, StringComparison.Ordinal);
+        Assert.Contains("₺91.914,70", icmal, StringComparison.Ordinal); // current base service
+        Assert.Contains("₺93.318,27", icmal, StringComparison.Ordinal); // current A+B equals K+T
         Assert.DoesNotContain("₺94.721,85", icmal, StringComparison.Ordinal);
         Assert.Contains("603,02", icmal, StringComparison.Ordinal);
         Assert.Contains("968,87", icmal, StringComparison.Ordinal);
@@ -410,13 +409,10 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
 
         var icmal = PageText(outputs, OehsOfficialDocumentKind.HakedisIcmali);
         Assert.Contains("Hizmet Alımı İşi Eylül 2026", icmal, StringComparison.Ordinal);
-        Assert.Contains("₺199.375,32", icmal, StringComparison.Ordinal);
+        Assert.Contains("₺192.009,97", icmal, StringComparison.Ordinal); // base service excludes I
+        Assert.Contains("₺27.031,47", icmal, StringComparison.Ordinal);  // I plus deductions once
+        Assert.Contains("₺219.041,44", icmal, StringComparison.Ordinal); // row total without duplicate I
         Assert.Contains("Kaynak Test Güzergâhı Hattı Öğrenci Taşıma İşi", icmal, StringComparison.Ordinal);
-        // The historical Excel PDF prints 19.670,30 and 219.045,63. OEHS currently
-        // recalculates the deduction column as 12.300,77 instead of the stale AB4
-        // snapshot value 12.304,95, so the generated icmal differs by 4,19 TL.
-        Assert.Contains("₺19.666,12", icmal, StringComparison.Ordinal);
-        Assert.Contains("₺219.041,44", icmal, StringComparison.Ordinal);
         Assert.DoesNotContain("₺19.670,30", icmal, StringComparison.Ordinal);
         Assert.DoesNotContain("₺219.045,63", icmal, StringComparison.Ordinal);
     }
