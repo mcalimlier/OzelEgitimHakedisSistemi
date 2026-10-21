@@ -11,11 +11,7 @@ Kapsam: güncel Temel Eğitim ve Özel Eğitim XLSM'leri ile OEHS hesap/rapor zi
 
 ## Karar 1 — Ek kesin teminat / kesin teminat alanlarının anlamı (iki program)
 
-**Kullanıcının güncel kaynak Excel kontrolüyle doğruladığı iş kuralları (öncelikli):**
-- **Temel/Ortaöğretim:** Ek kesin teminat tutarı kullanıcı tarafından elle girilir ve hesaplamada girilen tutar aynen kullanılır; bu alana ayrıca %6 uygulanmaz.
-- **Özel Eğitim:** Ek kesin teminat `=(I4*6/100)+R4*6/100` formülüyle hesaplanır; iskonto alanları bu formüle eklenmez.
-- Bu iki programın kuralları ayrı uygulanır. Temel Eğitimde sabit 1.500 TL varsayılmaz; tutar kullanıcı girdisidir.
-- Temel Eğitim damga vergisi formülünde `T` hücresinin ek kesin teminat tutarı olarak kullanıldığı kaynak zinciri de hesaba katılır ve ayrıca test edilir.
+**GÜNCEL SON XLSM İLE ÇELİŞKİ NOTU (21.10.2026):** Bu bölümdeki Temel Eğitim için elle giriş kuralı, en güncel kaynak dosyanın formülüyle çelişmektedir ve kabul kuralı olarak kullanılmamalıdır. En güncel `03-Temel Eğitim Taşıma Ödeme SON(1).xlsm` içinde `Hesaplama Bilgileri!T4` formülü `=I4*6/100` olarak doğrudan doğrulandı. Bu nedenle güncel kaynak paritesi açısından Temel Eğitim T, I fiyat farkının %6'sıdır; sabit/elle girilen 1.500 TL kuralı bu sürüm için geçersizdir. Özel Eğitim ayrı kalır: `Hesaplama!AC4=(I4*6/100)+(R4*6/100)`. Aşağıdaki tarihsel metin bu düzeltme notuyla okunmalıdır.
 
 **Önceki incelemenin düzeltmesi:** Eski metin, Temel Eğitim `Hesaplama Bilgileri!T4:T6` hücrelerindeki 1.500 değerlerini ve OEHS'nin fiyat farkı üzerinden yaptığı %6 hesabını aynı kalemin doğrudan karşılaştırması olarak ele aldı. Bu çıkarım alanların anlamını doğru ayırmıyordu ve geçerli kabul edilmemelidir. Önceki satır bazlı farklar yalnızca mevcut hücre/kod çıktılarının aritmetik farklarıdır; doğru iş kuralını belirlemez.
 
