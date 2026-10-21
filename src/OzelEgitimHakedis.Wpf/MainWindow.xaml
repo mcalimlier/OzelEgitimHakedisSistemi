@@ -723,7 +723,7 @@
                                                                 <TextBlock Grid.Column="2" Text="{Binding Name}" Foreground="#17324A" FontSize="11" VerticalAlignment="Center" Padding="5,3" TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}"/>
                                                                 <TextBlock Grid.Column="3" Text="{Binding TransportWorkDays, StringFormat={}{0:N0}}" Foreground="#17324A" FontSize="11" VerticalAlignment="Center" Padding="5,3" TextAlignment="Right"/>
                                                                 <TextBlock Grid.Column="4" Text="{Binding DailyPrice, StringFormat={}{0:N2} ₺}" Foreground="#17324A" FontSize="11" VerticalAlignment="Center" Padding="5,3" TextAlignment="Right"/>
-                                                                <TextBlock Grid.Column="5" Foreground="#18794E" FontSize="10" FontWeight="Bold" VerticalAlignment="Center" Padding="5,3" TextAlignment="Center">
+                                                                <TextBlock Grid.Column="5" FontSize="10" FontWeight="Bold" VerticalAlignment="Center" Padding="5,3" TextAlignment="Center">
                                                                     <TextBlock.Style>
                                                                         <Style TargetType="{x:Type TextBlock}">
                                                                             <Setter Property="Text" Value="FİYAT VAR"/>
