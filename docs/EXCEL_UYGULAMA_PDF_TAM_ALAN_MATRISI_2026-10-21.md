@@ -38,9 +38,9 @@ W4'ün iki ondalık basamağa normal yuvarlanması 332.516,07 TL iken kaynak D28
 | `İcmal Verileri!AD4` | Kesinti toplamıyla eşleşen blok | 19.475,040568144 TL | `Calculation.TotalDeductions` bileşeni olarak korunur | Bileşen eşleşmesi kaynak önbelleğiyle biliniyor |
 | `Hakediş İcmali!C8` | Ay seçimiyle aylık hizmet toplamı | 319.991,9228 TL | `CalculateWorkbookMonthlyPaymentTotal` | K zaten I fiyat farkını içeriyor |
 | `Hakediş İcmali!D8` | `VLOOKUP(...,15+MATCH)+VLOOKUP(...,27+MATCH)` | 26.840,390568144 TL | Düzeltme sonrası yalnız kesinti bileşeni: 19.475,040568144 TL | Program değişikliği kaynak Excel'den bilinçli ayrışır |
-| `Hakediş İcmali!E8` | `=C8+D8` | Kaynakta 346.832,313368144 TL | Yeni uygulama ara toplamı: 339.466,963368144 TL | Tanısal uygulama beklentisi; gerçek PDF/CI kabulü ayrı |
+| `Hakediş İcmali!E8` | `=C8+D8` | Kaynakta 346.832,313368144 TL | Yeni uygulama: 339.466,963368144 TL | Kaynak E8'den 7.365,35 TL düşük; çift I eklemesi kaldırıldı |
 
-Temel Eğitimde D8'in kaynak değeri R4+AD4'tür. Kullanıcının seçtiği düzeltme yalnızca R4/I4 fiyat farkının ikinci kez eklenmesini kaldırır; kesinti bileşeni korunur. Bu nedenle uygulama A toplamı kaynak XLSM E8'den 7.365,35 TL farklı olabilir. Bu fark bilinçli ve raporlanmış olmalıdır.
+Temel Eğitimde yeni uygulama C sütununda K'den ham I fiyat farkını ayırır; D sütununda I'yi bir kez ve kesinti bileşenini korur. Böylece A+B, K+kesinti olur; alttaki kesinti çıkarıldığında hizmet tutarı K ile tutarlı kalır. Kaynak XLSM C8 zaten K'yi içerirken D8'e I+AD eklediği için kaynak E8'den 7.365,35 TL fazla çıkar. Bu fark bilinçli ve raporlanmıştır.
 
 ## 2. Özel Eğitim
 
@@ -76,10 +76,10 @@ D28'in iki ondalık görünümü AG4'ün yuvarlanmış karşılığıyla bu örn
 | `İcmal Verileri!R4` | Rehber fiyat farkı bloğu | 3.500,00 TL | İkinci kez eklenmeyecek | Mükerrer bileşen kanıtlandı |
 | `İcmal Verileri!I4` | Taşıma fiyat farkı bloğu | 7.530,00 TL | İkinci kez eklenmeyecek | Mükerrer bileşen kanıtlandı |
 | `Hakediş İcmali!C8` | Aylık K+T toplamı | 77.667,27 TL | `CalculateWorkbookMonthlyPaymentTotal` | K+T zaten I/R fiyat farkını içeriyor |
-| `Hakediş İcmali!D8` | İki aylık fiyat farkı bloğu toplamı | 11.030,00 TL | Düzeltme sonrası 0,00 TL | Program değişikliği kaynak Excel'den bilinçli ayrışır |
-| `Hakediş İcmali!E8` | `=C8+D8` | Kaynakta 88.697,27 TL | Yeni uygulama ara toplamı: 77.667,27 TL | Tanısal uygulama beklentisi; gerçek PDF/CI kabulü ayrı |
+| `Hakediş İcmali!D8` | İki aylık fiyat farkı bloğu toplamı | 11.030,00 TL | Fiyat farkı I+R = 11.030,00 TL | I/R ayrı sütunda bir kez gösterilir |
+| `Hakediş İcmali!E8` | `=C8+D8` | Kaynakta 88.697,27 TL | Yeni uygulama: 77.667,27 TL | Kaynak E8'den 11.030 TL düşük; çift I/R eklemesi kaldırıldı |
 
-Özel Eğitimde yeni program, aylık K+T tutarı içindeki I/R fiyat farklarını ikinci kez eklememektedir. Kesintiler icmalin alt kesinti bölümünde ayrı hesaplanmaya devam eder.
+Özel Eğitimde yeni uygulama K+T'den ham I/R fiyat farklarını ayırır; fark sütununda I/R'yi bir kez gösterir. Böylece a+b toplamı K+T ile eşleşir. Kesintiler icmalin alt kesinti bölümünde ayrı hesaplanmaya devam eder.
 
 ## 3. Dönem/kimlik alanları — tüm sekiz PDF için ortak kontrol şeması
 
