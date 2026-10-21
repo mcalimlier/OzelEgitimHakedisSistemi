@@ -78,3 +78,9 @@ Uygulama kodu: `src/OzelEgitimHakedis.Core/Services/ProgressPaymentIcmalService.
 4. Sekiz PDF'nin her biri için dönem, İKN, yüklenici, hat, ara/net tutar ve imza alanları Excel çıktısıyla karşılaştırılır; sonra görsel kontrol yapılır.
 5. Masaüstü Excel/VBA kabulü ayrıca kaydedilir.
 6. PR açık/taslak kalır; ana dala birleştirme/yayınlama için ayrı ve açık onay gerekir.
+
+
+## D28 eşlemesi için açık kaynak-kabul farkı
+Önceki kayıtlı örnek testinde Temel Eğitim rapor D28 değeri 332.516,08 TL, hesaplama neti ise 332.516,074511856 TL olarak bulunmuştu; ham değer iki ondalığa yuvarlandığında 332.516,07 TL olur. Özel Eğitim için de bazı eski örneklerde D28, hesaplama AG4'ün iki ondalıklı görünümünden bir kuruş ayrılabiliyor. Bu nedenle mevcut kaynak formül/önbellek kanıtı ile kullanıcının “W4/AG4, D28 ile aynı tutardır” kararı arasında doğrulanması gereken bir fark vardır.
+
+Kod ve testler kullanıcının açık kararına göre W4/AG4 netini doğrudan D28'e bağlayacak şekilde ayarlandı. Bu, masaüstü Excel'de gerçek tam yeniden hesaplama ile doğrulanmış sayılmaz. Temel ve Özel Eğitim örnekleri yeniden hesaplanırken W4/AG4 ham değeri, D28 formülü, D28'in önbellek değeri ve PDF'de gösterilen iki ondalıklı tutar aynı test kaydında saklanmalıdır. Fark görülürse sessizce başka formüle dönülmemeli; kaynak dosya ile kabul kararı arasındaki fark ayrı bir karar olarak açılmalıdır.
