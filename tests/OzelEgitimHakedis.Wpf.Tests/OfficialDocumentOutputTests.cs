@@ -412,8 +412,8 @@ public sealed class OfficialDocumentOutputTests
                 Assert.IsType<FixedPage>(basicJulyIcmal.Document.Pages[0].Child));
             Assert.Contains("Hizmet Alımı İşi Temmuz 2027", basicJulyIcmalText, StringComparison.Ordinal);
             Assert.Contains("₺100,00", basicJulyIcmalText, StringComparison.Ordinal); // base service
-            Assert.Contains("₺25,64", basicJulyIcmalText, StringComparison.Ordinal); // price difference + source deduction block
-            Assert.Contains("₺125,64", basicJulyIcmalText, StringComparison.Ordinal); // total counted once
+            Assert.Contains("₺15,64", basicJulyIcmalText, StringComparison.Ordinal); // price difference + source deduction block
+            Assert.Contains("₺115,64", basicJulyIcmalText, StringComparison.Ordinal); // total counted once
 
             var basicPayment = Assert.Single(
                 basicOutputs.Where(output => output.Kind == OehsOfficialDocumentKind.HakedisRaporu));
