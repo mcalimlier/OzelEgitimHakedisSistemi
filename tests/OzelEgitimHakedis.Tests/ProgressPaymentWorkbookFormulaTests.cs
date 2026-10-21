@@ -95,7 +95,8 @@ public sealed class ProgressPaymentWorkbookFormulaTests
         var current = History(
             1,
             new DateOnly(2026, 10, 31),
-            new ProgressPaymentInput(1, 100m, 0m, 0m, 1000m, true, 0m, 0m, 0m));
+            new ProgressPaymentInput(1, 100m, 0m, 0m, 1000m, true, 0m, 0m, 0m,
+                ProgramType: TransportationProgramType.BasicOrSecondary));
 
         current = current with
         {
