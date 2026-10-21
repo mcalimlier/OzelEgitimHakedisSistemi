@@ -738,7 +738,7 @@
                                                 <Border x:Name="MultiRouteEntryBorder" Visibility="Collapsed" Style="{StaticResource Card}" Padding="7" Margin="4.5,7,0,0">
                                                     <StackPanel>
                                                         <TextBlock Text="ÇOKLU HAT — HAT BAZINDA GİRİŞ" Foreground="{StaticResource Gold500Brush}" FontSize="11.5" FontWeight="Bold"/>
-                                                        <TextBlock Text="Her satır ayrı hesaplanır. İskonto, fiyat farkı ve kesintileri ilgili hatta girin; birleşik toplam satır sonuçlarının toplamıdır." Foreground="#C5D7E7" FontSize="11" TextWrapping="Wrap" Margin="0,3,0,6"/>
+                                                        <TextBlock Text="EXCEL-HİBRİT ÇALIŞMA ALANI • Mavi başlıklar alan adıdır; hücreleri çift tıklayarak düzenleyin. Günlük fiyatlar kaynak hat kaydından gelir ve salt okunurdur. Hesaplama için HAKEDİŞİ HESAPLA düğmesini kullanın." Foreground="#C5D7E7" FontSize="11" TextWrapping="Wrap" Margin="0,3,0,6"/>
                                                         <DataGrid x:Name="MultiRoutePaymentGrid"
                                                                   AutoGenerateColumns="False"
                                                                   CanUserAddRows="False"
@@ -746,11 +746,17 @@
                                                                   CanUserReorderColumns="True"
                                                                   CanUserResizeColumns="True"
                                                                   CanUserSortColumns="False"
-                                                                  HeadersVisibility="Column"
+                                                                  HeadersVisibility="All"
                                                                   GridLinesVisibility="All"
-                                                                  SelectionMode="Single"
-                                                                  SelectionUnit="FullRow"
-                                                                  MinHeight="100"
+                                                                  SelectionMode="Extended"
+                                                                  SelectionUnit="CellOrRowHeader"
+                                                                  FrozenColumnCount="1"
+                                                                  RowHeaderWidth="34"
+                                                                  CanUserResizeRows="True"
+                                                                  ClipboardCopyMode="IncludeHeader"
+                                                                  EnableRowVirtualization="True"
+                                                                  EnableColumnVirtualization="True"
+                                                                  MinHeight="130"
                                                                   MaxHeight="255"
                                                                   HorizontalScrollBarVisibility="Auto"
                                                                   VerticalScrollBarVisibility="Auto"
@@ -762,6 +768,31 @@
                                                                   BorderThickness="1"
                                                                   FontSize="10.5"
                                                                   ColumnHeaderStyle="{StaticResource ModernDataGridHeader}">
+                                                            <DataGrid.RowHeaderStyle>
+                                                                <Style TargetType="{x:Type DataGridRowHeader}">
+                                                                    <Setter Property="Background" Value="#0A2A49"/>
+                                                                    <Setter Property="Foreground" Value="#F4C247"/>
+                                                                    <Setter Property="BorderBrush" Value="#315371"/>
+                                                                    <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                                                                    <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                                                                    <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                                                </Style>
+                                                            </DataGrid.RowHeaderStyle>
+                                                            <DataGrid.CellStyle>
+                                                                <Style TargetType="{x:Type DataGridCell}">
+                                                                    <Setter Property="Padding" Value="5,3"/>
+                                                                    <Setter Property="BorderBrush" Value="#D5E0E9"/>
+                                                                    <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                                                                    <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                                                    <Style.Triggers>
+                                                                        <Trigger Property="IsSelected" Value="True">
+                                                                            <Setter Property="Background" Value="#D8EAF8"/>
+                                                                            <Setter Property="Foreground" Value="#082845"/>
+                                                                            <Setter Property="BorderBrush" Value="#D9A62E"/>
+                                                                        </Trigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </DataGrid.CellStyle>
                                                             <DataGrid.Columns>
                                                                 <DataGridTextColumn Header="Hat" Binding="{Binding RouteDisplayText}" IsReadOnly="True" Width="190"/>
                                                                 <DataGridTextColumn Header="Taşıma Gün" Binding="{Binding WorkDays, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="82"/>
@@ -1065,9 +1096,9 @@
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                 <StackPanel VerticalAlignment="Center">
                                     <TextBlock Text="KDV İSTİSNASI" Foreground="{StaticResource Blue700Brush}" FontSize="11.5" FontWeight="Bold"/>
-                                    <TextBlock Text="İstisna durumu sözleşme bazında kaydedilir; firma ekranından işaretledikten sonra İhale Bilgileri ekranında sözleşmeyi kaydedin." Foreground="{StaticResource Text900Brush}" FontSize="10.5" TextWrapping="Wrap" Margin="0,3,8,0"/>
+                                    <TextBlock Text="KDV istisnası FİRMA özelliği değil, İHALE / SÖZLEŞME özelliğidir. Bu kutu yalnızca mevcut sözleşme formundaki seçimi gösterir. Kalıcı kayıt için İKN / Sözleşme ekranında ilgili sözleşmeyi düzenleyip SÖZLEŞMEYİ KAYDET düğmesine basın. Firma KAYDET düğmesi KDV istisnasını kaydetmez." Foreground="{StaticResource Text900Brush}" FontSize="10.5" TextWrapping="Wrap" Margin="0,3,8,0"/>
                                 </StackPanel>
-                                <CheckBox x:Name="VatExemptCheckBox" Grid.Column="1" Content="İSTİSNA" Style="{StaticResource LightCheckBox}" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                <CheckBox x:Name="VatExemptCheckBox" Grid.Column="1" Content="İSTİSNA" Style="{StaticResource LightCheckBox}" VerticalAlignment="Center" Margin="8,0,0,0" Checked="VatExemptCheckBox_Changed" Unchecked="VatExemptCheckBox_Changed"/>
                             </Grid>
                         </Border>
                         <StackPanel Orientation="Horizontal" Margin="4.5,6,0,0">
