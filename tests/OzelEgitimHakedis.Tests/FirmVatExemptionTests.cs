@@ -6,10 +6,19 @@ namespace OzelEgitimHakedis.Tests;
 
 public sealed class FirmVatExemptionTests
 {
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void ContractorVatExemption_ShouldRoundTrip(bool vatExempt)
+    [Fact]
+    public void ContractorVatExemptionTrue_ShouldRoundTrip()
+    {
+        AssertVatExemptionRoundTrip(true);
+    }
+
+    [Fact]
+    public void ContractorVatExemptionFalse_ShouldRoundTrip()
+    {
+        AssertVatExemptionRoundTrip(false);
+    }
+
+    private static void AssertVatExemptionRoundTrip(bool vatExempt)
     {
         var firm = new Contractor(
             "Örnek Firma",
@@ -21,7 +30,7 @@ public sealed class FirmVatExemptionTests
         var restored = JsonSerializer.Deserialize<Contractor>(json);
 
         Assert.NotNull(restored);
-        Assert.Equal(vatExempt, restored.VatExempt);
+        Assert.Equal<bool?>(vatExempt, restored.VatExempt);
     }
 
     [Fact]
