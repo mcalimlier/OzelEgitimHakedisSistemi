@@ -459,15 +459,15 @@ internal static class OehsOfficialDocumentFactory
             var service = isLookupMonth
                 ? monthPayments.Sum(ProgressPaymentReportService.CalculateWorkbookMonthlyPaymentTotal)
                 : 0m;
-            var difference = isLookupMonth
-                ? monthPayments.Sum(ProgressPaymentReportService.CalculateWorkbookPriceDifference)
+            // The monthly service transfer already includes the source I/R price-difference
+            // components: Basic K includes I; Special Education K+T includes I+R.
+            // Do not add those raw price differences a second time to the icmal subtotal.
+            // The Basic workbook's second D-block also carries the monthly deduction value;
+            // retain that separate component so the later B (deductions) subtraction cancels it.
+            var difference = isLookupMonth &&
+                             c.ProgramType == TransportationProgramType.BasicOrSecondary
+                ? monthPayments.Sum(payment => payment.Calculation.TotalDeductions)
                 : 0m;
-            if (isLookupMonth && c.ProgramType == TransportationProgramType.BasicOrSecondary)
-            {
-                // Basic D6:D16 adds AB:AL monthly V deductions to the raw I value.
-                // Special Education's same-position columns contain guide I/R values instead.
-                difference += monthPayments.Sum(payment => payment.Calculation.TotalDeductions);
-            }
 
             // B6:B16 in each source workbook compacts only positive monthly amount
             // cells into consecutive rows; later empty months remain blank.
