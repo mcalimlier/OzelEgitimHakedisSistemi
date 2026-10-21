@@ -190,15 +190,8 @@ public static class ProgressPaymentReportService
         ArgumentNullException.ThrowIfNull(current);
         ArgumentNullException.ThrowIfNull(reportTotals);
 
-        if (current.Input.ProgramType == TransportationProgramType.SpecialEducation)
-        {
-            // Current Special Education source vectors match D28 to AG4
-            // at the report's two-decimal currency precision.
-            return decimal.Round(current.Calculation.NetPayable, 2, MidpointRounding.AwayFromZero);
-        }
-
-        // Basic/Secondary source row 4 proves D28 is not W4 merely formatted:
-        // D28 rounds the report gross and deduction totals separately.
+        // Both report templates calculate D28 from report totals and separately
+        // round gross and deductions. This can differ from raw W4/AG4 by one kuruş.
         var reportGross = reportTotals.CurrentTotal + current.Calculation.Vat;
         var reportDeductions = CalculateReportTotalDeductions(
             current.Calculation,
