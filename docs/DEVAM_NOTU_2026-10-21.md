@@ -77,3 +77,10 @@
 - Doğrulama: commit `5d5e4d58a7b15148b2def397f999b093da64e544` derlemesi XAML'deki taşınmış ListBox kapanış etiketi nedeniyle FAIL verdi. Kapanış etiketi `147c36856733b48f0f7809d223fb60f0e61d3b00` commit'inde düzeltildi; bu commit'in Windows CI sonucu henüz bekleniyor. Önceki başarısız CI sonuçları yeni commit'in sonucu değildir.
 - Açık kabul: gerçek Windows masaüstünde ekran görüntüsüyle birebir piksel karşılaştırması ve %100/%125/%150 DPI testi henüz yapılmadı. Dört resmi PDF'nin alan bazlı tam karşılaştırması da bu UI döngüsünde yapılmadı.
 - Branch `feature/official-payment-document-templates`; son doğrulanmış kaynak SHA, not kaydedilirken `147c36856733b48f0f7809d223fb60f0e61d3b00`. Ana dala merge/release yapılmadı.
+
+
+### Son doğrulama güncellemesi — 21.10.2026 19:57 UTC
+
+- Kod ve test commit'i: `226eb60d8c9cbb2fb27ddcd80d1d0c9a8dd65438`.
+- Windows CI bu SHA için PASS: [run 39665892859](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39665892859). Tam çözüm ve WPF derlemesi, UI sözleşme/statik kontrolleri, test derlemeleri, 246 birim testi ve PDF smoke üretimi geçti. (Toplam test sayısı koşu günlüğünde 246; yeni testler dâhil.)
+- Gerçek masaüstü ekran görüntüsü/DPI karşılaştırması CI kapsamı dışında; bu nedenle Tasarım 1'in piksel düzeyinde klon kabulü henüz PASS sayılmıyor. CI'nin ürettiği EXE yayın/release değildir; ana dala merge veya release yapılmadı.
