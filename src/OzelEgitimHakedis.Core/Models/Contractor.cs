@@ -8,4 +8,5 @@ public sealed record Contractor(
     string Email = "",
     string BankAccountNumber = "",
     string ContactPerson = "",
-    TransportationProgramType ProgramType = TransportationProgramType.SpecialEducation);
+    TransportationProgramType ProgramType = TransportationProgramType.SpecialEducation,
+    bool VatExempt = false);
