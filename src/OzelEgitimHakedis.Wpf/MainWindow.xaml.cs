@@ -1201,7 +1201,6 @@ public partial class MainWindow : Window
         AdditionalGuaranteeResultTextBlock.Text = FormatMoney(0m);
         ProgressWorkDaysSummaryTextBlock.Text = "0";
         ProgressWorkDaysCardTextBlock.Text = "0 gün";
-        ProgressWorkDaysCardTextBlock.Text = "0 gün";
         ProgressNetSummaryTextBlock.Text = FormatMoney(0m);
         ProgressCalculationSummaryTextBlock.Text = "HAZIR";
         CalculationStatusTextBlock.Text = "Yeni ay seçildi. Bu aya ait iş günlerini, fiyat farklarını, iskontoları ve kesintileri yeniden girin.";
@@ -8045,7 +8044,6 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         InspectionPenaltyResultTextBlock.Text = FormatMoney(0m);
         AdditionalGuaranteeResultTextBlock.Text = FormatMoney(0m);
         ProgressWorkDaysSummaryTextBlock.Text = "0";
-        ProgressWorkDaysCardTextBlock.Text = "0 gün";
         ProgressWorkDaysCardTextBlock.Text = "0 gün";
         ProgressNetSummaryTextBlock.Text = FormatMoney(0m);
         ProgressCalculationSummaryTextBlock.Text = "HAZIR";
