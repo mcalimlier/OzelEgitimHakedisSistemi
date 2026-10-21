@@ -90,7 +90,7 @@ public sealed class ProgressPaymentWorkbookFormulaTests
     }
 
     [Fact]
-    public void ReportNetPayable_ShouldRoundGrossAndDeductionsSeparatelyLikeExcelD28()
+    public void ReportNetPayable_ShouldReturnCalculationSheetNetWithoutRecomputingReportSubtotals()
     {
         var current = History(
             1,
@@ -102,7 +102,8 @@ public sealed class ProgressPaymentWorkbookFormulaTests
             Calculation = current.Calculation with
             {
                 Vat = 0.005m,
-                TotalDeductions = 10.005m
+                TotalDeductions = 10.005m,
+                NetPayable = 190.00m
             }
         };
 
