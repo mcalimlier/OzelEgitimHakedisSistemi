@@ -115,7 +115,9 @@ public static class ProgressPaymentPropagationService
         var input = item.Input with
         {
             ContractAmount = contract.ContractAmount,
-            IsVatExempt = contract.VatExempt,
+            // VAT exemption is now a firm-level choice. Editing contract terms must not
+            // rewrite the VAT decision captured in an already-issued progress payment.
+            IsVatExempt = item.Input.IsVatExempt,
             DailyPrice = contract.TransportDailyPrice,
             ProgramType = contract.ProgramType,
             GuideWorkDays = hasGuide ? item.Input.GuideWorkDays : 0,
