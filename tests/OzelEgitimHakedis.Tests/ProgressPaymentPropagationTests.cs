@@ -136,7 +136,7 @@ public sealed class ProgressPaymentPropagationTests
     }
 
     [Fact]
-    public void VatExemptionChange_ShouldRecalculateVatAndWithholding()
+    public void LegacyContractVatFlagChange_ShouldNotOverrideVatDecisionCapturedOnPayment()
     {
         var oldContract = Contract(vatExempt: false);
         var newContract = oldContract with { VatExempt = true };
@@ -146,11 +146,12 @@ public sealed class ProgressPaymentPropagationTests
         var updated = ProgressPaymentPropagationService.RecalculateForContractChange(
             new[] { history }, Array.Empty<RouteData>(), oldContract, newContract);
 
-        Assert.Single(updated);
-        Assert.Equal(0m, updated[0].Calculation.Vat);
-        Assert.Equal(0m, updated[0].Calculation.Withholding);
-        Assert.Equal(newContract.ContractAmount, updated[0].Input.ContractAmount);
-        Assert.True(updated[0].Input.IsVatExempt);
+        var payment = Assert.Single(updated);
+        Assert.Equal(newContract.ContractAmount, payment.Input.ContractAmount);
+        Assert.False(payment.Input.IsVatExempt);
+        Assert.Equal(
+            ProgressPaymentCalculator.Calculate(payment.Input),
+            payment.Calculation);
     }
 
     [Fact]
