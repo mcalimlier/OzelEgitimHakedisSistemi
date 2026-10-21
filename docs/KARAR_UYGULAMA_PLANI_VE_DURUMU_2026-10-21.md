@@ -8,8 +8,8 @@
 
 | No | Seçim | Uygulama |
 |---|---|---|
-| 1 | Temel Eğitim icmalinde kanıtlanan mükerrer bileşeni düzelt | K aylık hizmet tutarına dahil olan I fiyat farkını icmal fark sütununa yeniden ekleme; kaynakta bu sütuna taşınan kesinti bileşenini ayrı tut. |
-| 2 | Özel Eğitim icmalinde kanıtlanan mükerrer bileşeni düzelt | K+T aylık hizmet tutarına dahil olan I/R fiyat farklarını icmal fark sütununa yeniden ekleme. |
+| 1 | Temel Eğitim icmalinde kanıtlanan mükerrer bileşeni düzelt | “İş Tutarı” sütununda K-I baz tutarı; “Fiyat Farkı” sütununda I bir kez + kaynak kesinti bileşeni. A+B artık I'yi iki kez saymaz. |
+| 2 | Özel Eğitim icmalinde kanıtlanan mükerrer bileşeni düzelt | “İş Tutarı” sütununda (K+T)-(I+R); “Fiyat Farkı” sütununda I+R bir kez. A+B = K+T. |
 | 3 | Temel Eğitim W4/D28: D28=W4 ise eşle | Eşitlik yalnızca formül/yuvarlama zinciriyle kanıtlanırsa aynı alan sayılacak; D28 farklı formülle hesaplanıyorsa ayrı alan olarak korunacak. |
 | 4 | Özel Eğitim AG4/D28: D28=AG4 ise eşle | AC4:AG4 zinciri ve D28 formülü birlikte kontrol edilecek; yalnızca etiket veya yaklaşık tutar benzerliği yeterli değil. |
 | 5 | Özel Eğitim AP3/AQ3: önce 12 aylık eşleme testi | Özgün XLSM değiştirilmeden ay başlığı → sütun → aktarım → sonuç testi; ardından kaynak mı VBA mı hatalı kararı. |
@@ -53,12 +53,12 @@ Metot: `BuildHakedisIcmali`
 ### Test değişikliği
 Dosya: `tests/OzelEgitimHakedis.Wpf.Tests/OfficialDocumentOutputTests.cs`
 
-- Özel Eğitim icmalinde 140 TL toplamın, 10/20 TL ayrı fiyat farkı eklerinin ve 260 TL birikimli toplamın görünmemesi; 120 TL aylık K+T toplamının ve 230 TL birikimli aylık toplamın korunması beklentisi yazıldı.
+- Özel Eğitim icmalinde baz hizmet tutarı ile I/R farkının ayrı gösterilmesi, her satırın a+b toplamının K+T ile eşleşmesi ve mükerrer 140/260 TL toplamların oluşmaması için sentetik PDF regresyon beklentileri güncellendi.
 - Bu test sentetik uygulama regresyonudur; gerçek Excel masaüstü kabulünün yerine geçmez.
 
 ### Kaynak Excel ile açık fark
 Bu düzeltme kaynak XLSM'nin mevcut D8/E8 formül davranışından bilerek ayrılabilir. Kullanıcı kararı programdaki kanıtlanmış çift eklemeyi düzeltmek yönündedir. Dolayısıyla:
-- Programın yeni icmal tutarı ile mevcut XLSM'nin D8/E8 sonucu farklı çıkabilir.
+- Programın icmal A sütunu kaynak C8'den fiyat farkı kadar düşük, D sütunu ise fiyat farkını bir kez içerir; toplam E8 kaynak E8'den mükerrer fiyat farkı kadar düşük olabilir.
 - Bu fark gizlenmeyecek; tam alan eşleme matrisinde “bilinçli program düzeltmesi / kaynak Excel uyuşmazlığı” olarak gösterilecek.
 - Kaynak XLSM veya resmî ödeme kuralı bu işlemde değiştirilmiş sayılmayacak.
 - Gerçek Excel/VBA ve PDF örnekleri incelenmeden “resmî kabul tamamlandı” denmeyecek.
@@ -85,7 +85,7 @@ Bu düzeltme kaynak XLSM'nin mevcut D8/E8 formül davranışından bilerek ayrı
 ## Durum — bu kayıt oluşturulurken
 
 - İcmal düzeltme kodu ve ilgili sentetik PDF test beklentileri yazıldı.
-- Windows CI run `39601865059` kod/test commit'i `751f3793c66c1c582e716fdc56d2970883385f4a` için çalışıyordu; sonuç henüz teyit edilmedi.
+- Son test çalışmaları bazı eski test beklentilerinin yanlış program türü veya eski icmal sütun dağılımını kullandığını gösterdi; bunlar düzeltilip yeniden CI'ya gönderildi. En güncel test commit'i için sonuç bekleniyor.
 - Sonraki yalnız-belge commit'leri için ayrı CI sonucu bulunmayabilir. Son kod/test commit'inin run sonucu, test edilen SHA ile birlikte raporlanmalı.
 - Masaüstü Excel/VBA kabulü: OPEN.
 - 8/8 gerçek Excel PDF alan/görsel kabulü: OPEN.
