@@ -28,6 +28,17 @@ public sealed class HakedisCreateHybridUiContractTests
         Assert.Contains("ProgressPeriodMonthComboBox", named.Keys);
         Assert.Contains("ProgressWorkDaysCardTextBlock", named.Keys);
         Assert.Contains("ProgressRouteComboBox", named.Keys);
+        Assert.Contains("ProgressRouteTableHeaderGrid", named.Keys);
+        var routeTableHeaders = named["ProgressRouteTableHeaderGrid"].Descendants()
+            .Where(element => element.Name.LocalName == "TextBlock")
+            .Select(element => (string?)element.Attribute("Text"))
+            .Where(text => !string.IsNullOrWhiteSpace(text))
+            .ToArray();
+        Assert.Contains("Hat", routeTableHeaders);
+        Assert.Contains("Güzergâh", routeTableHeaders);
+        Assert.Contains("Söz. Gün", routeTableHeaders);
+        Assert.Contains("Günlük Fiyat", routeTableHeaders);
+        Assert.Contains("Durum", routeTableHeaders);
         Assert.Contains("ProgressRouteRelationTextBlock", named.Keys);
         Assert.Contains("ProgressWorkDaysSummaryTextBlock", named.Keys);
         Assert.Contains("MultiRoutePaymentGrid", named.Keys);
