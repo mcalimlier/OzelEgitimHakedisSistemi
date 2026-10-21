@@ -672,7 +672,7 @@
                                             <StackPanel Grid.Column="0" Margin="0,0,8,0">
                                                 <TextBlock Text="FİRMAYA BAĞLI HATLAR" Foreground="{StaticResource Gold500Brush}" FontSize="11.5" FontWeight="Bold"/>
                                                 <TextBlock Text="Firma ve İKN seçimine göre filtrelenen hatlar. Satır kutusuyla birden fazla hattı seçin; her hat aşağıdaki Excel-hibrit tabloya ayrı satır olarak aktarılır." Style="{StaticResource CardSubtitle}" Margin="0,3,0,5" TextWrapping="Wrap"/>
-                                                <Grid Margin="0,2,0,0">
+                                                <Grid x:Name="ProgressRouteTableHeaderGrid" Margin="0,2,0,0">
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="48"/>
                                                         <ColumnDefinition Width="1.55*"/>
@@ -719,7 +719,7 @@
                                                                     <ColumnDefinition Width="84"/>
                                                                 </Grid.ColumnDefinitions>
                                                                 <CheckBox Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected, Mode=TwoWay}" ToolTip="Bu hattı hakediş seçimine dahil et"/>
-                                                                <TextBlock Grid.Column="1" Text="{Binding RouteNumber, StringFormat=Hat {0}}" Foreground="#17324A" FontSize="11" VerticalAlignment="Center" Padding="5,3" TextTrimming="CharacterEllipsis"/>
+                                                                <TextBlock Grid.Column="1" Text="{Binding RouteNumber}" Foreground="#17324A" FontSize="11" VerticalAlignment="Center" Padding="5,3" TextTrimming="CharacterEllipsis"/>
                                                                 <TextBlock Grid.Column="2" Text="{Binding Name}" Foreground="#17324A" FontSize="11" VerticalAlignment="Center" Padding="5,3" TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}"/>
                                                                 <TextBlock Grid.Column="3" Text="{Binding TransportWorkDays, StringFormat={}{0:N0}}" Foreground="#17324A" FontSize="11" VerticalAlignment="Center" Padding="5,3" TextAlignment="Right"/>
                                                                 <TextBlock Grid.Column="4" Text="{Binding DailyPrice, StringFormat={}{0:N2} ₺}" Foreground="#17324A" FontSize="11" VerticalAlignment="Center" Padding="5,3" TextAlignment="Right"/>
