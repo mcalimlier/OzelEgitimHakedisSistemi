@@ -229,19 +229,18 @@ public sealed class ProgressPaymentReportTests
         Assert.Equal(54725.903m, totals.PreviousTotal);            // D10
         Assert.Equal(93318.273m, totals.CurrentTotal);             // D11 = current K+T
 
-        // Source workbook cached values for the same example:
-        // D13 = D11 + D12 (VAT-exempt example, so D12=0),
-        // D26 = SUM(D14:F25), and D28 = ROUND(D13,2)-ROUND(D26,2).
+        // Keep the report gross/deduction audit values, but apply the accepted
+        // mapping D28 = calculation-sheet AG4 instead of rebuilding D28 from
+        // separately rounded D13/D26 values.
         var reportGross = totals.CurrentTotal + currentCalculation.Vat;
         var reportDeductions = ProgressPaymentReportService.CalculateReportTotalDeductions(
             currentCalculation,
             TransportationProgramType.SpecialEducation);
-        var reportNet = decimal.Round(reportGross, 2, MidpointRounding.AwayFromZero)
-                        - decimal.Round(reportDeductions, 2, MidpointRounding.AwayFromZero);
+        var reportNet = ProgressPaymentReportService.CalculateReportNetPayable(current, totals);
 
-        Assert.Equal(93318.273m, reportGross);                 // D13
-        Assert.Equal(968.87160804m, reportDeductions);         // D26
-        Assert.Equal(92349.40m, reportNet);                    // D28
+        Assert.Equal(93318.273m, reportGross);                 // D13 audit
+        Assert.Equal(968.87160804m, reportDeductions);         // D26 audit
+        Assert.Equal(currentCalculation.NetPayable, reportNet); // D28 = AG4
     }
 
 
