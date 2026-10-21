@@ -324,8 +324,10 @@ public sealed class OfficialDocumentOutputTests
             Assert.Contains("₺120,00", specialIcmalText, StringComparison.Ordinal);
             Assert.Contains("₺0,00", specialIcmalText, StringComparison.Ordinal);
             Assert.DoesNotContain("₺140,00", specialIcmalText, StringComparison.Ordinal);
-            Assert.DoesNotContain("₺20,00", specialIcmalText, StringComparison.Ordinal);
-            Assert.DoesNotContain("₺10,00", specialIcmalText, StringComparison.Ordinal);
+            // Price differences are displayed separately from the service base,
+            // and each component is included exactly once in the row total.
+            Assert.Contains("₺20,00", specialIcmalText, StringComparison.Ordinal);
+            Assert.Contains("₺10,00", specialIcmalText, StringComparison.Ordinal);
 
             var basicCalculation = ProgressPaymentCalculator.Calculate(
                 input with { ProgramType = TransportationProgramType.BasicOrSecondary },
@@ -408,9 +410,9 @@ public sealed class OfficialDocumentOutputTests
             var basicJulyIcmalText = GetPageText(
                 Assert.IsType<FixedPage>(basicJulyIcmal.Document.Pages[0].Child));
             Assert.Contains("Hizmet Alımı İşi Temmuz 2027", basicJulyIcmalText, StringComparison.Ordinal);
-            Assert.Contains("₺110,00", basicJulyIcmalText, StringComparison.Ordinal);
-            Assert.Contains("₺15,64", basicJulyIcmalText, StringComparison.Ordinal);
-            Assert.Contains("₺125,64", basicJulyIcmalText, StringComparison.Ordinal);
+            Assert.Contains("₺100,00", basicJulyIcmalText, StringComparison.Ordinal); // base service
+            Assert.Contains("₺25,64", basicJulyIcmalText, StringComparison.Ordinal); // price difference + source deduction block
+            Assert.Contains("₺125,64", basicJulyIcmalText, StringComparison.Ordinal); // total counted once
 
             var basicPayment = Assert.Single(
                 basicOutputs.Where(output => output.Kind == OehsOfficialDocumentKind.HakedisRaporu));
@@ -450,13 +452,12 @@ public sealed class OfficialDocumentOutputTests
             var icmalText = GetPageText(Assert.IsType<FixedPage>(icmalOutput.Document.Pages[0].Child));
             Assert.Contains("Hizmet Alımı İşi Eylül 2026", icmalText, StringComparison.Ordinal);
             Assert.Contains("Hizmet Alımı İşi Ekim 2026", icmalText, StringComparison.Ordinal);
-            Assert.Contains("₺120,00", icmalText, StringComparison.Ordinal); // September K+T already includes I/R
-            Assert.Contains("₺110,00", icmalText, StringComparison.Ordinal); // October K+T already includes I/R
-            Assert.Contains("₺0,00", icmalText, StringComparison.Ordinal);   // no second I/R addition in difference column
-            Assert.Contains("₺230,00", icmalText, StringComparison.Ordinal); // cumulative K+T monthly transfers only
-            Assert.DoesNotContain("₺10,00", icmalText, StringComparison.Ordinal);
-            Assert.DoesNotContain("₺20,00", icmalText, StringComparison.Ordinal);
-            Assert.DoesNotContain("₺30,00", icmalText, StringComparison.Ordinal);
+            Assert.Contains("₺120,00", icmalText, StringComparison.Ordinal); // service base + I/R once
+            Assert.Contains("₺110,00", icmalText, StringComparison.Ordinal); // service base + I/R once
+            Assert.Contains("₺100,00", icmalText, StringComparison.Ordinal); // service base excludes price difference
+            Assert.Contains("₺20,00", icmalText, StringComparison.Ordinal);  // September price difference appears once
+            Assert.Contains("₺10,00", icmalText, StringComparison.Ordinal);  // October price difference appears once
+            Assert.Contains("₺230,00", icmalText, StringComparison.Ordinal); // cumulative amount without duplicate I/R
             Assert.DoesNotContain("₺260,00", icmalText, StringComparison.Ordinal);
 
             // The source Excel Hakediş Raporu contains signature drawings; all four
