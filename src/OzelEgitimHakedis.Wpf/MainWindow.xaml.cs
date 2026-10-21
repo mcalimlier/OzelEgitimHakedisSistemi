@@ -2851,8 +2851,18 @@ public partial class MainWindow : Window
         UpdateHomeSummaryView();
         if (_historyCorrectionSection == HistoryCorrectionSection.Contractor)
             RefreshViewsAfterHistoryCorrection();
+
+        var selectedContractForVat = FindContract(
+            TenderNumberTextBox.Text.Trim(),
+            ContractNumberTextBox.Text.Trim(),
+            GetSelectedTransportationProgramType());
+        var vatExemptionPending = selectedContractForVat is null ||
+            selectedContractForVat.VatExempt != (VatExemptCheckBox.IsChecked == true);
+
         ClearContractorButton_Click(sender, e);
-        ContractorStatusTextBlock.Text = $"Firma kaydedildi: {name}.";
+        ContractorStatusTextBlock.Text = vatExemptionPending
+            ? $"Firma kaydedildi: {name}. DİKKAT: KDV istisnası bu işlemle kaydedilmedi; ilgili sözleşmeyi düzenleyip SÖZLEŞMEYİ KAYDET düğmesini kullanın."
+            : $"Firma kaydedildi: {name}. KDV istisnası seçili sözleşmede değişmedi.";
     }
 
     private void VatExemptCheckBox_Changed(object sender, RoutedEventArgs e)
