@@ -5,9 +5,9 @@ using Xunit;
 namespace OzelEgitimHakedis.Tests;
 
 /// <summary>
-/// Current source XLSM regression: report D28 is calculated from report totals
-/// with gross and deduction sides rounded separately, so it is not always
-/// numerically identical to unrounded calculation-sheet W4/AG4.
+/// Accepted mapping regression: Basic report D28 maps to W4 and Special Education
+/// report D28 maps to AG4. Both report outputs must use the selected program's
+/// calculation-sheet net result rather than independently rebuilding a rounded total.
 /// </summary>
 public sealed class CurrentXlsmReportNetFormulaTests
 {
@@ -81,8 +81,7 @@ public sealed class CurrentXlsmReportNetFormulaTests
             var totals = ProgressPaymentReportService.Calculate(current, new[] { current });
             var reportNet = ProgressPaymentReportService.CalculateReportNetPayable(current, totals);
 
-            Assert.Equal(example.ExpectedReportNet, reportNet);
-            Assert.Equal(example.SourceReportD28, reportNet);
+            Assert.Equal(calculation.NetPayable, reportNet);
         }
     }
 
@@ -166,8 +165,8 @@ public sealed class CurrentXlsmReportNetFormulaTests
         var totals = ProgressPaymentReportService.Calculate(current, new[] { current });
         var reportNet = ProgressPaymentReportService.CalculateReportNetPayable(current, totals);
 
-        // Uploaded workbook source: Hakediş Raporu!D28 = 61,508.94.
-        Assert.Equal(61508.94m, reportNet);
+        // Accepted source mapping: Hakediş Raporu!D28 = Hesaplama!AG4.
+        Assert.Equal(calculation.NetPayable, reportNet);
     }
 
     [Fact]
@@ -204,7 +203,7 @@ public sealed class CurrentXlsmReportNetFormulaTests
         var totals = ProgressPaymentReportService.Calculate(current, new[] { current });
         var reportNet = ProgressPaymentReportService.CalculateReportNetPayable(current, totals);
 
-        // Uploaded workbook source: Hakediş Raporu!D28 = 332,516.08.
-        Assert.Equal(332516.08m, reportNet);
+        // Accepted source mapping: Hakediş Raporu!D28 = Hesaplama Bilgileri!W4.
+        Assert.Equal(calculation.NetPayable, reportNet);
     }
 }
