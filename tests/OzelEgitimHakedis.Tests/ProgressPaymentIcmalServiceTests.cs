@@ -482,9 +482,8 @@ public sealed class ProgressPaymentIcmalServiceTests
     [Fact]
     public void SpecialEducationE21_ShouldHaveExplicitSeptemberThroughAugustMonthMap()
     {
-        // This is a regression map of the latest XLSM's current source behavior,
-        // not approval that the AP3/AQ3 duplicate-December header is correct.
-        // AP3 and AQ3 both display December; VBA maps AP to November and AQ to December.
+        // Corrected source map: AP3=Kasım (=Anasayfa!I8), AQ3=Aralık
+        // (=Anasayfa!I9). December now carries November and January carries December.
         var periods = new[]
         {
             new DateOnly(2026, 9, 30), new DateOnly(2026, 10, 31),
@@ -500,8 +499,8 @@ public sealed class ProgressPaymentIcmalServiceTests
             0m,   // September: first month in fiscal cycle
             100m, // October: September
             200m, // November: October
-            0m,   // December: November header is missing from source MATCH range
-            300m, // January: duplicate December headers make MATCH choose AP / November data
+            300m, // December: November
+            400m, // January: December
             500m, // February: January
             600m, // March: February
             700m, // April: March
