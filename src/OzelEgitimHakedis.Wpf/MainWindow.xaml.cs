@@ -1579,8 +1579,7 @@ public partial class MainWindow : Window
                 DatePickerDiffers(StartDatePicker, archive.Contract.StartDate) ||
                 DatePickerDiffers(EndDatePicker, archive.Contract.EndDate) ||
                 DatePickerDiffers(TenderDatePicker, archive.Contract.TenderDate) ||
-                DatePickerDiffers(ContractDatePicker, archive.Contract.ContractDate) ||
-                false, // KDV istisnası artık firma kartından yönetilir.
+                DatePickerDiffers(ContractDatePicker, archive.Contract.ContractDate),
 
             ArchiveCorrectionSection.Contractor =>
                 TextDiffers(ContractorNameTextBox, archive.Contractor.Name) ||
@@ -1647,7 +1646,7 @@ public partial class MainWindow : Window
                 input = input with
                 {
                     ContractAmount = contractAmount,
-                    IsVatExempt = ContractorVatExemptCheckBox.IsChecked == true,
+                    IsVatExempt = archive.ProgressPayment.Input.IsVatExempt,
                     DailyPrice = contractDailyPrice
                 };
                 break;
@@ -1879,7 +1878,7 @@ public partial class MainWindow : Window
                 DatePickerDiffers(EndDatePicker, contract.EndDate) ||
                 DatePickerDiffers(TenderDatePicker, contract.TenderDate) ||
                 DatePickerDiffers(ContractDatePicker, contract.ContractDate) ||
-                ((ContractorVatExemptCheckBox.IsChecked == true) != contract.VatExempt),
+                false, // KDV istisnası firma kartından yönetilir; sözleşme düzenlemesi bunu değiştirmez,
 
             HistoryCorrectionSection.Contractor =>
                 FindContractor(item.ContractorTaxOrIdentityNumber ?? string.Empty, item.Input.ProgramType) is not ContractorDraft contractor ||
@@ -1892,7 +1891,8 @@ public partial class MainWindow : Window
                 TextDiffers(ContractorPhoneTextBox, contractor.Phone) ||
                 TextDiffers(ContractorEmailTextBox, contractor.Email) ||
                 TextDiffers(ContractorBankTextBox, contractor.BankAccountNumber) ||
-                TextDiffers(ContractorContactTextBox, contractor.ContactPerson),
+                TextDiffers(ContractorContactTextBox, contractor.ContactPerson) ||
+                (ContractorVatExemptCheckBox.IsChecked == true) != contractor.VatExempt,
 
             HistoryCorrectionSection.Route =>
                 _routes.FirstOrDefault(x =>
@@ -1969,7 +1969,7 @@ public partial class MainWindow : Window
                 {
                     ContractAmount = contractAmount,
                     DailyPrice = contractDailyPrice,
-                    IsVatExempt = ContractorVatExemptCheckBox.IsChecked == true
+                    IsVatExempt = item.Input.IsVatExempt
                 };
                 break;
 
@@ -2937,6 +2937,7 @@ public partial class MainWindow : Window
             ContractorBankTextBox.Text = original.BankAccountNumber;
             ContractorContactTextBox.Text = original.ContactPerson;
             ContractorVatExemptCheckBox.IsChecked = original.VatExempt;
+            ContractorVatExemptCheckBox.IsChecked = original.VatExempt;
         }
 
         ContractorStatusTextBlock.Text = "Firma düzenlemesi iptal edildi; kayıt değiştirilmedi.";
@@ -3035,7 +3036,8 @@ public partial class MainWindow : Window
             oldContractor.Email,
             oldContractor.BankAccountNumber,
             oldContractor.ContactPerson,
-            oldContractor.ProgramType);
+            oldContractor.ProgramType,
+            oldContractor.VatExempt);
 
         var newCore = new Contractor(
             updated.Name,
@@ -3045,7 +3047,8 @@ public partial class MainWindow : Window
             updated.Email,
             updated.BankAccountNumber,
             updated.ContactPerson,
-            updated.ProgramType);
+            updated.ProgramType,
+            updated.VatExempt);
 
         // Önce tüm türetilmiş hakedişler doğrulanır; hata halinde hiçbir kaynak
         // koleksiyonu değiştirilmez.
@@ -3461,7 +3464,8 @@ public partial class MainWindow : Window
                 contractor.Email,
                 contractor.BankAccountNumber,
                 contractor.ContactPerson,
-                contractor.ProgramType);
+                contractor.ProgramType,
+                contractor.VatExempt);
 
         return ProgressPaymentPropagationService.RecalculateForRouteChange(
             _progressHistory.ToArray(), oldData, newData, contractorSnapshot, _calculationConstants);
@@ -5671,7 +5675,7 @@ public partial class MainWindow : Window
                 contractor.Name,
                 OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber),
                 contractor.Address, contractor.Phone, contractor.Email,
-                contractor.BankAccountNumber, contractor.ContactPerson, contractor.ProgramType),
+                contractor.BankAccountNumber, contractor.ContactPerson, contractor.ProgramType, contractor.VatExempt),
             routeData, item, prior,
             OehsFileNameService.BuildProgressPdfFileName(
                 item.TenderNumber ?? string.Empty, item.ContractNumber ?? string.Empty,
