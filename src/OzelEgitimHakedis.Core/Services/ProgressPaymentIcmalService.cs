@@ -100,14 +100,10 @@ public static class ProgressPaymentIcmalService
             .FirstOrDefault();
     }
 
-    // Reproduce the source E21 lookup chain, not the broader visible icmal row cycle.
-    // Both current-month lists contain September-June. Basic's AB:AL header map has
-    // September-July, so its previous-month lookup works for the supported current months.
-    // Special's AN:AX header row is defective in the latest XLSM: November is missing
-    // and December appears twice (AP and AQ). Consequently, December's previous-month
-    // lookup returns zero; January's MATCH finds the first December (AP), whose data
-    // column is mapped to November by the source transfer macro. Preserve this source
-    // behavior explicitly until the workbook itself is corrected and re-accepted.
+    // Reproduce the corrected Special Education source month map. The accepted
+    // workbook correction sets İcmal Verileri!AP3 = Anasayfa!I8 (Kasım) and
+    // AQ3 = Anasayfa!I9 (Aralık). December and January therefore follow the ordinary
+    // previous-calendar-month mapping; the old duplicate-December workaround is obsolete.
     private static DateOnly? ResolveSourcePreviousDeductionPeriod(
         DateOnly currentPeriod,
         TransportationProgramType programType)
@@ -125,14 +121,6 @@ public static class ProgressPaymentIcmalService
 
         if (currentPeriod.Month == 9)
             return null;
-
-        if (programType == TransportationProgramType.SpecialEducation)
-        {
-            if (currentPeriod.Month == 12)
-                return null; // November header is missing from AN:AX.
-            if (currentPeriod.Month == 1)
-                return currentPeriod.AddMonths(-2); // first "December" header is AP, mapped to November data.
-        }
 
         return currentPeriod.AddMonths(-1);
     }
