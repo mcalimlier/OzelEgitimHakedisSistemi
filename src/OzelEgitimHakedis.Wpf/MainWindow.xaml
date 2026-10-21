@@ -760,7 +760,8 @@
                                                                   AlternatingRowBackground="#F1F7FC"
                                                                   BorderBrush="#315371"
                                                                   BorderThickness="1"
-                                                                  FontSize="10.5">
+                                                                  FontSize="10.5"
+                                                                  ColumnHeaderStyle="{StaticResource ModernDataGridHeader}">
                                                             <DataGrid.Columns>
                                                                 <DataGridTextColumn Header="Hat" Binding="{Binding RouteDisplayText}" IsReadOnly="True" Width="190"/>
                                                                 <DataGridTextColumn Header="Taşıma Gün" Binding="{Binding WorkDays, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="82"/>
@@ -805,30 +806,30 @@
                                         </Border>
 
                                         <StackPanel Grid.Column="1" Margin="6.5,0,0,0">
-                                            <Border Style="{StaticResource PremiumPanel}" Padding="8.5">
+                                            <Border Background="#F4C247" BorderBrush="#FFE08A" BorderThickness="1.5" CornerRadius="11" Padding="8.5">
                                                 <StackPanel>
-                                                    <TextBlock Text="SONUÇ ÖZETİ" Foreground="{StaticResource Gold500Brush}" FontSize="11.5" FontWeight="Bold"/>
-                                                    <TextBlock Text="Net ödenecek tutar" Foreground="#C5D7E7" FontSize="11.5" Margin="0,6,0,0"/>
-                                                    <TextBlock x:Name="NetResultTextBlock" Text="0,00 ₺" Foreground="White" FontSize="19.5" FontWeight="Bold" Margin="0,1,0,0"/>
-                                                    <Border Height="1" Background="#315371" Margin="0,8,0,6.5"/>
+                                                    <TextBlock Text="HESAP ÖZETİ" Foreground="#082845" FontSize="11.5" FontWeight="Bold"/>
+                                                    <TextBlock Text="Net ödenecek tutar" Foreground="#24435D" FontSize="11.5" Margin="0,6,0,0"/>
+                                                    <TextBlock x:Name="NetResultTextBlock" Text="0,00 ₺" Foreground="#061B31" FontSize="22" FontWeight="Bold" Margin="0,1,0,0"/>
+                                                    <Border Height="1" Background="#B68B1D" Margin="0,8,0,6.5"/>
                                                     <Grid>
                                                         <Grid.RowDefinitions><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
-                                                        <TextBlock Grid.Row="0" Text="Taşıma Hizmet Tutarı" Foreground="#91ABC0"/>
-                                                        <TextBlock x:Name="ServiceAmountResultTextBlock" Grid.Row="0" Text="0,00 ₺" Foreground="White" HorizontalAlignment="Right"/>
-                                                        <TextBlock Grid.Row="1" Text="Rehber Hizmet Tutarı" Foreground="#91ABC0" Margin="0,4,0,0"/>
-                                                        <TextBlock x:Name="GuideServiceAmountResultTextBlock" Grid.Row="1" Text="0,00 ₺" Foreground="White" HorizontalAlignment="Right" Margin="0,4,0,0"/>
-                                                        <TextBlock Grid.Row="2" Text="Taşıma Fiyat Farkı KDV Hariç" Foreground="#91ABC0" Margin="0,4,0,0"/>
-                                                        <TextBlock x:Name="TransportPriceDifferenceResultTextBlock" Grid.Row="2" Text="0,00 ₺" Foreground="White" HorizontalAlignment="Right" Margin="0,4,0,0"/>
-                                                        <TextBlock Grid.Row="3" Text="Rehber Personel Fiyat Farkı KDV Hariç" Foreground="#91ABC0" Margin="0,4,0,0"/>
-                                                        <TextBlock x:Name="GuidePriceDifferenceResultTextBlock" Grid.Row="3" Text="0,00 ₺" Foreground="White" HorizontalAlignment="Right" Margin="0,4,0,0"/>
-                                                        <TextBlock Grid.Row="4" Text="Fiyat Farkı KDV Hariç Toplam" Foreground="#91ABC0" Margin="0,4,0,0"/>
-                                                        <TextBlock x:Name="CombinedPriceDifferenceResultTextBlock" Grid.Row="4" Text="0,00 ₺" Foreground="White" HorizontalAlignment="Right" Margin="0,4,0,0"/>
-                                                        <TextBlock Grid.Row="5" Text="Toplam Tutar" Foreground="#91ABC0" Margin="0,4,0,0"/>
-                                                        <TextBlock x:Name="TotalAmountResultTextBlock" Grid.Row="5" Text="0,00 ₺" Foreground="White" HorizontalAlignment="Right" Margin="0,4,0,0"/>
-                                                        <TextBlock Grid.Row="6" Text="KDV (Taşıma + Rehber)" Foreground="#91ABC0" Margin="0,4,0,0"/>
-                                                        <TextBlock x:Name="VatResultTextBlock" Grid.Row="6" Text="0,00 ₺" Foreground="White" HorizontalAlignment="Right" Margin="0,4,0,0"/>
-                                                        <TextBlock Grid.Row="7" Text="Toplam Kesinti" Foreground="#91ABC0" Margin="0,4,0,0"/>
-                                                        <TextBlock x:Name="DeductionsResultTextBlock" Grid.Row="7" Text="0,00 ₺" Foreground="{StaticResource Gold500Brush}" HorizontalAlignment="Right" Margin="0,4,0,0"/>
+                                                        <TextBlock Grid.Row="0" Text="Taşıma Hizmet Tutarı" Foreground="#24435D"/>
+                                                        <TextBlock x:Name="ServiceAmountResultTextBlock" Grid.Row="0" Text="0,00 ₺" Foreground="#082845" HorizontalAlignment="Right"/>
+                                                        <TextBlock Grid.Row="1" Text="Rehber Hizmet Tutarı" Foreground="#24435D" Margin="0,4,0,0"/>
+                                                        <TextBlock x:Name="GuideServiceAmountResultTextBlock" Grid.Row="1" Text="0,00 ₺" Foreground="#082845" HorizontalAlignment="Right" Margin="0,4,0,0"/>
+                                                        <TextBlock Grid.Row="2" Text="Taşıma Fiyat Farkı KDV Hariç" Foreground="#24435D" Margin="0,4,0,0"/>
+                                                        <TextBlock x:Name="TransportPriceDifferenceResultTextBlock" Grid.Row="2" Text="0,00 ₺" Foreground="#082845" HorizontalAlignment="Right" Margin="0,4,0,0"/>
+                                                        <TextBlock Grid.Row="3" Text="Rehber Personel Fiyat Farkı KDV Hariç" Foreground="#24435D" Margin="0,4,0,0"/>
+                                                        <TextBlock x:Name="GuidePriceDifferenceResultTextBlock" Grid.Row="3" Text="0,00 ₺" Foreground="#082845" HorizontalAlignment="Right" Margin="0,4,0,0"/>
+                                                        <TextBlock Grid.Row="4" Text="Fiyat Farkı KDV Hariç Toplam" Foreground="#24435D" Margin="0,4,0,0"/>
+                                                        <TextBlock x:Name="CombinedPriceDifferenceResultTextBlock" Grid.Row="4" Text="0,00 ₺" Foreground="#082845" HorizontalAlignment="Right" Margin="0,4,0,0"/>
+                                                        <TextBlock Grid.Row="5" Text="Toplam Tutar" Foreground="#24435D" Margin="0,4,0,0"/>
+                                                        <TextBlock x:Name="TotalAmountResultTextBlock" Grid.Row="5" Text="0,00 ₺" Foreground="#082845" HorizontalAlignment="Right" Margin="0,4,0,0"/>
+                                                        <TextBlock Grid.Row="6" Text="KDV (Taşıma + Rehber)" Foreground="#24435D" Margin="0,4,0,0"/>
+                                                        <TextBlock x:Name="VatResultTextBlock" Grid.Row="6" Text="0,00 ₺" Foreground="#082845" HorizontalAlignment="Right" Margin="0,4,0,0"/>
+                                                        <TextBlock Grid.Row="7" Text="Toplam Kesinti" Foreground="#24435D" Margin="0,4,0,0"/>
+                                                        <TextBlock x:Name="DeductionsResultTextBlock" Grid.Row="7" Text="0,00 ₺" Foreground="#082845" HorizontalAlignment="Right" Margin="0,4,0,0"/>
                                                     </Grid>
                                                 </StackPanel>
                                             </Border>
