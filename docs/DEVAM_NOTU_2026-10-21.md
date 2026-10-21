@@ -27,3 +27,13 @@
 2. Kaynak XLSM kopyalarını çalışma ortamına alabilir hâle gelince dosya hash'lerini doğrula; orijinalleri değiştirmeden Excel formül ağacını, VBA modüllerini ve kaynak PDF'leri çıkar.
 3. İcmal için hem Temel hem Özel Eğitim'de kaynak hücre -> model -> PDF hücresi alan bazlı testlerini genişlet.
 4. Gerçek Windows Excel/VBA compile/runtime, UserForm DPI ve sekiz PDF kabul matrisleri tamamlanana kadar ilgili çekirdekleri PASS/100% kabul etme.
+
+
+## Devam — kaynak VBA icmal mükerrerliği (21.10.2026)
+
+- Önceki HEAD `f533de53345a2294f877b0c085a73584c850587a` için CI run [39611192750](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39611192750) ve [39611185377](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39611185377) PASS.
+- Kaydedilmiş dışa aktarılmış VBA metinlerinde kaynak hata doğrulandı: Özel Eğitim `HakedişToplamlariniAktar` K+T'yi hizmet alanına yazarken I/R ayrı bloklara aktarılıyor; Temel Eğitim `HakedisTutarlariniAySutununaAktar` K'yı hizmet alanına yazarken I ayrı blokta gösteriliyor.
+- Düzeltme adımları ve kaynak vektörleri `docs/VBA_ICMAL_MUKERRER_FIYAT_FARKI_DUZELTMESI_2026-10-21.md` içinde kaydedildi. Temel hizmet tabanı K-I; Özel hizmet tabanı K+T-I-R olmalı, I/R ayrı fiyat farkı bloklarında korunmalı.
+- VBA düzeltmeleri yalnızca aday yama olarak belgelendi; orijinal XLSM'lere aktarılmadı. Excel VBA IDE derlemesi/çalışma zamanı kabulü bu ortamda yapılmış gibi gösterilmedi.
+- Yeni belge commit'i: `35758f54b3137ad336b2c15cebb77b610286630f`. CI run [39651142308](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39651142308) son kontrolde çalışıyordu; sonucu yeniden doğrula.
+- PR #3 [açık/taslak](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/pull/3), merge edilmedi. Dal HEAD'i doğrulanmalı; merge/release yok.
