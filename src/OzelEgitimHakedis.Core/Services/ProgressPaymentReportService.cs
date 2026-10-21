@@ -190,13 +190,21 @@ public static class ProgressPaymentReportService
         ArgumentNullException.ThrowIfNull(current);
         ArgumentNullException.ThrowIfNull(reportTotals);
 
-        // Accepted user-approved source mapping:
-        // Basic: Hakediş Raporu!D28 = Hesaplama Bilgileri!W4.
-        // Special: Hakediş Raporu!D28 = Hesaplama!AG4.
-        // Calculation.NetPayable represents W4 (O4-V4) or AG4 (AF4-AE4).
-        // Do not recalculate D28 from separately rounded report subtotals.
-        _ = reportTotals;
-        return current.Calculation.NetPayable;
+        if (current.Input.ProgramType == TransportationProgramType.SpecialEducation)
+        {
+            // Current Special Education source vectors match D28 to AG4
+            // at the report's two-decimal currency precision.
+            return decimal.Round(current.Calculation.NetPayable, 2, MidpointRounding.AwayFromZero);
+        }
+
+        // Basic/Secondary source row 4 proves D28 is not W4 merely formatted:
+        // D28 rounds the report gross and deduction totals separately.
+        var reportGross = reportTotals.CurrentTotal + current.Calculation.Vat;
+        var reportDeductions = CalculateReportTotalDeductions(
+            current.Calculation,
+            current.Input.ProgramType);
+        return decimal.Round(reportGross, 2, MidpointRounding.AwayFromZero)
+               - decimal.Round(reportDeductions, 2, MidpointRounding.AwayFromZero);
     }
 
     private static bool IsWithinCurrentFiscalYear(
