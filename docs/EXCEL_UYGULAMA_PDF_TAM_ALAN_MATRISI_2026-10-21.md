@@ -36,9 +36,9 @@ W4'ün iki ondalık basamağa normal yuvarlanması 332.516,07 TL iken kaynak D28
 |---|---|---:|---|---|
 | `İcmal Verileri!R4` | Kaynak aylık fiyat farkı bloğu | 7.365,35 TL | İcmal fark sütununa ikinci kez eklenmeyecek | Mükerrer bileşen kanıtlandı |
 | `İcmal Verileri!AD4` | Kesinti toplamıyla eşleşen blok | 19.475,040568144 TL | `Calculation.TotalDeductions` bileşeni olarak korunur | Bileşen eşleşmesi kaynak önbelleğiyle biliniyor |
-| `Hakediş İcmali!C8` | Ay seçimiyle aylık hizmet toplamı | 319.991,9228 TL | `CalculateWorkbookMonthlyPaymentTotal` | K zaten I fiyat farkını içeriyor |
-| `Hakediş İcmali!D8` | `VLOOKUP(...,15+MATCH)+VLOOKUP(...,27+MATCH)` | 26.840,390568144 TL | Düzeltme sonrası yalnız kesinti bileşeni: 19.475,040568144 TL | Program değişikliği kaynak Excel'den bilinçli ayrışır |
-| `Hakediş İcmali!E8` | `=C8+D8` | Kaynakta 346.832,313368144 TL | Yeni uygulama: 339.466,963368144 TL | Kaynak E8'den 7.365,35 TL düşük; çift I eklemesi kaldırıldı |
+| `Hakediş İcmali!C8` | Kaynakta K toplamı | 319.991,9228 TL | `CalculateWorkbookMonthlyPaymentAmount` (K'den ham I çıkarılmış baz) | Uygulama “İş Tutarı (a)” sütununda baz tutarı gösterir |
+| `Hakediş İcmali!D8` | `VLOOKUP(...,15+MATCH)+VLOOKUP(...,27+MATCH)` | 26.840,390568144 TL | I fiyat farkı + AD kesinti = 26.840,390568144 TL | Fiyat farkı bir kez; kesinti bileşeni korunur |
+| `Hakediş İcmali!E8` | `=C8+D8` | Kaynakta 346.832,313368144 TL | Yeni uygulama: 339.466,963368144 TL | Kaynak E8'den 7.365,35 TL düşük; C'den I ayrılıp D'ye bir kez taşındı |
 
 Temel Eğitimde yeni uygulama C sütununda K'den ham I fiyat farkını ayırır; D sütununda I'yi bir kez ve kesinti bileşenini korur. Böylece A+B, K+kesinti olur; alttaki kesinti çıkarıldığında hizmet tutarı K ile tutarlı kalır. Kaynak XLSM C8 zaten K'yi içerirken D8'e I+AD eklediği için kaynak E8'den 7.365,35 TL fazla çıkar. Bu fark bilinçli ve raporlanmıştır.
 
@@ -75,8 +75,8 @@ D28'in iki ondalık görünümü AG4'ün yuvarlanmış karşılığıyla bu örn
 |---|---|---:|---|---|
 | `İcmal Verileri!R4` | Rehber fiyat farkı bloğu | 3.500,00 TL | İkinci kez eklenmeyecek | Mükerrer bileşen kanıtlandı |
 | `İcmal Verileri!I4` | Taşıma fiyat farkı bloğu | 7.530,00 TL | İkinci kez eklenmeyecek | Mükerrer bileşen kanıtlandı |
-| `Hakediş İcmali!C8` | Aylık K+T toplamı | 77.667,27 TL | `CalculateWorkbookMonthlyPaymentTotal` | K+T zaten I/R fiyat farkını içeriyor |
-| `Hakediş İcmali!D8` | İki aylık fiyat farkı bloğu toplamı | 11.030,00 TL | Fiyat farkı I+R = 11.030,00 TL | I/R ayrı sütunda bir kez gösterilir |
+| `Hakediş İcmali!C8` | Kaynakta K+T toplamı | 77.667,27 TL | `CalculateWorkbookMonthlyPaymentAmount` (K+T'den ham I/R çıkarılmış baz) | Uygulama “İş Tutarı (a)” sütununda baz tutarı gösterir |
+| `Hakediş İcmali!D8` | İki aylık fiyat farkı bloğu toplamı | 11.030,00 TL | Fiyat farkı I+R = 11.030,00 TL | I/R baz hizmet tutarından ayrılıp ayrı sütunda bir kez gösterilir |
 | `Hakediş İcmali!E8` | `=C8+D8` | Kaynakta 88.697,27 TL | Yeni uygulama: 77.667,27 TL | Kaynak E8'den 11.030 TL düşük; çift I/R eklemesi kaldırıldı |
 
 Özel Eğitimde yeni uygulama K+T'den ham I/R fiyat farklarını ayırır; fark sütununda I/R'yi bir kez gösterir. Böylece a+b toplamı K+T ile eşleşir. Kesintiler icmalin alt kesinti bölümünde ayrı hesaplanmaya devam eder.
@@ -94,7 +94,7 @@ Aşağıdaki alanlar her programın kendi bağlamından doldurulmalı. Bu tablod
 | Yüklenici | Kaynak hücre eşlemesi OPEN | `ContractorName` | 4 PDF | Tam unvan eşitliği |
 | Hat numarası/adı | Kaynak hücre eşlemesi OPEN | `RouteNumber`, `RouteName` | 4 PDF | Yalnız seçilen hat(lar) |
 | Hakediş neti | Temel `W4/D28`; Özel `AG4/D28` | `ReportNetPayable` ve kaynak rapor formülü | Hakediş Raporu | D28 formülüne göre eşleşme |
-| İcmal aylık hizmeti | `Hakediş İcmali!C8` | `CalculateWorkbookMonthlyPaymentTotal` | Hakediş İcmali | Program bazlı kaynak vektörüyle kıyas |
+| İcmal baz hizmeti | `Hakediş İcmali!C8` | `CalculateWorkbookMonthlyPaymentAmount` | Hakediş İcmali | Kaynak toplamdan fiyat farkı ayrılmış baz tutar; program bazlı kıyas |
 | İcmal fark sütunu | `Hakediş İcmali!D8` | `BuildHakedisIcmali` içindeki `difference` | Hakediş İcmali | Kullanıcı kararıyla ikinci fiyat farkı kaldırılmış; kaynak farkı ayrıca gösterilmeli |
 | İcmal toplamı | `Hakediş İcmali!E8` | İcmal A/B/C toplamı | Hakediş İcmali | Yeni program sonucu + kaynak Excel farkı birlikte raporlanmalı |
 | İmza/unvan/tarih | Kaynak şablon ve onaylı ayar; hücre adresleri OPEN | Belge bağlamı ve imza ayarları | 4 PDF | Görsel yerleşim ve metin doğrulaması |
