@@ -2583,7 +2583,7 @@ public partial class MainWindow : Window
         var input = archive.ProgressPayment.Input with
         {
             ContractAmount = updatedContract.ContractAmount,
-            IsVatExempt = updatedContract.VatExempt,
+            IsVatExempt = archive.ProgressPayment.Input.IsVatExempt,
             DailyPrice = updatedContract.TransportDailyPrice,
             GuideWorkDays = hasGuide ? archive.ProgressPayment.Input.GuideWorkDays : 0,
             GuideDailyPrice = hasGuide ? archive.ProgressPayment.Input.GuideDailyPrice : 0m,
@@ -2623,7 +2623,7 @@ public partial class MainWindow : Window
                 var previousInput = previous.Input with
                 {
                     ContractAmount = updatedContract.ContractAmount,
-                    IsVatExempt = updatedContract.VatExempt,
+                    IsVatExempt = archive.ProgressPayment.Input.IsVatExempt,
                     DailyPrice = updatedContract.TransportDailyPrice,
                     GuideWorkDays = previousHasGuide ? previous.Input.GuideWorkDays : 0,
                     GuideDailyPrice = previousHasGuide ? previous.Input.GuideDailyPrice : 0m,
@@ -2936,7 +2936,6 @@ public partial class MainWindow : Window
             ContractorEmailTextBox.Text = original.Email;
             ContractorBankTextBox.Text = original.BankAccountNumber;
             ContractorContactTextBox.Text = original.ContactPerson;
-            ContractorVatExemptCheckBox.IsChecked = original.VatExempt;
             ContractorVatExemptCheckBox.IsChecked = original.VatExempt;
         }
 
