@@ -502,16 +502,7 @@
                                                         <ComboBoxItem Content="Temel / Ortaöğretim Taşıma" Tag="BasicOrSecondary"/>
                                                     </ComboBox>
                                                 </Grid>
-                                                <Border Style="{StaticResource StatusBanner}" Margin="4.5,6,4.5,0" Padding="8.5,7.5">
-                                                    <Grid>
-                                                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                                        <StackPanel VerticalAlignment="Center">
-                                                            <TextBlock Text="VERGİ DURUMU" Foreground="{StaticResource Blue700Brush}" FontSize="11.5" FontWeight="Bold"/>
-                                                            <TextBlock Text="Vergi istisnası uygulanacaksa işaretleyin." Foreground="{StaticResource Text900Brush}" FontSize="11.5" FontWeight="Bold" Margin="0,3,0,0"/>
-                                                        </StackPanel>
-                                                        <CheckBox x:Name="VatExemptCheckBox" Grid.Column="1" Content="KDV İSTİSNASI" Style="{StaticResource LightCheckBox}" VerticalAlignment="Center" Margin="11.5,0,2,0"/>
-                                                    </Grid>
-                                                </Border>
+
                                                 <StackPanel Orientation="Horizontal" Margin="4.5,8,4.5,0">
                                                     <Button x:Name="SaveContractButton" Content="KAYDET" Click="SaveContractButton_Click" Style="{StaticResource ModernButton}" Width="140"/>
                                                     <Button x:Name="CancelContractEditButton" Content="DÜZENLEME İPTAL" Click="CancelContractEditButton_Click" Style="{StaticResource SecondaryButton}" Width="160" Margin="8,0,0,0" Visibility="Collapsed"/>
@@ -582,31 +573,36 @@
                                     <TextBlock Text="HAKEDİŞ OLUŞTUR" Style="{StaticResource PageTitle}"/>
                                     <TextBlock Text="Dönem hesabını girin, sonucu kontrol edin ve ödeme tutarını oluşturun." Style="{StaticResource PageSubtitle}"/>
 
-                                    <!-- Hibrit arayüz: ortak iş akışı; programlara özel hesaplama motorları korunur. -->
-                                    <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="10" Padding="9" Margin="0,0,0,8">
+                                    <!-- Tasarım 1: prestij kart stili ve görünür dört aşamalı akış. -->
+                                    <Border Background="#061B31" BorderBrush="#D9A62E" BorderThickness="1" CornerRadius="11" Padding="6" Margin="0,0,0,8">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
                                             </Grid.ColumnDefinitions>
-                                            <StackPanel Grid.Column="0" Margin="2">
-                                                <TextBlock Text="01  /  PROGRAM VE DÖNEM" Foreground="{StaticResource Gold500Brush}" FontSize="10" FontWeight="Bold"/>
-                                                <TextBlock Text="Program türünü ve hakediş dönemini doğrulayın." Foreground="#D5E1EC" FontSize="10.5" TextWrapping="Wrap" Margin="0,3,4,0"/>
-                                            </StackPanel>
-                                            <StackPanel Grid.Column="1" Margin="6,0,2,0">
-                                                <TextBlock Text="02  /  SÖZLEŞME VE HAT" Foreground="{StaticResource Gold500Brush}" FontSize="10" FontWeight="Bold"/>
-                                                <TextBlock Text="İhale, yüklenici ve ilgili hatları seçin." Foreground="#D5E1EC" FontSize="10.5" TextWrapping="Wrap" Margin="0,3,4,0"/>
-                                            </StackPanel>
-                                            <StackPanel Grid.Column="2" Margin="6,0,2,0">
-                                                <TextBlock Text="03  /  HESAPLAMA" Foreground="{StaticResource Gold500Brush}" FontSize="10" FontWeight="Bold"/>
-                                                <TextBlock Text="Girişleri ve hesaplanan tutarları kontrol edin." Foreground="#D5E1EC" FontSize="10.5" TextWrapping="Wrap" Margin="0,3,4,0"/>
-                                            </StackPanel>
-                                            <StackPanel Grid.Column="3" Margin="6,0,2,0">
-                                                <TextBlock Text="04  /  RESMÎ RAPORLAR" Foreground="{StaticResource Gold500Brush}" FontSize="10" FontWeight="Bold"/>
-                                                <TextBlock Text="Dört PDF çıktısını gözden geçirip kaydedin." Foreground="#D5E1EC" FontSize="10.5" TextWrapping="Wrap" Margin="0,3,0,0"/>
-                                            </StackPanel>
+                                            <Border Grid.Column="0" Background="#F4C247" BorderBrush="#FFE08A" BorderThickness="1" CornerRadius="8" Padding="7,6" Margin="1">
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                    <Border Width="24" Height="24" CornerRadius="12" Background="#082845" Margin="0,0,7,0"><TextBlock Text="1" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+                                                    <TextBlock Text="Dönem, İKN ve Firma" Foreground="#082845" FontSize="10.5" FontWeight="Bold" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                            </Border>
+                                            <Border Grid.Column="1" Background="#123858" BorderBrush="#355A79" BorderThickness="1" CornerRadius="8" Padding="7,6" Margin="3,1">
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                    <Border Width="24" Height="24" CornerRadius="12" Background="#071B31" BorderBrush="#D9A62E" BorderThickness="1" Margin="0,0,7,0"><TextBlock Text="2" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+                                                    <TextBlock Text="Hat Seçimi ve Veri Girişi" Foreground="White" FontSize="10.5" FontWeight="SemiBold" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                            </Border>
+                                            <Border Grid.Column="2" Background="#123858" BorderBrush="#355A79" BorderThickness="1" CornerRadius="8" Padding="7,6" Margin="3,1">
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                    <Border Width="24" Height="24" CornerRadius="12" Background="#071B31" BorderBrush="#D9A62E" BorderThickness="1" Margin="0,0,7,0"><TextBlock Text="3" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+                                                    <TextBlock Text="Hesaplama ve Kontroller" Foreground="White" FontSize="10.5" FontWeight="SemiBold" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                            </Border>
+                                            <Border Grid.Column="3" Background="#123858" BorderBrush="#355A79" BorderThickness="1" CornerRadius="8" Padding="7,6" Margin="3,1">
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                    <Border Width="24" Height="24" CornerRadius="12" Background="#071B31" BorderBrush="#D9A62E" BorderThickness="1" Margin="0,0,7,0"><TextBlock Text="4" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+                                                    <TextBlock Text="Raporlar ve PDF" Foreground="White" FontSize="10.5" FontWeight="SemiBold" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                            </Border>
                                         </Grid>
                                     </Border>
 
@@ -637,85 +633,46 @@
                                         </Grid>
                                     </Border>
 
-                                    <Border Style="{StaticResource Card}" Padding="7" Margin="0,0,0,6">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions><ColumnDefinition Width="1.05*"/><ColumnDefinition Width="0.9*"/><ColumnDefinition Width="1.25*"/></Grid.ColumnDefinitions>
-                                            <StackPanel Grid.Column="0" Margin="0,0,6.5,0">
-                                                <TextBlock Text="İHALE / DOSYA NO" Style="{StaticResource CardTitle}"/>
-                                                <ComboBox x:Name="ProgressTenderListBox"
-                                                          Height="34"
-                                                          Margin="0,6,0,0"
-                                                          SelectionChanged="ProgressTenderListBox_SelectionChanged"
-                                                          Style="{StaticResource FieldComboBox}"
-                                                          ToolTip="İhale / dosya numarasını seçin">
-                                                    <ComboBox.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <TextBlock Text="{Binding TenderNumber}" FontSize="11.5" FontWeight="SemiBold"/>
-                                                        </DataTemplate>
-                                                    </ComboBox.ItemTemplate>
+                                    <Grid Margin="0,0,0,7">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="1.05*"/><ColumnDefinition Width="0.95*"/><ColumnDefinition Width="1.25*"/></Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Background="#0A2A49" BorderBrush="#D9A62E" BorderThickness="1" CornerRadius="10" Padding="8" Margin="0,0,5,0">
+                                            <StackPanel>
+                                                <TextBlock Text="İKN VE SÖZLEŞME BİLGİLERİ" Foreground="#F4C247" FontSize="11.5" FontWeight="Bold"/>
+                                                <TextBlock Text="İhale / dosya numarası" Foreground="#D5E1EC" FontSize="10.5" Margin="0,6,0,0"/>
+                                                <ComboBox x:Name="ProgressTenderListBox" Height="34" Margin="0,3,0,0" SelectionChanged="ProgressTenderListBox_SelectionChanged" Style="{StaticResource FieldComboBox}" ToolTip="İhale / dosya numarasını seçin">
+                                                    <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding TenderNumber}" FontSize="11.5" FontWeight="SemiBold"/></DataTemplate></ComboBox.ItemTemplate>
                                                 </ComboBox>
+                                                <TextBlock Text="Program türü, sözleşme bedeli ve günlük fiyat İhale Bilgileri kaydından alınır." Foreground="#C5D7E7" FontSize="10.5" TextWrapping="Wrap" Margin="0,6,0,0"/>
                                             </StackPanel>
-                                            <StackPanel Grid.Column="1" Margin="4.5,0">
-                                                <TextBlock Text="YÜKLENİCİ FİRMA" Style="{StaticResource CardTitle}"/>
-                                                <ComboBox x:Name="ProgressContractorComboBox"
-                                                          Height="34"
-                                                          Margin="0,6,0,0"
-                                                          SelectionChanged="ProgressContractorComboBox_SelectionChanged"
-                                                          Style="{StaticResource FieldComboBox}"
-                                                          ToolTip="Seçilen İKN/sözleşme altındaki yüklenici firmayı seçin">
-                                                    <ComboBox.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <TextBlock Text="{Binding Name}" FontSize="11.5" FontWeight="SemiBold"/>
-                                                        </DataTemplate>
-                                                    </ComboBox.ItemTemplate>
+                                        </Border>
+                                        <Border Grid.Column="1" Background="#0A2A49" BorderBrush="#D9A62E" BorderThickness="1" CornerRadius="10" Padding="8" Margin="2,0,3,0">
+                                            <StackPanel>
+                                                <TextBlock Text="YÜKLENİCİ (FİRMA) BİLGİLERİ" Foreground="#F4C247" FontSize="11.5" FontWeight="Bold"/>
+                                                <ComboBox x:Name="ProgressContractorComboBox" Height="34" Margin="0,6,0,0" SelectionChanged="ProgressContractorComboBox_SelectionChanged" Style="{StaticResource FieldComboBox}" ToolTip="Seçilen İKN/sözleşme altındaki yüklenici firmayı seçin">
+                                                    <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Name}" FontSize="11.5" FontWeight="SemiBold"/></DataTemplate></ComboBox.ItemTemplate>
                                                 </ComboBox>
-                                                <TextBlock x:Name="ProgressContractorTextBlock" Text="Firma seçiniz" Foreground="#52677A" FontSize="10.5" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                                                <TextBlock x:Name="ProgressContractorTextBlock" Text="Firma seçiniz" Foreground="#C5D7E7" FontSize="10.5" TextWrapping="Wrap" Margin="0,4,0,0"/>
                                             </StackPanel>
-                                            <StackPanel Grid.Column="2" Margin="6.5,0,0,0">
-                                                <TextBlock Text="TANIMLI HATLAR" Style="{StaticResource CardTitle}"/>
-                                                <ListBox x:Name="ProgressRouteComboBox"
-                                                         Height="112"
-                                                         Margin="0,6,0,0"
-                                                         SelectionMode="Extended"
-                                                         SelectionChanged="ProgressRouteComboBox_SelectionChanged"
-                                                         BorderBrush="#A7B8C8"
-                                                         Background="#FFFFFF"
-                                                         Foreground="#172B3A"
-                                                         ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                        </Border>
+                                        <Border Grid.Column="2" Background="#0A2A49" BorderBrush="#D9A62E" BorderThickness="1" CornerRadius="10" Padding="8" Margin="3,0,0,0">
+                                            <StackPanel>
+                                                <TextBlock Text="HAKEDİŞ DÖNEMİ VE HATLAR" Foreground="#F4C247" FontSize="11.5" FontWeight="Bold"/>
+                                                <TextBlock Text="Tanımlı hatlar (bir veya daha fazla seçin)" Foreground="#D5E1EC" FontSize="10.5" Margin="0,4,0,0"/>
+                                                <ListBox x:Name="ProgressRouteComboBox" Height="91" Margin="0,3,0,0" SelectionMode="Extended" SelectionChanged="ProgressRouteComboBox_SelectionChanged" BorderBrush="#A7B8C8" Background="#FFFFFF" Foreground="#172B3A" ScrollViewer.VerticalScrollBarVisibility="Auto">
                                                     <ListBox.ItemContainerStyle>
                                                         <Style TargetType="{x:Type ListBoxItem}">
-                                                            <Setter Property="Foreground" Value="#172B3A"/>
-                                                            <Setter Property="Background" Value="#F1F6FB"/>
-                                                            <Setter Property="BorderBrush" Value="#D4E0EA"/>
-                                                            <Setter Property="BorderThickness" Value="1"/>
-                                                            <Setter Property="Padding" Value="6,4"/>
-                                                            <Setter Property="Margin" Value="2"/>
-                                                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                                            <Setter Property="VerticalContentAlignment" Value="Center"/>
-                                                            <Style.Triggers>
-                                                                <Trigger Property="IsSelected" Value="True">
-                                                                    <Setter Property="Background" Value="#DCEBFA"/>
-                                                                    <Setter Property="Foreground" Value="#102A43"/>
-                                                                </Trigger>
-                                                            </Style.Triggers>
+                                                            <Setter Property="Foreground" Value="#172B3A"/><Setter Property="Background" Value="#F1F6FB"/><Setter Property="BorderBrush" Value="#D4E0EA"/><Setter Property="BorderThickness" Value="1"/><Setter Property="Padding" Value="6,4"/><Setter Property="Margin" Value="2"/><Setter Property="HorizontalContentAlignment" Value="Stretch"/><Setter Property="VerticalContentAlignment" Value="Center"/>
+                                                            <Style.Triggers><Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="#DCEBFA"/><Setter Property="Foreground" Value="#102A43"/></Trigger></Style.Triggers>
                                                         </Style>
                                                     </ListBox.ItemContainerStyle>
                                                     <ListBox.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <CheckBox Content="{Binding DisplayText}"
-                                                                      Foreground="#172B3A"
-                                                                      FontSize="12"
-                                                                      FontWeight="SemiBold"
-                                                                      IsChecked="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected, Mode=TwoWay}"
-                                                                      Padding="3"
-                                                                      VerticalContentAlignment="Center"/>
-                                                        </DataTemplate>
+                                                        <DataTemplate><CheckBox Content="{Binding DisplayText}" Foreground="#172B3A" FontSize="12" FontWeight="SemiBold" IsChecked="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected, Mode=TwoWay}" Padding="3" VerticalContentAlignment="Center"/></DataTemplate>
                                                     </ListBox.ItemTemplate>
                                                 </ListBox>
-                                                <TextBlock x:Name="ProgressRouteRelationTextBlock" Text="Bir veya daha fazla hat seçin." Foreground="#C5D7E7" FontSize="11.5" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                                <TextBlock x:Name="ProgressRouteRelationTextBlock" Text="Bir veya daha fazla hat seçin." Foreground="#C5D7E7" FontSize="10.5" TextWrapping="Wrap" Margin="0,4,0,0"/>
                                             </StackPanel>
-                                        </Grid>
-                                    </Border>
+                                        </Border>
+                                    </Grid>
 
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="1.45*"/><ColumnDefinition Width="1*"/></Grid.ColumnDefinitions>
@@ -1102,6 +1059,16 @@
                             <TextBlock Grid.Row="6" Grid.Column="0" Text="Yetkili Kişi" Style="{StaticResource FieldLabel}" Margin="0,4"/>
                             <TextBox x:Name="ContractorContactTextBox" Grid.Row="6" Grid.Column="1" Margin="4" Style="{StaticResource FieldTextBox}"/>
                         </Grid>
+                        <Border Style="{StaticResource StatusBanner}" Margin="4,8,4,0" Padding="8,7">
+                            <Grid>
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="KDV İSTİSNASI" Foreground="{StaticResource Blue700Brush}" FontSize="11.5" FontWeight="Bold"/>
+                                    <TextBlock Text="İstisna durumu sözleşme bazında kaydedilir; firma ekranından işaretledikten sonra İhale Bilgileri ekranında sözleşmeyi kaydedin." Foreground="{StaticResource Text900Brush}" FontSize="10.5" TextWrapping="Wrap" Margin="0,3,8,0"/>
+                                </StackPanel>
+                                <CheckBox x:Name="VatExemptCheckBox" Grid.Column="1" Content="İSTİSNA" Style="{StaticResource LightCheckBox}" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                            </Grid>
+                        </Border>
                         <StackPanel Orientation="Horizontal" Margin="4.5,6,0,0">
                             <Button x:Name="SaveContractorButton" Content="KAYDET" Click="SaveContractorButton_Click" Style="{StaticResource ModernButton}" Width="130"/>
                             <Button x:Name="CancelContractorEditButton" Content="DÜZENLEME İPTAL" Click="CancelContractorEditButton_Click" Style="{StaticResource SecondaryButton}" Width="160" Margin="8,0,0,0" Visibility="Collapsed"/>
