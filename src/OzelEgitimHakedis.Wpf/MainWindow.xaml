@@ -679,7 +679,7 @@
                                         <Border Grid.Column="0" VerticalAlignment="Top" Style="{StaticResource PremiumPanel}" Padding="8.5" Margin="0,0,8,0">
                                             <StackPanel>
                                                 <TextBlock x:Name="ProgressEditorTitleTextBlock" Text="DÖNEM HESAP BİLGİLERİ" Foreground="{StaticResource Gold500Brush}" FontSize="11.5" FontWeight="Bold"/>
-                                                <TextBlock Text="Hakediş hesaplama girdileri" Foreground="White" FontSize="13.5" FontWeight="SemiBold" Margin="0,5,0,4"/><TextBlock Text="Sözleşme bedeli ve KDV durumu İhale Bilgileri ekranından otomatik alınır." Foreground="#B9CBDA" FontSize="11.5" TextWrapping="Wrap" Margin="0,0,0,4"/>
+                                                <TextBlock Text="Hakediş hesaplama girdileri" Foreground="White" FontSize="13.5" FontWeight="SemiBold" Margin="0,5,0,4"/><TextBlock Text="Sözleşme bedeli İhale Bilgileri kaydından; KDV istisnası ise Firmalar panelindeki firma kartından alınır." Foreground="#B9CBDA" FontSize="11.5" TextWrapping="Wrap" Margin="0,0,0,4"/>
                                                 <TextBlock x:Name="CalculationStatusTextBlock" Style="{StaticResource ValidationText}" Margin="0,4,0,6"/>
                                                 <Grid>
                                                     <Grid.ColumnDefinitions><ColumnDefinition Width="120"/><ColumnDefinition Width="1.2*"/><ColumnDefinition Width="145"/><ColumnDefinition Width="1.2*"/></Grid.ColumnDefinitions>
@@ -1096,9 +1096,9 @@
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                 <StackPanel VerticalAlignment="Center">
                                     <TextBlock Text="KDV İSTİSNASI" Foreground="{StaticResource Blue700Brush}" FontSize="11.5" FontWeight="Bold"/>
-                                    <TextBlock Text="KDV istisnası FİRMA özelliği değil, İHALE / SÖZLEŞME özelliğidir. Bu kutu yalnızca mevcut sözleşme formundaki seçimi gösterir. Kalıcı kayıt için İKN / Sözleşme ekranında ilgili sözleşmeyi düzenleyip SÖZLEŞMEYİ KAYDET düğmesine basın. Firma KAYDET düğmesi KDV istisnasını kaydetmez." Foreground="{StaticResource Text900Brush}" FontSize="10.5" TextWrapping="Wrap" Margin="0,3,8,0"/>
+                                    <TextBlock Text="KDV istisnası firma kartında belirlenir ve firma kaydıyla kalıcı olarak saklanır. Bu firma için istisna uygulanacaksa İSTİSNA seçeneğini işaretleyin. Yeni hesaplamalarda bu kayıt esas alınır; geçmiş hakedişlerin kaydedilmiş vergi sonuçları geriye dönük değiştirilmez." Foreground="{StaticResource Text900Brush}" FontSize="10.5" TextWrapping="Wrap" Margin="0,3,8,0"/>
                                 </StackPanel>
-                                <CheckBox x:Name="VatExemptCheckBox" Grid.Column="1" Content="İSTİSNA" Style="{StaticResource LightCheckBox}" VerticalAlignment="Center" Margin="8,0,0,0" Checked="VatExemptCheckBox_Changed" Unchecked="VatExemptCheckBox_Changed"/>
+                                <CheckBox x:Name="ContractorVatExemptCheckBox" Grid.Column="1" Content="İSTİSNA" Style="{StaticResource LightCheckBox}" VerticalAlignment="Center" Margin="8,0,0,0" Checked="ContractorVatExemptCheckBox_Changed" Unchecked="ContractorVatExemptCheckBox_Changed"/>
                             </Grid>
                         </Border>
                         <StackPanel Orientation="Horizontal" Margin="4.5,6,0,0">
@@ -1122,6 +1122,7 @@
                                                 <TextBlock Text="{Binding Name}" Foreground="White" FontSize="11.5" FontWeight="Bold"/>
                                                 <TextBlock Text="{Binding TaxOrIdentityNumber}" Foreground="#C5D7E7" FontSize="11.5"/>
                                                 <TextBlock Text="{Binding BankAccountNumber}" Foreground="#C5D7E7" FontSize="11.5"/>
+                                                <TextBlock Text="{Binding VatExempt, StringFormat='KDV istisnası: {0}'}" Foreground="#F2C66D" FontSize="10.5" FontWeight="SemiBold"/>
                                             </StackPanel>
                                             <TextBlock Grid.Column="1" Text="{Binding Phone}" Foreground="#C5D7E7" FontSize="11.5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                             <Button Grid.Column="2" Content="DÜZENLE" Tag="{Binding}" Click="EditContractorButton_Click" Style="{StaticResource SecondaryButton}" Height="30" FontSize="11" Width="96" Margin="4,0"/>
