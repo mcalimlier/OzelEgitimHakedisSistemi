@@ -1200,6 +1200,8 @@ public partial class MainWindow : Window
         InspectionPenaltyResultTextBlock.Text = FormatMoney(0m);
         AdditionalGuaranteeResultTextBlock.Text = FormatMoney(0m);
         ProgressWorkDaysSummaryTextBlock.Text = "0";
+        ProgressWorkDaysCardTextBlock.Text = "0 gün";
+        ProgressWorkDaysCardTextBlock.Text = "0 gün";
         ProgressNetSummaryTextBlock.Text = FormatMoney(0m);
         ProgressCalculationSummaryTextBlock.Text = "HAZIR";
         CalculationStatusTextBlock.Text = "Yeni ay seçildi. Bu aya ait iş günlerini, fiyat farklarını, iskontoları ve kesintileri yeniden girin.";
@@ -1772,6 +1774,7 @@ public partial class MainWindow : Window
         InspectionPenaltyResultTextBlock.Text = FormatMoney(result.Deductions.InspectionPenalty);
         AdditionalGuaranteeResultTextBlock.Text = FormatMoney(result.AdditionalGuarantee);
         ProgressWorkDaysSummaryTextBlock.Text = workDays.ToString(CultureInfo.CurrentCulture);
+        ProgressWorkDaysCardTextBlock.Text = workDays.ToString(CultureInfo.CurrentCulture) + " gün";
         ProgressNetSummaryTextBlock.Text = FormatMoney(result.NetPayable);
     }
 
@@ -1877,8 +1880,7 @@ public partial class MainWindow : Window
                 DatePickerDiffers(StartDatePicker, contract.StartDate) ||
                 DatePickerDiffers(EndDatePicker, contract.EndDate) ||
                 DatePickerDiffers(TenderDatePicker, contract.TenderDate) ||
-                DatePickerDiffers(ContractDatePicker, contract.ContractDate) ||
-                false, // KDV istisnası firma kartından yönetilir; sözleşme düzenlemesi bunu değiştirmez,
+                DatePickerDiffers(ContractDatePicker, contract.ContractDate),
 
             HistoryCorrectionSection.Contractor =>
                 FindContractor(item.ContractorTaxOrIdentityNumber ?? string.Empty, item.Input.ProgramType) is not ContractorDraft contractor ||
@@ -4004,7 +4006,7 @@ public partial class MainWindow : Window
                     OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber),
                     contractor.Address, contractor.Phone, contractor.Email,
                     contractor.BankAccountNumber, contractor.ContactPerson, contractor.ProgramType,
-                    contractor.VatExempt || HasLegacyContractVatExemption(contractor.TaxOrIdentityNumber, contractor.ProgramType)));
+                    contractor.VatExempt ?? HasLegacyContractVatExemption(contractor.TaxOrIdentityNumber, contractor.ProgramType)));
             }
 
             _routes.Clear();
@@ -4663,6 +4665,7 @@ public partial class MainWindow : Window
         InspectionPenaltyResultTextBlock.Text = FormatMoney(deductions.InspectionPenalty);
         AdditionalGuaranteeResultTextBlock.Text = FormatMoney(deductions.AdditionalGuarantee);
         ProgressWorkDaysSummaryTextBlock.Text = batch.Sum(x => x.Input.WorkDays).ToString(CultureInfo.CurrentCulture);
+        ProgressWorkDaysCardTextBlock.Text = ProgressWorkDaysSummaryTextBlock.Text + " gün";
         ProgressNetSummaryTextBlock.Text = FormatMoney(Sum(x => x.NetPayable));
         ProgressCalculationSummaryTextBlock.Text = "TAMAM";
 
@@ -5079,6 +5082,8 @@ public partial class MainWindow : Window
             InspectionPenaltyResultTextBlock.Text = FormatMoney(result.Deductions.InspectionPenalty);
             AdditionalGuaranteeResultTextBlock.Text = FormatMoney(result.AdditionalGuarantee);
             ProgressWorkDaysSummaryTextBlock.Text = workDays.ToString(CultureInfo.CurrentCulture);
+            ProgressWorkDaysCardTextBlock.Text = ProgressWorkDaysSummaryTextBlock.Text + " gün";
+        ProgressWorkDaysCardTextBlock.Text = workDays.ToString(CultureInfo.CurrentCulture) + " gün";
             ProgressNetSummaryTextBlock.Text = FormatMoney(result.NetPayable);
             ProgressCalculationSummaryTextBlock.Text = "TAMAM";
 
@@ -5853,7 +5858,7 @@ public partial class MainWindow : Window
                     contractor.BankAccountNumber,
                     contractor.ContactPerson,
                     contractor.ProgramType,
-                    contractor.VatExempt || HasLegacyContractVatExemption(contractor.TaxOrIdentityNumber, contractor.ProgramType)));
+                    contractor.VatExempt ?? HasLegacyContractVatExemption(contractor.TaxOrIdentityNumber, contractor.ProgramType)));
 
             _routes.Clear();
             foreach (var route in restored.Data.Routes ?? Array.Empty<RouteData>())
@@ -8040,6 +8045,8 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         InspectionPenaltyResultTextBlock.Text = FormatMoney(0m);
         AdditionalGuaranteeResultTextBlock.Text = FormatMoney(0m);
         ProgressWorkDaysSummaryTextBlock.Text = "0";
+        ProgressWorkDaysCardTextBlock.Text = "0 gün";
+        ProgressWorkDaysCardTextBlock.Text = "0 gün";
         ProgressNetSummaryTextBlock.Text = FormatMoney(0m);
         ProgressCalculationSummaryTextBlock.Text = "HAZIR";
     }
@@ -8278,7 +8285,10 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         string BankAccountNumber = "",
         string ContactPerson = "",
         TransportationProgramType ProgramType = TransportationProgramType.SpecialEducation,
-        bool VatExempt = false);
+        bool VatExempt = false)
+    {
+        public string VatExemptText => VatExempt ? "KDV İstisnası: VAR" : "KDV İstisnası: YOK";
+    }
 
     private sealed record ArchiveRow(
         string FullPath,
