@@ -454,20 +454,21 @@ internal static class OehsOfficialDocumentFactory
             var isLookupMonth = ProgressPaymentIcmalService.IsMonthInWorkbookLookupRange(
                 month,
                 c.ProgramType);
-            // The source transfer macro writes K for Basic and K+T for Special
-            // into the monthly amount columns. Those values already include I/R.
+            // The source K (Basic) and K+T (Special) monthly totals include raw I/R
+            // price differences. The icmal separates "İş Tutarı" from "Fiyat Farkı",
+            // so show the contract-price base in column (a) and I/R once in column (b).
             var service = isLookupMonth
-                ? monthPayments.Sum(ProgressPaymentReportService.CalculateWorkbookMonthlyPaymentTotal)
+                ? monthPayments.Sum(ProgressPaymentReportService.CalculateWorkbookMonthlyPaymentAmount)
                 : 0m;
-            // The monthly service transfer already includes the source I/R price-difference
-            // components: Basic K includes I; Special Education K+T includes I+R.
-            // Do not add those raw price differences a second time to the icmal subtotal.
-            // The Basic workbook's second D-block also carries the monthly deduction value;
-            // retain that separate component so the later B (deductions) subtraction cancels it.
-            var difference = isLookupMonth &&
-                             c.ProgramType == TransportationProgramType.BasicOrSecondary
-                ? monthPayments.Sum(payment => payment.Calculation.TotalDeductions)
+            var difference = isLookupMonth
+                ? monthPayments.Sum(ProgressPaymentReportService.CalculateWorkbookPriceDifference)
                 : 0m;
+            if (isLookupMonth && c.ProgramType == TransportationProgramType.BasicOrSecondary)
+            {
+                // Basic's separate icmal block also carries the monthly deduction value.
+                // Retain that source component; only the duplicated I price difference is removed.
+                difference += monthPayments.Sum(payment => payment.Calculation.TotalDeductions);
+            }
 
             // B6:B16 in each source workbook compacts only positive monthly amount
             // cells into consecutive rows; later empty months remain blank.
