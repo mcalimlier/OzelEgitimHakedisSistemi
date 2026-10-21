@@ -72,7 +72,7 @@ public sealed class IcmalDuplicatePriceDifferenceRegressionTests
                 SocialSecurityDebt: 0m,
                 MinimumWageSupport: 0m,
                 GuideWorkDays: 1m,
-                GuideDailyPrice: 34037.27m,
+                GuideDailyPrice: 23007.27m,
                 GuideDiscountAmount: 0m,
                 GuidePriceDifference: 3500m,
                 ProgramType: TransportationProgramType.SpecialEducation),
