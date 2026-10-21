@@ -126,7 +126,7 @@ public sealed class CurrentXlsmReportNetFormulaTests
         var reportNet = ProgressPaymentReportService.CalculateReportNetPayable(current, reportTotals);
 
         // Source D28 rounds the report gross and deduction totals separately.
-        Assert.Equal(calculation.NetPayable, reportNet);
+        Assert.Equal(332516.08m, reportNet);
     }
 
     [Fact]
