@@ -98,7 +98,9 @@ public sealed class IcmalDuplicatePriceDifferenceRegressionTests
         Assert.Equal(11030m, priceDifference);
         Assert.Equal(77667.27m, monthlyTotal);
         Assert.Equal(77667.27m, serviceBase + priceDifference);
-        Assert.NotEqual(88697.27m, serviceBase + priceDifference + priceDifference);
+        var duplicatedPriceDifferenceTotal = serviceBase + priceDifference + priceDifference;
+        Assert.Equal(88697.27m, duplicatedPriceDifferenceTotal);
+        Assert.NotEqual(88697.27m, monthlyTotal);
     }
 
     private static ProgressPaymentHistoryData History(
