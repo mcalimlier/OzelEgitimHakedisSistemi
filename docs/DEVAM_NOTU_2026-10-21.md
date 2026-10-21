@@ -37,3 +37,14 @@
 - VBA düzeltmeleri yalnızca aday yama olarak belgelendi; orijinal XLSM'lere aktarılmadı. Excel VBA IDE derlemesi/çalışma zamanı kabulü bu ortamda yapılmış gibi gösterilmedi.
 - Yeni belge commit'i: `35758f54b3137ad336b2c15cebb77b610286630f`. CI run [39651142308](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39651142308) son kontrolde çalışıyordu; sonucu yeniden doğrula.
 - PR #3 [açık/taslak](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/pull/3), merge edilmedi. Dal HEAD'i doğrulanmalı; merge/release yok.
+
+
+## UI referans eşleştirmesi — Tasarım 1 (21.10.2026)
+
+- Kullanıcı tarafından sağlanan Tasarım 1 referansına göre `src/OzelEgitimHakedis.Wpf/MainWindow.xaml` içinde hakediş ekranının dört aşamalı adım şeridi lacivert-altın prestij kartlarına dönüştürüldü.
+- İKN/sözleşme, yüklenici firma ve seçili hatlar alanları üç ayrı koyu lacivert, altın çerçeveli karta ayrıldı. Mevcut `x:Name`, event handler ve seçim kontrolleri korundu.
+- Çoklu hat Excel-hibrit DataGrid'inde mevcut `ModernDataGridHeader` kullanılarak lacivert başlık görünümü etkinleştirildi. Net ödeme/hesap özeti altın vurgulu karta dönüştürüldü.
+- `VatExemptCheckBox` görsel olarak Yüklenici Firmalar paneline taşındı. Mevcut veri modeli KDV istisnasını sözleşme düzeyinde tuttuğu için arayüz notu, değişikliğin İhale Bilgileri ekranında sözleşme kaydıyla saklanacağını belirtiyor; hesaplama semantiği değiştirilmedi.
+- UI commit'i: `06b201643664e8d6afc89dcdaadac35ba67587b6`; stil ve hibrit grid commit'i: `032febbc31bd78e5c7e055ce2c489112e65de2f2`.
+- CI run [39661935908](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39661935908) ve [39661930041](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39661930041) son kontrolde çalışıyordu; sonuçları yeniden doğrula. Gerçek Windows ekran görüntüsü/DPI testi henüz yok.
+- Sonraki adım: CI sonuçlarını kontrol et; başarısız statik UI sözleşmesi veya XAML derlemesi varsa düzelt. Ardından gerçek Windows ekranında Tasarım 1 ile görsel karşılaştırma yap. Ana dala merge/release yok.
