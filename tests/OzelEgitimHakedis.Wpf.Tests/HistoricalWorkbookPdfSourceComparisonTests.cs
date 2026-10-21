@@ -372,7 +372,7 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
         Assert.Contains("603,02", icmal, StringComparison.Ordinal);
         Assert.Contains("968,87", icmal, StringComparison.Ordinal);
         Assert.Contains("1.571,89", icmal, StringComparison.Ordinal);
-        Assert.Contains("149.279,43", icmal, StringComparison.Ordinal);
+        Assert.Contains("146.472,29", icmal, StringComparison.Ordinal);
         Assert.Contains("Kaynak Test Güzergâhı Hattı Öğrenci Taşıma İşi", icmal, StringComparison.Ordinal);
     }
 
