@@ -321,8 +321,9 @@ public sealed class OfficialDocumentOutputTests
 
             var specialIcmal = Assert.Single(outputs.Where(output => output.Kind == OehsOfficialDocumentKind.HakedisIcmali));
             var specialIcmalText = GetPageText(Assert.IsType<FixedPage>(specialIcmal.Document.Pages[0].Child));
-            Assert.Contains("₺120,00", specialIcmalText, StringComparison.Ordinal);
-            Assert.Contains("₺0,00", specialIcmalText, StringComparison.Ordinal);
+            Assert.Contains("₺100,00", specialIcmalText, StringComparison.Ordinal); // base service excludes raw I/R
+            Assert.Contains("₺20,00", specialIcmalText, StringComparison.Ordinal);  // raw I/R shown once
+            Assert.Contains("₺120,00", specialIcmalText, StringComparison.Ordinal); // row total matches K+T
             Assert.DoesNotContain("₺140,00", specialIcmalText, StringComparison.Ordinal);
             // Price differences are displayed separately from the service base,
             // and each component is included exactly once in the row total.
