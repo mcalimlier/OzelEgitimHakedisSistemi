@@ -190,13 +190,15 @@ public static class ProgressPaymentReportService
         ArgumentNullException.ThrowIfNull(current);
         ArgumentNullException.ThrowIfNull(reportTotals);
 
-        // Accepted user-approved source mapping:
-        // Basic: Hakediş Raporu!D28 = Hesaplama Bilgileri!W4.
-        // Special: Hakediş Raporu!D28 = Hesaplama!AG4.
-        // Calculation.NetPayable represents W4 (O4-V4) or AG4 (AF4-AE4).
-        // Do not recalculate D28 from separately rounded report subtotals.
-        _ = reportTotals;
-        return current.Calculation.NetPayable;
+        // D28 is the report's tahakkuk amount (current total + VAT) minus the
+        // report deductions, with each side rounded separately to two decimals.
+        // Source rows show D28 can differ from the raw calculation-sheet W4/AG4.
+        var reportGross = reportTotals.CurrentTotal + current.Calculation.Vat;
+        var reportDeductions = CalculateReportTotalDeductions(
+            current.Calculation,
+            current.Input.ProgramType);
+        return decimal.Round(reportGross, 2, MidpointRounding.AwayFromZero)
+               - decimal.Round(reportDeductions, 2, MidpointRounding.AwayFromZero);
     }
 
     private static bool IsWithinCurrentFiscalYear(
