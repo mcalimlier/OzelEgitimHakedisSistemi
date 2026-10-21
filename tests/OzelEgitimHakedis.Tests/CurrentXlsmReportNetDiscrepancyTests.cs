@@ -5,10 +5,9 @@ using Xunit;
 namespace OzelEgitimHakedis.Tests;
 
 /// <summary>
-/// Accepted mapping regression: Basic report D28 maps to calculation W4;
-/// Special Education report D28 maps to calculation AG4. Both are the program's
-/// calculation-sheet net result; the PDF/report layer must not recompute it from
-/// independently rounded cumulative fields.
+/// Current source XLSM regression: report D28 is calculated from report totals
+/// with gross and deduction sides rounded separately, so it is not always
+/// numerically identical to unrounded calculation-sheet W4/AG4.
 /// </summary>
 public sealed class CurrentXlsmReportNetFormulaTests
 {
@@ -82,7 +81,8 @@ public sealed class CurrentXlsmReportNetFormulaTests
             var totals = ProgressPaymentReportService.Calculate(current, new[] { current });
             var reportNet = ProgressPaymentReportService.CalculateReportNetPayable(current, totals);
 
-            Assert.Equal(calculation.NetPayable, reportNet);
+            Assert.Equal(example.ExpectedReportNet, reportNet);
+            Assert.Equal(example.SourceReportD28, reportNet);
         }
     }
 
@@ -124,8 +124,8 @@ public sealed class CurrentXlsmReportNetFormulaTests
         var reportTotals = ProgressPaymentReportService.Calculate(current, new[] { current });
         var reportNet = ProgressPaymentReportService.CalculateReportNetPayable(current, reportTotals);
 
-        // Accepted source mapping: report D28 = calculation AG4.
-        Assert.Equal(calculation.NetPayable, reportNet);
+        // Source D28 rounds the report gross and deduction totals separately.
+        Assert.Equal(95527.13m, reportNet);
     }
 
     [Fact]
@@ -166,8 +166,8 @@ public sealed class CurrentXlsmReportNetFormulaTests
         var totals = ProgressPaymentReportService.Calculate(current, new[] { current });
         var reportNet = ProgressPaymentReportService.CalculateReportNetPayable(current, totals);
 
-        // Uploaded workbook mapping: Hakediş Raporu!D28 = Hesaplama!AG4.
-        Assert.Equal(calculation.NetPayable, reportNet);
+        // Uploaded workbook source: Hakediş Raporu!D28 = 61,508.94.
+        Assert.Equal(61508.94m, reportNet);
     }
 
     [Fact]
@@ -204,7 +204,7 @@ public sealed class CurrentXlsmReportNetFormulaTests
         var totals = ProgressPaymentReportService.Calculate(current, new[] { current });
         var reportNet = ProgressPaymentReportService.CalculateReportNetPayable(current, totals);
 
-        // Uploaded workbook mapping: Hakediş Raporu!D28 = Hesaplama Bilgileri!W4.
-        Assert.Equal(calculation.NetPayable, reportNet);
+        // Uploaded workbook source: Hakediş Raporu!D28 = 332,516.08.
+        Assert.Equal(332516.08m, reportNet);
     }
 }
