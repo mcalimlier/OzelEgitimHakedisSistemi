@@ -45,6 +45,28 @@ public sealed class HakedisCreateHybridUiContractTests
                 && string.Equals((string?)element.Attribute("Header"), "Taşıma Fiyat Farkı", StringComparison.Ordinal)
                 && ((string?)element.Attribute("Binding"))?.Contains("Mode=TwoWay", StringComparison.Ordinal) == true);
 
+        var columns = named["MultiRoutePaymentGrid"].Descendants()
+            .Where(element => element.Name.LocalName == "DataGridTextColumn")
+            .ToDictionary(element => (string?)element.Attribute("Header") ?? string.Empty,
+                StringComparer.Ordinal);
+        foreach (var editableHeader in new[]
+        {
+            "Taşıma Gün", "Taşıma İskonto", "Taşıma Fiyat Farkı",
+            "Rehber Gün", "Rehber İskonto", "Rehber Fiyat Farkı",
+            "Vergi Borcu", "SGK Borcu", "Denetim Cezası"
+        })
+        {
+            Assert.Contains(editableHeader, columns.Keys);
+            Assert.Contains("Mode=TwoWay",
+                (string?)columns[editableHeader].Attribute("Binding") ?? string.Empty);
+        }
+
+        foreach (var readOnlyHeader in new[] { "Hat", "Taşıma Günlük Fiyat", "Rehber Günlük Fiyat" })
+        {
+            Assert.Contains(readOnlyHeader, columns.Keys);
+            Assert.Equal("True", (string?)columns[readOnlyHeader].Attribute("IsReadOnly"));
+        }
+
         Assert.Equal("ProgressContractorComboBox_SelectionChanged",
             EventName(named["ProgressContractorComboBox"], "SelectionChanged"));
         Assert.Equal("ProgressPeriodMonthComboBox_SelectionChanged",
