@@ -190,14 +190,16 @@ public static class ProgressPaymentReportService
         ArgumentNullException.ThrowIfNull(current);
         ArgumentNullException.ThrowIfNull(reportTotals);
 
-        // Accepted source mapping:
-        // Temel Eğitim Hakediş Raporu!D28 = Hesaplama Bilgileri!W4.
-        // Özel Eğitim Hakediş Raporu!D28 = Hesaplama!AG4.
-        // Both W4 and AG4 are the calculation-sheet net result (gross minus
-        // the program's deductions). Do not substitute the report's separately
-        // rounded D13-D26 chain here: that can differ by one kuruş.
-        _ = reportTotals;
-        return current.Calculation.NetPayable;
+        // D28 is the report's tahakkuk amount (current total + VAT) minus the
+        // report deductions, with each side rounded separately to two decimals.
+        // It is not always identical to the raw calculation-sheet W4/AG4 value.
+        // Source vectors show that direct NetPayable reuse can differ by one kuruş.
+        var reportGross = reportTotals.CurrentTotal + current.Calculation.Vat;
+        var reportDeductions = CalculateReportTotalDeductions(
+            current.Calculation,
+            current.Input.ProgramType);
+        return decimal.Round(reportGross, 2, MidpointRounding.AwayFromZero)
+               - decimal.Round(reportDeductions, 2, MidpointRounding.AwayFromZero);
     }
 
     private static bool IsWithinCurrentFiscalYear(
