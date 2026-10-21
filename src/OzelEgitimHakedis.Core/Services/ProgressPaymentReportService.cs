@@ -104,6 +104,7 @@ public static class ProgressPaymentReportService
 
         var previous = payments
             .Where(x => x.Id != current.Id)
+            .Where(x => x.Input.ProgramType == current.Input.ProgramType)
             .Where(_ => currentHasCompleteIdentity)
             .Where(HasCompleteIdentity)
             .Where(x => string.Equals(
