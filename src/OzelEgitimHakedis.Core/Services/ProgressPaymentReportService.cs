@@ -147,8 +147,9 @@ public static class ProgressPaymentReportService
     }
 
     /// <summary>
-    /// Excel Hakediş Raporu!D28 = ROUND(D13,2)-ROUND(D26,2).
-    /// This report value is not interchangeable with Hesaplama!AG.
+    /// Maps the official report's D28 to the selected program's calculation-sheet
+    /// net result, per the accepted source mapping: Basic W4 and Special Education AG4.
+    /// Keep this mapping independent from cumulative report subtotals.
     /// </summary>
     public static decimal CalculateReportStampTax(
         ProgressPaymentCalculation calculation,
@@ -189,17 +190,14 @@ public static class ProgressPaymentReportService
         ArgumentNullException.ThrowIfNull(current);
         ArgumentNullException.ThrowIfNull(reportTotals);
 
-        // Hakediş Raporu D13 = D11 + D12. CurrentTotal already represents
-        // the workbook's K (Basic) or K+T (Special) current-period amount,
-        // including raw I/R price differences. Adding D7 again double-counts I/R.
-        var reportGross = reportTotals.CurrentTotal + current.Calculation.Vat;
-        var reportDeductions = CalculateReportTotalDeductions(
-            current.Calculation,
-            current.Input.ProgramType,
-            current.Input.PriceDifference);
-
-        return decimal.Round(reportGross, 2, MidpointRounding.AwayFromZero)
-               - decimal.Round(reportDeductions, 2, MidpointRounding.AwayFromZero);
+        // Accepted source mapping:
+        // Temel Eğitim Hakediş Raporu!D28 = Hesaplama Bilgileri!W4.
+        // Özel Eğitim Hakediş Raporu!D28 = Hesaplama!AG4.
+        // Both W4 and AG4 are the calculation-sheet net result (gross minus
+        // the program's deductions). Do not substitute the report's separately
+        // rounded D13-D26 chain here: that can differ by one kuruş.
+        _ = reportTotals;
+        return current.Calculation.NetPayable;
     }
 
     private static bool IsWithinCurrentFiscalYear(
