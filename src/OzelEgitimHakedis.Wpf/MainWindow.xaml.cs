@@ -1773,7 +1773,7 @@ public partial class MainWindow : Window
         InspectionPenaltyResultTextBlock.Text = FormatMoney(result.Deductions.InspectionPenalty);
         AdditionalGuaranteeResultTextBlock.Text = FormatMoney(result.AdditionalGuarantee);
         ProgressWorkDaysSummaryTextBlock.Text = workDays.ToString(CultureInfo.CurrentCulture);
-        ProgressWorkDaysCardTextBlock.Text = workDays.ToString(CultureInfo.CurrentCulture) + " gün";
+
         ProgressNetSummaryTextBlock.Text = FormatMoney(result.NetPayable);
     }
 
