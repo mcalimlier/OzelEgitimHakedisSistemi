@@ -453,6 +453,45 @@ public sealed class ProgressPaymentIcmalServiceTests
         Assert.Equal(0m, resultForIncompleteCurrent);
     }
 
+    [Fact]
+    public void SpecialEducationE21_ShouldHaveExplicitSeptemberThroughAugustMonthMap()
+    {
+        // This is a regression map of the latest XLSM's current source behavior,
+        // not approval that the AP3/AQ3 duplicate-December header is correct.
+        // AP3 and AQ3 both display December; VBA maps AP to November and AQ to December.
+        var periods = new[]
+        {
+            new DateOnly(2026, 9, 30), new DateOnly(2026, 10, 31),
+            new DateOnly(2026, 11, 30), new DateOnly(2026, 12, 31),
+            new DateOnly(2027, 1, 31), new DateOnly(2027, 2, 28),
+            new DateOnly(2027, 3, 31), new DateOnly(2027, 4, 30),
+            new DateOnly(2027, 5, 31), new DateOnly(2027, 6, 30),
+            new DateOnly(2027, 7, 31), new DateOnly(2027, 8, 31)
+        };
+        var deductions = periods.Select((period, index) => History(index + 1, period, (index + 1) * 100m)).ToArray();
+        var expectedPreviousDeduction = new decimal[]
+        {
+            0m,   // September: first month in fiscal cycle
+            100m, // October: September
+            200m, // November: October
+            0m,   // December: November header is missing from source MATCH range
+            300m, // January: duplicate December headers make MATCH choose AP / November data
+            500m, // February: January
+            600m, // March: February
+            700m, // April: March
+            800m, // May: April
+            900m, // June: May
+            0m,   // July placeholder
+            0m    // August outside the icmal cycle
+        };
+
+        for (var index = 0; index < periods.Length; index++)
+        {
+            var actual = ProgressPaymentIcmalService.FindPreviousDeduction(deductions, deductions[index]);
+            Assert.Equal(expectedPreviousDeduction[index], actual);
+        }
+    }
+
     private static ProgressPaymentHistoryData History(
         int number,
         DateOnly period,
