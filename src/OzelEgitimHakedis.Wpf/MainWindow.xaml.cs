@@ -2855,6 +2855,18 @@ public partial class MainWindow : Window
         ContractorStatusTextBlock.Text = $"Firma kaydedildi: {name}.";
     }
 
+    private void VatExemptCheckBox_Changed(object sender, RoutedEventArgs e)
+    {
+        if (!IsInitialized || _suppressSelectionEvents || IsArchiveEditing)
+            return;
+
+        var selectedState = VatExemptCheckBox.IsChecked == true ? "İSTİSNA VAR" : "İSTİSNA YOK";
+        ContractorStatusTextBlock.Text =
+            $"KDV durumu: {selectedState}. Bu seçim sözleşme alanıdır; henüz kaydedilmedi. " +
+            "Kalıcılaştırmak için İKN / Sözleşme ekranında ilgili sözleşmeyi düzenleyip SÖZLEŞMEYİ KAYDET düğmesine basın. " +
+            "Firma KAYDET düğmesi bu alanı kaydetmez.";
+    }
+
     private void EditContractorButton_Click(object sender, RoutedEventArgs e)
     {
         ClearArchiveCorrectionState();
