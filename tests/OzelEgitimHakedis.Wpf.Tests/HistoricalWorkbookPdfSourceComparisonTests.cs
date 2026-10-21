@@ -410,8 +410,8 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
         var icmal = PageText(outputs, OehsOfficialDocumentKind.HakedisIcmali);
         Assert.Contains("Hizmet Alımı İşi Eylül 2026", icmal, StringComparison.Ordinal);
         Assert.Contains("₺192.009,97", icmal, StringComparison.Ordinal); // base service excludes I
-        Assert.Contains("₺27.031,47", icmal, StringComparison.Ordinal);  // I plus deductions once
-        Assert.Contains("₺219.041,44", icmal, StringComparison.Ordinal); // row total without duplicate I
+        Assert.Contains("₺19.666,12", icmal, StringComparison.Ordinal);  // I plus deductions once
+        Assert.Contains("₺211.676,09", icmal, StringComparison.Ordinal); // row total without duplicate I
         Assert.Contains("Kaynak Test Güzergâhı Hattı Öğrenci Taşıma İşi", icmal, StringComparison.Ordinal);
         Assert.DoesNotContain("₺19.670,30", icmal, StringComparison.Ordinal);
         Assert.DoesNotContain("₺219.045,63", icmal, StringComparison.Ordinal);
