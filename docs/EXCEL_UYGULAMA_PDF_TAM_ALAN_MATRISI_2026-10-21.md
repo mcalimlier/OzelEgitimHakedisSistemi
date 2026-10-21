@@ -67,7 +67,7 @@ Temel Eğitimde yeni uygulama C sütununda K'den ham I fiyat farkını ayırır;
 | `Hesaplama!AG4` | 61.508,9396804 TL | Hesaplama neti | — | Kaynak kayıtlı değer |
 | `Hakediş Raporu!D28` | Test vektöründe 61.508,94 TL | `ProgressPaymentReportService.CalculateReportNetPayable` | Hakediş Raporu “Yükleniciye Ödenecek Tutar (G-H)” | Rapor değeri kaynak formül/yuvarlama yoluyla üretilir; AG4'e doğrudan bağlandığı varsayılmaz |
 
-D28'in iki ondalık görünümü AG4'ün yuvarlanmış karşılığıyla bu örnekte eşleşir; fakat kaynak testlerde D28'in D13/D26 gibi alanları ayrı yuvarlayarak hesaplandığı belgelenmiştir. Bu nedenle aynı değer görünse bile formül eşdeğerliği kanıtlanmadan doğrudan hücre eşlemesi yapılmaz.
+Row 4'te AG4'ün iki ondalığa yuvarlanmış değeri 61.508,94 TL ve D28 de 61.508,94 TL'dir; ancak diğer kaynak örneklerinde eşitlik bozulur: bir Özel Eğitim vektöründe D28 = 87.543,81 TL iken AG4'ün iki ondalık değeri 87.543,80 TL'dir. Dolayısıyla AG4'ü D28'e doğrudan bağlamak genel kural olarak doğru değildir. Kaynak testleri D28'in rapor toplamı ve kesintilerini ayrı ayrı yuvarlayarak hesaplandığını gösterir; uygulama bu rapor formülünü taklit etmelidir.
 
 ### 2.3 İcmal hücreleri ve mükerrer bileşen düzeltmesi
 
