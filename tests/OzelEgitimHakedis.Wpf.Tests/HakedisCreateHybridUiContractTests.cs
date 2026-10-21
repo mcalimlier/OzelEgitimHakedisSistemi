@@ -12,7 +12,7 @@ public sealed class HakedisCreateHybridUiContractTests
         "http://schemas.microsoft.com/winfx/2006/xaml";
 
     [Fact]
-    public void HakedişCreate_ShouldKeepDesignOneCardsAndLiveExcelHybridControls()
+    public void HakedisCreate_ShouldKeepDesignOneCardsAndLiveExcelHybridControls()
     {
         var document = LoadMainWindowXaml();
         var root = document.Root;
@@ -30,6 +30,19 @@ public sealed class HakedisCreateHybridUiContractTests
         Assert.Contains("ProgressRouteComboBox", named.Keys);
         Assert.Contains("ProgressRouteRelationTextBlock", named.Keys);
         Assert.Contains("ProgressWorkDaysSummaryTextBlock", named.Keys);
+        Assert.Contains("MultiRoutePaymentGrid", named.Keys);
+        Assert.Contains("CalculateProgressButton", named.Keys);
+        Assert.Equal("CalculateProgressButton_Click",
+            EventName(named["CalculateProgressButton"], "Click"));
+        Assert.Equal("True", (string?)named["MultiRoutePaymentGrid"].Attribute("CanUserAddRows") ?? "True");
+        Assert.Contains(named["MultiRoutePaymentGrid"].Descendants(),
+            element => element.Name.LocalName == "DataGridTextColumn"
+                && string.Equals((string?)element.Attribute("Header"), "Taşıma Günlük Fiyat", StringComparison.Ordinal)
+                && string.Equals((string?)element.Attribute("IsReadOnly"), "True", StringComparison.Ordinal));
+        Assert.Contains(named["MultiRoutePaymentGrid"].Descendants(),
+            element => element.Name.LocalName == "DataGridTextColumn"
+                && string.Equals((string?)element.Attribute("Header"), "Taşıma Fiyat Farkı", StringComparison.Ordinal)
+                && ((string?)element.Attribute("Binding"))?.Contains("Mode=TwoWay", StringComparison.Ordinal) == true);
 
         Assert.Equal("ProgressContractorComboBox_SelectionChanged",
             EventName(named["ProgressContractorComboBox"], "SelectionChanged"));
