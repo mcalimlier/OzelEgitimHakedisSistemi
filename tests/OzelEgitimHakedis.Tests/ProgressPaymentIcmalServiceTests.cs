@@ -118,7 +118,7 @@ public sealed class ProgressPaymentIcmalServiceTests
                 1, 1000m, 0m, 0m, 100000m, false, 0m, 0m, 0m,
                 ProgramType: TransportationProgramType.BasicOrSecondary)
         };
-        var current = History(2, new DateOnly(2026, 11, 30), 300m);
+        var current = History(2, new DateOnly(2026, 11, 30), 300m, TransportationProgramType.SpecialEducation);
 
         var result = ProgressPaymentIcmalService.FindPreviousDeduction(
             new[] { basicPrevious, current }, current);
@@ -429,7 +429,7 @@ public sealed class ProgressPaymentIcmalServiceTests
                 1, 1000m, 0m, 0m, 100000m, false, 0m, 0m, 0m,
                 ProgramType: TransportationProgramType.BasicOrSecondary)
         };
-        var current = History(2, new DateOnly(2026, 11, 30), 300m);
+        var current = History(2, new DateOnly(2026, 11, 30), 300m, TransportationProgramType.SpecialEducation);
 
         Assert.Equal(0m, ProgressPaymentIcmalService.FindPreviousDeduction(
             new[] { previous, current }, current));
