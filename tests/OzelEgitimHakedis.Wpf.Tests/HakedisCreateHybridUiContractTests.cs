@@ -13,6 +13,39 @@ public sealed class HakedisCreateHybridUiContractTests
         "http://schemas.microsoft.com/winfx/2006/xaml";
 
     [Fact]
+    public void ProgressPanel_ShouldPlaceContextRouteSelectionAndActionsInWorkflowOrder()
+    {
+        var document = LoadMainWindowXaml();
+        var progressPanel = document.Root!.Descendants()
+            .Single(element => (string?)element.Attribute(XamlNamespace + "Name") == "ProgressPanel");
+        var panelElements = progressPanel.Descendants().ToArray();
+
+        var contextIndex = IndexOfNamedElement(panelElements, "ProgressContextPanel");
+        var routeSelectionIndex = IndexOfNamedElement(panelElements, "ProgressRouteSelectionPanel");
+        var actionIndex = IndexOfNamedElement(panelElements, "ProgressActionPanel");
+        var inputIndex = IndexOfNamedElement(panelElements, "WorkDaysTextBox");
+        var resultIndex = IndexOfNamedElement(panelElements, "NetResultTextBlock");
+
+        Assert.True(contextIndex < routeSelectionIndex,
+            "The progress context strip must appear before route selection.");
+        Assert.True(routeSelectionIndex < inputIndex,
+            "Route selection must appear before payment inputs.");
+        Assert.True(inputIndex < resultIndex && resultIndex < actionIndex,
+            "The action bar must appear after the input and result cards.");
+
+        var archiveCorrectionState = panelElements
+            .Single(element => (string?)element.Attribute(XamlNamespace + "Name") == "ProgressArchiveCorrectionStateTextBlock");
+        Assert.Contains("ARŞİV DÜZELTME", (string?)archiveCorrectionState.Attribute("Text"), StringComparison.Ordinal);
+        Assert.Equal("#F4C247", (string?)archiveCorrectionState.Attribute("Foreground"));
+        Assert.Contains("KİLİTLİ", (string?)archiveCorrectionState.Attribute("Text"), StringComparison.Ordinal);
+        Assert.Null(archiveCorrectionState.Attribute("Visibility"));
+        Assert.Contains(archiveCorrectionState.Descendants(),
+            element => element.Name.LocalName == "DataTrigger"
+                && string.Equals((string?)element.Attribute("Value"), "False", StringComparison.Ordinal)
+                && ((string?)element.Attribute("Binding"))?.Contains("ProgressTenderListBox", StringComparison.Ordinal) == true);
+    }
+
+    [Fact]
     public void HakedisCreate_ShouldKeepDesignOneCardsAndLiveExcelHybridControls()
     {
         var document = LoadMainWindowXaml();
@@ -292,6 +325,14 @@ public sealed class HakedisCreateHybridUiContractTests
 
     private static string EventName(XElement element, string eventAttribute) =>
         (string?)element.Attribute(eventAttribute) ?? string.Empty;
+
+    private static int IndexOfNamedElement(XElement[] elements, string name)
+    {
+        var index = Array.FindIndex(elements,
+            element => (string?)element.Attribute(XamlNamespace + "Name") == name);
+        Assert.True(index >= 0, $"Expected ProgressPanel to contain '{name}'.");
+        return index;
+    }
 
     private static XDocument LoadMainWindowXaml() =>
         XDocument.Load(LoadProjectFile("src", "OzelEgitimHakedis.Wpf", "MainWindow.xaml"),
