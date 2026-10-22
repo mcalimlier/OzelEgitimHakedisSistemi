@@ -140,14 +140,29 @@ public sealed class HakedisCreateHybridUiContractTests
                 var calculate=(Button)layout.FindName("CalculateProgressButton");
                 var action=calculate.TransformToAncestor(outer).TransformBounds(new Rect(calculate.RenderSize));
                 Assert.InRange(action.Bottom,1,outer.ActualHeight+1);
+                // CI visual evidence at 100/125/150 percent render density. This
+                // verifies WPF rasterization at these densities, NOT physical
+                // PerMonitorV2 monitor switching or pixel-perfect reference matching.
                 var preview=Environment.GetEnvironmentVariable("OEHS_HYBRID_PREVIEW");
-                if(!string.IsNullOrWhiteSpace(preview)&&size.Item1==1366)
+                if(!string.IsNullOrWhiteSpace(preview))
                 {
                     grid.BringIntoView();layout.UpdateLayout();
                     Directory.CreateDirectory(preview);
-                    var image=new System.Windows.Media.Imaging.RenderTargetBitmap((int)layout.ActualWidth,(int)layout.ActualHeight,96,96,PixelFormats.Pbgra32);
-                    image.Render(layout);var png=new System.Windows.Media.Imaging.PngBitmapEncoder();png.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(image));
-                    using var file=File.Create(Path.Combine(preview,"hybrid-entry.png"));png.Save(file);
+                    foreach(var dpi in new[]{96d,120d,144d})
+                    {
+                        var scale=dpi/96d;
+                        var width=(int)Math.Ceiling(layout.ActualWidth*scale);
+                        var height=(int)Math.Ceiling(layout.ActualHeight*scale);
+                        var image=new System.Windows.Media.Imaging.RenderTargetBitmap(width,height,dpi,dpi,PixelFormats.Pbgra32);
+                        image.Render(layout);
+                        Assert.Equal(width,image.PixelWidth);
+                        Assert.Equal(height,image.PixelHeight);
+                        var png=new System.Windows.Media.Imaging.PngBitmapEncoder();
+                        png.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(image));
+                        var filename=$"hybrid-{(int)size.Item1}x{(int)size.Item2}-{(int)(scale*100)}pct.png";
+                        using var file=File.Create(Path.Combine(preview,filename));
+                        png.Save(file);
+                    }
                 }
             }
         });
