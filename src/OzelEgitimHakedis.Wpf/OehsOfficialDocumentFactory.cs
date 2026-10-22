@@ -286,7 +286,7 @@ internal static class OehsOfficialDocumentFactory
             ("Yüklenicinin Adı / Ticari Unvanı", c.ContractorName),
             ("Sözleşme Bedeli", FormatMoney(c.ContractAmount)),
             ("İhale Tarihi", FormatDate(c.TenderDate)),
-            ("Sözleşme Tarihi ve No.su", FormatDate(c.ContractDate)),
+            ("Sözleşme Tarihi ve No.su", FormatContractContext(c)),
             ("Sözleşmenin Sayıştayca Tescil Tarihi ve No'su", "Tescile Dahil Değil"),
             ("Tescilin Yükleniciye Tebliğ Tarihi", "Tescile Dahil Değil"),
             ("İşyeri Teslim Tarihi", FormatDate(c.ContractStartDate)),
@@ -380,7 +380,7 @@ internal static class OehsOfficialDocumentFactory
         {
             ("İşin adı", BuildWorkTitle(c, includeRouteNumber: false, includeStudentSuffix: true), 112),
             ("Yüklenicinin adı/ticari unvanı", c.ContractorName, 35),
-            ("Sözleşme tarihi", FormatDate(c.ContractDate), 35),
+            ("Sözleşme tarihi", FormatContractContext(c), 35),
             ("Sözleşme bedeli", FormatMoney(c.ContractAmount), 35),
             ("Sözleşmeye göre işin süresi (takvim günü)", FormatAcceptanceDuration(c), 35),
             ("Sözleşmeye göre işin bitirilmesi gereken tarih", FormatDate(endDate), 35),
@@ -691,6 +691,9 @@ internal static class OehsOfficialDocumentFactory
                 ? c.ContractWorkDays.ToString(Turkish)
                 : $"{c.ContractWorkDays} İş Günü";
 
+
+    private static string FormatContractContext(OehsOfficialDocumentContext context) =>
+        $"{FormatDate(context.ContractDate)} / No: {context.ContractNumber}\nİKN: {context.TenderNumber}";
 
     private static string FormatDate(DateOnly? date) =>
         date?.ToString("dd.MM.yyyy", Turkish) ?? "-";

@@ -21,6 +21,234 @@ namespace OzelEgitimHakedis.Wpf.Tests;
 public sealed class OfficialDocumentOutputTests
 {
     [Theory]
+    [InlineData(TransportationProgramType.SpecialEducation)]
+    [InlineData(TransportationProgramType.BasicOrSecondary)]
+    public void OfficialPdfs_ShouldPrintTenderAndContractIdentifiersInContractRows(TransportationProgramType program)
+    {
+        RunOnSta(() =>
+        {
+            var context = CreateDocumentContext(CreatePayment(new ProgressPaymentInput(
+                16m, 19539.1608m, 0m, 7365.35m, 100000m, false, 0m, 0m, 0m, ProgramType: program))) with
+            {
+                TenderNumber = "2026/1009876",
+                ContractNumber = "SOZ-2026-0042"
+            };
+            var temporaryDirectory = Directory.CreateTempSubdirectory("oehs-pdf-identifiers-");
+            try
+            {
+                foreach (var output in OehsOfficialDocumentFactory.BuildSeparate(context)
+                             .Where(output => output.Kind is OehsOfficialDocumentKind.HizmetIsleriHakedisRaporu
+                                 or OehsOfficialDocumentKind.KabulTutanagi))
+                {
+                    var path = Path.Combine(temporaryDirectory.FullName, output.FileSuffix + ".pdf");
+                    SaveAndAssertA4Pdf(output.Document, path);
+                    using var pdf = UglyToad.PdfPig.PdfDocument.Open(path);
+                    var page = pdf.GetPage(1);
+                    var row = output.Kind == OehsOfficialDocumentKind.HizmetIsleriHakedisRaporu
+                        ? new Rect(398, 347, 350, 25)
+                        : new Rect(360, 207, 383, 35);
+                    var contractText = PdfTextInRectangle(page, row);
+                    Assert.Contains("15.08.2026", contractText, StringComparison.Ordinal);
+                    Assert.Contains("SOZ-2026-0042", contractText, StringComparison.Ordinal);
+                    Assert.Contains("İKN: 2026/1009876", contractText, StringComparison.Ordinal);
+                }
+            }
+            finally
+            {
+                temporaryDirectory.Delete(recursive: true);
+            }
+        });
+    }
+
+    [Theory]
+    [InlineData(TransportationProgramType.SpecialEducation)]
+    [InlineData(TransportationProgramType.BasicOrSecondary)]
+    public void OfficialPdfs_ShouldRetainCompleteLongButFittingContractorAndRouteNames(TransportationProgramType program)
+    {
+        RunOnSta(() =>
+        {
+            const string contractor = "ÖĞRENCİ TAŞIMACILIĞI TURİZM GIDA İNŞAAT SANAYİ VE TİCARET LİMİTED ŞİRKETİ";
+            const string route = "Yukarı Mahalle Cumhuriyet İlkokulu Çevre Yolu Merkez";
+            var context = CreateDocumentContext(CreatePayment(new ProgressPaymentInput(
+                1m, 100m, 0m, 0m, 100000m, false, 0m, 0m, 0m, ProgramType: program))) with
+            {
+                ContractorName = contractor, RouteName = route
+            };
+            var temporaryDirectory = Directory.CreateTempSubdirectory("oehs-pdf-long-fields-");
+            try
+            {
+                foreach (var output in OehsOfficialDocumentFactory.BuildSeparate(context))
+                {
+                    var path = Path.Combine(temporaryDirectory.FullName, output.FileSuffix + ".pdf");
+                    SaveAndAssertA4Pdf(output.Document, path);
+                    using var pdf = UglyToad.PdfPig.PdfDocument.Open(path);
+                    var text = WithoutWhitespace(pdf.GetPage(1).Text);
+                    Assert.Contains(WithoutWhitespace(route), text, StringComparison.Ordinal);
+                    if (output.Kind != OehsOfficialDocumentKind.HakedisIcmali)
+                        Assert.Contains(WithoutWhitespace(contractor), text, StringComparison.Ordinal);
+                }
+            }
+            finally
+            {
+                temporaryDirectory.Delete(recursive: true);
+            }
+        });
+    }
+
+    [Theory]
+    [InlineData("contractor")]
+    [InlineData("route")]
+    public void OfficialPdfs_ShouldRejectUnrepresentableLongFieldsWithoutWritingTruncatedFiles(string field)
+    {
+        RunOnSta(() =>
+        {
+            var context = CreateDocumentContext(CreatePayment(new ProgressPaymentInput(
+                1m, 100m, 0m, 0m, 100000m, false, 0m, 0m, 0m)));
+            var longValue = string.Join(" ", Enumerable.Repeat("UZUNALAN Öğrenci Taşımacılığı", 100)) + " SONALAN";
+            context = field == "contractor"
+                ? context with { ContractorName = longValue }
+                : context with { RouteName = longValue };
+            var temporaryDirectory = Directory.CreateTempSubdirectory("oehs-pdf-overflow-");
+            try
+            {
+                foreach (var output in OehsOfficialDocumentFactory.BuildSeparate(context)
+                             .Where(output => field == "route" || output.Kind != OehsOfficialDocumentKind.HakedisIcmali))
+                {
+                    var path = Path.Combine(temporaryDirectory.FullName, output.FileSuffix + ".pdf");
+                    var exception = Assert.Throws<PdfDocumentLayoutException>(() => PdfVectorWriter.Save(output.Document, path));
+                    Assert.Contains("PDF", exception.Message, StringComparison.Ordinal);
+                    Assert.Contains("sığmıyor", exception.Message, StringComparison.Ordinal);
+                    Assert.Contains("UZUNALAN", exception.Message, StringComparison.Ordinal);
+                    Assert.False(File.Exists(path), "A failed layout must not publish a truncated PDF.");
+                }
+            }
+            finally
+            {
+                temporaryDirectory.Delete(recursive: true);
+            }
+        });
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PdfWriter_ShouldKeepWrappedTextInsideItsLayoutSlot(bool singleLongWord)
+    {
+        RunOnSta(() =>
+        {
+            var text = singleLongWord
+                ? "UZUNGUZERGAHABCDEFGHIJKLMNOPQRSTUVWXYZSONALAN"
+                : "Uzun güzergâh başlangıcı ve öğrenci taşıma hizmeti sonu";
+            var block = new TextBlock
+            {
+                Text = text, Width = 120, Height = 160, FontSize = 12,
+                FontFamily = new FontFamily("Arial"), TextWrapping = TextWrapping.Wrap
+            };
+            var document = CreateTextDocument(block);
+            var temporaryDirectory = Directory.CreateTempSubdirectory("oehs-pdf-wrap-");
+            try
+            {
+                var path = Path.Combine(temporaryDirectory.FullName, "wrapped.pdf");
+                PdfVectorWriter.Save(document, path);
+                using var pdf = UglyToad.PdfPig.PdfDocument.Open(path);
+                var page = pdf.GetPage(1);
+                Assert.Equal(WithoutWhitespace(text), WithoutWhitespace(page.Text));
+                Assert.Equal(WithoutWhitespace(text), WithoutWhitespace(PdfTextInRectangle(page, new Rect(20, 20, 120, 160))));
+                Assert.True(page.Letters.Select(letter => Math.Round(letter.StartBaseLine.Y, 1)).Distinct().Count() > 1);
+            }
+            finally
+            {
+                temporaryDirectory.Delete(recursive: true);
+            }
+        });
+    }
+
+    [Theory]
+    [InlineData(HorizontalAlignment.Center, 80d)]
+    [InlineData(HorizontalAlignment.Right, 140d)]
+    public void PdfWriter_ShouldPreserveTextBlockAlignmentWithinItsSlot(HorizontalAlignment alignment, double expectedLeft)
+    {
+        RunOnSta(() =>
+        {
+            var block = new TextBlock
+            {
+                Text = "METIN", Width = 80, Height = 30, FontSize = 12,
+                FontFamily = new FontFamily("Arial"), HorizontalAlignment = alignment,
+                VerticalAlignment = VerticalAlignment.Top
+            };
+            var document = CreateTextDocument(new Border { Width = 200, Height = 60, Child = block });
+            var temporaryDirectory = Directory.CreateTempSubdirectory("oehs-pdf-alignment-");
+            try
+            {
+                var path = Path.Combine(temporaryDirectory.FullName, "aligned.pdf");
+                PdfVectorWriter.Save(document, path);
+                using var pdf = UglyToad.PdfPig.PdfDocument.Open(path);
+                Assert.Equal("METIN", PdfTextInRectangle(pdf.GetPage(1), new Rect(expectedLeft, 20, 80, 30)));
+            }
+            finally
+            {
+                temporaryDirectory.Delete(recursive: true);
+            }
+        });
+    }
+
+    [Theory]
+    [InlineData("height")]
+    [InlineData("width")]
+    [InlineData("zero-size")]
+    public void PdfWriter_ShouldRejectOverflowBeforeReplacingAnExistingDocument(string overflow)
+    {
+        RunOnSta(() =>
+        {
+            var block = new TextBlock
+            {
+                Text = "METIN sığmayan satır\nSONALAN", Width = overflow == "width" ? 8 : 120,
+                Height = overflow == "height" ? 12 : overflow == "zero-size" ? 0 : 80,
+                FontSize = 12, FontFamily = new FontFamily("Arial"), TextWrapping = TextWrapping.NoWrap
+            };
+            var document = CreateTextDocument(block);
+            var temporaryDirectory = Directory.CreateTempSubdirectory("oehs-pdf-existing-");
+            try
+            {
+                var path = Path.Combine(temporaryDirectory.FullName, "existing.pdf");
+                var original = new byte[] { 1, 2, 3, 4 };
+                File.WriteAllBytes(path, original);
+                var exception = Assert.Throws<PdfDocumentLayoutException>(() => PdfVectorWriter.Save(document, path));
+                Assert.Contains("sığmıyor", exception.Message, StringComparison.Ordinal);
+                Assert.Contains("METIN", exception.Message, StringComparison.Ordinal);
+                Assert.Equal(original, File.ReadAllBytes(path));
+            }
+            finally
+            {
+                temporaryDirectory.Delete(recursive: true);
+            }
+        });
+    }
+
+    private static FixedDocument CreateTextDocument(FrameworkElement element)
+    {
+        var page = new FixedPage { Width = 793.7007874, Height = 1122.519685 };
+        FixedPage.SetLeft(element, 20);
+        FixedPage.SetTop(element, 20);
+        page.Children.Add(element);
+        var document = new FixedDocument();
+        var content = new PageContent { Child = page };
+        document.Pages.Add(content);
+        return document;
+    }
+
+    private static string PdfTextInRectangle(UglyToad.PdfPig.Content.Page page, Rect dipRectangle) =>
+        string.Concat(page.Letters.Where(letter =>
+                letter.BoundingBox.Left >= dipRectangle.Left * 0.75 - 0.5
+                && letter.BoundingBox.Right <= dipRectangle.Right * 0.75 + 0.5
+                && letter.BoundingBox.Bottom >= page.Height - dipRectangle.Bottom * 0.75 - 0.5
+                && letter.BoundingBox.Top <= page.Height - dipRectangle.Top * 0.75 + 0.5)
+            .Select(letter => letter.Value));
+
+    private static string WithoutWhitespace(string value) =>
+        string.Concat(value.Where(character => !char.IsWhiteSpace(character)));
+
+    [Theory]
     [InlineData(false, "tr-TR")]
     [InlineData(true, "tr-TR")]
     [InlineData(true, "en-US")]
@@ -591,7 +819,8 @@ public sealed class OfficialDocumentOutputTests
             Assert.Contains("Örnek Yüklenici", serviceReportText, StringComparison.Ordinal);
             Assert.Contains("100.000,00 TL", serviceReportText, StringComparison.Ordinal);
             Assert.Contains("25.08.2026", serviceReportText, StringComparison.Ordinal);
-            Assert.DoesNotContain("TEST-SOZ", serviceReportText, StringComparison.Ordinal);
+            Assert.Contains("TEST-SOZ", serviceReportText, StringComparison.Ordinal);
+            Assert.Contains("İKN: TEST-IHALE", serviceReportText, StringComparison.Ordinal);
             Assert.Contains("180 İş Günü", serviceReportText, StringComparison.Ordinal);
             Assert.Contains("Tescile Dahil Değil", serviceReportText, StringComparison.Ordinal);
             Assert.Contains("Avans verilmeyecektir.", serviceReportText, StringComparison.Ordinal);
@@ -900,6 +1129,25 @@ public sealed class OfficialDocumentOutputTests
         Assert.Single(pdf.Pages);
         Assert.Equal(595.2756d, pdf.Pages[0].Width.Point, 1);
         Assert.Equal(841.8898d, pdf.Pages[0].Height.Point, 1);
+
+        using var extracted = UglyToad.PdfPig.PdfDocument.Open(pdfPath);
+        var extractedPage = extracted.GetPage(1);
+        var extractedText = WithoutWhitespace(extractedPage.Text);
+        var sourcePage = (FixedPage)document.Pages[0].Child;
+        foreach (var block in sourcePage.Children.Cast<UIElement>().Select(element => element switch
+                 {
+                     TextBlock directText => directText,
+                     Border { Child: TextBlock borderText } => borderText,
+                     _ => null
+                 }).OfType<TextBlock>())
+            Assert.Contains(WithoutWhitespace(block.Text), extractedText, StringComparison.Ordinal);
+        Assert.All(extractedPage.Letters, letter =>
+        {
+            Assert.InRange(letter.BoundingBox.Left, -0.5, extractedPage.Width + 0.5);
+            Assert.InRange(letter.BoundingBox.Right, -0.5, extractedPage.Width + 0.5);
+            Assert.InRange(letter.BoundingBox.Bottom, -0.5, extractedPage.Height + 0.5);
+            Assert.InRange(letter.BoundingBox.Top, -0.5, extractedPage.Height + 0.5);
+        });
     }
 
     private static string GetPageText(FixedPage page) =>
