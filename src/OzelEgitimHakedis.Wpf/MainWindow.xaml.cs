@@ -8266,7 +8266,7 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
     private static decimal RoundMoney(decimal value) =>
         decimal.Round(value, 2, MidpointRounding.AwayFromZero);
 
-    private static string FormatMoney(decimal value) => $"{RoundMoney(value):N2} ₺";
+    private static string FormatMoney(decimal value) => RoundMoney(value).ToString("N2", CultureInfo.GetCultureInfo("tr-TR")) + " ₺";
     private static string BuildPdfPrintTitle(RouteDraft route, ProgressPaymentHistoryData latest)
     {
         if (!latest.ProgressPaymentNumber.HasValue || !latest.PeriodDate.HasValue)
