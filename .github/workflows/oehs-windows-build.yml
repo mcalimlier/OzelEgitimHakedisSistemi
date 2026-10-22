@@ -136,6 +136,9 @@ jobs:
       - name: Test Solution
         run: dotnet test ".\tests\OzelEgitimHakedis.Tests\OzelEgitimHakedis.Tests.csproj" --configuration Release --no-build --no-restore
 
+      - name: Test WPF output suite
+        run: dotnet test ".\tests\OzelEgitimHakedis.Wpf.Tests\OzelEgitimHakedis.Wpf.Tests.csproj" --configuration Release --no-build --no-restore
+
       - name: Generate and verify PDF smoke files
         run: .\scripts\Generate-OfficialPdfSmoke.ps1 -OutputDirectory ".\artifacts\OEHS-PDF-Smoke"
 
