@@ -922,7 +922,7 @@ public sealed class HakedisCreateHybridUiContractTests
             Assert.False((bool)Invoke(window, "ArchiveCorrectionInputsDiffer")!);
             Invoke(window, "CalculateProgressButton_Click", window, new RoutedEventArgs());
 
-            Assert.Equal(expectedVat.ToString("N2", CultureInfo.CurrentCulture) + " ₺",
+            Assert.Equal(expectedVat.ToString("N2", CultureInfo.GetCultureInfo("tr-TR")) + " ₺",
                 Field<TextBlock>(window, "VatResultTextBlock").Text);
         });
     }
