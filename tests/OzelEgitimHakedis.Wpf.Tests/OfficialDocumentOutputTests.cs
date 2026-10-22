@@ -6,6 +6,10 @@ using System.Windows.Documents;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Linq;
+using System.Collections;
+using System.Globalization;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using OzelEgitimHakedis.Core.Models;
 using OzelEgitimHakedis.Core.Services;
 using PdfSharp.Pdf.IO;
@@ -16,6 +20,250 @@ namespace OzelEgitimHakedis.Wpf.Tests;
 
 public sealed class OfficialDocumentOutputTests
 {
+    [Theory]
+    [InlineData(false, "tr-TR")]
+    [InlineData(true, "tr-TR")]
+    [InlineData(true, "en-US")]
+    public void PaymentSelectionAndRecalculation_ShouldPreserveOfficialReportNet(bool selectRoute, string culture)
+    {
+        RunOnSta(() =>
+        {
+            var window = CreateEditorHarness();
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(culture);
+            var input = new ProgressPaymentInput(16m, 19539.1608m, 0m, 7365.35m, 100000m,
+                false, 0m, 0m, 0m, ProgramType: TransportationProgramType.BasicOrSecondary);
+            var payment = CreatePayment(input);
+            EditorField<IList>(window, "_progressHistory").Add(payment);
+            InvokeEditor(window, "BeginProgressHistoryEdit", payment);
+            if (selectRoute)
+            {
+                var routes = EditorField<ListBox>(window, "ProgressRouteComboBox");
+                routes.Items.Add(CreateRoute(input));
+                routes.SelectedIndex = 0;
+                InvokeEditor(window, "UpdateProgressRouteDefaults");
+                EditorField<TextBox>(window, "WorkDaysTextBox").Text = "16";
+            }
+
+            var preview = new object?[] { null, null, null };
+            Assert.True((bool)InvokeEditor(window, "TryCreateHistoryCorrectionPreview", preview)!, preview[2]?.ToString());
+            var recalculated = payment with
+            {
+                Input = Assert.IsType<ProgressPaymentInput>(preview[0]),
+                Calculation = Assert.IsType<ProgressPaymentCalculation>(preview[1])
+            };
+            var context = CreateDocumentContext(recalculated);
+
+            Assert.Equal(332516.08m, context.ReportNetPayable);
+            Assert.Equal(19539.1608m, recalculated.Input.DailyPrice);
+            Assert.Equal(332516.074511856m, recalculated.Calculation.NetPayable);
+            var output = OehsOfficialDocumentFactory.BuildSeparate(context)
+                .Single(document => document.Kind == OehsOfficialDocumentKind.HakedisRaporu);
+            Assert.Equal("332.516,08 TL", GetCellTextAt((FixedPage)output.Document.Pages[0].Child, 476d, 796d));
+        });
+    }
+
+    [Theory]
+    [InlineData("history")]
+    [InlineData("archive")]
+    [InlineData("cancel")]
+    [InlineData("refresh")]
+    public void PaymentEditors_ShouldPreserveEveryCalculationAmount(string path)
+    {
+        RunOnSta(() =>
+        {
+            var window = CreateEditorHarness();
+            var input = new ProgressPaymentInput(16m, 19539.1608m, 1.1234m, 7365.3543m,
+                100000.1234m, false, 2.1234m, 3.1234m, 4.1234m, 5.1234m,
+                10.1234m, 100.1234m, 6.1234m, 7.1234m);
+            var payment = CreatePayment(input);
+            EditorField<IList>(window, "_progressHistory").Add(payment);
+            if (path == "archive")
+            {
+                var archive = ArchiveProgressEditorContextTests.CreateArchive() with { ProgressPayment = payment };
+                SetEditorField(window, "_editingArchiveSourcePath", "unused-archive.json");
+                SetEditorField(window, "_editingArchiveSnapshot", archive);
+            }
+            InvokeEditor(window, "BeginProgressHistoryEdit", payment);
+            if (path == "cancel")
+                InvokeEditor(window, "CancelProgressEditButton_Click", window, new RoutedEventArgs());
+            if (path == "refresh")
+                InvokeEditor(window, "RefreshViewsAfterHistoryCorrection");
+
+            var expected = new (string Field, decimal Amount)[]
+            {
+                ("DailyPriceTextBox", 19539.1608m), ("GuideDailyPriceTextBox", 100.1234m),
+                ("DiscountTextBox", 1.1234m), ("PriceDifferenceTextBox", 7365.3543m),
+                ("GuideDiscountTextBox", 6.1234m), ("GuidePriceDifferenceTextBox", 7.1234m),
+                ("TaxDebtTextBox", 2.1234m), ("SocialSecurityDebtTextBox", 3.1234m),
+                ("MinimumWageSupportTextBox", 4.1234m), ("InspectionPenaltyTextBox", 5.1234m)
+            };
+            foreach (var (field, amount) in expected)
+                Assert.Equal(amount, decimal.Parse(EditorField<TextBox>(window, field).Text, CultureInfo.CurrentCulture));
+
+            if (path is "history" or "archive")
+            {
+                var preview = new object?[] { null, null, null };
+                Assert.True((bool)InvokeEditor(window, path == "archive"
+                    ? "TryCreateArchiveCorrectionPreview" : "TryCreateHistoryCorrectionPreview", preview)!, preview[2]?.ToString());
+                Assert.Equal(input, Assert.IsType<ProgressPaymentInput>(preview[0]));
+            }
+        });
+    }
+
+    [Theory]
+    [InlineData("contract")]
+    [InlineData("route")]
+    [InlineData("routeCancel")]
+    public void ContractAndRouteEditors_ShouldPreserveDailyPricesAndContractAmount(string path)
+    {
+        RunOnSta(() =>
+        {
+            var window = CreateEditorHarness();
+            if (path == "contract")
+            {
+                var contract = ArchiveProgressEditorContextTests.CreateArchive().Contract with
+                {
+                    ContractAmount = 100000.1234m, TransportDailyPrice = 19539.1608m
+                };
+                InvokeEditor(window, "ApplyContractToForm", contract);
+                Assert.Equal(100000.1234m, decimal.Parse(EditorField<TextBox>(window, "ContractAmountTextBox").Text, CultureInfo.CurrentCulture));
+                Assert.Equal(19539.1608m, decimal.Parse(EditorField<TextBox>(window, "ContractTransportDailyPriceTextBox").Text, CultureInfo.CurrentCulture));
+                return;
+            }
+
+            var route = CreateRoute(new ProgressPaymentInput(16m, 19539.1608m, 0m, 0m,
+                100000m, false, 0m, 0m, 0m, GuideDailyPrice: 100.1234m));
+            InvokeEditor(window, "EditRouteButton_Click", new Button { Tag = route }, new RoutedEventArgs());
+            if (path == "routeCancel")
+            {
+                EditorField<TextBox>(window, "RouteGuideDailyPriceTextBox").Text = "1";
+                InvokeEditor(window, "CancelRouteEditButton_Click", window, new RoutedEventArgs());
+            }
+            Assert.Equal(100.1234m, decimal.Parse(EditorField<TextBox>(window, "RouteGuideDailyPriceTextBox").Text, CultureInfo.CurrentCulture));
+        });
+    }
+
+    [Theory]
+    [InlineData(100, 0, 0, "₺-100,00")]
+    [InlineData(0, 1, 100, "₺100,00")]
+    public void Icmal_ShouldIncludeNegativeServiceCorrectionsAndGuideOnlyService(
+        decimal discount, decimal guideDays, decimal guidePrice, string expectedService)
+    {
+        RunOnSta(() =>
+        {
+            var input = new ProgressPaymentInput(0m, 0m, discount, 0m, 100000m,
+                true, 0m, 0m, 0m, GuideWorkDays: guideDays, GuideDailyPrice: guidePrice);
+            var output = OehsOfficialDocumentFactory.BuildSeparate(CreateDocumentContext(CreatePayment(input)))
+                .Single(document => document.Kind == OehsOfficialDocumentKind.HakedisIcmali);
+            var page = (FixedPage)output.Document.Pages[0].Child;
+
+            Assert.Equal("Hizmet Alımı İşi Ekim 2026", GetCellTextAt(page, 89d, 167d));
+            Assert.Equal(expectedService, GetCellTextAt(page, 291d, 167d));
+            Assert.Equal(expectedService, GetCellTextAt(page, 593d, 519d));
+        });
+    }
+
+    [Theory]
+    [InlineData(TransportationProgramType.SpecialEducation, 100, "₺100,00")]
+    [InlineData(TransportationProgramType.SpecialEducation, -100, "₺-100,00")]
+    [InlineData(TransportationProgramType.BasicOrSecondary, 100, "₺106,95")]
+    public void Icmal_ShouldIncludePriceDifferenceOnlyMonth(TransportationProgramType program, decimal difference, string expectedTotal)
+    {
+        RunOnSta(() =>
+        {
+            var input = new ProgressPaymentInput(0m, 0m, 0m, difference, 100000m,
+                true, 0m, 0m, 0m, ProgramType: program);
+            var output = OehsOfficialDocumentFactory.BuildSeparate(CreateDocumentContext(CreatePayment(input)))
+                .Single(document => document.Kind == OehsOfficialDocumentKind.HakedisIcmali);
+            var page = (FixedPage)output.Document.Pages[0].Child;
+
+            Assert.Equal("Hizmet Alımı İşi Ekim 2026", GetCellTextAt(page, 89d, 167d));
+            Assert.Equal("₺0,00", GetCellTextAt(page, 291d, 167d));
+            Assert.Equal(expectedTotal, GetCellTextAt(page, 593d, 167d));
+            Assert.Equal(expectedTotal, GetCellTextAt(page, 593d, 519d));
+            Assert.Equal(string.Empty, GetCellTextAt(page, 89d, 199d));
+        });
+    }
+
+    [Theory]
+    [InlineData(TransportationProgramType.SpecialEducation)]
+    [InlineData(TransportationProgramType.BasicOrSecondary)]
+    public void Icmal_ShouldNotCreateMonthForDeductionsAlone(TransportationProgramType program)
+    {
+        RunOnSta(() =>
+        {
+            var input = new ProgressPaymentInput(0m, 19539.1608m, 0m, 0m, 100000m,
+                true, 50m, 0m, 0m, ProgramType: program);
+            var output = OehsOfficialDocumentFactory.BuildSeparate(CreateDocumentContext(CreatePayment(input)))
+                .Single(document => document.Kind == OehsOfficialDocumentKind.HakedisIcmali);
+            var page = (FixedPage)output.Document.Pages[0].Child;
+
+            Assert.Equal(string.Empty, GetCellTextAt(page, 89d, 167d));
+            Assert.Equal("₺0,00", GetCellTextAt(page, 593d, 519d));
+        });
+    }
+
+    private static ProgressPaymentHistoryData CreatePayment(ProgressPaymentInput input) =>
+        new(Guid.NewGuid(), new DateTime(2026, 10, 31, 12, 0, 0, DateTimeKind.Utc),
+            input, ProgressPaymentCalculator.Calculate(input), 1, new DateOnly(2026, 10, 31),
+            "01", "Hat 01", "Hat 01", "Firma", "IHALE-01", "SOZ-01",
+            ContractorTaxOrIdentityNumber: "12345678901");
+
+    private static OehsOfficialDocumentContext CreateDocumentContext(ProgressPaymentHistoryData payment)
+    {
+        var payments = new[] { payment };
+        var totals = ProgressPaymentReportService.Calculate(payment, payments);
+        return new OehsOfficialDocumentContext("Hat 01", "IHALE-01", "01", "Firma", "SOZ-01",
+            payment.Input.ContractAmount, new DateOnly(2026, 8, 1), new DateOnly(2026, 8, 15),
+            new DateOnly(2026, 9, 1), new DateOnly(2027, 6, 30), 180,
+            payment.PeriodDate, payment.ProgressPaymentNumber, payment.Calculation, payments, totals,
+            ProgressPaymentReportService.CalculateReportNetPayable(payment, totals), 0m,
+            new DateOnly(2026, 10, 31), ProgramType: payment.Input.ProgramType);
+    }
+
+    private static MainWindow CreateEditorHarness()
+    {
+        // Exercise real editor handlers without constructor-driven persistence or window setup.
+        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("tr-TR");
+        var window = (MainWindow)RuntimeHelpers.GetUninitializedObject(typeof(MainWindow));
+        foreach (var field in typeof(MainWindow).GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
+        {
+            if (typeof(FrameworkElement).IsAssignableFrom(field.FieldType)
+                || field.FieldType.IsGenericType &&
+                (field.FieldType.GetGenericTypeDefinition() == typeof(System.Collections.ObjectModel.ObservableCollection<>)
+                 || field.FieldType.GetGenericTypeDefinition() == typeof(RouteDraftCache<>)))
+                field.SetValue(window, Activator.CreateInstance(field.FieldType));
+        }
+        SetEditorField(window, "_calculationConstants", ProgressPaymentCalculationConstants.Defaults);
+        EditorField<ListBox>(window, "ProgressRouteComboBox").SelectionMode = SelectionMode.Extended;
+        EditorField<Button>(window, "NavProgress").Tag = "Progress";
+        return window;
+    }
+
+    private static object CreateRoute(ProgressPaymentInput input) =>
+        Activator.CreateInstance(typeof(MainWindow).GetNestedType("RouteDraft", BindingFlags.NonPublic)!,
+            "01", "Hat 01", input.DailyPrice, input.GuideWorkDays, input.GuideDailyPrice,
+            input.WorkDays, "IHALE-01", "12345678901", "Firma", "SOZ-01", input.ProgramType)!;
+
+    private static T EditorField<T>(MainWindow window, string name) =>
+        (T)typeof(MainWindow).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)!.GetValue(window)!;
+
+    private static void SetEditorField(MainWindow window, string name, object value) =>
+        typeof(MainWindow).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(window, value);
+
+    private static object? InvokeEditor(MainWindow window, string name, params object?[] arguments)
+    {
+        try
+        {
+            return typeof(MainWindow).GetMethod(name, BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window, arguments);
+        }
+        catch (TargetInvocationException error) when (error.InnerException is not null)
+        {
+            ExceptionDispatchInfo.Capture(error.InnerException).Throw();
+            throw;
+        }
+    }
+
     [Fact]
     public void SignatorySettingsStore_ShouldCreateEditableDefaults_WhenFileIsMissing()
     {

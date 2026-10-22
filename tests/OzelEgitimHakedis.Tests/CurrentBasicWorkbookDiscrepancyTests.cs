@@ -12,6 +12,21 @@ namespace OzelEgitimHakedis.Tests;
 public sealed class CurrentBasicWorkbookParityTests
 {
     [Fact]
+    public void LatestBasicRow4_ShouldPreserveFullPrecisionUntilOfficialReportRounding()
+    {
+        var input = new ProgressPaymentInput(16m, 19539.1608m, 0m, 7365.35m, 100000m,
+            false, 0m, 0m, 0m, ProgramType: TransportationProgramType.BasicOrSecondary);
+        var payment = new ProgressPaymentHistoryData(Guid.NewGuid(), DateTime.UtcNow,
+            input, ProgressPaymentCalculator.Calculate(input), 1, new DateOnly(2026, 10, 31));
+        var totals = ProgressPaymentReportService.Calculate(payment, new[] { payment });
+
+        Assert.Equal(312626.5728m, totals.CumulativeServiceAmount);
+        Assert.Equal(332516.074511856m, payment.Calculation.NetPayable);
+        // The report rounds gross (351991.12) and deductions (19475.04) separately.
+        Assert.Equal(332516.08m, ProgressPaymentReportService.CalculateReportNetPayable(payment, totals));
+    }
+
+    [Fact]
     public void LatestBasicRows4To8_ShouldMatchWorkbookCalculationCells()
     {
         var rows = new[]

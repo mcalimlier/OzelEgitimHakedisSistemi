@@ -965,9 +965,9 @@ public partial class MainWindow : Window
             TenderNumberTextBox.Text = contract.TenderNumber;
             ContractNumberTextBox.Text = contract.ContractNumber;
             WorkNameTextBox.Text = contract.WorkName;
-            ContractAmountTextBox.Text = contract.ContractAmount.ToString("N2", CultureInfo.CurrentCulture);
+            ContractAmountTextBox.Text = FormatCalculationInput(contract.ContractAmount);
             ContractWorkDaysTextBox.Text = contract.ContractWorkDays.ToString(CultureInfo.CurrentCulture);
-            ContractTransportDailyPriceTextBox.Text = contract.TransportDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+            ContractTransportDailyPriceTextBox.Text = FormatCalculationInput(contract.TransportDailyPrice);
             StartDatePicker.SelectedDate = contract.StartDate.ToDateTime(TimeOnly.MinValue);
             EndDatePicker.SelectedDate = contract.EndDate.ToDateTime(TimeOnly.MinValue);
             TenderDatePicker.SelectedDate = contract.TenderDate?.ToDateTime(TimeOnly.MinValue);
@@ -2315,18 +2315,18 @@ public partial class MainWindow : Window
             ProgressContractorTextBlock.Text = item.ContractorName ?? "Seçilmedi";
             ProgressRouteRelationTextBlock.Text = $"İhale: {item.TenderNumber} • Hat: {item.RouteNumber} — {item.RouteName}";
             WorkDaysTextBox.Text = item.Input.WorkDays.ToString(CultureInfo.CurrentCulture);
-            DailyPriceTextBox.Text = item.Input.DailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+            DailyPriceTextBox.Text = FormatCalculationInput(item.Input.DailyPrice);
             GuideWorkDaysTextBox.Text = item.Input.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
-            GuideDailyPriceTextBox.Text = item.Input.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
-            DiscountTextBox.Text = item.Input.DiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
-            GuideDiscountTextBox.Text = item.Input.GuideDiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
-            PriceDifferenceTextBox.Text = item.Input.PriceDifference.ToString("N2", CultureInfo.CurrentCulture);
-            GuidePriceDifferenceTextBox.Text = item.Input.GuidePriceDifference.ToString("N2", CultureInfo.CurrentCulture);
-            TaxDebtTextBox.Text = item.Input.TaxDebt.ToString("N2", CultureInfo.CurrentCulture);
-            SocialSecurityDebtTextBox.Text = item.Input.SocialSecurityDebt.ToString("N2", CultureInfo.CurrentCulture);
-            MinimumWageSupportTextBox.Text = item.Input.MinimumWageSupport.ToString("N2", CultureInfo.CurrentCulture);
+            GuideDailyPriceTextBox.Text = FormatCalculationInput(item.Input.GuideDailyPrice);
+            DiscountTextBox.Text = FormatCalculationInput(item.Input.DiscountAmount);
+            GuideDiscountTextBox.Text = FormatCalculationInput(item.Input.GuideDiscountAmount);
+            PriceDifferenceTextBox.Text = FormatCalculationInput(item.Input.PriceDifference);
+            GuidePriceDifferenceTextBox.Text = FormatCalculationInput(item.Input.GuidePriceDifference);
+            TaxDebtTextBox.Text = FormatCalculationInput(item.Input.TaxDebt);
+            SocialSecurityDebtTextBox.Text = FormatCalculationInput(item.Input.SocialSecurityDebt);
+            MinimumWageSupportTextBox.Text = FormatCalculationInput(item.Input.MinimumWageSupport);
             RestoreMinimumWageSupportInputState(item.Input.ProgramType, item.Input.MinimumWageSupport);
-            InspectionPenaltyTextBox.Text = item.Input.InspectionPenalty.ToString("N2", CultureInfo.CurrentCulture);
+            InspectionPenaltyTextBox.Text = FormatCalculationInput(item.Input.InspectionPenalty);
             ProgressNumberTextBox.Text = item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
             SelectProgressPeriod(item.PeriodDate);
             UpdateProgressCalculationDisplay(item.Calculation, item.Input.WorkDays);
@@ -3687,7 +3687,7 @@ public partial class MainWindow : Window
         RouteNameTextBox.Text = route.Name;
         RouteTransportWorkDaysTextBox.Text = route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
         RouteGuideWorkDaysTextBox.Text = route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
-        RouteGuideDailyPriceTextBox.Text = route.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+        RouteGuideDailyPriceTextBox.Text = FormatCalculationInput(route.GuideDailyPrice);
         RouteStatusTextBlock.Text = $"Düzenleme modu: İKN {route.TenderNumber} / Hat {route.RouteNumber}. DÜZENLE ile kaydedin.";
     }
 
@@ -3721,7 +3721,7 @@ public partial class MainWindow : Window
             RouteNameTextBox.Text = original.Name;
             RouteTransportWorkDaysTextBox.Text = original.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
             RouteGuideWorkDaysTextBox.Text = original.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
-            RouteGuideDailyPriceTextBox.Text = original.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+            RouteGuideDailyPriceTextBox.Text = FormatCalculationInput(original.GuideDailyPrice);
         }
         else
         {
@@ -6079,18 +6079,18 @@ public partial class MainWindow : Window
             // Arşiv bir snapshot olduğundan hesabın otomatik alanları canlı kaydın
             // güncel değerlerinden değil, arşivlenen hat snapshot'ından yüklenir.
             WorkDaysTextBox.Text = archive.Route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
-            DailyPriceTextBox.Text = archive.Route.DailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+            DailyPriceTextBox.Text = FormatCalculationInput(archive.Route.DailyPrice);
             GuideWorkDaysTextBox.Text = archive.Route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
-            GuideDailyPriceTextBox.Text = archive.Route.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
-            DiscountTextBox.Text = input.DiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
-            GuideDiscountTextBox.Text = input.GuideDiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
-            PriceDifferenceTextBox.Text = input.PriceDifference.ToString("N2", CultureInfo.CurrentCulture);
-            GuidePriceDifferenceTextBox.Text = input.GuidePriceDifference.ToString("N2", CultureInfo.CurrentCulture);
-            TaxDebtTextBox.Text = input.TaxDebt.ToString("N2", CultureInfo.CurrentCulture);
-            SocialSecurityDebtTextBox.Text = input.SocialSecurityDebt.ToString("N2", CultureInfo.CurrentCulture);
-            MinimumWageSupportTextBox.Text = input.MinimumWageSupport.ToString("N2", CultureInfo.CurrentCulture);
+            GuideDailyPriceTextBox.Text = FormatCalculationInput(archive.Route.GuideDailyPrice);
+            DiscountTextBox.Text = FormatCalculationInput(input.DiscountAmount);
+            GuideDiscountTextBox.Text = FormatCalculationInput(input.GuideDiscountAmount);
+            PriceDifferenceTextBox.Text = FormatCalculationInput(input.PriceDifference);
+            GuidePriceDifferenceTextBox.Text = FormatCalculationInput(input.GuidePriceDifference);
+            TaxDebtTextBox.Text = FormatCalculationInput(input.TaxDebt);
+            SocialSecurityDebtTextBox.Text = FormatCalculationInput(input.SocialSecurityDebt);
+            MinimumWageSupportTextBox.Text = FormatCalculationInput(input.MinimumWageSupport);
             RestoreMinimumWageSupportInputState(input.ProgramType, input.MinimumWageSupport);
-            InspectionPenaltyTextBox.Text = input.InspectionPenalty.ToString("N2", CultureInfo.CurrentCulture);
+            InspectionPenaltyTextBox.Text = FormatCalculationInput(input.InspectionPenalty);
             ProgressNumberTextBox.Text = archive.ProgressPayment.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
             SelectProgressPeriod(archive.ProgressPayment.PeriodDate);
 
@@ -6456,7 +6456,7 @@ public partial class MainWindow : Window
             RouteNameTextBox.Text = archive.Route.Name;
             RouteTransportWorkDaysTextBox.Text = archive.Route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
             RouteGuideWorkDaysTextBox.Text = archive.Route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
-            RouteGuideDailyPriceTextBox.Text = archive.Route.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+            RouteGuideDailyPriceTextBox.Text = FormatCalculationInput(archive.Route.GuideDailyPrice);
             RouteNumberTextBox.IsReadOnly = false;
             RouteSelectedTenderTextBlock.Text = $"Arşiv ihale: {archive.Route.TenderNumber}";
             RouteSelectedContractorTextBlock.Text = $"Arşiv yüklenici: {archive.Contractor.Name}";
@@ -6520,7 +6520,7 @@ public partial class MainWindow : Window
         RouteNameTextBox.Text = route.Name;
         RouteTransportWorkDaysTextBox.Text = route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
         RouteGuideWorkDaysTextBox.Text = route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
-        RouteGuideDailyPriceTextBox.Text = route.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+        RouteGuideDailyPriceTextBox.Text = FormatCalculationInput(route.GuideDailyPrice);
         SetRouteEditorMode(true);
         NavigationButton_Click(NavLines, new RoutedEventArgs(Button.ClickEvent, NavLines));
         RouteStatusTextBlock.Text = "Hakedişten gelen düzenleme: Hat bilgilerini değiştirin ve DÜZENLE'e basın.";
@@ -6541,18 +6541,18 @@ public partial class MainWindow : Window
             ProgressRouteRelationTextBlock.Text =
                 $"Arşiv ihale: {payment.TenderNumber} • Yüklenici: {archive.Contractor.Name} • Hat: {payment.RouteNumber} — {payment.RouteName}";
             WorkDaysTextBox.Text = payment.Input.WorkDays.ToString(CultureInfo.CurrentCulture);
-            DailyPriceTextBox.Text = payment.Input.DailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+            DailyPriceTextBox.Text = FormatCalculationInput(payment.Input.DailyPrice);
             GuideWorkDaysTextBox.Text = payment.Input.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
-            GuideDailyPriceTextBox.Text = payment.Input.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
-            DiscountTextBox.Text = payment.Input.DiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
-            GuideDiscountTextBox.Text = payment.Input.GuideDiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
-            PriceDifferenceTextBox.Text = payment.Input.PriceDifference.ToString("N2", CultureInfo.CurrentCulture);
-            GuidePriceDifferenceTextBox.Text = payment.Input.GuidePriceDifference.ToString("N2", CultureInfo.CurrentCulture);
-            TaxDebtTextBox.Text = payment.Input.TaxDebt.ToString("N2", CultureInfo.CurrentCulture);
-            SocialSecurityDebtTextBox.Text = payment.Input.SocialSecurityDebt.ToString("N2", CultureInfo.CurrentCulture);
-            MinimumWageSupportTextBox.Text = payment.Input.MinimumWageSupport.ToString("N2", CultureInfo.CurrentCulture);
+            GuideDailyPriceTextBox.Text = FormatCalculationInput(payment.Input.GuideDailyPrice);
+            DiscountTextBox.Text = FormatCalculationInput(payment.Input.DiscountAmount);
+            GuideDiscountTextBox.Text = FormatCalculationInput(payment.Input.GuideDiscountAmount);
+            PriceDifferenceTextBox.Text = FormatCalculationInput(payment.Input.PriceDifference);
+            GuidePriceDifferenceTextBox.Text = FormatCalculationInput(payment.Input.GuidePriceDifference);
+            TaxDebtTextBox.Text = FormatCalculationInput(payment.Input.TaxDebt);
+            SocialSecurityDebtTextBox.Text = FormatCalculationInput(payment.Input.SocialSecurityDebt);
+            MinimumWageSupportTextBox.Text = FormatCalculationInput(payment.Input.MinimumWageSupport);
             RestoreMinimumWageSupportInputState(payment.Input.ProgramType, payment.Input.MinimumWageSupport);
-            InspectionPenaltyTextBox.Text = payment.Input.InspectionPenalty.ToString("N2", CultureInfo.CurrentCulture);
+            InspectionPenaltyTextBox.Text = FormatCalculationInput(payment.Input.InspectionPenalty);
             ProgressNumberTextBox.Text = payment.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
             SelectProgressPeriod(payment.PeriodDate);
 
@@ -6604,18 +6604,18 @@ public partial class MainWindow : Window
                 StringComparison.Ordinal));
 
         WorkDaysTextBox.Text = item.Input.WorkDays.ToString(CultureInfo.CurrentCulture);
-        DailyPriceTextBox.Text = item.Input.DailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+        DailyPriceTextBox.Text = FormatCalculationInput(item.Input.DailyPrice);
         GuideWorkDaysTextBox.Text = item.Input.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
-        GuideDailyPriceTextBox.Text = item.Input.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
-        DiscountTextBox.Text = item.Input.DiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
-        GuideDiscountTextBox.Text = item.Input.GuideDiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
-        PriceDifferenceTextBox.Text = item.Input.PriceDifference.ToString("N2", CultureInfo.CurrentCulture);
-        GuidePriceDifferenceTextBox.Text = item.Input.GuidePriceDifference.ToString("N2", CultureInfo.CurrentCulture);
-        TaxDebtTextBox.Text = item.Input.TaxDebt.ToString("N2", CultureInfo.CurrentCulture);
-        SocialSecurityDebtTextBox.Text = item.Input.SocialSecurityDebt.ToString("N2", CultureInfo.CurrentCulture);
-        MinimumWageSupportTextBox.Text = item.Input.MinimumWageSupport.ToString("N2", CultureInfo.CurrentCulture);
+        GuideDailyPriceTextBox.Text = FormatCalculationInput(item.Input.GuideDailyPrice);
+        DiscountTextBox.Text = FormatCalculationInput(item.Input.DiscountAmount);
+        GuideDiscountTextBox.Text = FormatCalculationInput(item.Input.GuideDiscountAmount);
+        PriceDifferenceTextBox.Text = FormatCalculationInput(item.Input.PriceDifference);
+        GuidePriceDifferenceTextBox.Text = FormatCalculationInput(item.Input.GuidePriceDifference);
+        TaxDebtTextBox.Text = FormatCalculationInput(item.Input.TaxDebt);
+        SocialSecurityDebtTextBox.Text = FormatCalculationInput(item.Input.SocialSecurityDebt);
+        MinimumWageSupportTextBox.Text = FormatCalculationInput(item.Input.MinimumWageSupport);
         RestoreMinimumWageSupportInputState(item.Input.ProgramType, item.Input.MinimumWageSupport);
-        InspectionPenaltyTextBox.Text = item.Input.InspectionPenalty.ToString("N2", CultureInfo.CurrentCulture);
+        InspectionPenaltyTextBox.Text = FormatCalculationInput(item.Input.InspectionPenalty);
         ProgressNumberTextBox.Text = item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
         SelectProgressPeriod(item.PeriodDate);
 
@@ -6645,18 +6645,18 @@ public partial class MainWindow : Window
         if (original is not null)
         {
             WorkDaysTextBox.Text = original.Input.WorkDays.ToString(CultureInfo.CurrentCulture);
-            DailyPriceTextBox.Text = original.Input.DailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+            DailyPriceTextBox.Text = FormatCalculationInput(original.Input.DailyPrice);
             GuideWorkDaysTextBox.Text = original.Input.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
-            GuideDailyPriceTextBox.Text = original.Input.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
-            DiscountTextBox.Text = original.Input.DiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
-            GuideDiscountTextBox.Text = original.Input.GuideDiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
-            PriceDifferenceTextBox.Text = original.Input.PriceDifference.ToString("N2", CultureInfo.CurrentCulture);
-            GuidePriceDifferenceTextBox.Text = original.Input.GuidePriceDifference.ToString("N2", CultureInfo.CurrentCulture);
-            TaxDebtTextBox.Text = original.Input.TaxDebt.ToString("N2", CultureInfo.CurrentCulture);
-            SocialSecurityDebtTextBox.Text = original.Input.SocialSecurityDebt.ToString("N2", CultureInfo.CurrentCulture);
-            MinimumWageSupportTextBox.Text = original.Input.MinimumWageSupport.ToString("N2", CultureInfo.CurrentCulture);
+            GuideDailyPriceTextBox.Text = FormatCalculationInput(original.Input.GuideDailyPrice);
+            DiscountTextBox.Text = FormatCalculationInput(original.Input.DiscountAmount);
+            GuideDiscountTextBox.Text = FormatCalculationInput(original.Input.GuideDiscountAmount);
+            PriceDifferenceTextBox.Text = FormatCalculationInput(original.Input.PriceDifference);
+            GuidePriceDifferenceTextBox.Text = FormatCalculationInput(original.Input.GuidePriceDifference);
+            TaxDebtTextBox.Text = FormatCalculationInput(original.Input.TaxDebt);
+            SocialSecurityDebtTextBox.Text = FormatCalculationInput(original.Input.SocialSecurityDebt);
+            MinimumWageSupportTextBox.Text = FormatCalculationInput(original.Input.MinimumWageSupport);
             RestoreMinimumWageSupportInputState(original.Input.ProgramType, original.Input.MinimumWageSupport);
-            InspectionPenaltyTextBox.Text = original.Input.InspectionPenalty.ToString("N2", CultureInfo.CurrentCulture);
+            InspectionPenaltyTextBox.Text = FormatCalculationInput(original.Input.InspectionPenalty);
             ProgressNumberTextBox.Text = original.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
             SelectProgressPeriod(original.PeriodDate);
         }
@@ -7111,9 +7111,9 @@ public partial class MainWindow : Window
             InspectionPenaltyTextBox.Text = "0";
         }
 
-        DailyPriceTextBox.Text = route.DailyPrice.ToString("N2", CultureInfo.CurrentCulture);
-        GuideDailyPriceTextBox.Text = (HasGuideStaff(route.ProgramType) ? route.GuideDailyPrice : 0m)
-            .ToString("N2", CultureInfo.CurrentCulture);
+        DailyPriceTextBox.Text = FormatCalculationInput(route.DailyPrice);
+        GuideDailyPriceTextBox.Text = FormatCalculationInput(
+            HasGuideStaff(route.ProgramType) ? route.GuideDailyPrice : 0m);
 
         // Sözleşme ekranındaki iş günü yıllık/sözleşmesel bilgidir; Excel'de
         // hakediş hesabına giren gün sayısı seçilen ay için ayrı girilir.
@@ -8305,6 +8305,11 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         return decimal.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out value) ||
                decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out value);
     }
+
+    // Editor text is parsed back into calculation inputs, so preserve every decimal digit.
+    // Use the parser's culture (including tr-TR) without currency rounding or grouping.
+    private static string FormatCalculationInput(decimal value) =>
+        value.ToString(CultureInfo.CurrentCulture);
 
     private static decimal RoundMoney(decimal value) =>
         decimal.Round(value, 2, MidpointRounding.AwayFromZero);

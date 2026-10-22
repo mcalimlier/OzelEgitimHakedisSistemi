@@ -463,6 +463,9 @@ internal static class OehsOfficialDocumentFactory
             var difference = isLookupMonth
                 ? monthPayments.Sum(ProgressPaymentReportService.CalculateWorkbookPriceDifference)
                 : 0m;
+            // A price-difference-only or negative correction month still has a
+            // reportable amount. Deductions alone must not create an empty service row.
+            var hasReportableAmount = service != 0m || difference != 0m;
             if (isLookupMonth && c.ProgramType == TransportationProgramType.BasicOrSecondary)
             {
                 // Basic's separate icmal block also carries the monthly deduction value.
@@ -470,9 +473,8 @@ internal static class OehsOfficialDocumentFactory
                 difference += monthPayments.Sum(payment => payment.Calculation.TotalDeductions);
             }
 
-            // B6:B16 in each source workbook compacts only positive monthly amount
-            // cells into consecutive rows; later empty months remain blank.
-            if (service > 0m)
+            // Compact reportable months into consecutive rows; zero-only months stay blank.
+            if (hasReportableAmount)
                 icmalRows.Add((month, service, difference));
         }
 
