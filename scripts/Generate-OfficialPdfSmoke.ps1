@@ -63,7 +63,15 @@ $requiredFiles = @(
     "Historical_Basic_Hakedis_Raporu.pdf",
     "Historical_Basic_Hizmet_Isleri_Hakedis_Raporu.pdf",
     "Historical_Basic_Hizmet_Isleri_Kabul_Tutanagi.pdf",
-    "Historical_Basic_Hakedis_Icmali.pdf"
+    "Historical_Basic_Hakedis_Icmali.pdf",
+    "Latest_Special_Hakedis_Raporu.pdf",
+    "Latest_Special_Hizmet_Isleri_Hakedis_Raporu.pdf",
+    "Latest_Special_Hizmet_Isleri_Kabul_Tutanagi.pdf",
+    "Latest_Special_Hakedis_Icmali.pdf",
+    "Latest_Basic_Hakedis_Raporu.pdf",
+    "Latest_Basic_Hizmet_Isleri_Hakedis_Raporu.pdf",
+    "Latest_Basic_Hizmet_Isleri_Kabul_Tutanagi.pdf",
+    "Latest_Basic_Hakedis_Icmali.pdf"
 )
 
 $missingFiles = @($requiredFiles | Where-Object {
@@ -75,9 +83,9 @@ if ($missingFiles.Count -gt 0) {
 }
 
 Write-Host ""
-Write-Host "Sixteen official A4 PDF files are ready: eight baseline smoke PDFs plus eight historical-source-vector PDFs." -ForegroundColor Green
+Write-Host "Twenty-four A4 acceptance PDFs are ready: eight baseline smoke, eight historical-source-vector and eight newest uploaded-XLSM-vector PDFs." -ForegroundColor Green
 Get-ChildItem -LiteralPath $resolvedOutputDirectory -Filter "*.pdf" -File |
     Sort-Object Name |
     Select-Object Name, Length, FullName |
     Format-Table -AutoSize
-Write-Host "Upload these four PDFs for the final visual review."
+Write-Host "Inspect both programs' four PDF types using source field matrices and visual review."
