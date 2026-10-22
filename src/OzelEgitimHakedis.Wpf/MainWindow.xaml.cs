@@ -4620,6 +4620,15 @@ public partial class MainWindow : Window
             return;
         }
 
+        var selectedPeriod = ProgressPaymentMonthService.FindForPeriod(
+            ProgressPaymentMonthService.BuildOptions(contract.StartDate, contract.EndDate),
+            periodDate.Value);
+        if (selectedPeriod is null)
+        {
+            ShowMultiRouteValidation("Seçilen ay sözleşme tarih aralığında değil; hakediş kaydı oluşturulmadı.");
+            return;
+        }
+
         var contractors = _contractors.Select(x => new Contractor(
             x.Name, x.TaxOrIdentityNumber, x.Address, x.Phone, x.Email,
             x.BankAccountNumber, x.ContactPerson, x.ProgramType, x.VatExempt)).ToArray();
@@ -4688,6 +4697,14 @@ public partial class MainWindow : Window
                 (hasGuide && (row.GuideWorkDays < 0 || row.GuideDailyPrice < 0m || row.GuideDiscountAmount < 0m)))
             {
                 errors.Add($"Hat {route.RouteNumber}: gün, günlük fiyat, iskonto ve kesinti alanları negatif olamaz. Fiyat farkı işaretli olabilir.");
+                continue;
+            }
+
+            var calendarCapacityError = ProgressPaymentMonthService.GetCalendarCapacityError(
+                selectedPeriod, row.WorkDays, hasGuide ? row.GuideWorkDays : 0m);
+            if (calendarCapacityError is not null)
+            {
+                errors.Add($"Hat {route.RouteNumber}: {calendarCapacityError}");
                 continue;
             }
 
