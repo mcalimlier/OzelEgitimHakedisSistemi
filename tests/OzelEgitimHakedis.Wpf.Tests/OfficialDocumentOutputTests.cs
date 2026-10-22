@@ -164,6 +164,45 @@ public sealed class OfficialDocumentOutputTests
     }
 
     [Theory]
+    [InlineData("transport-service/guide-discount")]
+    [InlineData("guide-service/transport-discount")]
+    [InlineData("price-differences")]
+    public void Icmal_ShouldKeepMonthWhenReportableComponentsCancel(string cancellation)
+    {
+        RunOnSta(() =>
+        {
+            var input = new ProgressPaymentInput(0m, 0m, 0m, 0m, 100000m,
+                true, 0m, 0m, 0m, ProgramType: TransportationProgramType.SpecialEducation);
+            input = cancellation switch
+            {
+                "transport-service/guide-discount" => input with
+                {
+                    WorkDays = 1m, DailyPrice = 100m, GuideDiscountAmount = 100m
+                },
+                "guide-service/transport-discount" => input with
+                {
+                    GuideWorkDays = 1m, GuideDailyPrice = 100m, DiscountAmount = 100m
+                },
+                "price-differences" => input with
+                {
+                    PriceDifference = 100m, GuidePriceDifference = -100m
+                },
+                _ => throw new ArgumentOutOfRangeException(nameof(cancellation))
+            };
+            var output = OehsOfficialDocumentFactory.BuildSeparate(CreateDocumentContext(CreatePayment(input)))
+                .Single(document => document.Kind == OehsOfficialDocumentKind.HakedisIcmali);
+            var page = (FixedPage)output.Document.Pages[0].Child;
+
+            Assert.Equal("Hizmet Alımı İşi Ekim 2026", GetCellTextAt(page, 89d, 167d));
+            Assert.Equal("₺0,00", GetCellTextAt(page, 291d, 167d));
+            Assert.Equal("₺0,00", GetCellTextAt(page, 486d, 167d));
+            Assert.Equal("₺0,00", GetCellTextAt(page, 593d, 167d));
+            Assert.Equal("₺0,00", GetCellTextAt(page, 593d, 519d));
+            Assert.Equal(string.Empty, GetCellTextAt(page, 89d, 199d));
+        });
+    }
+
+    [Theory]
     [InlineData(TransportationProgramType.SpecialEducation, 100, "₺100,00")]
     [InlineData(TransportationProgramType.SpecialEducation, -100, "₺-100,00")]
     [InlineData(TransportationProgramType.BasicOrSecondary, 100, "₺106,95")]

@@ -454,6 +454,19 @@ internal static class OehsOfficialDocumentFactory
             var isLookupMonth = ProgressPaymentIcmalService.IsMonthInWorkbookLookupRange(
                 month,
                 c.ProgramType);
+            // Reportable components can cancel in the monthly totals. Keep their
+            // month visible, while excluding deductions and out-of-program guide inputs.
+            var hasReportableAmount = isLookupMonth && monthPayments.Any(payment =>
+            {
+                var input = payment.Input;
+                return input.WorkDays * input.DailyPrice != 0m
+                       || input.DiscountAmount != 0m
+                       || input.PriceDifference != 0m
+                       || input.ProgramType == TransportationProgramType.SpecialEducation
+                       && (input.GuideWorkDays * input.GuideDailyPrice != 0m
+                           || input.GuideDiscountAmount != 0m
+                           || input.GuidePriceDifference != 0m);
+            });
             // The source K (Basic) and K+T (Special) monthly totals include raw I/R
             // price differences. The icmal separates "İş Tutarı" from "Fiyat Farkı",
             // so show the contract-price base in column (a) and I/R once in column (b).
@@ -463,9 +476,6 @@ internal static class OehsOfficialDocumentFactory
             var difference = isLookupMonth
                 ? monthPayments.Sum(ProgressPaymentReportService.CalculateWorkbookPriceDifference)
                 : 0m;
-            // A price-difference-only or negative correction month still has a
-            // reportable amount. Deductions alone must not create an empty service row.
-            var hasReportableAmount = service != 0m || difference != 0m;
             if (isLookupMonth && c.ProgramType == TransportationProgramType.BasicOrSecondary)
             {
                 // Basic's separate icmal block also carries the monthly deduction value.
@@ -473,7 +483,7 @@ internal static class OehsOfficialDocumentFactory
                 difference += monthPayments.Sum(payment => payment.Calculation.TotalDeductions);
             }
 
-            // Compact reportable months into consecutive rows; zero-only months stay blank.
+            // Compact months with reportable components; genuinely empty months stay blank.
             if (hasReportableAmount)
                 icmalRows.Add((month, service, difference));
         }
