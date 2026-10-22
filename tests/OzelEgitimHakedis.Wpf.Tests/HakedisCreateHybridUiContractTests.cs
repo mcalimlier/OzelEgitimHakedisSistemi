@@ -212,6 +212,24 @@ public sealed class HakedisCreateHybridUiContractTests
     }
 
     [Fact]
+    public void MonthlyDraft_ShouldResetWhenNewMonthFollowsTransientEmptySelection()
+    {
+        var afterTemporaryClear = MainWindow.ResolveMonthlyDraftPeriodTransition("2026-10", null);
+        Assert.Equal("2026-10", afterTemporaryClear.LastMonthKey);
+        Assert.False(afterTemporaryClear.ResetMonthlyDraft);
+
+        var afterSelectingNovember = MainWindow.ResolveMonthlyDraftPeriodTransition(
+            afterTemporaryClear.LastMonthKey, "2026-11");
+        Assert.Equal("2026-11", afterSelectingNovember.LastMonthKey);
+        Assert.True(afterSelectingNovember.ResetMonthlyDraft);
+
+        var sameMonth = MainWindow.ResolveMonthlyDraftPeriodTransition("2026-11", "2026-11");
+        Assert.False(sameMonth.ResetMonthlyDraft);
+        var firstMonth = MainWindow.ResolveMonthlyDraftPeriodTransition(null, "2026-11");
+        Assert.False(firstMonth.ResetMonthlyDraft);
+    }
+
+    [Fact]
     public void HybridPreview_ShouldNotifyAndCalculateEachRoutesOwnValues()
     {
         var first=new MainWindow.MultiRoutePaymentDraftRow{WorkDays=22,DailyPrice=100,PriceDifference=50,TaxDebt=10};
