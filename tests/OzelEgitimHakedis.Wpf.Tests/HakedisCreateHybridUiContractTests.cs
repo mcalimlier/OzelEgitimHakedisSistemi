@@ -1118,7 +1118,8 @@ public sealed class HakedisCreateHybridUiContractTests
         Assert.Contains(cardTitles, text => text!.Contains("İKN VE SÖZLEŞME", StringComparison.OrdinalIgnoreCase));
         Assert.Contains(cardTitles, text => text!.Contains("YÜKLENİCİ (FİRMA) BİLGİLERİ", StringComparison.OrdinalIgnoreCase));
         Assert.Contains(cardTitles, text => text!.Contains("HAKEDİŞ DÖNEMİ", StringComparison.OrdinalIgnoreCase));
-        Assert.Contains(cardTitles, text => text!.Contains("Hat Seçimi ve Veri Girişi", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(cardTitles, text => text!.Equals("Dönem, İKN ve Firma", StringComparison.Ordinal));
+        Assert.Equal("250", (string?)named["MultiRoutePaymentGrid"].Attribute("MinHeight"));
 
         var vatCheckBox = root.Descendants()
             .Single(element => (string?)element.Attribute(XamlNamespace + "Name") == "ContractorVatExemptCheckBox");

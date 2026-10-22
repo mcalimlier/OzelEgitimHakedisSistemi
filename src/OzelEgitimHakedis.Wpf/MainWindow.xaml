@@ -445,39 +445,6 @@
                                             </Style>
                                         </TextBlock.Style>
                                     </TextBlock>
-                                    <!-- Tasarım 1: prestij kart stili ve görünür dört aşamalı akış. -->
-                                    <Border Background="#061B31" BorderBrush="#D9A62E" BorderThickness="1" CornerRadius="11" Padding="6" Margin="0,0,0,8">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-                                            <Border Grid.Column="0" Background="#F4C247" BorderBrush="#FFE08A" BorderThickness="1" CornerRadius="8" Padding="7,6" Margin="1">
-                                                <DockPanel LastChildFill="True" VerticalAlignment="Center">
-                                                    <Border Width="24" Height="24" CornerRadius="12" Background="#082845" Margin="0,0,7,0"><TextBlock Text="1" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
-                                                    <TextBlock Text="Dönem, İKN ve Firma" Foreground="#082845" FontSize="10.5" FontWeight="Bold" VerticalAlignment="Center" TextWrapping="Wrap"/>
-                                                </DockPanel>
-                                            </Border>
-                                            <Border Grid.Column="1" Background="#123858" BorderBrush="#355A79" BorderThickness="1" CornerRadius="8" Padding="7,6" Margin="3,1">
-                                                <DockPanel LastChildFill="True" VerticalAlignment="Center">
-                                                    <Border Width="24" Height="24" CornerRadius="12" Background="#071B31" BorderBrush="#D9A62E" BorderThickness="1" Margin="0,0,7,0"><TextBlock Text="2" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
-                                                    <TextBlock Text="Hat Seçimi ve Veri Girişi" Foreground="White" FontSize="10.5" FontWeight="SemiBold" VerticalAlignment="Center" TextWrapping="Wrap"/>
-                                                </DockPanel>
-                                            </Border>
-                                            <Border Grid.Column="2" Background="#123858" BorderBrush="#355A79" BorderThickness="1" CornerRadius="8" Padding="7,6" Margin="3,1">
-                                                <DockPanel LastChildFill="True" VerticalAlignment="Center">
-                                                    <Border Width="24" Height="24" CornerRadius="12" Background="#071B31" BorderBrush="#D9A62E" BorderThickness="1" Margin="0,0,7,0"><TextBlock Text="3" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
-                                                    <TextBlock Text="Hesaplama ve Kontroller" Foreground="White" FontSize="10.5" FontWeight="SemiBold" VerticalAlignment="Center" TextWrapping="Wrap"/>
-                                                </DockPanel>
-                                            </Border>
-                                            <Border Grid.Column="3" Background="#123858" BorderBrush="#355A79" BorderThickness="1" CornerRadius="8" Padding="7,6" Margin="3,1">
-                                                <DockPanel LastChildFill="True" VerticalAlignment="Center">
-                                                    <Border Width="24" Height="24" CornerRadius="12" Background="#071B31" BorderBrush="#D9A62E" BorderThickness="1" Margin="0,0,7,0"><TextBlock Text="4" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
-                                                    <TextBlock Text="Raporlar ve PDF" Foreground="White" FontSize="10.5" FontWeight="SemiBold" VerticalAlignment="Center" TextWrapping="Wrap"/>
-                                                </DockPanel>
-                                            </Border>
-                                        </Grid>
-                                    </Border>
-
                                     </StackPanel>
                                 </Border>
 
@@ -736,8 +703,8 @@
                                                                   ClipboardCopyMode="IncludeHeader"
                                                                   EnableRowVirtualization="True"
                                                                   EnableColumnVirtualization="True"
-                                                                  MinHeight="130"
-                                                                  MaxHeight="340"
+                                                                  MinHeight="250"
+                                                                  MaxHeight="440"
                                                                   HorizontalScrollBarVisibility="Auto"
                                                                   VerticalScrollBarVisibility="Auto"
                                                                   Background="White"
