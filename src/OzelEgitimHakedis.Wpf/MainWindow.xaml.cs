@@ -58,6 +58,8 @@ public partial class MainWindow : Window
     private ProgressPaymentArchive? _editingArchiveSnapshot;
     private ArchiveCorrectionSection _archiveCorrectionSection;
     private bool _dataLoadFailed;
+    private WindowLayoutPreference _windowLayoutPreference = WindowLayoutPreference.Default;
+    private bool _suppressWindowLayoutSelectionChanged;
     private const double DocumentContentWidth = PdfLayoutService.SafeContentWidth;
     private static readonly double[] ThreeColumnWidths = { 58d, 438d, 194d };
     private static readonly double[] ThreeValueWidths = { 45d, 360d, 135d };
@@ -284,21 +286,61 @@ public partial class MainWindow : Window
         Background = System.Windows.Media.Brushes.White;
         UseLayoutRounding = true;
         SnapsToDevicePixels = true;
-        ConfigureWindowForCurrentScreen();
+        _windowLayoutPreference = WindowLayoutPreferenceStore.Load();
+        ApplyWindowLayoutPreference(_windowLayoutPreference);
         UpdateMaximizeRestoreButton();
     }
 
-    private void ConfigureWindowForCurrentScreen()
+    private void ApplyWindowLayoutPreference(WindowLayoutPreference preference)
     {
+        _windowLayoutPreference = preference;
+
+        if (preference.GetRequestedSize() is not { } requestedSize)
+        {
+            WindowState = WindowState.Maximized;
+            SelectWindowLayoutMode(preference.Mode);
+            return;
+        }
+
+        WindowState = WindowState.Normal;
         var workArea = SystemParameters.WorkArea;
 
-        // Çalışma alanının neredeyse tamamını kullan: yatayda daha fazla alan,
-        // dikeyde görev çubuğunun altında kalmadan mümkün olan maksimum yükseklik.
-        Width = Math.Round(workArea.Width * 0.98);
-        Height = Math.Round(workArea.Height * 0.985);
+        Width = Math.Min(requestedSize.Width, workArea.Width);
+        Height = Math.Min(requestedSize.Height, workArea.Height);
 
         Left = workArea.Left + ((workArea.Width - Width) / 2.0);
         Top = workArea.Top + ((workArea.Height - Height) / 2.0);
+        SelectWindowLayoutMode(preference.Mode);
+    }
+
+    private void SelectWindowLayoutMode(WindowLayoutMode mode)
+    {
+        if (WindowLayoutModeComboBox is null)
+            return;
+
+        _suppressWindowLayoutSelectionChanged = true;
+        try
+        {
+            WindowLayoutModeComboBox.SelectedValue = mode.ToString();
+        }
+        finally
+        {
+            _suppressWindowLayoutSelectionChanged = false;
+        }
+    }
+
+    private void WindowLayoutModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_suppressWindowLayoutSelectionChanged ||
+            WindowLayoutModeComboBox.SelectedValue is not string selectedValue ||
+            !Enum.TryParse<WindowLayoutMode>(selectedValue, out var mode))
+        {
+            return;
+        }
+
+        var preference = new WindowLayoutPreference(mode);
+        ApplyWindowLayoutPreference(preference);
+        WindowLayoutPreferenceStore.Save(preference);
     }
 
     private void MainWindow_SourceInitialized(object? sender, EventArgs e)
@@ -7951,6 +7993,13 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
     }
 
     private void Window_StateChanged(object? sender, EventArgs e) => UpdateMaximizeRestoreButton();
+
+    private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        var navigationWidth = WindowLayoutMetrics.GetNavigationWidth(e.NewSize.Width);
+        NavigationColumn.Width = new GridLength(navigationWidth);
+        HeaderNavigationColumn.Width = new GridLength(navigationWidth);
+    }
 
     private void ConfigureZeroValueInputs()
     {

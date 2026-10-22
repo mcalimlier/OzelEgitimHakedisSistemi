@@ -15,7 +15,8 @@
         Background="{StaticResource Navy900Brush}"
         UseLayoutRounding="True"
         SnapsToDevicePixels="True"
-        StateChanged="Window_StateChanged">
+        StateChanged="Window_StateChanged"
+        SizeChanged="Window_SizeChanged">
     <Border x:Name="AppShellBorder"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
@@ -30,7 +31,7 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="215"/>
+                    <ColumnDefinition x:Name="NavigationColumn" Width="215"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
@@ -39,7 +40,7 @@
                       Background="{StaticResource Navy900Brush}"
                       MouseLeftButtonDown="Header_MouseLeftButtonDown">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="215"/>
+                        <ColumnDefinition x:Name="HeaderNavigationColumn" Width="215"/>
                         <ColumnDefinition Width="170"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
@@ -1647,6 +1648,19 @@
                                 <TextBlock Text="Arayüz ve çalışma tercihleri" Style="{StaticResource CardSubtitle}" Margin="0,0,0,10"/>
                                 <TextBlock Text="TEMA" Style="{StaticResource FieldLabel}"/>
                                 <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="8" Margin="0,6,0,8.5"><TextBlock Text="TEHYS Lacivert / Altın" Foreground="White" FontWeight="SemiBold"/></Border>
+                                <TextBlock Text="PENCERE VE GÖRÜNÜM" Style="{StaticResource FieldLabel}" Margin="0,2,0,0"/>
+                                <ComboBox x:Name="WindowLayoutModeComboBox"
+                                          SelectedValuePath="Tag"
+                                          SelectionChanged="WindowLayoutModeComboBox_SelectionChanged"
+                                          Style="{StaticResource FieldComboBox}"
+                                          Margin="0,6,0,4">
+                                    <ComboBoxItem Tag="Maximized">Maksimize — ekranı çalışma alanına göre kullan</ComboBoxItem>
+                                    <ComboBoxItem Tag="FullHd">1920 × 1080 — Full HD</ComboBoxItem>
+                                    <ComboBoxItem Tag="Hd">1366 × 768 — HD</ComboBoxItem>
+                                    <ComboBoxItem Tag="StandardFourByThree">1280 × 1024 — Standart</ComboBoxItem>
+                                    <ComboBoxItem Tag="StandardWide">1280 × 768 — Geniş ekran</ComboBoxItem>
+                                </ComboBox>
+                                <TextBlock Text="Varsayılan: maksimize. Seçim yalnızca uygulama penceresini değiştirir; Windows ekran çözünürlüğünü değiştirmez." Foreground="#C5D7E7" FontSize="10.5" TextWrapping="Wrap" Margin="0,0,0,8.5"/>
                                 <TextBlock Text="PARA BİRİMİ" Style="{StaticResource FieldLabel}"/>
                                 <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="8" Margin="0,6,0,0"><TextBlock Text="Türk Lirası (₺)" Foreground="White" FontWeight="SemiBold"/></Border>
                                 <Button Content="HESAPLAMA SABİTLERİNİ YÖNET" Tag="Constants" Click="NavigationButton_Click" Style="{StaticResource ModernButton}" Height="38" Margin="0,14,0,0"/>
