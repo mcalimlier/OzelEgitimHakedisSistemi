@@ -4628,9 +4628,16 @@ public partial class MainWindow : Window
             .Select(x => x.RouteNumber.Trim())
             .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var contractorNameForBatch = !string.IsNullOrWhiteSpace(contract.ContractorName)
-            ? contract.ContractorName
-            : routes.Select(x => x.ContractorName).FirstOrDefault(x => !string.IsNullOrWhiteSpace(x)) ?? "Yüklenici";
+        // A tender can contain routes belonging to different firms. The displayed
+        // batch name must describe the selected routes' actual contractor, not the
+        // tender's optional/default contractor label.
+        var contractorNameForBatch = routes
+            .Select(route => FindContractor(route.ContractorTaxOrIdentityNumber, route.ProgramType)?.Name)
+            .FirstOrDefault(name => !string.IsNullOrWhiteSpace(name))
+            ?? routes.Select(route => route.ContractorName)
+                .FirstOrDefault(name => !string.IsNullOrWhiteSpace(name))
+            ?? contract.ContractorName
+            ?? "Yüklenici";
         var batchDisplayName = MonthlyProgressPaymentIdentityService.BuildDisplayName(
             contract.ProgramType,
             contract.TenderNumber,
