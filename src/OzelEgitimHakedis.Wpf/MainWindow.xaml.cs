@@ -246,6 +246,7 @@ public partial class MainWindow : Window
     private void SetProgressEditorMode(bool editing, bool archiveCorrection = false)
     {
         CalculateProgressButton.Content = editing ? "DÜZENLE" : "HAKEDİŞİ HESAPLA";
+        SinglePaymentFieldsGrid.Visibility = editing ? Visibility.Visible : Visibility.Collapsed;
         CancelProgressEditButton.Visibility = editing ? Visibility.Visible : Visibility.Collapsed;
         EditCurrentProgressButton.IsEnabled = !editing;
 
@@ -265,9 +266,10 @@ public partial class MainWindow : Window
 
         ProgressEditorTitleTextBlock.Text = editing
             ? (archiveCorrection ? "ARŞİV HAKEDİŞ DÜZENLE" : "HAKEDİŞ DÜZENLE")
-            : "DÖNEM HESAP BİLGİLERİ";
+            : "HAT BAZINDA HAKEDİŞ GİRDİLERİ";
         ProgressTenderListBox.IsEnabled = !(editing && archiveCorrection);
         ProgressRouteComboBox.IsEnabled = !(editing && archiveCorrection);
+        if (!editing && ProgressRouteComboBox.SelectedItems.Count > 0) UpdateMultiRouteDraftRows();
     }
 
     private void ClearArchiveCorrectionState()
@@ -787,7 +789,7 @@ public partial class MainWindow : Window
             }
         }
 
-        if (page == "Settings")
+        if (page == "Signatories" && _operationsReady)
         {
             try
             {
@@ -817,9 +819,10 @@ public partial class MainWindow : Window
         AcceptancePanel.Visibility = page == "Acceptance" ? Visibility.Visible : Visibility.Collapsed;
         StatisticsPanel.Visibility = page == "Statistics" ? Visibility.Visible : Visibility.Collapsed;
         SettingsPanel.Visibility = page == "Settings" ? Visibility.Visible : Visibility.Collapsed;
+        SignatoriesPanel.Visibility = page == "Signatories" ? Visibility.Visible : Visibility.Collapsed;
         CalculationConstantsPanel.Visibility = page == "Constants" ? Visibility.Visible : Visibility.Collapsed;
         PlaceholderPanel.Visibility = page is "Home" or "Contract" or "Progress" or "Lines" or "Contractors"
-            or "History" or "Archives" or "Summary" or "Reports" or "Acceptance" or "Statistics" or "Settings" or "Constants" or "Trace"
+            or "History" or "Archives" or "Summary" or "Reports" or "Acceptance" or "Statistics" or "Settings" or "Signatories" or "Constants" or "Trace"
             ? Visibility.Collapsed
             : Visibility.Visible;
 
@@ -836,6 +839,7 @@ public partial class MainWindow : Window
             "Acceptance" => "Kabul Tutanağı",
             "Statistics" => "İstatistikler",
             "Settings" => "Ayarlar",
+            "Signatories" => "Resmî Belge İmzacıları",
             "Constants" => "Hesaplama Sabitleri",
             "Trace" => "Geçici Hesap Tutucu",
             _ => "Ana Ekran"
@@ -858,8 +862,8 @@ public partial class MainWindow : Window
     {
         foreach (var button in new[]
         {
-            NavHome, NavContract, NavContractors, NavLines,
-            NavProgress, NavReports, NavHistory, NavArchives, NavSummary, NavAcceptance, NavStatistics, NavSettings
+            NavHome, NavContract, NavSignatories, NavContractors, NavLines,
+            NavProgress, NavReports, NavHistory, NavArchives, NavStatistics, NavSettings
         })
         {
             var buttonPage = button.Tag?.ToString();
@@ -4584,7 +4588,7 @@ public partial class MainWindow : Window
         IReadOnlyList<MultiRoutePaymentDraftRow> entries,
         DateOnly? periodDate)
     {
-        if (routes.Count < 2)
+        if (routes.Count == 0)
             return;
 
         if (!periodDate.HasValue)
@@ -4597,8 +4601,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        MultiRoutePaymentGrid.CommitEdit(DataGridEditingUnit.Cell, true);
-        MultiRoutePaymentGrid.CommitEdit(DataGridEditingUnit.Row, true);
+        if (!TryCommitHybridGrid()) return;
 
         if (entries.Count != routes.Count)
         {
@@ -4834,6 +4837,16 @@ public partial class MainWindow : Window
         if (selectedContract is null)
         {
             ShowAlreadyRegistered("Önce İhale Kayıt Numarası (İKN) seçin.");
+            return;
+        }
+        if (!IsArchiveEditing && !_editingHistoryId.HasValue)
+        {
+            if (ProgressRouteComboBox.SelectedItems.Count == 0)
+            {
+                ShowMultiRouteValidation("Önce hakediş oluşturulacak en az bir hat seçin.");
+                return;
+            }
+            TryCalculateHybridSelection(selectedContract);
             return;
         }
         var hasGuide = HasGuideStaff(selectedContract.ProgramType);
@@ -5347,6 +5360,13 @@ public partial class MainWindow : Window
     {
         if (CalculationTraceLiveTextBox is null)
             return;
+
+        if (!IsArchiveEditing && !_editingHistoryId.HasValue && _multiRoutePaymentRows.Count > 0 &&
+            MultiRouteEntryBorder.Visibility == Visibility.Visible)
+        {
+            RefreshHybridCalculationTrace();
+            return;
+        }
 
         var culture = CultureInfo.CurrentCulture;
         string N(decimal value) => value.ToString("N4", culture);
@@ -6852,67 +6872,29 @@ public partial class MainWindow : Window
         if (!IsInitialized || _suppressSelectionEvents)
             return;
 
-        // Çoklu seçimde global parasal alanları başka hatta ait değerlerle
-        // ezmeden önce, önceki tek-hat girişini ilgili satıra aktar.
+        // Keep every selected route's own monthly draft when the selection changes.
         UpdateMultiRouteDraftRows();
         UpdateProgressRouteDefaults();
     }
 
     private void UpdateMultiRouteDraftRows()
     {
-        if (!IsInitialized)
-            return;
+        if (!IsInitialized) return;
+        UpdateHybridRouteDraftRows();
+    }
 
+    private void UpdateHybridRouteDraftRows()
+    {
+        if (!TryCommitHybridGrid()) return;
         var selectedRoutes = ProgressRouteComboBox.SelectedItems.OfType<RouteDraft>().ToArray();
-        var showMultiRouteGrid = selectedRoutes.Length > 1 &&
+        var showMultiRouteGrid = selectedRoutes.Length > 0 &&
                                  !_editingHistoryId.HasValue &&
                                  !IsArchiveEditing;
         if (!showMultiRouteGrid)
         {
-            // Hiding the multi-route editor is a presentation change, not a
-            // request to discard the user's unsaved per-route draft values.
-            // Before switching modes, capture the visible single-route inputs
-            // back into the route row that owns those values.
-            if (!_editingHistoryId.HasValue && !IsArchiveEditing &&
-                !string.IsNullOrWhiteSpace(_lastProgressDefaultsRouteKey))
-            {
-                _multiRouteDraftCache.TryGetValue(_lastProgressDefaultsRouteKey, out var previousDraft);
-                if (previousDraft is not null)
-                {
-                    if (TryParseWorkDays(WorkDaysTextBox.Text, out var workDays))
-                        previousDraft.WorkDays = Math.Max(0, workDays);
-                    if (TryParseWorkDays(GuideWorkDaysTextBox.Text, out var guideWorkDays))
-                        previousDraft.GuideWorkDays = Math.Max(0, guideWorkDays);
-                    previousDraft.DiscountAmount = ReadDecimal(DiscountTextBox);
-                    previousDraft.PriceDifference = ReadDecimal(PriceDifferenceTextBox);
-                    previousDraft.GuideDiscountAmount = ReadDecimal(GuideDiscountTextBox);
-                    previousDraft.GuidePriceDifference = ReadDecimal(GuidePriceDifferenceTextBox);
-                    previousDraft.TaxDebt = ReadDecimal(TaxDebtTextBox);
-                    previousDraft.SocialSecurityDebt = ReadDecimal(SocialSecurityDebtTextBox);
-                    var draftRoute = _routes.FirstOrDefault(route =>
-                        string.Equals(
-                            OehsIdentityService.BuildRouteKey(
-                                route.TenderNumber,
-                                route.RouteNumber,
-                                route.ContractorTaxOrIdentityNumber,
-                                route.ContractNumber,
-                                route.ProgramType),
-                            previousDraft.RouteKey,
-                            StringComparison.Ordinal));
-                    previousDraft.MinimumWageSupportEnabled =
-                        draftRoute is not null &&
-                        (draftRoute.ProgramType != TransportationProgramType.BasicOrSecondary ||
-                         MinimumWageSupportEnabledCheckBox.IsChecked == true);
-                    previousDraft.MinimumWageSupport = previousDraft.MinimumWageSupportEnabled
-                        ? ReadDecimal(MinimumWageSupportTextBox)
-                        : 0m;
-                    previousDraft.InspectionPenalty = ReadDecimal(InspectionPenaltyTextBox);
-                }
-            }
-
-            // Keep the keyed draft cache while the grid is hidden. Rows are
-            // re-used only when their full route identity matches a later
-            // selection, so another contract/program cannot inherit these values.
+            foreach (var row in _multiRoutePaymentRows)
+                _multiRouteDraftCache[row.RouteKey] = row;
+            _multiRoutePaymentRows.Clear();
             MultiRouteEntryBorder.Visibility = Visibility.Collapsed;
             SetGlobalMonetaryFieldsVisible(true);
             return;
@@ -6923,17 +6905,6 @@ public partial class MainWindow : Window
         foreach (var visibleRow in _multiRoutePaymentRows)
             _multiRouteDraftCache[visibleRow.RouteKey] = visibleRow;
         var existingRows = _multiRouteDraftCache;
-        var seedRouteKey = _lastProgressDefaultsRouteKey;
-        var seedWorkDays = TryParseWorkDays(WorkDaysTextBox.Text, out var parsedWorkDays)
-            ? parsedWorkDays
-            : 0;
-        var seedGuideWorkDays = TryParseWorkDays(GuideWorkDaysTextBox.Text, out var parsedGuideWorkDays)
-            ? parsedGuideWorkDays
-            : 0;
-
-        decimal ReadDecimal(TextBox box) =>
-            TryParseDecimalOrZero(box.Text, out var value) ? value : 0m;
-
         var nextRows = new List<MultiRoutePaymentDraftRow>();
         foreach (var route in selectedRoutes.OrderBy(x => x.RouteNumber, StringComparer.OrdinalIgnoreCase))
         {
@@ -6945,6 +6916,7 @@ public partial class MainWindow : Window
                 route.ProgramType);
             if (existingRows.TryGetValue(routeKey, out var existing))
             {
+                ConfigureHybridRow(existing, route);
                 nextRows.Add(existing);
                 continue;
             }
@@ -6964,29 +6936,7 @@ public partial class MainWindow : Window
                 GuideDailyPrice = hasGuide ? route.GuideDailyPrice : 0m
             };
 
-            // If the user typed values for one selected route before adding a
-            // second route, carry those values only to that original route.
-            // New routes start with zero monetary adjustments to avoid multiplying
-            // a single amount across every selected route.
-            if (string.Equals(routeKey, seedRouteKey, StringComparison.Ordinal))
-            {
-                row.WorkDays = Math.Max(0, seedWorkDays);
-                row.GuideWorkDays = hasGuide ? Math.Max(0, seedGuideWorkDays) : 0;
-                row.DiscountAmount = ReadDecimal(DiscountTextBox);
-                row.PriceDifference = ReadDecimal(PriceDifferenceTextBox);
-                row.GuideDiscountAmount = hasGuide ? ReadDecimal(GuideDiscountTextBox) : 0m;
-                row.GuidePriceDifference = hasGuide ? ReadDecimal(GuidePriceDifferenceTextBox) : 0m;
-                row.TaxDebt = ReadDecimal(TaxDebtTextBox);
-                row.SocialSecurityDebt = ReadDecimal(SocialSecurityDebtTextBox);
-                row.MinimumWageSupportEnabled =
-                    route.ProgramType != TransportationProgramType.BasicOrSecondary ||
-                    MinimumWageSupportEnabledCheckBox.IsChecked == true;
-                row.MinimumWageSupport = row.MinimumWageSupportEnabled
-                    ? ReadDecimal(MinimumWageSupportTextBox)
-                    : 0m;
-                row.InspectionPenalty = ReadDecimal(InspectionPenaltyTextBox);
-            }
-
+            ConfigureHybridRow(row, route);
             _multiRouteDraftCache[routeKey] = row;
             nextRows.Add(row);
         }
@@ -6997,6 +6947,8 @@ public partial class MainWindow : Window
 
         MultiRouteEntryBorder.Visibility = Visibility.Visible;
         SetGlobalMonetaryFieldsVisible(false);
+        ApplyHybridColumnView();
+        RefreshHybridTotals();
     }
 
     private void SetGlobalMonetaryFieldsVisible(bool visible)
@@ -7004,6 +6956,8 @@ public partial class MainWindow : Window
         var visibility = visible ? Visibility.Visible : Visibility.Collapsed;
         var selectedProgram = (ProgressTenderListBox.SelectedItem as ContractDraftData)?.ProgramType;
         var showGuide = visible && selectedProgram.HasValue && HasGuideStaff(selectedProgram.Value);
+        SinglePaymentFieldsGrid.Visibility = visible && (_editingHistoryId.HasValue || IsArchiveEditing)
+            ? Visibility.Visible : Visibility.Collapsed;
         WorkDaysLabel.Visibility = visibility;
         WorkDaysTextBox.Visibility = visibility;
         DailyPriceLabel.Visibility = visibility;
@@ -8327,65 +8281,6 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
                 latest.PeriodDate.Value));
     }
 
-
-    public sealed class MultiRoutePaymentDraftRow : INotifyPropertyChanged
-    {
-        private bool _minimumWageSupportEnabled = true;
-        private decimal _minimumWageSupport;
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        public string RouteKey { get; set; } = string.Empty;
-        public string RouteNumber { get; set; } = string.Empty;
-        public string RouteName { get; set; } = string.Empty;
-        public string RouteDisplayText => $"Hat {RouteNumber} — {RouteName}";
-        public decimal WorkDays { get; set; }
-        public decimal DailyPrice { get; set; }
-        public decimal DiscountAmount { get; set; }
-        public decimal PriceDifference { get; set; }
-        public decimal GuideWorkDays { get; set; }
-        public decimal GuideDailyPrice { get; set; }
-        public decimal GuideDiscountAmount { get; set; }
-        public decimal GuidePriceDifference { get; set; }
-        public decimal TaxDebt { get; set; }
-        public decimal SocialSecurityDebt { get; set; }
-
-        public bool MinimumWageSupportEnabled
-        {
-            get => _minimumWageSupportEnabled;
-            set
-            {
-                if (_minimumWageSupportEnabled == value)
-                    return;
-
-                _minimumWageSupportEnabled = value;
-                if (!value)
-                    _minimumWageSupport = 0m;
-
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(MinimumWageSupport));
-            }
-        }
-
-        public decimal MinimumWageSupport
-        {
-            get => _minimumWageSupport;
-            set
-            {
-                var normalized = MinimumWageSupportEnabled ? value : 0m;
-                if (_minimumWageSupport == normalized)
-                    return;
-
-                _minimumWageSupport = normalized;
-                OnPropertyChanged();
-            }
-        }
-
-        public decimal InspectionPenalty { get; set; }
-
-        private void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
 
     private sealed record RouteDraft(
         string RouteNumber,

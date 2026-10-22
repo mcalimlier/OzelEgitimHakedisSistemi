@@ -145,6 +145,7 @@
                                 <TextBlock Text="İHALE BİLGİLERİ" FontSize="11.5" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
+<Button x:Name="NavSignatories" Style="{StaticResource NavButton}" Tag="Signatories" Click="NavigationButton_Click"><StackPanel Orientation="Horizontal"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE70F;" FontSize="15" Width="42"/><TextBlock Text="RESMÎ BELGE İMZACILARI" Width="120" TextWrapping="Wrap" FontSize="10.5" FontWeight="SemiBold"/></StackPanel></Button>
                         <Button x:Name="NavContractors" Style="{StaticResource NavButton}" Tag="Contractors" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE70B;" FontSize="15" Width="42"/>
@@ -163,29 +164,18 @@
                                 <TextBlock Text="HAKEDİŞ OLUŞTUR" FontSize="11.5" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
-                        <Border Height="3" Background="#557A9D" Margin="10,8" CornerRadius="1.5"/>
-                        <Button x:Name="NavReports" Style="{StaticResource NavButton}" Tag="Reports" Click="NavigationButton_Click">
+<Button x:Name="NavReports" Style="{StaticResource NavButton}" Tag="Reports" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE9D2;" FontSize="15" Width="42"/>
                                 <TextBlock Text="ÇIKTILAR" FontSize="11.5" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
+                        <Border Height="3" Background="#557A9D" Margin="10,8" CornerRadius="1.5"/>
+
                         <Button x:Name="NavHistory" Style="{StaticResource NavButton}" Tag="History" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE81C;" FontSize="15" Width="42"/>
                                 <TextBlock Text="HAKEDİŞ GEÇMİŞİ" FontSize="11.5" FontWeight="SemiBold"/>
-                            </StackPanel>
-                        </Button>
-                        <Button x:Name="NavSummary" Style="{StaticResource NavButton}" Tag="Summary" Click="NavigationButton_Click">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8A5;" FontSize="15" Width="42"/>
-                                <TextBlock Text="İCMAL" FontSize="11.5" FontWeight="SemiBold"/>
-                            </StackPanel>
-                        </Button>
-                        <Button x:Name="NavAcceptance" Style="{StaticResource NavButton}" Tag="Acceptance" Click="NavigationButton_Click">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE73E;" FontSize="15" Width="42"/>
-                                <TextBlock Text="KABUL TUTANAĞI" FontSize="11.5" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                         <Button x:Name="NavStatistics" Style="{StaticResource NavButton}" Tag="Statistics" Click="NavigationButton_Click">
@@ -415,7 +405,7 @@
                                         </StackPanel>
                                     </Grid>
                                 </StackPanel>
-                        
+
                             </ScrollViewer>
 </Grid>
 
@@ -622,7 +612,7 @@
                                                         </DataTemplate>
                                                     </ListBox.ItemTemplate>
                                                 </ListBox>
-                                                
+
                                             </StackPanel>
                                             <Border Grid.Column="1" Background="#0A2A49" BorderBrush="#D9A62E" BorderThickness="1" CornerRadius="9" Padding="9">
                                                 <StackPanel>
@@ -670,7 +660,7 @@
                                                 <TextBlock x:Name="ProgressEditorTitleTextBlock" Text="DÖNEM HESAP BİLGİLERİ" Foreground="{StaticResource Gold500Brush}" FontSize="11.5" FontWeight="Bold"/>
                                                 <TextBlock x:Name="CalculationSheetNameTextBlock" Text="Hesaplama" Foreground="White" FontSize="13.5" FontWeight="SemiBold" Margin="0,5,0,4"/><TextBlock Text="Sözleşme bedeli İhale Bilgileri kaydından; KDV istisnası ise Firmalar panelindeki firma kartından alınır." Foreground="#B9CBDA" FontSize="11.5" TextWrapping="Wrap" Margin="0,0,0,4"/>
                                                 <TextBlock x:Name="CalculationStatusTextBlock" Style="{StaticResource ValidationText}" Margin="0,4,0,6"/>
-                                                <Grid>
+                                                <Grid x:Name="SinglePaymentFieldsGrid">
                                                     <Grid.ColumnDefinitions><ColumnDefinition Width="120"/><ColumnDefinition Width="1.2*"/><ColumnDefinition Width="145"/><ColumnDefinition Width="1.2*"/></Grid.ColumnDefinitions>
                                                     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                                                     <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" Text="Dönemsel hakediş girdileri" Foreground="#B9CBDA" FontSize="11.5" Margin="0,6"/>
@@ -724,9 +714,12 @@
                                                 </Grid>
                                                 <Border x:Name="MultiRouteEntryBorder" Visibility="Collapsed" Style="{StaticResource Card}" Padding="7" Margin="4.5,7,0,0">
                                                     <StackPanel>
-                                                        <TextBlock Text="ÇOKLU HAT — HAT BAZINDA GİRİŞ" Foreground="{StaticResource Gold500Brush}" FontSize="11.5" FontWeight="Bold"/>
-                                                        <TextBlock Text="EXCEL-HİBRİT ÇALIŞMA ALANI • Mavi başlıklar alan adıdır; hücreleri çift tıklayarak düzenleyin. Günlük fiyatlar kaynak hat kaydından gelir ve salt okunurdur. Hesaplama için HAKEDİŞİ HESAPLA düğmesini kullanın." Foreground="#C5D7E7" FontSize="11" TextWrapping="Wrap" Margin="0,3,0,6"/>
-                                                        <DataGrid x:Name="MultiRoutePaymentGrid"
+                                                        <TextBlock Text="SEÇİLİ HATLAR — EXCEL-HİBRİT GİRİŞ" Foreground="{StaticResource Gold500Brush}" FontSize="11.5" FontWeight="Bold"/>
+                                                        <TextBlock Text="Her hattın aylık gününü, fiyat farkını ve kesintilerini kendi satırında düzenleyin. Günlük fiyatlar hat kaydından gelir. Net tutarlar siz yazdıkça güncellenir; HAKEDİŞİ HESAPLA ile kayda geçer." Foreground="#C5D7E7" FontSize="11" TextWrapping="Wrap" Margin="0,3,0,6"/>
+                                                        <WrapPanel Margin="0,0,0,8"><TextBlock Text="Gösterilen alanlar" Foreground="#C5D7E7" VerticalAlignment="Center" Margin="0,0,8,0"/><ComboBox x:Name="HybridColumnView" Width="185" SelectedIndex="0" SelectionChanged="HybridColumnView_SelectionChanged" Style="{StaticResource FieldComboBox}"><ComboBoxItem Content="Tüm alanlar" Tag="All"/><ComboBoxItem Content="Taşıma bilgileri" Tag="Transport"/><ComboBoxItem Content="Rehber bilgileri" Tag="Guide"/><ComboBoxItem Content="Kesintiler" Tag="Deductions"/></ComboBox></WrapPanel><DataGrid x:Name="MultiRoutePaymentGrid"
+                                                                  LoadingRow="HybridGrid_LoadingRow"
+                                                                  CellEditEnding="HybridGrid_CellEditEnding"
+                                                                  RowHeight="32"
                                                                   AutoGenerateColumns="False"
                                                                   CanUserAddRows="False"
                                                                   CanUserDeleteRows="False"
@@ -744,7 +737,7 @@
                                                                   EnableRowVirtualization="True"
                                                                   EnableColumnVirtualization="True"
                                                                   MinHeight="130"
-                                                                  MaxHeight="255"
+                                                                  MaxHeight="340"
                                                                   HorizontalScrollBarVisibility="Auto"
                                                                   VerticalScrollBarVisibility="Auto"
                                                                   Background="White"
@@ -782,18 +775,19 @@
                                                             </DataGrid.CellStyle>
                                                             <DataGrid.Columns>
                                                                 <DataGridTextColumn Header="Hat" Binding="{Binding RouteDisplayText}" IsReadOnly="True" Width="190"/>
-                                                                <DataGridTextColumn Header="Taşıma Gün" Binding="{Binding WorkDays, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="82"/>
+<DataGridTextColumn Header="Hesaplanan net" Binding="{Binding NetPayableText}" IsReadOnly="True" Width="125"/>
+                                                                <DataGridTextColumn Header="Taşıma Gün" Binding="{Binding WorkDays, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="82"/>
                                                                 <DataGridTextColumn Header="Taşıma Günlük Fiyat" Binding="{Binding DailyPrice}" IsReadOnly="True" Width="112"/>
-                                                                <DataGridTextColumn Header="Taşıma İskonto" Binding="{Binding DiscountAmount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="105"/>
-                                                                <DataGridTextColumn Header="Taşıma Fiyat Farkı KDV Hariç" Binding="{Binding PriceDifference, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="190"/>
-                                                                <DataGridTextColumn Header="Rehber Gün" Binding="{Binding GuideWorkDays, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="82"/>
+                                                                <DataGridTextColumn Header="Taşıma İskonto" Binding="{Binding DiscountAmount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="105"/>
+                                                                <DataGridTextColumn Header="Taşıma Fiyat Farkı KDV Hariç" Binding="{Binding PriceDifference, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="190"/>
+                                                                <DataGridTextColumn Header="Rehber Gün" Binding="{Binding GuideWorkDays, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="82"/>
                                                                 <DataGridTextColumn Header="Rehber Günlük Fiyat" Binding="{Binding GuideDailyPrice}" IsReadOnly="True" Width="112"/>
-                                                                <DataGridTextColumn Header="Rehber İskonto" Binding="{Binding GuideDiscountAmount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="105"/>
-                                                                <DataGridTextColumn Header="Rehber Personel Fiyat Farkı KDV Hariç" Binding="{Binding GuidePriceDifference, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="230"/>
-                                                                <DataGridTextColumn Header="Vergi Borcu" Binding="{Binding TaxDebt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
-                                                                <DataGridTextColumn Header="SGK Borcu" Binding="{Binding SocialSecurityDebt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
-                                                                <DataGridCheckBoxColumn Header="Asgari Ücret Desteği Kullan" Binding="{Binding MinimumWageSupportEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="155"/>
-                                                                <DataGridTextColumn Header="Asgari Ücret Desteği" Binding="{Binding MinimumWageSupport, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="125">
+                                                                <DataGridTextColumn Header="Rehber İskonto" Binding="{Binding GuideDiscountAmount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="105"/>
+                                                                <DataGridTextColumn Header="Rehber Personel Fiyat Farkı KDV Hariç" Binding="{Binding GuidePriceDifference, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="230"/>
+                                                                <DataGridTextColumn Header="Vergi Borcu" Binding="{Binding TaxDebt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="100"/>
+                                                                <DataGridTextColumn Header="SGK Borcu" Binding="{Binding SocialSecurityDebt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="100"/>
+                                                                <DataGridCheckBoxColumn Header="Asgari Ücret Desteği Kullan" Binding="{Binding MinimumWageSupportEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="155"/>
+                                                                <DataGridTextColumn Header="Asgari Ücret Desteği" Binding="{Binding MinimumWageSupport, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="125">
                                                                     <DataGridTextColumn.ElementStyle>
                                                                         <Style TargetType="{x:Type TextBlock}">
                                                                             <Style.Triggers>
@@ -809,9 +803,9 @@
                                                                         </Style>
                                                                     </DataGridTextColumn.EditingElementStyle>
                                                                 </DataGridTextColumn>
-                                                                <DataGridTextColumn Header="Denetim Cezası" Binding="{Binding InspectionPenalty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="105"/>
+                                                                <DataGridTextColumn Header="Denetim Cezası" Binding="{Binding InspectionPenalty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="105"/>
                                                             </DataGrid.Columns>
-                                                        </DataGrid>
+                                                        </DataGrid><TextBlock x:Name="HybridSelectionSummaryTextBlock" Text="Her satır ayrı hesaplanır." Foreground="#F4C247" TextWrapping="Wrap" FontWeight="SemiBold" Margin="0,8,0,0"/>
                                                     </StackPanel>
                                                 </Border>
                                                 <Border x:Name="ProgressValidationBanner" Visibility="Collapsed" Background="#FFF1F1" BorderBrush="#E53935" BorderThickness="1.5" CornerRadius="9" Padding="8,7" Margin="4.5,6,0,0"><StackPanel><TextBlock Text="HESAPLAMA GİRDİLERİNİ KONTROL EDİN" Foreground="#C62828" FontSize="11.5" FontWeight="Bold"/><TextBlock x:Name="ProgressValidationMessageTextBlock" Foreground="#8E1B1B" FontSize="11.5" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,3,0,0"/></StackPanel></Border>
@@ -1049,7 +1043,7 @@
                                         </Border>
                                     </Grid>
                                 </StackPanel>
-                        
+
                             </ScrollViewer>
 </Grid>
 
@@ -1591,9 +1585,14 @@
                                 </StackPanel></Border>
                             </StackPanel></Border>
                         </Grid>
-                        <Border Style="{StaticResource Card}" Padding="14" Margin="0,12,0,10">
+
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
+            <Grid x:Name="SignatoriesPanel" Visibility="Collapsed"><ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0"><StackPanel><TextBlock Text="RESMÎ BELGE İMZACILARI" Style="{StaticResource PageTitle}"/><Border Style="{StaticResource Card}" Padding="14" Margin="0,12,0,10">
                             <StackPanel>
-                                <TextBlock Text="RESMÎ BELGE İMZACILARI" Style="{StaticResource CardTitle}"/>
+
                                 <TextBlock Text="Düzenleyen, kontrol eden veya onaylayan kişiler değiştiğinde bilgileri burada güncelleyin. Kaydedilen bilgiler dört resmî PDF şablonuna uygulanır." Style="{StaticResource CardSubtitle}" TextWrapping="Wrap" Margin="0,4,0,12"/>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -1620,17 +1619,13 @@
                                     <TextBox x:Name="SignatoryApproverNameTextBox" Grid.Row="3" Grid.Column="1" Style="{StaticResource PremiumFieldTextBox}" Margin="4"/>
                                     <TextBox x:Name="SignatoryApproverRoleTextBox" Grid.Row="3" Grid.Column="2" Style="{StaticResource PremiumFieldTextBox}" Margin="4"/>
                                 </Grid>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
-                                    <Button Content="KAYITLI İMZACILARI YENİDEN YÜKLE" Click="LoadSignatoriesButton_Click" Style="{StaticResource SecondaryButton}" Height="36" Margin="0,0,8,0"/>
-                                    <Button Content="İMZACI BİLGİLERİNİ KAYDET" Click="SaveSignatoriesButton_Click" Style="{StaticResource ModernButton}" Height="36"/>
-                                </StackPanel>
+                                <WrapPanel HorizontalAlignment="Right" Margin="0,12,0,0">
+                                    <Button Content="KAYITLI İMZACILARI YENİDEN YÜKLE" Click="LoadSignatoriesButton_Click" Style="{StaticResource SecondaryButton}" Height="36" Margin="0,0,8,6"/>
+                                    <Button Content="İMZACI BİLGİLERİNİ KAYDET" Click="SaveSignatoriesButton_Click" Style="{StaticResource ModernButton}" Height="36" Margin="0,0,0,6"/>
+                                </WrapPanel>
                             </StackPanel>
-                        </Border>
-                    </StackPanel>
-                </ScrollViewer>
-            </Grid>
-
-            <Grid x:Name="CalculationConstantsPanel" Visibility="Collapsed">
+                        </Border></StackPanel></ScrollViewer></Grid>
+<Grid x:Name="CalculationConstantsPanel" Visibility="Collapsed">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0">
                     <StackPanel>
                         <TextBlock Text="HESAPLAMA SABİTLERİ" Style="{StaticResource PageTitle}"/>
@@ -1687,7 +1682,7 @@
                                                TextWrapping="Wrap" FontSize="11.5" Foreground="{StaticResource Text600Brush}"/>
                                 </Border>
                             </StackPanel>
-                        
+
                             </ScrollViewer>
 </Grid>
                     </Grid>

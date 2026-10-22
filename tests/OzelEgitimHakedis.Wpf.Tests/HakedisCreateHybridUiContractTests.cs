@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -25,6 +25,179 @@ public sealed class HakedisCreateHybridUiContractTests
 {
     private static readonly XNamespace XamlNamespace =
         "http://schemas.microsoft.com/winfx/2006/xaml";
+
+    [Fact]
+    public void HybridLayout_ShouldKeepPerRouteGridAndCalculateActionReachable()
+    {
+        RunOnSta(() =>
+        {
+            foreach(var size in new[]{(1024d,600d),(1366d,768d),(1920d,1080d)})
+            {
+                var layout=LoadLayoutFragment(NamedElement(LoadMainWindowXaml(),"ProgressPanel"));
+                ((Grid)layout.FindName("SinglePaymentFieldsGrid")).Visibility=Visibility.Collapsed;
+                ((Border)layout.FindName("MultiRouteEntryBorder")).Visibility=Visibility.Visible;
+                var grid=(DataGrid)layout.FindName("MultiRoutePaymentGrid");
+                var first=new MainWindow.MultiRoutePaymentDraftRow{RouteNumber="01",RouteName="Merkez İlkokulu",WorkDays=22,DailyPrice=19539.1608m,PriceDifference=150};
+                var second=new MainWindow.MultiRoutePaymentDraftRow{RouteNumber="02",RouteName="Kuzey İlkokulu",WorkDays=18,DailyPrice=19539.1608m,PriceDifference=30,TaxDebt=25};
+                first.Configure(TransportationProgramType.SpecialEducation,100000m,false,ProgressPaymentCalculationConstants.Defaults);
+                second.Configure(TransportationProgramType.SpecialEducation,100000m,false,ProgressPaymentCalculationConstants.Defaults);
+                var window=CreateEditorHarness();
+                foreach(var field in typeof(MainWindow).GetFields(BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public))
+                    if(layout.FindName(field.Name) is {} control && field.FieldType.IsInstanceOfType(control)) field.SetValue(window,control);
+                var rows=Field<System.Collections.ObjectModel.ObservableCollection<MainWindow.MultiRoutePaymentDraftRow>>(window,"_multiRoutePaymentRows");
+                rows.Add(first);rows.Add(second);grid.ItemsSource=rows;
+                Invoke(window,"RefreshHybridTotals");
+                ((TextBlock)layout.FindName("HybridSelectionSummaryTextBlock")).Text="2 seçili hat · Her satır ayrı hesaplanır · Henüz kaydedilmedi";
+                ArrangeLayout(layout,size.Item1-215-38,size.Item2-60-38);
+                var outer=VisualDescendants<ScrollViewer>(layout).First();
+                var bounds=grid.TransformToAncestor(outer).TransformBounds(new Rect(grid.RenderSize));
+                Assert.InRange(bounds.Right,1,outer.ActualWidth+1);
+                var tableScroll=VisualDescendants<ScrollViewer>(grid).First();
+                Assert.True(tableScroll.ScrollableWidth>0,"Detailed row fields must remain reachable by horizontal scrolling.");
+                outer.ScrollToBottom();layout.UpdateLayout();
+                var calculate=(Button)layout.FindName("CalculateProgressButton");
+                var action=calculate.TransformToAncestor(outer).TransformBounds(new Rect(calculate.RenderSize));
+                Assert.InRange(action.Bottom,1,outer.ActualHeight+1);
+                var preview=Environment.GetEnvironmentVariable("OEHS_HYBRID_PREVIEW");
+                if(!string.IsNullOrWhiteSpace(preview)&&size.Item1==1366)
+                {
+                    grid.BringIntoView();layout.UpdateLayout();
+                    Directory.CreateDirectory(preview);
+                    var image=new System.Windows.Media.Imaging.RenderTargetBitmap((int)layout.ActualWidth,(int)layout.ActualHeight,96,96,PixelFormats.Pbgra32);
+                    image.Render(layout);var png=new System.Windows.Media.Imaging.PngBitmapEncoder();png.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(image));
+                    using var file=File.Create(Path.Combine(preview,"hybrid-entry.png"));png.Save(file);
+                }
+            }
+        });
+    }
+
+    [Fact]
+    public void HybridCalculation_ShouldPersistSingleAndMultipleRowsIgnoringInvalidSharedInputs()
+    {
+        RunOnSta(() =>
+        {
+            foreach(var count in new[]{1,2})
+            {
+                var temp=Directory.CreateTempSubdirectory("oehs-hybrid-save-");
+                try
+                {
+                    var window=CreateEditorHarness();
+                    SetField(window,"_dataStore",new OehsProgramScopedApplicationDataStore(Path.Combine(temp.FullName,"data")));
+                    SetField(window,"_archiveStore",new ProgressPaymentArchiveStore(Path.Combine(temp.FullName,"archives")));
+                    SetField(window,"_calculationConstantsHistory",new System.Collections.Generic.List<ProgressPaymentCalculationConstantsChange>());
+                    var contract=ArchiveProgressEditorContextTests.CreateArchive().Contract;
+                    Collection(window,"_contracts").Add(contract);
+                    Collection(window,"_contractors").Add(CreateFirm("Firma","12345678901"));
+                    Field<ComboBox>(window,"ProgressTenderListBox").Items.Add(contract);
+                    Field<ComboBox>(window,"ProgressTenderListBox").SelectedItem=contract;
+                    var routes=Field<ListBox>(window,"ProgressRouteComboBox");
+                    for(var index=0;index<count;index++)
+                    {
+                        var route=CreateRoute((index+1).ToString("00",CultureInfo.InvariantCulture),"Hat "+index,"12345678901");
+                        routes.Items.Add(route);Collection(window,"_routes").Add(route);routes.SelectedItems.Add(route);
+                    }
+                    var period=new ProgressPaymentMonthOption(new DateOnly(2026,10,1),new DateOnly(2026,10,31));
+                    Field<ComboBox>(window,"ProgressPeriodMonthComboBox").Items.Add(period);
+                    Field<ComboBox>(window,"ProgressPeriodMonthComboBox").SelectedItem=period;
+                    Invoke(window,"UpdateHybridRouteDraftRows");
+                    var rows=Field<System.Collections.ObjectModel.ObservableCollection<MainWindow.MultiRoutePaymentDraftRow>>(window,"_multiRoutePaymentRows");
+                    for(var index=0;index<count;index++)
+                    {rows[index].WorkDays=16+index;rows[index].PriceDifference=100+index*50;rows[index].TaxDebt=3+index*4;}
+                    foreach(var name in new[]{"WorkDaysTextBox","DailyPriceTextBox","PriceDifferenceTextBox","TaxDebtTextBox"})
+                        Field<TextBox>(window,name).Text="geçersiz ortak alan";
+                    Invoke(window,"CalculateProgressButton_Click",window,new RoutedEventArgs());
+                    var saved=new OehsProgramScopedApplicationDataStore(Path.Combine(temp.FullName,"data")).Load();
+                    Assert.Equal(count,saved.ProgressPayments!.Count);
+                    foreach(var payment in saved.ProgressPayments)
+                    {
+                        var index=int.Parse(payment.RouteNumber!,CultureInfo.InvariantCulture)-1;
+                        Assert.Equal(16+index,payment.Input.WorkDays);
+                        Assert.Equal(100+index*50,payment.Input.PriceDifference);
+                        Assert.Equal(3+index*4,payment.Input.TaxDebt);
+                        Assert.Equal(ProgressPaymentCalculator.Calculate(payment.Input).NetPayable,payment.Calculation.NetPayable);
+                    }
+                }
+                finally {temp.Delete(true);}
+            }
+        });
+    }
+
+    [Fact]
+    public void HybridPreview_ShouldNotifyAndCalculateEachRoutesOwnValues()
+    {
+        var first=new MainWindow.MultiRoutePaymentDraftRow{WorkDays=22,DailyPrice=100,PriceDifference=50,TaxDebt=10};
+        var second=new MainWindow.MultiRoutePaymentDraftRow{WorkDays=18,DailyPrice=120,PriceDifference=0,TaxDebt=20};
+        var configure=first.GetType().GetMethod("Configure");Assert.NotNull(configure);
+        foreach(var row in new[]{first,second}) configure!.Invoke(row,new object[]{TransportationProgramType.BasicOrSecondary,100000m,true,ProgressPaymentCalculationConstants.Defaults});
+        var net=first.GetType().GetProperty("NetPayableText");Assert.NotNull(net);
+        var notifications=new System.Collections.Generic.List<string?>();first.PropertyChanged+=(_,e)=>notifications.Add(e.PropertyName);
+        var old=net!.GetValue(first);var other=net.GetValue(second);
+        first.WorkDays=21;
+        Assert.NotEqual(old,net.GetValue(first));Assert.Equal(other,net.GetValue(second));
+        Assert.Contains("NetPayableText",notifications);
+    }
+
+    [Fact]
+    public void Navigation_ShouldPlaceSignatoriesAndOutputsInRequestedGroupWithoutDocumentShortcuts()
+    {
+        var doc=LoadMainWindowXaml();
+        var menu=NamedElement(doc,"NavContract").Parent!;
+        var names=menu.Elements().Where(e=>e.Name.LocalName=="Button").Select(e=>(string?)e.Attribute(XamlNamespace+"Name")).ToArray();
+        Assert.Equal(Array.IndexOf(names,"NavContract")+1,Array.IndexOf(names,"NavSignatories"));
+        Assert.Equal(Array.IndexOf(names,"NavSignatories")+1,Array.IndexOf(names,"NavContractors"));
+        Assert.Equal(Array.IndexOf(names,"NavProgress")+1,Array.IndexOf(names,"NavReports"));
+        Assert.DoesNotContain("NavSummary",names);Assert.DoesNotContain("NavAcceptance",names);
+        Assert.Equal("NavReports",(string?)NamedElement(doc,"NavProgress").ElementsAfterSelf().First().Attribute(XamlNamespace+"Name"));
+        var signatory=NamedElement(doc,"SignatoryPreparerNameTextBox");
+        Assert.Contains(NamedElement(doc,"SignatoriesPanel"),signatory.Ancestors());
+        Assert.DoesNotContain(NamedElement(doc,"SettingsPanel"),signatory.Ancestors());
+    }
+
+    [Fact]
+    public void HybridRows_ShouldKeepSingleAndMultipleRouteEditsWithoutSharedFieldOverwrite()
+    {
+        RunOnSta(() =>
+        {
+            var window=CreateEditorHarness();
+            var routes=Field<ListBox>(window,"ProgressRouteComboBox");
+            var a=CreateRoute("01","Merkez","12345678901");var b=CreateRoute("02","Kuzey","12345678901");
+            routes.Items.Add(a);routes.Items.Add(b);Collection(window,"_routes").Add(a);Collection(window,"_routes").Add(b);
+            routes.SelectedItems.Add(a);
+            SetField(window,"_lastProgressDefaultsRouteKey",OehsIdentityService.BuildRouteKey("IHALE-01","01","12345678901","SOZ-01",TransportationProgramType.SpecialEducation));
+            Field<TextBox>(window,"WorkDaysTextBox").Text="999";
+            Field<TextBox>(window,"PriceDifferenceTextBox").Text="999";
+            Invoke(window,"UpdateHybridRouteDraftRows");
+            Assert.Equal(Visibility.Visible,Field<Border>(window,"MultiRouteEntryBorder").Visibility);
+            var rows=Field<System.Collections.ObjectModel.ObservableCollection<MainWindow.MultiRoutePaymentDraftRow>>(window,"_multiRoutePaymentRows");
+            var first=Assert.Single(rows);Assert.Equal(0,first.WorkDays);Assert.Equal(0,first.PriceDifference);
+            first.WorkDays=22;first.PriceDifference=150;first.TaxDebt=10;
+            var grid=Field<DataGrid>(window,"MultiRoutePaymentGrid");
+            var expression=BindingOperations.SetBinding(grid,FrameworkElement.TagProperty,new Binding(nameof(first.WorkDays)){Source=first});
+            Validation.MarkInvalid(expression,new ValidationError(new ExceptionValidationRule(),expression,"Geçersiz sayı",null));
+            routes.SelectedItems.Add(b);Invoke(window,"UpdateHybridRouteDraftRows");
+            Assert.Single(rows);
+            Validation.ClearInvalid(expression);
+            Invoke(window,"UpdateHybridRouteDraftRows");
+            Assert.Equal(2,rows.Count);Assert.Equal(22,rows[0].WorkDays);Assert.Equal(0,rows[1].WorkDays);
+            rows[1].WorkDays=18;rows[1].PriceDifference=30;
+            Field<TextBox>(window,"PriceDifferenceTextBox").Text="999";
+            routes.SelectedItems.Clear();routes.SelectedItems.Add(b);Invoke(window,"UpdateHybridRouteDraftRows");
+            Assert.Equal(30,Assert.Single(rows).PriceDifference);
+            routes.SelectedItems.Add(a);Invoke(window,"UpdateHybridRouteDraftRows");
+            Assert.Equal(150,rows.Single(r=>r.RouteNumber=="01").PriceDifference);
+            Assert.Equal(30,rows.Single(r=>r.RouteNumber=="02").PriceDifference);
+        });
+    }
+
+    [Fact]
+    public void HybridCalculation_ShouldReadRowsBeforeSharedFormValidation()
+    {
+        var source=File.ReadAllText(LoadProjectFile("src","OzelEgitimHakedis.Wpf","MainWindow.xaml.cs"));
+        var method=MethodBody(source,"CalculateProgressButton_Click");
+        var early=method.IndexOf("TryCalculateHybridSelection(selectedContract)",StringComparison.Ordinal);
+        Assert.True(early>=0);
+        Assert.True(early<method.IndexOf("TryParseWorkDays(WorkDaysTextBox.Text",StringComparison.Ordinal));
+    }
 
     [Fact]
     public void FilteredHistory_ShouldResolveSameIdInTheVisibleProgram()
@@ -285,6 +458,7 @@ public sealed class HakedisCreateHybridUiContractTests
         XNamespace local = "clr-namespace:OzelEgitimHakedis.Wpf;assembly=OEHS";
         var root = new XElement(presentation + "Grid",
             new XAttribute(XNamespace.Xmlns + "x", XamlNamespace),
+            new XAttribute(XNamespace.Xml+"lang","tr-TR"),
             new XElement(presentation + "Grid.Resources", resources.Elements(),
                 new XElement(local + "ContractWorkNameConverter",new XAttribute(XamlNamespace+"Key","ContractWorkNameConverter"))), fragment);
         return (Grid)XamlReader.Parse(root.ToString());
@@ -310,8 +484,7 @@ public sealed class HakedisCreateHybridUiContractTests
     }
 
     [Theory]
-    [InlineData("Summary", "SummaryPanel", "İcmal")]
-    [InlineData("Acceptance", "AcceptancePanel", "Kabul Tutanağı")]
+    [InlineData("Signatories", "SignatoriesPanel", "Resmî Belge İmzacıları")]
     [InlineData("Statistics", "StatisticsPanel", "İstatistikler")]
     public void Navigation_ShouldExposeDedicatedButtonAndOnlyItsTargetPanel(string target, string panelName, string title)
     {
@@ -988,7 +1161,7 @@ public sealed class HakedisCreateHybridUiContractTests
         var historyEdit = MethodBody(source, "BeginProgressHistoryEdit");
         var contextLoader = MethodBody(source, "LoadArchiveProgressEditorContext");
         var editorMode = MethodBody(source, "SetProgressEditorMode");
-        var multiRouteRows = MethodBody(source, "UpdateMultiRouteDraftRows");
+        var multiRouteRows = MethodBody(source, "UpdateHybridRouteDraftRows");
 
         Assert.Contains("LoadArchiveProgressEditorContext(ArchiveProgressEditorContext.Create(archive));", historyEdit, StringComparison.Ordinal);
         Assert.Contains("ProgressTenderListBox.ItemsSource = new[] { context.Contract };", contextLoader, StringComparison.Ordinal);

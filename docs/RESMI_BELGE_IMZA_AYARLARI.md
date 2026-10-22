@@ -4,6 +4,10 @@ OEHS'nin dört resmî PDF şablonunda kullanılan düzenleyen, kontrol eden ve o
 
 ## Ayar dosyasının konumu
 
+Uygulamada **İhale Bilgileri** ile **Yüklenici Firmalar** arasındaki **Resmî Belge İmzacıları** düğmesini açın. Düzenleyen, kontrol eden ve onaylayan adlarını/unvanlarını bu ayrı panelden düzenleyip kaydedebilirsiniz. Bu alanlar artık Ayarlar panelinde bulunmaz.
+
+JSON dosyasını doğrudan düzenlemek de mümkündür:
+
 Uygulama ilk resmî belgeyi oluştururken dosya yoksa varsayılan değerlerle otomatik oluşturur:
 
 ```text
