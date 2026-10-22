@@ -67,8 +67,11 @@ jobs:
         run: |
           $xaml = Get-Content ".\src\OzelEgitimHakedis.Wpf\MainWindow.xaml" -Raw
           $app = Get-Content ".\src\OzelEgitimHakedis.Wpf\App.xaml" -Raw
-          $sidebarColumns = ([regex]::Matches($xaml, '<ColumnDefinition Width="215"/>')).Count
-          if ($sidebarColumns -ne 2) { throw "Expected both app-shell and header sidebar columns to be 215 DIP; found $sidebarColumns." }
+          foreach ($name in @('NavigationColumn', 'HeaderNavigationColumn')) {
+            if ($xaml -notmatch "<ColumnDefinition\\s+x:Name=`"$name`"\\s+Width=`"215`"\\s*/>") {
+              throw "Expected named sidebar column '$name' to start at 215 DIP."
+            }
+          }
           if (-not $xaml.Contains('<Grid Width="48" Height="48">')) { throw "The readiness ring container must be 48x48 DIP so its arc is not vertically clipped." }
           if (-not $xaml.Contains('Text="YÜKLENİCİ FİRMALAR"')) { throw "The long contractor navigation label is missing." }
           if ($app -notmatch '<Style x:Key="NavButton"[\s\S]*?<Setter Property="Height" Value="40"/>') { throw "Navigation button height no longer matches the compact layout." }
