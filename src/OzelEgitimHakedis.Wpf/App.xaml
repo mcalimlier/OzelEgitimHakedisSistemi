@@ -226,6 +226,13 @@
             <Setter Property="CornerRadius" Value="10"/>
         </Style>
 
+        <Style x:Key="PaymentWorkspaceCard" TargetType="Border" BasedOn="{StaticResource CardCompact}">
+            <Setter Property="Background" Value="#0A223A"/>
+            <Setter Property="BorderBrush" Value="#35546F"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10"/>
+        </Style>
+
         <Style x:Key="CardTitle" TargetType="TextBlock" BasedOn="{StaticResource SectionTitle}">
             <Setter Property="FontSize" Value="13.5"/>
             <Setter Property="Foreground" Value="White"/>

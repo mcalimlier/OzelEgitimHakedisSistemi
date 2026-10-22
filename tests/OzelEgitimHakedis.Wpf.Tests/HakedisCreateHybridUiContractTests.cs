@@ -12,6 +12,8 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Markup;
+using System.Windows.Media;
 using OzelEgitimHakedis.Core.Models;
 using OzelEgitimHakedis.Core.Services;
 using OzelEgitimHakedis.Wpf;
@@ -23,6 +25,181 @@ public sealed class HakedisCreateHybridUiContractTests
 {
     private static readonly XNamespace XamlNamespace =
         "http://schemas.microsoft.com/winfx/2006/xaml";
+
+    [Fact]
+    public void ResponsiveNavigation_ShouldScrollToLastTargetAtMinimumHeight()
+    {
+        var document = LoadMainWindowXaml();
+        var navigation = NamedElement(document, "NavHome").Ancestors()
+            .First(element => element.Name.LocalName == "Grid");
+        var scroll = Assert.Single(navigation.Descendants().Where(element => element.Name.LocalName == "ScrollViewer"));
+        Assert.Equal("Auto", (string?)scroll.Attribute("VerticalScrollBarVisibility"));
+        Assert.Equal("Disabled", (string?)scroll.Attribute("HorizontalScrollBarVisibility"));
+        foreach (var button in navigation.Descendants().Where(element => element.Name.LocalName == "Button"))
+            Assert.Contains(scroll, button.Ancestors());
+
+        RunOnSta(() =>
+        {
+            var layout = LoadLayoutFragment(navigation);
+            ArrangeLayout(layout, 215, 600 - 60 - 14);
+            var viewer = VisualDescendants<ScrollViewer>(layout).Single();
+            Assert.True(viewer.ScrollableHeight > 0, "The last navigation targets must be reachable at 600px height.");
+            viewer.ScrollToBottom();
+            layout.UpdateLayout();
+            var lastButton = (Button)layout.FindName("NavTemporaryCalculationTrace");
+            var bounds = lastButton.TransformToAncestor(viewer).TransformBounds(new Rect(lastButton.RenderSize));
+            Assert.InRange(bounds.Bottom, 1, viewer.ViewportHeight + 1);
+        });
+    }
+
+    [Theory]
+    [InlineData(1024)]
+    [InlineData(1366)]
+    [InlineData(1920)]
+    public void ResponsiveHistory_ShouldKeepRowActionsHorizontallyReachable(double windowWidth)
+    {
+        var history = NamedElement(LoadMainWindowXaml(), "HistoryPanel");
+        var items = history.Descendants().Single(element => (string?)element.Attribute(XamlNamespace + "Name") == "HistoryItemsControl");
+        var scroll = items.Ancestors().First(element => element.Name.LocalName == "ScrollViewer");
+        Assert.Equal("Auto", (string?)scroll.Attribute("HorizontalScrollBarVisibility"));
+        Assert.Equal("Auto", (string?)scroll.Attribute("VerticalScrollBarVisibility"));
+
+        RunOnSta(() =>
+        {
+            var layout = LoadLayoutFragment(history);
+            var control = (ItemsControl)layout.FindName("HistoryItemsControl");
+            control.Items.Add(new { DisplayTitle = "Test dönemi", CreatedAtText = "22.10.2026", TotalAmountText = "100,00 ₺", NetPayableText = "90,00 ₺" });
+            ArrangeLayout(layout, windowWidth - 215 - 38, 600 - 60 - 38);
+            var viewer = VisualDescendants<ScrollViewer>(layout).First();
+            if (windowWidth == 1024)
+                Assert.True(viewer.ScrollableWidth > 0, "History fixed columns need horizontal access at minimum window width.");
+            viewer.ScrollToRightEnd();
+            layout.UpdateLayout();
+            var deleteButton = VisualDescendants<Button>(control).Single(button => Equals(button.Content, "SİL"));
+            var bounds = deleteButton.TransformToAncestor(viewer).TransformBounds(new Rect(deleteButton.RenderSize));
+            Assert.InRange(bounds.Left, 0, viewer.ViewportWidth);
+            Assert.InRange(bounds.Right, 1, viewer.ViewportWidth + 1);
+        });
+    }
+
+    [Theory]
+    [InlineData("AddRouteButton", "CancelRouteEditButton", "ClearRouteButton", 240)]
+    [InlineData("SaveContractorButton", "CancelContractorEditButton", "ClearContractorButton", 300)]
+    [InlineData("CalculateProgressButton", "EditCurrentProgressButton", "ArchiveCurrentProgressButton", 680)]
+    public void ResponsiveActions_ShouldWrapEveryVisibleButtonWithinAvailableWidth(
+        string firstName, string secondName, string lastName, double availableWidth)
+    {
+        var document = LoadMainWindowXaml();
+        var group = NamedElement(document, firstName).Parent!;
+        Assert.Equal("WrapPanel", group.Name.LocalName);
+        Assert.Same(group, NamedElement(document, secondName).Parent);
+        Assert.Same(group, NamedElement(document, lastName).Parent);
+
+        RunOnSta(() =>
+        {
+            var layout = LoadLayoutFragment(group);
+            var panel = Assert.IsType<WrapPanel>(layout.Children[0]);
+            foreach (Button button in panel.Children)
+                button.Visibility = Visibility.Visible;
+            ArrangeLayout(layout, availableWidth, 300);
+            var bounds = panel.Children.Cast<Button>().Select(button =>
+                button.TransformToAncestor(panel).TransformBounds(new Rect(button.RenderSize))).ToArray();
+            Assert.True(bounds.Select(rect => rect.Top).Distinct().Count() > 1, "Actions should wrap when the panel is narrow.");
+            foreach (var rectangle in bounds)
+            {
+                Assert.InRange(rectangle.Left, 0, availableWidth);
+                Assert.InRange(rectangle.Right, 1, availableWidth);
+                Assert.True(rectangle.Height >= 30);
+            }
+        });
+    }
+
+    private static XElement NamedElement(XDocument document, string name) =>
+        document.Descendants().Single(element => (string?)element.Attribute(XamlNamespace + "Name") == name);
+
+    [Theory]
+    [InlineData(1024, 600)]
+    [InlineData(1280, 720)]
+    [InlineData(1366, 768)]
+    [InlineData(1920, 1080)]
+    public void ResponsivePayment_ShouldKeepInputsResultsAndActionsWithinViewport(double width, double height)
+    {
+        RunOnSta(() =>
+        {
+            var layout = LoadLayoutFragment(NamedElement(LoadMainWindowXaml(), "ProgressPanel"));
+            ArrangeLayout(layout, width - 215 - 38, height - 60 - 38);
+            var viewer = VisualDescendants<ScrollViewer>(layout).First();
+            foreach (var name in new[] { "WorkDaysTextBox", "DailyPriceTextBox", "PriceDifferenceTextBox", "MinimumWageSupportTextBox" })
+            {
+                var input = (TextBox)layout.FindName(name);
+                Assert.True(input.ActualWidth >= 90, $"{name} is too narrow at {width}px: {input.ActualWidth}px.");
+                var bounds = input.TransformToAncestor(viewer).TransformBounds(new Rect(input.RenderSize));
+                Assert.True(
+                    bounds.Right >= 90 && bounds.Right <= viewer.ViewportWidth + 1,
+                    $"{name}: right={bounds.Right}, viewport={viewer.ViewportWidth}, viewer width={viewer.ActualWidth}, input width={input.ActualWidth}.");
+            }
+            var label = (TextBlock)layout.FindName("GuidePriceDifferenceResultLabel");
+            var value = (TextBlock)layout.FindName("GuidePriceDifferenceResultTextBlock");
+            var labelBounds = label.TransformToAncestor(viewer).TransformBounds(new Rect(label.RenderSize));
+            var valueBounds = value.TransformToAncestor(viewer).TransformBounds(new Rect(value.RenderSize));
+            Assert.False(labelBounds.IntersectsWith(valueBounds), "The result label and amount must not overlap.");
+            viewer.ScrollToBottom();
+            layout.UpdateLayout();
+            var actions = (Border)layout.FindName("ProgressActionPanel");
+            var actionBounds = actions.TransformToAncestor(viewer).TransformBounds(new Rect(actions.RenderSize));
+            // TransformToAncestor(viewer) includes the ScrollViewer's 10px content padding.
+            // The action bar is reachable once its bottom sits inside that padded viewport.
+            Assert.InRange(actionBounds.Bottom, 1, viewer.ViewportHeight + viewer.Padding.Top + 1);
+            foreach (var button in VisualDescendants<Button>(actions).Where(button => button.Visibility == Visibility.Visible))
+            {
+                var bounds = button.TransformToAncestor(viewer).TransformBounds(new Rect(button.RenderSize));
+                Assert.InRange(bounds.Left, 0, viewer.ViewportWidth);
+                Assert.InRange(bounds.Right, 1, viewer.ViewportWidth + 1);
+            }
+        });
+    }
+
+    // Parse the production layout and styles without MainWindow's startup/persistence.
+    // Only code-behind event subscriptions are removed; controls, bindings and templates remain.
+    private static Grid LoadLayoutFragment(XElement source)
+    {
+        XNamespace presentation = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
+        var fragment = new XElement(source);
+        fragment.Attribute("Visibility")?.Remove();
+        foreach (var element in fragment.DescendantsAndSelf())
+        {
+            var type = typeof(Control).Assembly.GetType("System.Windows.Controls." + element.Name.LocalName)
+                ?? typeof(Control).Assembly.GetType("System.Windows.Controls.Primitives." + element.Name.LocalName);
+            foreach (var attribute in element.Attributes().Where(attribute =>
+                attribute.Name.Namespace == XNamespace.None && type?.GetEvent(attribute.Name.LocalName) is not null).ToArray())
+                attribute.Remove();
+        }
+        var resources = XDocument.Load(LoadProjectFile("src", "OzelEgitimHakedis.Wpf", "App.xaml"))
+            .Root!.Element(presentation + "Application.Resources")!;
+        var root = new XElement(presentation + "Grid",
+            new XAttribute(XNamespace.Xmlns + "x", XamlNamespace),
+            new XElement(presentation + "Grid.Resources", resources.Elements()), fragment);
+        return (Grid)XamlReader.Parse(root.ToString());
+    }
+
+    private static void ArrangeLayout(FrameworkElement layout, double width, double height)
+    {
+        layout.Measure(new Size(width, height));
+        layout.Arrange(new Rect(0, 0, width, height));
+        layout.UpdateLayout();
+    }
+
+    private static System.Collections.Generic.IEnumerable<T> VisualDescendants<T>(DependencyObject parent) where T : DependencyObject
+    {
+        for (var index = 0; index < VisualTreeHelper.GetChildrenCount(parent); index++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, index);
+            if (child is T match)
+                yield return match;
+            foreach (var descendant in VisualDescendants<T>(child))
+                yield return descendant;
+        }
+    }
 
     [Theory]
     [InlineData("Summary", "SummaryPanel", "İcmal")]
@@ -499,7 +676,7 @@ public sealed class HakedisCreateHybridUiContractTests
     }
 
     [Fact]
-    public void ProgressPanel_ShouldPlaceContextRouteSelectionAndActionsInWorkflowOrder()
+    public void ProgressPanel_ShouldPlaceFourResponsiveZonesInWorkflowOrder()
     {
         var document = LoadMainWindowXaml();
         var progressPanel = document.Root!.Descendants()
@@ -508,14 +685,21 @@ public sealed class HakedisCreateHybridUiContractTests
 
         var contextIndex = IndexOfNamedElement(panelElements, "ProgressContextPanel");
         var routeSelectionIndex = IndexOfNamedElement(panelElements, "ProgressRouteSelectionPanel");
+        var componentsIndex = IndexOfNamedElement(panelElements, "ProgressComponentsPanel");
         var actionIndex = IndexOfNamedElement(panelElements, "ProgressActionPanel");
         var inputIndex = IndexOfNamedElement(panelElements, "WorkDaysTextBox");
         var resultIndex = IndexOfNamedElement(panelElements, "NetResultTextBlock");
 
         Assert.True(contextIndex < routeSelectionIndex,
             "The progress context strip must appear before route selection.");
-        Assert.True(routeSelectionIndex < inputIndex,
-            "Route selection must appear before payment inputs.");
+        Assert.True(routeSelectionIndex < componentsIndex && componentsIndex < inputIndex,
+            "Route selection must appear before the component and result zone.");
+        foreach (var index in new[] { routeSelectionIndex, componentsIndex, actionIndex })
+            Assert.Same(panelElements[contextIndex].Parent, panelElements[index].Parent);
+        foreach (var selector in new[] { "ProgressTenderListBox", "ProgressContractorComboBox", "ProgressPeriodMonthComboBox" })
+            Assert.Contains(panelElements[routeSelectionIndex], panelElements[IndexOfNamedElement(panelElements, selector)].Ancestors());
+        Assert.Contains(panelElements[componentsIndex], panelElements[inputIndex].Ancestors());
+        Assert.Contains(panelElements[componentsIndex], panelElements[resultIndex].Ancestors());
         Assert.True(inputIndex < resultIndex && resultIndex < actionIndex,
             "The action bar must appear after the input and result cards.");
 
