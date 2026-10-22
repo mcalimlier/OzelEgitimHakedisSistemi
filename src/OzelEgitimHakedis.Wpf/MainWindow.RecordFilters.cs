@@ -19,9 +19,9 @@ public partial class MainWindow
     {
         if(!_operationsReady) return ProgressPaymentReportService.OrderByPaymentPeriod(_progressHistory);
         var filter=ReadRecordFilter(false);var status=Choice(HistoryStatusFilter);
-        var archived=ReadOperationArchives().Select(a=>a.ProgressPayment.Id).ToHashSet();
+        var archived=ReadOperationArchives().Select(a=>(a.ProgressPayment.Id,a.ProgressPayment.Input.ProgramType)).ToHashSet();
         var items=_progressHistory.Where(p=>PaymentOperationsService.Matches(p,filter) &&
-            (status!="Archived" || archived.Contains(p.Id)) && (status!="Unarchived" || !archived.Contains(p.Id))).ToArray();
+            (status!="Archived" || archived.Contains((p.Id,p.Input.ProgramType))) && (status!="Unarchived" || !archived.Contains((p.Id,p.Input.ProgramType)))).ToArray();
         HistoryFilterSummary.Text=$"{ProgramLabel(filter.Program)} · {items.Length} / {_progressHistory.Count} kayıt"+
             (items.Length==0?(_progressHistory.Count==0?" · Henüz kayıt yok.":" · Filtreye uyan kayıt yok."):"");
         return ProgressPaymentReportService.OrderByPaymentPeriod(items);
@@ -38,7 +38,7 @@ public partial class MainWindow
             try {valid.Add((row,ProgressPaymentArchiveStore.Load(row.FullPath)));}
             catch(ProgressPaymentArchiveException) {invalid.Add(row);}
         }
-        var latest=ArchiveShowRevisions.IsChecked==true?valid:valid.GroupBy(x=>x.Archive.ProgressPayment.Id)
+        var latest=ArchiveShowRevisions.IsChecked==true?valid:valid.GroupBy(x=>(x.Archive.ProgressPayment.Id,x.Archive.ProgressPayment.Input.ProgramType))
             .Select(g=>g.OrderByDescending(x=>x.Archive.Revision).First()).ToList();
         var result=latest.Where(x=>PaymentOperationsService.Matches(x.Archive.ProgressPayment,filter)&&status!="Invalid")
             .Select(x=>x.Row).ToList();

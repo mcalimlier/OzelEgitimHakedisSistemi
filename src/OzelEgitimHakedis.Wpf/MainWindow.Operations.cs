@@ -10,6 +10,8 @@ namespace OzelEgitimHakedis.Wpf;
 
 public partial class MainWindow
 {
+    private TransportationProgramType? _historyOperationProgram;
+    private bool IsOperationPayment(ProgressPaymentHistoryData p, Guid id) => p.Id == id && (!_historyOperationProgram.HasValue || p.Input.ProgramType == _historyOperationProgram);
     private bool _operationsReady;
     private bool _homeRefreshing;
     private ProgressPaymentHistoryData? _homeOutputPayment;
@@ -68,7 +70,7 @@ public partial class MainWindow
         try
         {
             var context=BuildOfficialDocumentContextForPayment(payment);
-            return context is not null && OutputEvidenceStore.IsCurrent(OehsRuntimePaths.DesktopRoot,payment.Id,BuildOutputFingerprint(context));
+            return context is not null && OutputEvidenceStore.IsCurrent(OehsRuntimePaths.DesktopRoot,payment.Id,BuildOutputFingerprint(context),payment.Input.ProgramType);
         }
         catch(Exception ex) when(ex is IOException or UnauthorizedAccessException or JsonException or InvalidOperationException) {return false;}
     }
@@ -188,7 +190,7 @@ public partial class MainWindow
     private void HomeOutput_Click(object sender,RoutedEventArgs e)
     {
         if(HomeMonthlyGrid.SelectedItem is not MonthlyPaymentRow {Payment:{} selected}) return;
-        var payment=_progressHistory.FirstOrDefault(p=>p.Id==selected.Id);
+        var payment=_progressHistory.FirstOrDefault(p=>p.Id==selected.Id&&p.Input.ProgramType==selected.Input.ProgramType);
         if(payment is not null && payment!=selected)
         {MessageBox.Show(this,"Seçili hakediş değişmiş. Güncel tutarları yeniden kontrol edin.","OEHS",MessageBoxButton.OK,MessageBoxImage.Information);RefreshHomeOperations();return;}
         if(payment is null || !EnsurePaymentPreflight(payment)) {RefreshHomeOperations();return;}

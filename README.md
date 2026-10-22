@@ -23,6 +23,10 @@ OEHS, özel eğitim hizmetleri için sözleşme/ihale bilgilerini, hatları, yü
 - WPF `DocumentViewer` tabanlı belge önizlemesi ve doğrudan Windows yazdırma iletişim kutusu
 - xUnit testleri ve Windows üzerinde derleme/yayın akışı
 
+## Pratik Ana Ekran ve yedekleme
+
+Aylık iş takibi, seçili hakedişte PDF öncesi kontrol, düzeltme karşılaştırması, geçmiş/arşiv filtreleri ve tam yedekleme için [kullanım notuna](docs/PRATIK_ANA_EKRAN_VE_YEDEKLEME.md) bakın. Ayrı resmî sözleşme numarası girişi gerekmez; İKN kullanılır.
+
 ## Excel kaynak analizi ve hakediş iş akışı
 
 Orijinal XLSM'nin sekiz sayfası, VBA makroları ve Hesaplamayı Kontrol Et denetimi için [kaynak inceleme ve tek diyagramlı iş akışı](docs/XLSM_KAYNAK_INCELEMESI_VE_HAKEDIS_AKISI.md) eklendi. Bu doküman, her bir PDF alanının hangi Excel sayfası/hücresinden geldiğini, aylık K+T aktarımını ve E = C − D doğrulamasını açıklar.

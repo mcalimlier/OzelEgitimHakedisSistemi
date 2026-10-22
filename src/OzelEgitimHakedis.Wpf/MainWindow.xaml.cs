@@ -2002,7 +2002,7 @@ public partial class MainWindow : Window
 
     private ProgressPaymentHistoryData? GetLiveHistoryCorrectionTarget() =>
         _historyCorrectionTargetId is Guid id
-            ? _progressHistory.FirstOrDefault(x => x.Id == id)
+            ? _progressHistory.FirstOrDefault(x => IsOperationPayment(x, id))
             : null;
 
     private void SetHistoryCorrectionStatus(string message, bool warning)
@@ -2293,7 +2293,7 @@ public partial class MainWindow : Window
             !HistoryCorrectionInputsDiffer())
             return true;
 
-        var original = _progressHistory.FirstOrDefault(x => x.Id == targetId);
+        var original = _progressHistory.FirstOrDefault(x => IsOperationPayment(x, targetId));
         if (original is null)
         {
             SetHistoryCorrectionStatus("Düzenlenen hakediş artık geçmiş listesinde bulunmuyor; kayıt değiştirilmedi.", warning: true);
@@ -2329,7 +2329,7 @@ public partial class MainWindow : Window
         UpdateHomeSummaryView();
         UpdateAcceptanceView();
 
-        if (targetId is Guid id && _progressHistory.FirstOrDefault(x => x.Id == id) is ProgressPaymentHistoryData item)
+        if (targetId is Guid id && _progressHistory.FirstOrDefault(x => IsOperationPayment(x, id)) is ProgressPaymentHistoryData item)
         {
             _lastCalculatedHistoryId = id;
 
@@ -2485,7 +2485,7 @@ public partial class MainWindow : Window
             var historyMirrorSaved = true;
             var matchingHistoryIndex = _progressHistory
                 .Select((item, index) => (item, index))
-                .Where(pair => pair.item.Id == recalculatedPayment.Id)
+                .Where(pair => pair.item.Id == recalculatedPayment.Id && pair.item.Input.ProgramType == recalculatedPayment.Input.ProgramType)
                 .Select(pair => pair.index)
                 .DefaultIfEmpty(-1)
                 .First();
@@ -3502,7 +3502,7 @@ public partial class MainWindow : Window
                 {
                     var propagated = BuildRoutePropagation(old, proposed);
                     var proposedTargetPayment = _historyCorrectionTargetId is Guid targetId
-                        ? propagated.FirstOrDefault(x => x.Id == targetId)
+                        ? propagated.FirstOrDefault(x => IsOperationPayment(x, targetId))
                         : null;
                     if (!ConfirmLiveHistoryCorrection("Hat bilgileri", proposedTargetPayment))
                         return;
@@ -4008,7 +4008,7 @@ public partial class MainWindow : Window
             var proposedHistories = ProgressPaymentPropagationService.RecalculateForContractChange(
                 _progressHistory.ToArray(), routeData, oldContract, proposedContract, _calculationConstants);
             var proposedTargetPayment = _historyCorrectionTargetId is Guid targetId
-                ? proposedHistories.FirstOrDefault(x => x.Id == targetId)
+                ? proposedHistories.FirstOrDefault(x => IsOperationPayment(x, targetId))
                 : null;
             if (!ConfirmLiveHistoryCorrection("Sözleşme bilgileri", proposedTargetPayment))
                 return;
@@ -5054,7 +5054,7 @@ public partial class MainWindow : Window
             }
 
             var existingPaymentForMetadata = _editingHistoryId.HasValue
-                ? _progressHistory.FirstOrDefault(x => x.Id == _editingHistoryId.Value)
+                ? _progressHistory.FirstOrDefault(x => IsOperationPayment(x, _editingHistoryId.Value))
                 : null;
             var metadataSource = IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment)
                 ? _editingArchiveSnapshot!.ProgressPayment
@@ -5082,7 +5082,7 @@ public partial class MainWindow : Window
             var historyItem = new ProgressPaymentHistoryData(
                 _editingHistoryId ?? Guid.NewGuid(),
                 _editingHistoryId.HasValue
-                    ? _progressHistory.First(x => x.Id == _editingHistoryId.Value).CreatedAt
+                    ? _progressHistory.First(x => IsOperationPayment(x, _editingHistoryId.Value)).CreatedAt
                     : DateTime.Now,
                 input,
                 new ProgressPaymentCalculation(
@@ -5237,7 +5237,7 @@ public partial class MainWindow : Window
 
             if (editingHistoryId.HasValue)
             {
-                var existingHistoryForEdit = _progressHistory.FirstOrDefault(x => x.Id == editingHistoryId.Value);
+                var existingHistoryForEdit = _progressHistory.FirstOrDefault(x => IsOperationPayment(x, editingHistoryId.Value));
                 editIndex = existingHistoryForEdit is null ? -1 : _progressHistory.IndexOf(existingHistoryForEdit);
                 if (editIndex < 0)
                 {
@@ -6048,7 +6048,8 @@ public partial class MainWindow : Window
                     archive.Route.ContractNumber,
                     archive.Contract.ProgramType);
 
-            var existing = _progressHistory.FirstOrDefault(x => x.Id == archive.ProgressPayment.Id);
+            _historyOperationProgram = archive.ProgressPayment.Input.ProgramType;
+            var existing = _progressHistory.FirstOrDefault(x => x.Id == archive.ProgressPayment.Id && x.Input.ProgramType == archive.ProgressPayment.Input.ProgramType);
             _editingHistoryId = existing?.Id;
             _lastCalculatedHistoryId = archive.ProgressPayment.Id;
 
@@ -6166,7 +6167,7 @@ public partial class MainWindow : Window
                 displayNumber,
                 periodText,
                 FormatMoney(item.Calculation.TotalAmount),
-                FormatMoney(item.Calculation.NetPayable)));
+                FormatMoney(item.Calculation.NetPayable), item.Input.ProgramType));
         }
 
         HistoryCountTextBlock.Text = orderedHistory.Count.ToString(CultureInfo.CurrentCulture);
@@ -6180,7 +6181,7 @@ public partial class MainWindow : Window
     private ProgressPaymentHistoryData? GetHistoryItemFromRow(object? tag)
     {
         return tag is HistoryRow row
-            ? _progressHistory.FirstOrDefault(x => x.Id == row.Id)
+            ? _progressHistory.FirstOrDefault(x => x.Id == row.Id && x.Input.ProgramType == row.ProgramType)
             : null;
     }
 
@@ -6227,7 +6228,7 @@ public partial class MainWindow : Window
         ClearArchiveCorrectionState();
         if (sender is Button { Tag: HistoryRow row })
         {
-            var item = _progressHistory.FirstOrDefault(x => x.Id == row.Id);
+            var item = GetHistoryItemFromRow(row);
             if (item is not null)
                 BeginHistoryOrArchiveCorrection(item);
         }
@@ -6235,6 +6236,7 @@ public partial class MainWindow : Window
 
     private void BeginHistoryOrArchiveCorrection(ProgressPaymentHistoryData item)
     {
+        _historyOperationProgram = item.Input.ProgramType;
         ClearLiveHistoryCorrectionContext();
         ArchiveRow? matchingArchiveRow = null;
         var matchingRevision = 0;
@@ -6254,7 +6256,7 @@ public partial class MainWindow : Window
                     continue;
                 }
 
-                if (archive.ProgressPayment.Id != item.Id || archive.Revision <= matchingRevision)
+                if (archive.ProgressPayment.Id != item.Id || archive.ProgressPayment.Input.ProgramType != item.Input.ProgramType || archive.Revision <= matchingRevision)
                     continue;
 
                 matchingRevision = archive.Revision;
@@ -6575,6 +6577,7 @@ public partial class MainWindow : Window
         }
 
         _editingHistoryId = item.Id;
+        _historyOperationProgram = item.Input.ProgramType;
         var historyRouteKey = OehsIdentityService.BuildRouteKey(
             item.TenderNumber ?? string.Empty,
             item.RouteNumber ?? string.Empty,
@@ -6619,7 +6622,7 @@ public partial class MainWindow : Window
     {
         var archiveCorrection = IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment);
         var original = !archiveCorrection && _editingHistoryId is Guid id
-            ? _progressHistory.FirstOrDefault(x => x.Id == id)
+            ? _progressHistory.FirstOrDefault(x => IsOperationPayment(x, id))
             : null;
 
         ClearArchiveCorrectionState();
@@ -6658,7 +6661,7 @@ public partial class MainWindow : Window
     private void DeleteHistoryButton_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not Button { Tag: HistoryRow row }) return;
-        var item = _progressHistory.FirstOrDefault(x => x.Id == row.Id);
+        var item = GetHistoryItemFromRow(row);
         if (item is null) return;
 
         var title = item.ProgressPaymentNumber.HasValue
@@ -7984,7 +7987,7 @@ public partial class MainWindow : Window
             try
             {
                 SaveRouteDocumentsArchiveMetadata(latest, targetPaths);
-                OutputEvidenceStore.Save(OehsRuntimePaths.DesktopRoot, latest.Id, BuildOutputFingerprint(context), targetPaths);
+                OutputEvidenceStore.Save(OehsRuntimePaths.DesktopRoot, latest.Id, BuildOutputFingerprint(context), targetPaths, latest.Input.ProgramType);
                 RefreshHomeOperations();
             }
             catch (Exception ex)
@@ -8437,7 +8440,8 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         string DisplayTitle,
         string CreatedAtText,
         string TotalAmountText,
-        string NetPayableText);
+        string NetPayableText,
+        TransportationProgramType ProgramType);
 
     private sealed record SummaryRow(
         string Title,

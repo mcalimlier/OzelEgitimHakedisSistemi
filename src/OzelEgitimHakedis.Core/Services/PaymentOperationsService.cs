@@ -83,7 +83,7 @@ public static class PaymentOperationsService
             if (payment is null && c is null) issues.Add(new("Sözleşme bağlantısı eksik.", "Contract"));
             if (payment is null && firm is null) issues.Add(new("Firma bağlantısı eksik.", "Contractors"));
             if (payments.Length > 1) issues.Add(new("Birden fazla hakediş var; dönem kayıtlarını kontrol edin.", "History"));
-            var archive = archives?.Where(a => a.ProgressPayment.Id == payment?.Id)
+            var archive = archives?.Where(a => a.ProgressPayment.Id == payment?.Id && a.ProgressPayment.Input.ProgramType == program)
                 .OrderByDescending(a => a.Revision).FirstOrDefault();
             var archived = archive is not null && archive.ProgressPayment == payment;
             var status = payment is null ? "Hakediş yok" : issues.Count > 0 ? "Bilgi eksik" :

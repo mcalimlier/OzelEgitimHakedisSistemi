@@ -27,6 +27,31 @@ public sealed class HakedisCreateHybridUiContractTests
         "http://schemas.microsoft.com/winfx/2006/xaml";
 
     [Fact]
+    public void FilteredHistory_ShouldResolveSameIdInTheVisibleProgram()
+    {
+        RunOnSta(() =>
+        {
+            var directory=Directory.CreateTempSubdirectory("oehs-filter-identity-");
+            try
+            {
+                var window=CreateEditorHarness();
+                SetField(window,"_archiveStore",new ProgressPaymentArchiveStore(directory.FullName));
+                var special=ArchiveProgressEditorContextTests.CreateArchive().ProgressPayment;
+                var basic=special with {Input=special.Input with {ProgramType=TransportationProgramType.BasicOrSecondary}};
+                Collection(window,"_progressHistory").Add(special);Collection(window,"_progressHistory").Add(basic);
+                var program=Field<ComboBox>(window,"HomeProgramComboBox");
+                program.Items.Add(new ComboBoxItem{Tag="BasicOrSecondary"});program.SelectedIndex=0;
+                SetField(window,"_operationsReady",true);
+                Invoke(window,"UpdateHistoryView");
+                var row=Assert.Single(Collection(window,"_historyRows").Cast<object>());
+                var selected=Assert.IsType<ProgressPaymentHistoryData>(Invoke(window,"GetHistoryItemFromRow",row));
+                Assert.Equal(TransportationProgramType.BasicOrSecondary,selected.Input.ProgramType);
+            }
+            finally {directory.Delete(true);}
+        });
+    }
+
+    [Fact]
     public void PracticalHome_SearchShouldClearOldPaymentAndActions()
     {
         RunOnSta(() =>
