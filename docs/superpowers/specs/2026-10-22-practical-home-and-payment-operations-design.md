@@ -27,7 +27,7 @@ Firma | Hat | Dönem | Net ödeme | Durum | Sonraki işlem
 ...
 
 SEÇİLİ HAKEDİŞ — BELGE KONTROLÜ
-Firma / Hat / Ay / Hakediş no / Resmî sözleşme no
+Firma / Hat / Ay / Hakediş no / İKN
 Taşıma: gün × günlük fiyat | Rehber: gün × günlük fiyat
 Fiyat farkı | Toplam kesinti | Belgede gösterilecek net ödeme
 Eksikler: açıklama + ilgili alanı aç
@@ -42,14 +42,9 @@ Eksikler: açıklama + ilgili alanı aç
 - Satır seçmeden belge kontrol alanı boş yönerge gösterir. Görünen bir önceki satırın tutarı yeni seçim adına gösterilemez.
 - 1024×600'de dikey kaydırma ve daralan/sarılan işlem grupları kullanılır. İş listesi gerektiğinde yatay kaydırılır. 1366×768 ve 1920×1080'de düğme/metin örtüşmesi olmaz. Mevcut lacivert/altın görsel dil korunur; durumlar renk yanında metinle belirtilir.
 
-## 1. Resmî sözleşme numarası
+## 1. Kullanıcı düzeltmesi: yalnız İKN
 
-- Mevcut `ContractNumber` alanı, kimlik anahtarı olarak korunur. `INTERNAL-…` değerleri değiştirilmez; hat, geçmiş, arşiv ve dosya ilişkileri bozulmaz.
-- Sözleşme modeline isteğe bağlı resmî numara alanı eklenir; formda görünür, düzenlenebilir `Sözleşme No` alanı açılır. İç kimlik kullanıcı girdisi olarak sunulmaz.
-- Yeni hakediş/arşiv kayıtları resmî numarayı da snapshot olarak taşır. PDF sözleşme satırı yalnız çözülmüş resmî numarayı kullanır; iç kimliği basmaz.
-- Eski kayıtta açık resmî alan yoksa `INTERNAL-` ile başlamayan eski sözleşme numarası resmî numara için geri dönüş olabilir. İç kimlikten gerçek numara tahmin edilmez.
-- Eski bir ödemede resmî snapshot yoksa bağlı sözleşmenin resmî numarası kullanılabilir; kontrol panelinde bilginin güncel sözleşmeden alındığı belirtilir. Var olan açık snapshot sessizce değiştirilmez.
-- Taslak sözleşme numarasız kaydedilebilir. Resmî PDF üretimi için eksik gerçek numara kontrol panelinde engelleyici eksik olarak gösterilir ve sözleşme düzenlemesine yönlendirir.
+Kullanıcı 1. maddeyi kapsamdan çıkardı: ayrı resmî sözleşme numarası alanı eklenmeyecek ve belge kontrolünde zorunlu tutulmayacak. İKN kullanılacak. Mevcut ContractNumber iç ilişki anahtarı korunur; INTERNAL- değerleri belgelerde resmî numara gibi gösterilmez. Başlangıçtaki numara/snapshot önerileri bu kararla geçersizdir.
 
 ## 2. Tam yedekleme ve geri yükleme
 
@@ -66,7 +61,7 @@ Eksikler: açıklama + ilgili alanı aç
 ## 3. Ana Ekran'da PDF öncesi kontrol
 
 - Kontrol nesnesi seçili ödeme kimliğine, programına ve dönemine bağlıdır. Ekranda başka satır seçilmesi eski kontrolü geçersiz kılar.
-- Firma, hat, dönem, hakediş numarası, İKN, resmî sözleşme numarası, sözleşme tarihleri, taşıma/rehber günleri ve günlük fiyatları gösterilir. Temel programda rehber bilgileri gizlenir.
+- Firma, hat, dönem, hakediş numarası, İKN, sözleşme tarihleri, taşıma/rehber günleri ve günlük fiyatları gösterilir. Temel programda rehber bilgileri gizlenir.
 - Özet: fiyat farkı, kesinti, PDF'nin kullandığı rapor neti. Hesap motoru neti ile rapor neti farklı kavramlarsa etiketler açık olur; iki değer birbirinin yerine kullanılmaz.
 - Zorunlu kimlik/tarih/ilişki eksikleri belge üretimini engeller; bir alana git düğmesi doğru sözleşme/firma/hat/hakedişi seçerek açar. Sıfır çalışma günü otomatik hata sayılmaz; fiyat farkı veya düzeltme içeren geçerli ay korunur.
 - İmzacı bilgileri ve kullanılan hesaplama oranları açılır ayrıntıda incelenebilir; uygulama mevzuata uygunluğu kendiliğinden onaylamaz.
@@ -109,3 +104,7 @@ Eksikler: açıklama + ilgili alanı aç
 - CI statik Ana Ekran yol haritası kontrolleri yeni tasarıma göre davranış kontrolleriyle değiştirilir; yalnız eski metni korumak için kullanılmayan kontroller bırakılmaz.
 - Son doğrulama: tüm Release testleri, CI statik kontrolleri ve `git diff --check`. Mümkün olduğunda bağımsız inceleme; bu oturumda mevcut model erişimi sorunu nedeniyle bağımsız ajan bulunabilirliği ayrıca doğrulanmalıdır.
 - Tamamlanan değişiklikler mevcut dala commitlenir. Push, PR ve merge için ayrıca kullanıcı yönlendirmesi gerekir.
+
+## Uygulama yetkisi
+
+Kullanıcı tasarımı onayladı, ayrı resmî sözleşme numarası geliştirmesini çıkardı ve kalan beş maddenin uygulanmasını istedi. Bu kapsamla devam edilir. Mevcut aktif dal kullanılır; bağımsız ajan aracı yoksa oturum içi uygulama ve açıkça belirtilen öz inceleme yapılır.
