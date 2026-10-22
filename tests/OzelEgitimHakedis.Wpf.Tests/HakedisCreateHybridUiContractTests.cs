@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Xunit;
 
@@ -158,13 +159,21 @@ public sealed class HakedisCreateHybridUiContractTests
 
         var historyEdit = MethodBody(source, "BeginProgressHistoryEdit");
         var contextLoader = MethodBody(source, "LoadArchiveProgressEditorContext");
+        var editorMode = MethodBody(source, "SetProgressEditorMode");
+        var multiRouteRows = MethodBody(source, "UpdateMultiRouteDraftRows");
 
         Assert.Contains("LoadArchiveProgressEditorContext(ArchiveProgressEditorContext.Create(archive));", historyEdit, StringComparison.Ordinal);
         Assert.Contains("ProgressTenderListBox.ItemsSource = new[] { context.Contract };", contextLoader, StringComparison.Ordinal);
         Assert.Contains("ProgressRouteComboBox.ItemsSource = new[] { snapshotRoute };", contextLoader, StringComparison.Ordinal);
         Assert.Contains("ProgressRouteComboBox.SelectedItems.Clear();", contextLoader, StringComparison.Ordinal);
+        Assert.Contains("ProgressRouteComboBox.SelectedItem = snapshotRoute;", contextLoader, StringComparison.Ordinal);
         Assert.Contains("_multiRouteDraftCache.Clear();", contextLoader, StringComparison.Ordinal);
         Assert.Contains("UpdateProgressPeriodOptions(context.Contract, preserveSelection: false);", contextLoader, StringComparison.Ordinal);
+        Assert.Contains("UpdateMultiRouteDraftRows();", contextLoader, StringComparison.Ordinal);
+        Assert.Contains("ProgressTenderListBox.IsEnabled = !(editing && archiveCorrection);", editorMode, StringComparison.Ordinal);
+        Assert.Contains("ProgressRouteComboBox.IsEnabled = !(editing && archiveCorrection);", editorMode, StringComparison.Ordinal);
+        Assert.Contains("MultiRouteEntryBorder.Visibility = Visibility.Collapsed;", multiRouteRows, StringComparison.Ordinal);
+        Assert.Contains("SetGlobalMonetaryFieldsVisible(true);", multiRouteRows, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -175,12 +184,16 @@ public sealed class HakedisCreateHybridUiContractTests
 
         var clearArchiveState = MethodBody(source, "ClearArchiveCorrectionState");
         var selectorRestore = MethodBody(source, "RestoreLiveProgressEditorSelectorContext");
+        var saveArchiveCorrection = MethodBody(source, "SaveArchiveCorrectionSnapshot");
+        var cancelProgressEdit = MethodBody(source, "CancelProgressEditButton_Click");
 
         Assert.Contains("RestoreLiveProgressEditorSelectorContext();", clearArchiveState, StringComparison.Ordinal);
         Assert.Contains("ProgressTenderListBox.ItemsSource = _contracts;", selectorRestore, StringComparison.Ordinal);
         Assert.Contains("ProgressTenderListBox.SelectedItem = null;", selectorRestore, StringComparison.Ordinal);
         Assert.Contains("ProgressRouteComboBox.SelectedItems.Clear();", selectorRestore, StringComparison.Ordinal);
         Assert.Contains("_multiRouteDraftCache.Clear();", selectorRestore, StringComparison.Ordinal);
+        Assert.Contains("ClearArchiveCorrectionState();", saveArchiveCorrection, StringComparison.Ordinal);
+        Assert.Contains("ClearArchiveCorrectionState();", cancelProgressEdit, StringComparison.Ordinal);
     }
 
     private static string EventName(XElement element, string eventAttribute) =>
@@ -192,8 +205,11 @@ public sealed class HakedisCreateHybridUiContractTests
 
     private static string MethodBody(string source, string methodName)
     {
-        var methodStart = source.IndexOf($"private void {methodName}(", StringComparison.Ordinal);
-        Assert.True(methodStart >= 0, $"Expected MainWindow to define {methodName}.");
+        var methodMatch = Regex.Match(
+            source,
+            $@"private\s+(?:static\s+)?[\w<>?,]+\s+{Regex.Escape(methodName)}\(");
+        Assert.True(methodMatch.Success, $"Expected MainWindow to define {methodName}.");
+        var methodStart = methodMatch.Index;
 
         var bodyStart = source.IndexOf('{', methodStart);
         Assert.True(bodyStart >= 0, $"Expected {methodName} to have a body.");

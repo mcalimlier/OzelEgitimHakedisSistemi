@@ -324,6 +324,8 @@ public partial class MainWindow : Window
         {
             _suppressSelectionEvents = false;
         }
+
+        UpdateMultiRouteDraftRows();
     }
 
     private void RestoreLiveProgressEditorSelectorContext()
