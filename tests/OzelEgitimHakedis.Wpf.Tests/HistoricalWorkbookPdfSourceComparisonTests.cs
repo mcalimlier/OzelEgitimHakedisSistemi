@@ -77,6 +77,64 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
         });
     }
 
+    [Fact]
+    public void EightSourceVectorPdfs_ShouldRetainSignatoriesAndDocumentIdentityAfterExport()
+    {
+        RunOnSta(() =>
+        {
+            var cases = new[]
+            {
+                (Name: "Special", Context: BuildLatestSpecialEducationContext()),
+                (Name: "Basic", Context: BuildLatestBasicEducationContext())
+            };
+            var directory = Directory.CreateTempSubdirectory("oehs-eight-pdf-field-matrix-");
+            try
+            {
+                var exportedDocuments = 0;
+                foreach (var sample in cases)
+                {
+                    var outputs = OehsOfficialDocumentFactory.BuildSeparate(sample.Context);
+                    Assert.Equal(4, outputs.Count);
+                    Assert.Equal(4, outputs.Select(x => x.Kind).Distinct().Count());
+                    foreach (var output in outputs)
+                    {
+                        var view = PageText(outputs, output.Kind);
+                        foreach (var signatory in new[]
+                        {
+                            sample.Context.PreparerName,
+                            sample.Context.ControllerName,
+                            sample.Context.ApproverName
+                        })
+                            Assert.Contains(signatory, view, StringComparison.Ordinal);
+
+                        Assert.Contains("Kaynak Test Güzergâhı", view, StringComparison.Ordinal);
+                        if (output.Kind != OehsOfficialDocumentKind.HakedisIcmali)
+                            Assert.Contains(sample.Context.ContractorName, view, StringComparison.Ordinal);
+                        if (output.Kind == OehsOfficialDocumentKind.HakedisRaporu)
+                            Assert.Contains(
+                                sample.Context.ReportNetPayable.ToString("N2",
+                                    System.Globalization.CultureInfo.GetCultureInfo("tr-TR")) + " TL",
+                                view, StringComparison.Ordinal);
+
+                        var path = Path.Combine(directory.FullName,
+                            sample.Name + "_" + output.FileSuffix + ".pdf");
+                        PdfVectorWriter.Save(output.Document, path);
+                        using var pdf = UglyToad.PdfPig.PdfDocument.Open(path);
+                        var page = Assert.Single(pdf.GetPages());
+                        Assert.Equal(595.28d, page.Width, 1);
+                        Assert.Equal(841.89d, page.Height, 1);
+                        Assert.Contains(sample.Context.PreparerName, page.Text, StringComparison.Ordinal);
+                        Assert.Contains(sample.Context.ControllerName, page.Text, StringComparison.Ordinal);
+                        Assert.Contains(sample.Context.ApproverName, page.Text, StringComparison.Ordinal);
+                        exportedDocuments++;
+                    }
+                }
+                Assert.Equal(8, exportedDocuments);
+            }
+            finally { directory.Delete(recursive: true); }
+        });
+    }
+
     private static OehsOfficialDocumentContext BuildLatestSpecialEducationContext()
     {
         var previousInput = new ProgressPaymentInput(
