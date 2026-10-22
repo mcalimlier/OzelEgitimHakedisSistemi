@@ -305,6 +305,59 @@ public sealed class HakedisCreateHybridUiContractTests
     }
 
     [Fact]
+    public void HybridClipboard_ShouldApplyAndUndoSelectedRowWithoutTouchingAnotherRoute()
+    {
+        RunOnSta(() =>
+        {
+            var window = CreateEditorHarness();
+            var first = new MainWindow.MultiRoutePaymentDraftRow
+            {
+                RouteNumber = "01", WorkDays = 10m, PriceDifference = 5m
+            };
+            var second = new MainWindow.MultiRoutePaymentDraftRow
+            {
+                RouteNumber = "02", WorkDays = 15m, PriceDifference = 9m
+            };
+            var rows = Field<System.Collections.ObjectModel.ObservableCollection<MainWindow.MultiRoutePaymentDraftRow>>(
+                window, "_multiRoutePaymentRows");
+            rows.Add(first);
+            rows.Add(second);
+            var grid = Field<DataGrid>(window, "MultiRoutePaymentGrid");
+            var days = new DataGridTextColumn
+            {
+                Header = "Taşıma Gün", Binding = new Binding(nameof(first.WorkDays))
+            };
+            var difference = new DataGridTextColumn
+            {
+                Header = "Taşıma Fiyat Farkı", Binding = new Binding(nameof(first.PriceDifference))
+            };
+            grid.Columns.Add(days);
+            grid.Columns.Add(difference);
+            grid.ItemsSource = rows;
+            grid.CurrentCell = new DataGridCellInfo(first, days);
+
+            Assert.True((bool)Invoke(window, "TryPasteHybridGridText", "16\t1.234,50")!);
+            Assert.Equal(16m, first.WorkDays);
+            Assert.Equal(1234.50m, first.PriceDifference);
+            Assert.Equal(15m, second.WorkDays);
+            Assert.Equal(9m, second.PriceDifference);
+
+            Invoke(window, "UndoHybridGridPaste");
+            Assert.Equal(10m, first.WorkDays);
+            Assert.Equal(5m, first.PriceDifference);
+            Assert.Equal(15m, second.WorkDays);
+            Assert.False((bool)Invoke(window, "TryPasteHybridGridText", "15\tgeçersiz")!);
+            Assert.Equal(10m, first.WorkDays);
+            Assert.Equal(5m, first.PriceDifference);
+
+            Assert.True((bool)Invoke(window, "TryPasteHybridGridText", "17\t20")!);
+            first.WorkDays = 19m; // The user edited a cell after the paste.
+            Invoke(window, "UndoHybridGridPaste");
+            Assert.Equal(19m, first.WorkDays); // Never overwrite the newer edit.
+        });
+    }
+
+    [Fact]
     public void HybridPreview_ShouldNotifyAndCalculateEachRoutesOwnValues()
     {
         var first=new MainWindow.MultiRoutePaymentDraftRow{WorkDays=22,DailyPrice=100,PriceDifference=50,TaxDebt=10};
