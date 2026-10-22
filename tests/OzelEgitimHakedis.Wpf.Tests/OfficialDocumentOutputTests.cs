@@ -193,6 +193,71 @@ public sealed class OfficialDocumentOutputTests
     }
 
     [Theory]
+    [InlineData(false, 60d, 80d)]
+    [InlineData(true, 187d, 91d)]
+    public void PdfWriter_ShouldPreserveTextBlockRenderTranslation(bool nested, double expectedLeft, double expectedTop)
+    {
+        RunOnSta(() =>
+        {
+            var block = new TextBlock
+            {
+                Text = "METIN", Width = 80, Height = 30, FontSize = 12,
+                FontFamily = new FontFamily("Arial"), HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Top, RenderTransform = new TranslateTransform(40, 60)
+            };
+            var document = CreateTextDocument(nested
+                ? new Border { Width = 200, Height = 60, Child = block, RenderTransform = new TranslateTransform(7, 11) }
+                : block);
+            var temporaryDirectory = Directory.CreateTempSubdirectory("oehs-pdf-transform-");
+            try
+            {
+                var path = Path.Combine(temporaryDirectory.FullName, "translated.pdf");
+                PdfVectorWriter.Save(document, path);
+                using var pdf = UglyToad.PdfPig.PdfDocument.Open(path);
+                Assert.Equal("METIN", PdfTextInRectangle(pdf.GetPage(1), new Rect(expectedLeft, expectedTop, 80, 30)));
+            }
+            finally
+            {
+                temporaryDirectory.Delete(recursive: true);
+            }
+        });
+    }
+
+    [Fact]
+    public void PdfWriter_ShouldKeepDecomposedTurkishAccentsTogetherAcrossWrappedLines()
+    {
+        RunOnSta(() =>
+        {
+            const string textElement = "G\u0306"; // Decomposed Turkish Ğ: base letter plus combining breve.
+            var text = string.Concat(Enumerable.Repeat(textElement, 24));
+            var document = CreateTextDocument(new TextBlock
+            {
+                Text = text, Width = 26, Height = 500, FontSize = 14,
+                FontFamily = new FontFamily("Arial"), TextWrapping = TextWrapping.Wrap
+            });
+            var temporaryDirectory = Directory.CreateTempSubdirectory("oehs-pdf-unicode-");
+            try
+            {
+                var path = Path.Combine(temporaryDirectory.FullName, "unicode.pdf");
+                PdfVectorWriter.Save(document, path);
+                using var pdf = UglyToad.PdfPig.PdfDocument.Open(path);
+                var page = pdf.GetPage(1);
+                Assert.Equal(text, page.Text);
+                Assert.Equal(text, PdfTextInRectangle(page, new Rect(20, 20, 26, 500)));
+                var lines = page.Letters.GroupBy(letter => Math.Round(letter.StartBaseLine.Y, 1))
+                    .Select(line => string.Concat(line.Select(letter => letter.Value))).ToArray();
+                Assert.True(lines.Length > 1);
+                foreach (var line in lines)
+                    Assert.Equal(string.Concat(Enumerable.Repeat(textElement, line.Length / textElement.Length)), line);
+            }
+            finally
+            {
+                temporaryDirectory.Delete(recursive: true);
+            }
+        });
+    }
+
+    [Theory]
     [InlineData("height")]
     [InlineData("width")]
     [InlineData("zero-size")]

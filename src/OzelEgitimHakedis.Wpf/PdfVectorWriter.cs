@@ -269,7 +269,7 @@ public static class PdfVectorWriter
     private static bool TryTextBounds(FixedPage page, TextBlock block, out XRect rect)
     {
         rect = default;
-        if (VisualTreeHelper.GetParent(block) is not Visual parent)
+        if (VisualTreeHelper.GetParent(block) is not Visual)
             return false;
 
         // TextBlock.RenderSize can exceed the arranged slot for NoWrap or
@@ -301,8 +301,12 @@ public static class PdfVectorWriter
             VerticalAlignment.Center or VerticalAlignment.Stretch => (slotHeight - height) / 2d,
             _ => 0
         });
-        var bounds = parent.TransformToAncestor(page).TransformBounds(
-            new Rect(left, top, width, height));
+        // Convert the allocated parent-space slot to block-local coordinates,
+        // then use the block's complete transform chain. Starting at its parent
+        // would omit the block's own RenderTransform (for example a translation).
+        var layoutOffset = VisualTreeHelper.GetOffset(block);
+        var bounds = block.TransformToAncestor(page).TransformBounds(
+            new Rect(left - layoutOffset.X, top - layoutOffset.Y, width, height));
         rect = new XRect(ToPoint(bounds.X), ToPoint(bounds.Y), ToPoint(bounds.Width), ToPoint(bounds.Height));
         return true;
     }
