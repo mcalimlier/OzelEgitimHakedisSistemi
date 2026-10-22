@@ -116,6 +116,22 @@ public partial class MainWindow
         _refreshingHybridTotals=true;
         try
         {
+            var period=ProgressPeriodMonthComboBox?.SelectedItem as ProgressPaymentMonthOption;
+            if (period is not null)
+            {
+                foreach (var row in _multiRoutePaymentRows)
+                {
+                    var input=row.CreateInput();
+                    var calendarError=ProgressPaymentMonthService.GetCalendarCapacityError(
+                        period, input.WorkDays, input.GuideWorkDays);
+                    if (calendarError is null) continue;
+                    HybridSelectionSummaryTextBlock.Text=$"{row.RouteDisplayText}: {calendarError} Hakediş kaydedilemez.";
+                    ProgressCalculationSummaryTextBlock.Text="GÜN SAYISINI KONTROL EDİN";
+                    NetResultTextBlock.Text="—";
+                    ProgressNetSummaryTextBlock.Text="—";
+                    return;
+                }
+            }
             var results=_multiRoutePaymentRows.Select(r=>r.Preview).ToArray();
             if(results.Any(r=>r is null) || HasGridValidationError(MultiRoutePaymentGrid))
             {
