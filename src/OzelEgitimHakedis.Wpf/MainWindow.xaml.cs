@@ -268,12 +268,87 @@ public partial class MainWindow : Window
 
     private void ClearArchiveCorrectionState()
     {
+        if (_archiveCorrectionSection == ArchiveCorrectionSection.ProgressPayment)
+            RestoreLiveProgressEditorSelectorContext();
+
         _editingArchiveSourcePath = null;
         _editingArchiveSnapshot = null;
         _archiveCorrectionSection = ArchiveCorrectionSection.None;
         _suppressArchiveDirtyTracking = false;
         ClearLiveHistoryCorrectionContext();
         ResetEditorUiToCreateMode();
+    }
+
+    private void LoadArchiveProgressEditorContext(ArchiveProgressEditorContext context)
+    {
+        var snapshotContractor = new ContractorDraft(
+            context.Contractor.Name,
+            OehsIdentityService.NormalizeIdentity(context.Contractor.TaxOrIdentityNumber),
+            context.Contractor.Address,
+            context.Contractor.Phone,
+            context.Contractor.Email,
+            context.Contractor.BankAccountNumber,
+            context.Contractor.ContactPerson,
+            context.Contractor.ProgramType,
+            context.Contractor.VatExempt ?? false);
+        var snapshotRoute = new RouteDraft(
+            context.Route.RouteNumber,
+            context.Route.Name,
+            context.Route.DailyPrice,
+            context.Route.GuideWorkDays,
+            context.Route.GuideDailyPrice,
+            context.Route.TransportWorkDays,
+            context.Route.TenderNumber,
+            OehsIdentityService.NormalizeIdentity(context.Route.ContractorTaxOrIdentityNumber),
+            context.Contractor.Name,
+            context.Route.ContractNumber,
+            context.Contract.ProgramType);
+
+        _suppressSelectionEvents = true;
+        try
+        {
+            _multiRoutePaymentRows.Clear();
+            _multiRouteDraftCache.Clear();
+            ProgressTenderListBox.ItemsSource = new[] { context.Contract };
+            ProgressTenderListBox.SelectedItem = context.Contract;
+            ProgressContractorComboBox.ItemsSource = new[] { snapshotContractor };
+            ProgressContractorComboBox.SelectedItem = snapshotContractor;
+            ProgressRouteComboBox.ItemsSource = new[] { snapshotRoute };
+            ProgressRouteComboBox.SelectedItems.Clear();
+            ProgressRouteComboBox.SelectedItem = snapshotRoute;
+            UpdateProgressProgramTypeFields(context.Contract);
+            UpdateProgressPeriodOptions(context.Contract, preserveSelection: false);
+            SelectProgressPeriod(context.PeriodDate);
+        }
+        finally
+        {
+            _suppressSelectionEvents = false;
+        }
+    }
+
+    private void RestoreLiveProgressEditorSelectorContext()
+    {
+        _suppressSelectionEvents = true;
+        try
+        {
+            ProgressTenderListBox.ItemsSource = _contracts;
+            ProgressTenderListBox.SelectedItem = null;
+            ProgressContractorComboBox.ItemsSource = Array.Empty<ContractorDraft>();
+            ProgressContractorComboBox.SelectedItem = null;
+            ProgressPeriodMonthComboBox.ItemsSource = Array.Empty<ProgressPaymentMonthOption>();
+            ProgressPeriodMonthComboBox.SelectedItem = null;
+            ProgressRouteComboBox.ItemsSource = Array.Empty<RouteDraft>();
+            ProgressRouteComboBox.SelectedItems.Clear();
+        }
+        finally
+        {
+            _suppressSelectionEvents = false;
+        }
+
+        _multiRoutePaymentRows.Clear();
+        _multiRouteDraftCache.Clear();
+        _lastProgressDefaultsRouteKey = null;
+        _lastSelectedPaymentMonthKey = null;
     }
 
     private void ConfigureWindow()
@@ -6450,29 +6525,7 @@ public partial class MainWindow : Window
             var archive = _editingArchiveSnapshot!;
             var payment = archive.ProgressPayment;
             _editingHistoryId = null;
-            _suppressSelectionEvents = true;
-            try
-            {
-                var liveContract = FindContract(payment.TenderNumber, payment.ContractNumber, payment.Input.ProgramType);
-                ProgressTenderListBox.SelectedItem = liveContract;
-                if (liveContract is not null)
-                {
-                    ProgressRouteComboBox.ItemsSource = _routes.Where(x =>
-                        string.Equals(x.TenderNumber, liveContract.TenderNumber, StringComparison.OrdinalIgnoreCase)).ToArray();
-                }
-                var archivedRoute = _routes.FirstOrDefault(x =>
-                    string.Equals(x.TenderNumber, payment.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(x.RouteNumber, payment.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(
-                        OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
-                        OehsIdentityService.NormalizeIdentity(payment.ContractorTaxOrIdentityNumber),
-                        StringComparison.Ordinal));
-                ProgressRouteComboBox.SelectedItem = archivedRoute;
-            }
-            finally
-            {
-                _suppressSelectionEvents = false;
-            }
+            LoadArchiveProgressEditorContext(ArchiveProgressEditorContext.Create(archive));
             ProgressContractorTextBlock.Text = archive.Contractor.Name;
             ProgressRouteRelationTextBlock.Text =
                 $"Arşiv ihale: {payment.TenderNumber} • Yüklenici: {archive.Contractor.Name} • Hat: {payment.RouteNumber} — {payment.RouteName}";

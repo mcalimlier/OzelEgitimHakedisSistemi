@@ -150,12 +150,65 @@ public sealed class HakedisCreateHybridUiContractTests
             manifest.Descendants(legacyWindowsSettings + "dpiAware").Single().Value);
     }
 
+    [Fact]
+    public void ArchiveProgressCorrection_ShouldLoadOnlySnapshotSelectorContext()
+    {
+        var source = File.ReadAllText(LoadProjectFile(
+            "src", "OzelEgitimHakedis.Wpf", "MainWindow.xaml.cs"));
+
+        var historyEdit = MethodBody(source, "BeginProgressHistoryEdit");
+        var contextLoader = MethodBody(source, "LoadArchiveProgressEditorContext");
+
+        Assert.Contains("LoadArchiveProgressEditorContext(ArchiveProgressEditorContext.Create(archive));", historyEdit, StringComparison.Ordinal);
+        Assert.Contains("ProgressTenderListBox.ItemsSource = new[] { context.Contract };", contextLoader, StringComparison.Ordinal);
+        Assert.Contains("ProgressRouteComboBox.ItemsSource = new[] { snapshotRoute };", contextLoader, StringComparison.Ordinal);
+        Assert.Contains("ProgressRouteComboBox.SelectedItems.Clear();", contextLoader, StringComparison.Ordinal);
+        Assert.Contains("_multiRouteDraftCache.Clear();", contextLoader, StringComparison.Ordinal);
+        Assert.Contains("UpdateProgressPeriodOptions(context.Contract, preserveSelection: false);", contextLoader, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ArchiveProgressCorrection_ShouldRestoreLiveSelectorsWhenCorrectionStateClears()
+    {
+        var source = File.ReadAllText(LoadProjectFile(
+            "src", "OzelEgitimHakedis.Wpf", "MainWindow.xaml.cs"));
+
+        var clearArchiveState = MethodBody(source, "ClearArchiveCorrectionState");
+        var selectorRestore = MethodBody(source, "RestoreLiveProgressEditorSelectorContext");
+
+        Assert.Contains("RestoreLiveProgressEditorSelectorContext();", clearArchiveState, StringComparison.Ordinal);
+        Assert.Contains("ProgressTenderListBox.ItemsSource = _contracts;", selectorRestore, StringComparison.Ordinal);
+        Assert.Contains("ProgressTenderListBox.SelectedItem = null;", selectorRestore, StringComparison.Ordinal);
+        Assert.Contains("ProgressRouteComboBox.SelectedItems.Clear();", selectorRestore, StringComparison.Ordinal);
+        Assert.Contains("_multiRouteDraftCache.Clear();", selectorRestore, StringComparison.Ordinal);
+    }
+
     private static string EventName(XElement element, string eventAttribute) =>
         (string?)element.Attribute(eventAttribute) ?? string.Empty;
 
     private static XDocument LoadMainWindowXaml() =>
         XDocument.Load(LoadProjectFile("src", "OzelEgitimHakedis.Wpf", "MainWindow.xaml"),
             LoadOptions.PreserveWhitespace);
+
+    private static string MethodBody(string source, string methodName)
+    {
+        var methodStart = source.IndexOf($"private void {methodName}(", StringComparison.Ordinal);
+        Assert.True(methodStart >= 0, $"Expected MainWindow to define {methodName}.");
+
+        var bodyStart = source.IndexOf('{', methodStart);
+        Assert.True(bodyStart >= 0, $"Expected {methodName} to have a body.");
+
+        var depth = 0;
+        for (var index = bodyStart; index < source.Length; index++)
+        {
+            if (source[index] == '{')
+                depth++;
+            else if (source[index] == '}' && --depth == 0)
+                return source[(bodyStart + 1)..index];
+        }
+
+        throw new InvalidOperationException($"Expected {methodName} to have a closing brace.");
+    }
 
     private static string LoadProjectFile(params string[] segments)
     {
