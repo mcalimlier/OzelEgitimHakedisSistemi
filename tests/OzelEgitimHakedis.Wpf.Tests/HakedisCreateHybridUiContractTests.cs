@@ -24,6 +24,128 @@ public sealed class HakedisCreateHybridUiContractTests
         "http://schemas.microsoft.com/winfx/2006/xaml";
 
     [Theory]
+    [InlineData(TransportationProgramType.BasicOrSecondary, "Hesaplama Bilgileri", "Hizmet İşleri Hakediş Raporu", Visibility.Collapsed)]
+    [InlineData(TransportationProgramType.SpecialEducation, "Hesaplama", "Hizmetişleri Hakediş Raporu", Visibility.Visible)]
+    public void PaymentLabels_ShouldFollowSelectedContractProgram(
+        TransportationProgramType program, string calculationSheet, string serviceReport, Visibility guideVisibility)
+    {
+        RunOnSta(() =>
+        {
+            var window = CreateEditorHarness();
+            var contract = ArchiveProgressEditorContextTests.CreateArchive().Contract with { ProgramType = program };
+            Invoke(window, "UpdateProgressProgramTypeFields", contract);
+
+            Assert.Equal("Taşıma Fiyat Farkı KDV Hariç", Field<TextBlock>(window, "PriceDifferenceLabel").Text);
+            Assert.Equal(calculationSheet, Field<TextBlock>(window, "CalculationSheetNameTextBlock").Text);
+            Assert.Equal(serviceReport, Field<TextBlock>(window, "ServiceReportSheetNameTextBlock").Text);
+            Assert.Equal("Ele Geçen", Field<TextBlock>(window, "NetPayableLabel").Text);
+            Assert.Equal("Ele Geçen", Field<TextBlock>(window, "NetControlLabel").Text);
+            Assert.Equal(guideVisibility, Field<TextBlock>(window, "GuidePriceDifferenceLabel").Visibility);
+            if (program == TransportationProgramType.SpecialEducation)
+                Assert.Equal("Rehber Personel Fiyat Farkı KDV Hariç", Field<TextBlock>(window, "GuidePriceDifferenceLabel").Text);
+        });
+    }
+
+    [Fact]
+    public void ReportSheetLabel_ShouldFollowReportRouteEvenWhenPaymentProgramDiffers()
+    {
+        RunOnSta(() =>
+        {
+            var window = CreateEditorHarness();
+            var contract = ArchiveProgressEditorContextTests.CreateArchive().Contract;
+            Invoke(window, "UpdateProgressProgramTypeFields", contract);
+            var route = CreateRoute("01", "Temel hat", "12345678901", TransportationProgramType.BasicOrSecondary);
+            var selector = Field<ComboBox>(window, "ReportRouteComboBox");
+            selector.Items.Add(route);
+            selector.SelectedItem = route;
+            Invoke(window, "UpdateReportView");
+
+            Assert.Equal("Hizmet İşleri Hakediş Raporu", Field<TextBlock>(window, "ServiceReportSheetNameTextBlock").Text);
+            Assert.Equal("Hesaplama", Field<TextBlock>(window, "CalculationSheetNameTextBlock").Text);
+        });
+    }
+
+    [Fact]
+    public void ContractDisplay_ShouldNotUseAnotherArchivesRouteName()
+    {
+        RunOnSta(() =>
+        {
+            var window = CreateEditorHarness();
+            var archive = ArchiveProgressEditorContextTests.CreateArchive();
+            SetField(window, "_editingArchiveSnapshot", archive);
+            var otherContract = archive.Contract with { TenderNumber = "OTHER", WorkName = "Other legacy title" };
+
+            Assert.Equal("Hat 01 Hattı Öğrenci Taşıma İşi", Invoke(window, "GetContractWorkName", archive.Contract));
+            Assert.Equal("Other legacy title", Invoke(window, "GetContractWorkName", otherContract));
+        });
+    }
+
+    [Theory]
+    [InlineData("  Merkez  ", "Eski iş adı", "Merkez Hattı Öğrenci Taşıma İşi")]
+    [InlineData("", "Eski iş adı", "Eski iş adı")]
+    public void ContractDisplay_ShouldDeriveWorkNameWithoutChangingStoredLegacyValue(
+        string routeName, string legacyWorkName, string expected)
+    {
+        RunOnSta(() =>
+        {
+            var window = CreateEditorHarness();
+            var contract = ArchiveProgressEditorContextTests.CreateArchive().Contract with { WorkName = legacyWorkName };
+            Collection(window, "_contracts").Add(contract);
+            if (routeName.Length > 0)
+                Collection(window, "_routes").Add(CreateRoute("01", routeName, "12345678901"));
+            Invoke(window, "ApplyContractToForm", contract);
+
+            Assert.Equal(expected, Field<TextBox>(window, "WorkNameTextBox").Text);
+            Assert.Equal(legacyWorkName, contract.WorkName);
+        });
+    }
+
+    [Theory]
+    [InlineData("Kayıtlı hat", "Canlı hat", "Eski iş", "Kayıtlı hat Hattı Öğrenci Taşıma İşi")]
+    [InlineData("", "Canlı hat", "Eski iş", "Canlı hat Hattı Öğrenci Taşıma İşi")]
+    [InlineData("", "", "Eski iş", "Eski iş")]
+    public void OfficialOutput_ShouldDeriveWorkNameFromPaymentRouteThenLiveRouteWithLegacyFallback(
+        string savedRoute, string liveRoute, string legacyWorkName, string expected)
+    {
+        RunOnSta(() =>
+        {
+            var window = CreateEditorHarness();
+            var archive = ArchiveProgressEditorContextTests.CreateArchive();
+            var payment = archive.ProgressPayment with
+            {
+                TenderNumber = "IHALE-01", ContractNumber = "SOZ-01", ContractorTaxOrIdentityNumber = "12345678901",
+                RouteName = savedRoute, WorkName = legacyWorkName
+            };
+            Collection(window, "_contracts").Add(archive.Contract);
+            Collection(window, "_routes").Add(CreateRoute("01", liveRoute, "12345678901"));
+            var context = Assert.IsType<OehsOfficialDocumentContext>(Invoke(window, "BuildOfficialDocumentContextForPayment", payment));
+            Assert.Equal(expected, context.WorkName);
+            Assert.Equal(legacyWorkName, payment.WorkName);
+        });
+    }
+
+    [Fact]
+    public void PaymentNetSummary_ShouldUseOfficialNetLabel()
+    {
+        var summaryValue = LoadMainWindowXaml().Descendants()
+            .Single(element => (string?)element.Attribute(XamlNamespace + "Name") == "ProgressNetSummaryTextBlock");
+        Assert.Equal("Ele Geçen", (string?)summaryValue.Parent!.Elements().First().Attribute("Text"));
+    }
+
+    [Fact]
+    public void ContractWorkName_ShouldBeReadOnlyAndNotRequiredByAnySaveOrPreviewPath()
+    {
+        var document = LoadMainWindowXaml();
+        var workName = document.Descendants().Single(element => (string?)element.Attribute(XamlNamespace + "Name") == "WorkNameTextBox");
+        Assert.Equal("True", (string?)workName.Attribute("IsReadOnly"));
+        Assert.Contains("Hattın Adı", (string?)workName.Attribute("ToolTip"), StringComparison.Ordinal);
+
+        var source = File.ReadAllText(LoadProjectFile("src", "OzelEgitimHakedis.Wpf", "MainWindow.xaml.cs"));
+        foreach (var method in new[] { "SaveContractButton_Click", "SaveArchivedContractCorrection", "TryCreateHistoryCorrectionPreview" })
+            Assert.DoesNotContain("string.IsNullOrWhiteSpace(WorkNameTextBox.Text)", MethodBody(source, method), StringComparison.Ordinal);
+    }
+
+    [Theory]
     [InlineData(true, null, false, 0)]
     [InlineData(false, null, true, 2000)]
     [InlineData(true, false, false, 0)]
@@ -153,10 +275,11 @@ public sealed class HakedisCreateHybridUiContractTests
         Activator.CreateInstance(typeof(MainWindow).GetNestedType("ContractorDraft", BindingFlags.NonPublic)!,
             name, identity, "", "", "", "", "", TransportationProgramType.SpecialEducation, vatExempt)!;
 
-    private static object CreateRoute(string number, string name, string identity) =>
+    private static object CreateRoute(string number, string name, string identity,
+        TransportationProgramType program = TransportationProgramType.SpecialEducation) =>
         Activator.CreateInstance(typeof(MainWindow).GetNestedType("RouteDraft", BindingFlags.NonPublic)!,
             number, name, 1_000m, 0m, 0m, 20m, "IHALE-01", identity, "Same name", "SOZ-01",
-            TransportationProgramType.SpecialEducation)!;
+            program)!;
 
     private static T Field<T>(MainWindow window, string name) =>
         (T)typeof(MainWindow).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)!.GetValue(window)!;
@@ -285,7 +408,7 @@ public sealed class HakedisCreateHybridUiContractTests
             .Where(text => !string.IsNullOrWhiteSpace(text))
             .ToArray();
         Assert.Contains("Hat", routeTableHeaders);
-        Assert.Contains("Güzergâh", routeTableHeaders);
+        Assert.Contains("Hattın Adı", routeTableHeaders);
         Assert.Contains("Söz. Gün", routeTableHeaders);
         Assert.Contains("Günlük Fiyat", routeTableHeaders);
         Assert.Contains("Durum", routeTableHeaders);
@@ -307,7 +430,7 @@ public sealed class HakedisCreateHybridUiContractTests
                 && string.Equals((string?)element.Attribute("IsReadOnly"), "True", StringComparison.Ordinal));
         Assert.Contains(named["MultiRoutePaymentGrid"].Descendants(),
             element => element.Name.LocalName == "DataGridTextColumn"
-                && string.Equals((string?)element.Attribute("Header"), "Taşıma Fiyat Farkı", StringComparison.Ordinal)
+                && string.Equals((string?)element.Attribute("Header"), "Taşıma Fiyat Farkı KDV Hariç", StringComparison.Ordinal)
                 && ((string?)element.Attribute("Binding"))?.Contains("Mode=TwoWay", StringComparison.Ordinal) == true);
 
         var columns = named["MultiRoutePaymentGrid"].Descendants()
@@ -316,8 +439,8 @@ public sealed class HakedisCreateHybridUiContractTests
                 StringComparer.Ordinal);
         foreach (var editableHeader in new[]
         {
-            "Taşıma Gün", "Taşıma İskonto", "Taşıma Fiyat Farkı",
-            "Rehber Gün", "Rehber İskonto", "Rehber Fiyat Farkı",
+            "Taşıma Gün", "Taşıma İskonto", "Taşıma Fiyat Farkı KDV Hariç",
+            "Rehber Gün", "Rehber İskonto", "Rehber Personel Fiyat Farkı KDV Hariç",
             "Vergi Borcu", "SGK Borcu", "Denetim Cezası"
         })
         {

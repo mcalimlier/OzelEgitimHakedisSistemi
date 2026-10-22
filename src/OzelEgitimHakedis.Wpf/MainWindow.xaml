@@ -335,7 +335,7 @@
                                             <TextBlock Text="TAŞIMA HİZMETİ" Style="{StaticResource CardTitle}"/>
                                             <TextBlock Text="Taşıma Hizmet" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
                                             <TextBlock x:Name="HomeTransportServiceTextBlock" Text="0,00 ₺" Foreground="White" FontSize="15" FontWeight="Bold"/>
-                                            <TextBlock Text="Taşıma Fiyat Farkı" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
+                                            <TextBlock x:Name="HomeTransportPriceDifferenceLabel" Text="Taşıma Fiyat Farkı KDV Hariç" Style="{StaticResource FieldLabel}" Margin="0,6,0,0" TextWrapping="Wrap"/>
                                             <TextBlock x:Name="HomeTransportPriceDifferenceTextBlock" Text="0,00 ₺" Foreground="White" FontSize="12.5" FontWeight="SemiBold"/>
                                             <TextBlock Text="Taşıma Hakediş" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
                                             <TextBlock x:Name="HomeTransportNetTextBlock" Text="0,00 ₺" Foreground="White" FontSize="15" FontWeight="Bold"/>
@@ -473,13 +473,16 @@
                                                     <Grid.RowDefinitions>
                                                         <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
                                                     </Grid.RowDefinitions>
-                                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="İhale Kayıt Numarası (İKN)" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
+                                                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,4.5">
+                                                        <TextBlock Text="Ek uygulama bilgisi" Style="{StaticResource CardSubtitle}"/>
+                                                        <TextBlock Text="İhale Kayıt Numarası (İKN)" Style="{StaticResource FieldLabel}"/>
+                                                    </StackPanel>
                                                     <TextBox x:Name="TenderNumberTextBox" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="4.5" Style="{StaticResource FieldTextBox}"/>
                                                     <TextBlock Grid.Row="1" Grid.Column="2" Text="" Visibility="Collapsed" Style="{StaticResource FieldLabel}" Margin="8.5,4.5,0,4.5"/>
                                                     <TextBox x:Name="ContractNumberTextBox" Grid.Row="1" Grid.Column="3" Margin="4.5" Visibility="Collapsed" IsTabStop="False" Style="{StaticResource FieldTextBox}"/>
 
                                                     <TextBlock Grid.Row="2" Grid.Column="0" Text="İşin Adı" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
-                                                    <TextBox x:Name="WorkNameTextBox" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Margin="4.5" Style="{StaticResource FieldTextBox}"/>
+                                                    <TextBox x:Name="WorkNameTextBox" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Margin="4.5" Style="{StaticResource FieldTextBox}" IsReadOnly="True" TextWrapping="Wrap" Height="Auto" MinHeight="32" ToolTip="Hattın Adı + Hattı Öğrenci Taşıma İşi olarak otomatik oluşturulur. Hat tanımlanmadan sözleşme kaydedilebilir."/>
 
                                                     <TextBlock Grid.Row="3" Grid.Column="0" Text="Sözleşme Bedeli" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
                                                     <TextBox x:Name="ContractAmountTextBox" Grid.Row="3" Grid.Column="1" Margin="4.5" Style="{StaticResource FieldTextBox}"/>
@@ -657,7 +660,7 @@
                                                 <TextBlock x:Name="ProgressCalculationSummaryTextBlock" Text="HAZIR" FontSize="11.5" FontWeight="Bold" Foreground="{StaticResource Gold600Brush}"/>
                                             </StackPanel>
                                             <StackPanel Grid.Column="3" Margin="8,0,0,0">
-                                                <TextBlock Text="NET ÖDEME" Style="{StaticResource FieldLabel}" FontSize="11.5"/>
+                                                <TextBlock x:Name="ProgressNetSummaryLabel" Text="Ele Geçen" Style="{StaticResource FieldLabel}" FontSize="11.5"/>
                                                 <TextBlock x:Name="ProgressNetSummaryTextBlock" Text="0,00 ₺" FontSize="11.5" FontWeight="Bold" Foreground="{StaticResource Blue600Brush}"/>
                                             </StackPanel>
                                         </Grid>
@@ -738,7 +741,7 @@
                                                     </Grid.ColumnDefinitions>
                                                     <TextBlock Grid.Column="0" Text="Seç" Foreground="#F4C247" FontSize="10.5" FontWeight="Bold" Padding="5,4" Background="#123A5D"/>
                                                     <TextBlock Grid.Column="1" Text="Hat" Foreground="#F4C247" FontSize="10.5" FontWeight="Bold" Padding="5,4" Background="#123A5D"/>
-                                                    <TextBlock Grid.Column="2" Text="Güzergâh" Foreground="#F4C247" FontSize="10.5" FontWeight="Bold" Padding="5,4" Background="#123A5D"/>
+                                                    <TextBlock x:Name="ProgressRouteNameLabel" Grid.Column="2" Text="Hattın Adı" Foreground="#F4C247" FontSize="10.5" FontWeight="Bold" Padding="5,4" Background="#123A5D"/>
                                                     <TextBlock Grid.Column="3" Text="Söz. Gün" Foreground="#F4C247" FontSize="10.5" FontWeight="Bold" Padding="5,4" Background="#123A5D"/>
                                                     <TextBlock Grid.Column="4" Text="Günlük Fiyat" Foreground="#F4C247" FontSize="10.5" FontWeight="Bold" Padding="5,4" Background="#123A5D"/>
                                                     <TextBlock Grid.Column="5" Text="Durum" Foreground="#F4C247" FontSize="10.5" FontWeight="Bold" Padding="5,4" Background="#123A5D"/>
@@ -814,7 +817,7 @@
                                         <Border Grid.Column="0" VerticalAlignment="Top" Style="{StaticResource PremiumPanel}" Padding="8.5" Margin="0,0,8,0">
                                             <StackPanel>
                                                 <TextBlock x:Name="ProgressEditorTitleTextBlock" Text="DÖNEM HESAP BİLGİLERİ" Foreground="{StaticResource Gold500Brush}" FontSize="11.5" FontWeight="Bold"/>
-                                                <TextBlock Text="Hakediş hesaplama girdileri" Foreground="White" FontSize="13.5" FontWeight="SemiBold" Margin="0,5,0,4"/><TextBlock Text="Sözleşme bedeli İhale Bilgileri kaydından; KDV istisnası ise Firmalar panelindeki firma kartından alınır." Foreground="#B9CBDA" FontSize="11.5" TextWrapping="Wrap" Margin="0,0,0,4"/>
+                                                <TextBlock x:Name="CalculationSheetNameTextBlock" Text="Hesaplama" Foreground="White" FontSize="13.5" FontWeight="SemiBold" Margin="0,5,0,4"/><TextBlock Text="Sözleşme bedeli İhale Bilgileri kaydından; KDV istisnası ise Firmalar panelindeki firma kartından alınır." Foreground="#B9CBDA" FontSize="11.5" TextWrapping="Wrap" Margin="0,0,0,4"/>
                                                 <TextBlock x:Name="CalculationStatusTextBlock" Style="{StaticResource ValidationText}" Margin="0,4,0,6"/>
                                                 <Grid>
                                                     <Grid.ColumnDefinitions><ColumnDefinition Width="120"/><ColumnDefinition Width="1.2*"/><ColumnDefinition Width="145"/><ColumnDefinition Width="1.2*"/></Grid.ColumnDefinitions>
@@ -833,11 +836,11 @@
                                                      <TextBlock Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="2" Text="Hakediş dönemi yukarıdaki dönem kartından seçilir." Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="7,4.5,0,4.5" TextWrapping="Wrap"/>
                                                     <TextBlock x:Name="DiscountLabel" Grid.Row="4" Grid.Column="0" Text="Taşıma İskonto" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
                                                     <TextBox x:Name="DiscountTextBox" Grid.Row="4" Grid.Column="1" Margin="4.5" Style="{StaticResource PremiumFieldTextBox}"/>
-                                                    <TextBlock x:Name="PriceDifferenceLabel" Grid.Row="4" Grid.Column="2" Text="Taşıma Fiyat Farkı" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="8,5,0,5"/>
+                                                    <TextBlock x:Name="PriceDifferenceLabel" Grid.Row="4" Grid.Column="2" Text="Taşıma Fiyat Farkı KDV Hariç" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="8,5,0,5" TextWrapping="Wrap"/>
                                                     <TextBox x:Name="PriceDifferenceTextBox" Grid.Row="4" Grid.Column="3" Margin="4.5" Style="{StaticResource PremiumFieldTextBox}"/>
                                                     <TextBlock x:Name="GuideDiscountLabel" Grid.Row="5" Grid.Column="0" Text="Rehber İskonto" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
                                                     <TextBox x:Name="GuideDiscountTextBox" Grid.Row="5" Grid.Column="1" Margin="4.5" Style="{StaticResource PremiumFieldTextBox}"/>
-                                                    <TextBlock x:Name="GuidePriceDifferenceLabel" Grid.Row="5" Grid.Column="2" Text="Rehber Fiyat Farkı" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="8,5,0,5"/>
+                                                    <TextBlock x:Name="GuidePriceDifferenceLabel" Grid.Row="5" Grid.Column="2" Text="Rehber Personel Fiyat Farkı KDV Hariç" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="8,5,0,5" TextWrapping="Wrap"/>
                                                     <TextBox x:Name="GuidePriceDifferenceTextBox" Grid.Row="5" Grid.Column="3" Margin="4.5" Style="{StaticResource PremiumFieldTextBox}"/>
                                                     <TextBlock x:Name="TaxDebtLabel" Grid.Row="6" Grid.Column="0" Text="Vergi Borcu" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
                                                     <TextBox x:Name="TaxDebtTextBox" Grid.Row="6" Grid.Column="1" Margin="4.5" Style="{StaticResource PremiumFieldTextBox}"/>
@@ -932,11 +935,11 @@
                                                                 <DataGridTextColumn Header="Taşıma Gün" Binding="{Binding WorkDays, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="82"/>
                                                                 <DataGridTextColumn Header="Taşıma Günlük Fiyat" Binding="{Binding DailyPrice}" IsReadOnly="True" Width="112"/>
                                                                 <DataGridTextColumn Header="Taşıma İskonto" Binding="{Binding DiscountAmount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="105"/>
-                                                                <DataGridTextColumn Header="Taşıma Fiyat Farkı" Binding="{Binding PriceDifference, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="115"/>
+                                                                <DataGridTextColumn Header="Taşıma Fiyat Farkı KDV Hariç" Binding="{Binding PriceDifference, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="190"/>
                                                                 <DataGridTextColumn Header="Rehber Gün" Binding="{Binding GuideWorkDays, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="82"/>
                                                                 <DataGridTextColumn Header="Rehber Günlük Fiyat" Binding="{Binding GuideDailyPrice}" IsReadOnly="True" Width="112"/>
                                                                 <DataGridTextColumn Header="Rehber İskonto" Binding="{Binding GuideDiscountAmount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="105"/>
-                                                                <DataGridTextColumn Header="Rehber Fiyat Farkı" Binding="{Binding GuidePriceDifference, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="115"/>
+                                                                <DataGridTextColumn Header="Rehber Personel Fiyat Farkı KDV Hariç" Binding="{Binding GuidePriceDifference, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="230"/>
                                                                 <DataGridTextColumn Header="Vergi Borcu" Binding="{Binding TaxDebt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
                                                                 <DataGridTextColumn Header="SGK Borcu" Binding="{Binding SocialSecurityDebt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
                                                                 <DataGridCheckBoxColumn Header="Asgari Ücret Desteği Kullan" Binding="{Binding MinimumWageSupportEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="155"/>
@@ -969,7 +972,7 @@
                                             <Border Background="#F4C247" BorderBrush="#FFE08A" BorderThickness="1.5" CornerRadius="11" Padding="8.5">
                                                 <StackPanel>
                                                     <TextBlock Text="HESAP ÖZETİ" Foreground="#082845" FontSize="11.5" FontWeight="Bold"/>
-                                                    <TextBlock Text="Net ödenecek tutar" Foreground="#24435D" FontSize="11.5" Margin="0,6,0,0"/>
+                                                    <TextBlock x:Name="NetPayableLabel" Text="Ele Geçen" Foreground="#24435D" FontSize="11.5" Margin="0,6,0,0"/>
                                                     <TextBlock x:Name="NetResultTextBlock" Text="0,00 ₺" Foreground="#061B31" FontSize="22" FontWeight="Bold" Margin="0,1,0,0"/>
                                                     <Border Height="1" Background="#B68B1D" Margin="0,8,0,6.5"/>
                                                     <Grid>
@@ -978,9 +981,9 @@
                                                         <TextBlock x:Name="ServiceAmountResultTextBlock" Grid.Row="0" Text="0,00 ₺" Foreground="#082845" HorizontalAlignment="Right"/>
                                                         <TextBlock Grid.Row="1" Text="Rehber Hizmet Tutarı" Foreground="#24435D" Margin="0,4,0,0"/>
                                                         <TextBlock x:Name="GuideServiceAmountResultTextBlock" Grid.Row="1" Text="0,00 ₺" Foreground="#082845" HorizontalAlignment="Right" Margin="0,4,0,0"/>
-                                                        <TextBlock Grid.Row="2" Text="Taşıma Fiyat Farkı KDV Hariç" Foreground="#24435D" Margin="0,4,0,0"/>
+                                                        <TextBlock x:Name="TransportPriceDifferenceResultLabel" Grid.Row="2" Text="Taşıma Fiyat Farkı KDV Hariç" Foreground="#24435D" Margin="0,4,0,0"/>
                                                         <TextBlock x:Name="TransportPriceDifferenceResultTextBlock" Grid.Row="2" Text="0,00 ₺" Foreground="#082845" HorizontalAlignment="Right" Margin="0,4,0,0"/>
-                                                        <TextBlock Grid.Row="3" Text="Rehber Personel Fiyat Farkı KDV Hariç" Foreground="#24435D" Margin="0,4,0,0"/>
+                                                        <TextBlock x:Name="GuidePriceDifferenceResultLabel" Grid.Row="3" Text="Rehber Personel Fiyat Farkı KDV Hariç" Foreground="#24435D" Margin="0,4,0,0"/>
                                                         <TextBlock x:Name="GuidePriceDifferenceResultTextBlock" Grid.Row="3" Text="0,00 ₺" Foreground="#082845" HorizontalAlignment="Right" Margin="0,4,0,0"/>
                                                         <TextBlock Grid.Row="4" Text="Fiyat Farkı KDV Hariç Toplam" Foreground="#24435D" Margin="0,4,0,0"/>
                                                         <TextBlock x:Name="CombinedPriceDifferenceResultTextBlock" Grid.Row="4" Text="0,00 ₺" Foreground="#082845" HorizontalAlignment="Right" Margin="0,4,0,0"/>
@@ -999,7 +1002,7 @@
                                                     <TextBlock Text="Brüt Tutar" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
                                                     <TextBlock x:Name="GrossResultTextBlock" Text="0,00 ₺" FontSize="13.5" FontWeight="Bold" Foreground="White"/>
                                                     <Border Height="1" Background="{StaticResource Line200Brush}" Margin="0,4.5,0,4.5"/>
-                                                    <TextBlock Text="Net Ödenecek" Style="{StaticResource FieldLabel}"/>
+                                                    <TextBlock x:Name="NetControlLabel" Text="Ele Geçen" Style="{StaticResource FieldLabel}"/>
                                                     <TextBlock x:Name="NetControlResultTextBlock" Text="0,00 ₺" FontSize="13.5" FontWeight="Bold" Foreground="{StaticResource Blue600Brush}"/>
                                                 </StackPanel>
                                             </Border>
@@ -1126,7 +1129,7 @@
                                                 <TextBlock Text="Hat No" Style="{StaticResource FieldLabel}"/>
                                                 <TextBox x:Name="RouteNumberTextBox" Style="{StaticResource FieldTextBox}" Margin="0,4,0,6"/>
 
-                                                <TextBlock Text="Hat Adı" Style="{StaticResource FieldLabel}"/>
+                                                <TextBlock x:Name="RouteNameLabel" Text="Hattın Adı" Style="{StaticResource FieldLabel}"/>
                                                 <TextBox x:Name="RouteNameTextBox" Style="{StaticResource FieldTextBox}" Margin="0,4,0,6"/>
 
                                                 <TextBlock Text="Taşıma İş Günü" Style="{StaticResource FieldLabel}"/>
@@ -1220,15 +1223,22 @@
                             <TextBox x:Name="ContractorTaxTextBox" Grid.Row="1" Grid.Column="1" Margin="4" Style="{StaticResource FieldTextBox}"/>
                             <TextBlock Grid.Row="2" Grid.Column="0" Text="Adres" Style="{StaticResource FieldLabel}" Margin="0,4"/>
                             <TextBox x:Name="ContractorAddressTextBox" Grid.Row="2" Grid.Column="1" Margin="4" Height="42" TextWrapping="Wrap" AcceptsReturn="True" Style="{StaticResource FieldTextBox}"/>
-                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Telefon" Style="{StaticResource FieldLabel}" Margin="0,4"/>
-                            <TextBox x:Name="ContractorPhoneTextBox" Grid.Row="3" Grid.Column="1" Margin="4" Style="{StaticResource FieldTextBox}"/>
-                            <TextBlock Grid.Row="4" Grid.Column="0" Text="E-posta" Style="{StaticResource FieldLabel}" Margin="0,4"/>
-                            <TextBox x:Name="ContractorEmailTextBox" Grid.Row="4" Grid.Column="1" Margin="4" Style="{StaticResource FieldTextBox}"/>
-                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Banka Hesap No / IBAN" Style="{StaticResource FieldLabel}" Margin="0,4"/>
-                            <TextBox x:Name="ContractorBankTextBox" Grid.Row="5" Grid.Column="1" Margin="4" Style="{StaticResource FieldTextBox}"/>
-                            <TextBlock Grid.Row="6" Grid.Column="0" Text="Yetkili Kişi" Style="{StaticResource FieldLabel}" Margin="0,4"/>
-                            <TextBox x:Name="ContractorContactTextBox" Grid.Row="6" Grid.Column="1" Margin="4" Style="{StaticResource FieldTextBox}"/>
                         </Grid>
+                        <StackPanel Margin="0,8,0,0">
+                            <TextBlock Text="Ek uygulama bilgisi" Style="{StaticResource CardSubtitle}"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="170"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Text="Telefon" Style="{StaticResource FieldLabel}" Margin="0,4"/>
+                                <TextBox x:Name="ContractorPhoneTextBox" Grid.Row="0" Grid.Column="1" Margin="4" Style="{StaticResource FieldTextBox}"/>
+                                <TextBlock Grid.Row="1" Text="E-posta" Style="{StaticResource FieldLabel}" Margin="0,4"/>
+                                <TextBox x:Name="ContractorEmailTextBox" Grid.Row="1" Grid.Column="1" Margin="4" Style="{StaticResource FieldTextBox}"/>
+                                <TextBlock Grid.Row="2" Text="Banka Hesap No / IBAN" Style="{StaticResource FieldLabel}" Margin="0,4"/>
+                                <TextBox x:Name="ContractorBankTextBox" Grid.Row="2" Grid.Column="1" Margin="4" Style="{StaticResource FieldTextBox}"/>
+                                <TextBlock Grid.Row="3" Text="Yetkili Kişi" Style="{StaticResource FieldLabel}" Margin="0,4"/>
+                                <TextBox x:Name="ContractorContactTextBox" Grid.Row="3" Grid.Column="1" Margin="4" Style="{StaticResource FieldTextBox}"/>
+                            </Grid>
+                        </StackPanel>
                         <Border Style="{StaticResource StatusBanner}" Margin="4,8,4,0" Padding="8,7">
                             <Grid>
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
@@ -1636,7 +1646,7 @@
                         <StackPanel>
                             <TextBlock Text="KAYDEDİLECEK BELGELER" Foreground="{StaticResource Blue700Brush}" FontSize="11" FontWeight="Bold"/>
                             <TextBlock Text="1. Hakediş Raporu" Foreground="{StaticResource Text900Brush}" FontSize="11" FontWeight="SemiBold" Margin="0,4,0,0"/>
-                            <TextBlock Text="2. Hizmet İşleri Hakediş Raporu" Foreground="{StaticResource Text900Brush}" FontSize="11" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="ServiceReportSheetNameTextBlock" Text="Hizmetişleri Hakediş Raporu" Foreground="{StaticResource Text900Brush}" FontSize="11" FontWeight="SemiBold"/>
                             <TextBlock Text="3. Hizmet İşleri Kabul Tutanağı" Foreground="{StaticResource Text900Brush}" FontSize="11" FontWeight="SemiBold"/>
                             <TextBlock Text="4. Hakediş İcmali" Foreground="{StaticResource Text900Brush}" FontSize="11" FontWeight="SemiBold"/>
                         </StackPanel>

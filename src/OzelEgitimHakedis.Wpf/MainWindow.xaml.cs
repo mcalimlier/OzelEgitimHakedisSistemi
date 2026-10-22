@@ -964,7 +964,7 @@ public partial class MainWindow : Window
         {
             TenderNumberTextBox.Text = contract.TenderNumber;
             ContractNumberTextBox.Text = contract.ContractNumber;
-            WorkNameTextBox.Text = contract.WorkName;
+            WorkNameTextBox.Text = GetContractWorkName(contract);
             ContractAmountTextBox.Text = FormatCalculationInput(contract.ContractAmount);
             ContractWorkDaysTextBox.Text = contract.ContractWorkDays.ToString(CultureInfo.CurrentCulture);
             ContractTransportDailyPriceTextBox.Text = FormatCalculationInput(contract.TransportDailyPrice);
@@ -1021,8 +1021,54 @@ public partial class MainWindow : Window
     private static bool HasGuideStaff(TransportationProgramType programType) =>
         programType == TransportationProgramType.SpecialEducation;
 
+    private string GetContractWorkName(ContractDraftData contract)
+    {
+        if (_editingArchiveSnapshot is { } archive && ReferenceEquals(contract, archive.Contract))
+            return OfficialTemplateProfile.DeriveWorkName(archive.Route.Name, contract.WorkName);
+
+        var names = _routes.Where(route => IsRouteForContract(route, contract))
+            .Where(route => !string.IsNullOrWhiteSpace(route.Name))
+            .Select(route => OfficialTemplateProfile.DeriveWorkName(route.Name))
+            .Distinct(StringComparer.Ordinal).ToArray();
+        return names.Length == 0 ? contract.WorkName : string.Join(Environment.NewLine, names);
+    }
+
+    private void UpdateOfficialTemplateLabels(TransportationProgramType programType)
+    {
+        var profile = OfficialTemplateProfile.For(programType);
+        CalculationSheetNameTextBlock.Text = profile.CalculationSheetName;
+        ServiceReportSheetNameTextBlock.Text = OfficialTemplateProfile.For(
+            (ReportRouteComboBox.SelectedItem as RouteDraft)?.ProgramType ?? programType).ServiceReportSheetName;
+        RouteNameLabel.Text = profile.RouteNameLabel;
+        ProgressRouteNameLabel.Text = profile.RouteNameLabel;
+        PriceDifferenceLabel.Text = profile.TransportPriceDifferenceLabel;
+        TransportPriceDifferenceResultLabel.Text = profile.TransportPriceDifferenceLabel;
+        HomeTransportPriceDifferenceLabel.Text = profile.TransportPriceDifferenceLabel;
+        GuidePriceDifferenceLabel.Text = profile.GuidePriceDifferenceLabel ?? string.Empty;
+        GuidePriceDifferenceResultLabel.Text = profile.GuidePriceDifferenceLabel ?? string.Empty;
+        var guideVisibility = profile.GuidePriceDifferenceLabel is null ? Visibility.Collapsed : Visibility.Visible;
+        GuidePriceDifferenceResultLabel.Visibility = guideVisibility;
+        GuidePriceDifferenceResultTextBlock.Visibility = guideVisibility;
+        NetPayableLabel.Text = profile.NetPayableLabel;
+        NetControlLabel.Text = profile.NetPayableLabel;
+        ProgressNetSummaryLabel.Text = profile.NetPayableLabel;
+
+        foreach (var column in MultiRoutePaymentGrid.Columns.OfType<DataGridBoundColumn>())
+        {
+            var path = (column.Binding as System.Windows.Data.Binding)?.Path.Path;
+            if (path == nameof(MultiRoutePaymentDraftRow.PriceDifference))
+                column.Header = profile.TransportPriceDifferenceLabel;
+            if (path == nameof(MultiRoutePaymentDraftRow.GuidePriceDifference))
+            {
+                column.Header = profile.GuidePriceDifferenceLabel ?? string.Empty;
+                column.Visibility = guideVisibility;
+            }
+        }
+    }
+
     private void UpdateRouteProgramTypeFields(ContractDraftData? contract)
     {
+        RouteNameLabel.Text = OfficialTemplateProfile.For(contract?.ProgramType ?? GetSelectedTransportationProgramType()).RouteNameLabel;
         var visible = contract is not null && HasGuideStaff(contract.ProgramType);
         var visibility = visible ? Visibility.Visible : Visibility.Collapsed;
         RouteGuideWorkDaysLabel.Visibility = visibility;
@@ -1039,6 +1085,7 @@ public partial class MainWindow : Window
 
     private void UpdateProgressProgramTypeFields(ContractDraftData? contract)
     {
+        UpdateOfficialTemplateLabels(contract?.ProgramType ?? GetSelectedTransportationProgramType());
         var visible = contract is not null && HasGuideStaff(contract.ProgramType);
         var visibility = visible ? Visibility.Visible : Visibility.Collapsed;
         ProgressGuideWorkDaysLabel.Visibility = visibility;
@@ -1692,7 +1739,6 @@ public partial class MainWindow : Window
             ArchiveCorrectionSection.Contract =>
                 TextDiffers(TenderNumberTextBox, archive.Contract.TenderNumber) ||
                 TextDiffers(ContractNumberTextBox, archive.Contract.ContractNumber) ||
-                TextDiffers(WorkNameTextBox, archive.Contract.WorkName) ||
                 DecimalDiffers(ContractAmountTextBox, archive.Contract.ContractAmount) ||
                 IntDiffers(ContractWorkDaysTextBox, archive.Contract.ContractWorkDays) ||
                 DecimalDiffers(ContractTransportDailyPriceTextBox, archive.Contract.TransportDailyPrice) ||
@@ -1991,7 +2037,6 @@ public partial class MainWindow : Window
                     string.Equals(x.TenderNumber, item.TenderNumber, StringComparison.OrdinalIgnoreCase)) is not ContractDraftData contract ||
                 TextDiffers(TenderNumberTextBox, contract.TenderNumber) ||
                 TextDiffers(ContractNumberTextBox, contract.ContractNumber) ||
-                TextDiffers(WorkNameTextBox, contract.WorkName) ||
                 DecimalDiffers(ContractAmountTextBox, contract.ContractAmount) ||
                 IntDiffers(ContractWorkDaysTextBox, contract.ContractWorkDays) ||
                 DecimalDiffers(ContractTransportDailyPriceTextBox, contract.TransportDailyPrice) ||
@@ -2069,10 +2114,9 @@ public partial class MainWindow : Window
         switch (_historyCorrectionSection)
         {
             case HistoryCorrectionSection.Contract:
-                if (string.IsNullOrWhiteSpace(TenderNumberTextBox.Text) ||
-                    string.IsNullOrWhiteSpace(WorkNameTextBox.Text))
+                if (string.IsNullOrWhiteSpace(TenderNumberTextBox.Text))
                 {
-                    message = "İhale Kayıt Numarası (İKN) ve işin adı zorunludur.";
+                    message = "İhale Kayıt Numarası (İKN) zorunludur.";
                     return false;
                 }
                 if (!TryParseDecimal(ContractAmountTextBox.Text, out var contractAmount) || contractAmount < 0)
@@ -2641,7 +2685,6 @@ public partial class MainWindow : Window
 
         var errors = new List<Control>();
         if (string.IsNullOrWhiteSpace(TenderNumberTextBox.Text)) errors.Add(TenderNumberTextBox);
-        if (string.IsNullOrWhiteSpace(WorkNameTextBox.Text)) errors.Add(WorkNameTextBox);
         if (!TryParseDecimal(ContractAmountTextBox.Text, out var contractAmount) || contractAmount < 0) errors.Add(ContractAmountTextBox);
         if (!int.TryParse(ContractWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var contractWorkDays) || contractWorkDays < 0) errors.Add(ContractWorkDaysTextBox);
         if (!TryParseDecimal(ContractTransportDailyPriceTextBox.Text, out var transportDailyPrice) || transportDailyPrice < 0) errors.Add(ContractTransportDailyPriceTextBox);
@@ -2685,7 +2728,7 @@ public partial class MainWindow : Window
         {
             TenderNumber = TenderNumberTextBox.Text.Trim(),
             ContractNumber = archive.Contract.ContractNumber,
-            WorkName = WorkNameTextBox.Text.Trim(),
+            // WorkName is a derived display; retain the archived legacy fallback.
             ContractAmount = contractAmount,
             StartDate = startDate,
             EndDate = endDate,
@@ -3234,7 +3277,7 @@ public partial class MainWindow : Window
                 .ThenByDescending(x => x.CreatedAt)
                 .FirstOrDefault();
 
-            HomeWorkNameTextBlock.Text = contract.WorkName;
+            HomeWorkNameTextBlock.Text = GetContractWorkName(contract);
             HomeContractorTextBlock.Text = "Hat üzerinden seçilir";
             HomeProgressTextBlock.Text = latest?.ProgressPaymentNumber.HasValue == true
                 ? $"Hakediş No {latest.ProgressPaymentNumber.Value}"
@@ -3260,7 +3303,7 @@ public partial class MainWindow : Window
         HomeRouteCountTextBlock.Text = contract is null
             ? "0"
             : _routes.Count(x => IsRouteForContract(x, contract)).ToString(CultureInfo.CurrentCulture);
-        HomeWorkNameTextBlock.Text = contract?.WorkName ?? "—";
+        HomeWorkNameTextBlock.Text = contract is null ? "—" : GetContractWorkName(contract);
         HomeContractorTextBlock.Text = contract is null ? "—" : "Hat üzerinden seçilir";
         HomeNetPayableTextBlock.Text = FormatMoney(history.Sum(x => x.Calculation.NetPayable));
 
@@ -3297,7 +3340,11 @@ public partial class MainWindow : Window
         var lookupTender = _editingContractTender ?? TenderNumberTextBox.Text.Trim();
         var lookupContractNumber = _editingContractNumber ?? ContractNumberTextBox.Text.Trim();
         var contract = FindContract(lookupTender, lookupContractNumber, _editingContractProgramType ?? GetSelectedTransportationProgramType());
-        var hasContract = contract is not null || !string.IsNullOrWhiteSpace(WorkNameTextBox.Text);
+        var hasContract = contract is not null;
+        if (_editingArchiveSnapshot is { } archive)
+            WorkNameTextBox.Text = GetContractWorkName(archive.Contract);
+        else if (contract is not null)
+            WorkNameTextBox.Text = GetContractWorkName(contract);
 
         ContractStatusSummaryTextBlock.Text = hasContract ? "KAYITLI" : "TASLAK";
         ContractAmountSummaryTextBlock.Text =
@@ -3890,11 +3937,6 @@ public partial class MainWindow : Window
             errors.Add("İhale / Dosya No");
             MarkInvalid(TenderNumberTextBox);
         }
-        if (string.IsNullOrWhiteSpace(WorkNameTextBox.Text))
-        {
-            errors.Add("İşin Adı");
-            MarkInvalid(WorkNameTextBox);
-        }
         if (!TryParseDecimal(ContractAmountTextBox.Text, out var contractAmount) || contractAmount < 0)
         {
             errors.Add("Sözleşme Bedeli");
@@ -3942,7 +3984,8 @@ public partial class MainWindow : Window
         var proposedContract = new ContractDraftData(
             TenderNumberTextBox.Text.Trim(),
             internalContractNumber,
-            WorkNameTextBox.Text.Trim(),
+            // Derived titles belong to presentation/output, not stored contracts.
+            oldContract?.WorkName ?? string.Empty,
             // A new contract/part must not silently inherit a sibling contract's contractor.
             // Contractor identity is associated with the route and is entered/selected there.
             oldContract?.ContractorName ?? string.Empty,
@@ -6761,6 +6804,8 @@ public partial class MainWindow : Window
         _reportRows.Clear();
 
         var selectedRoute = ReportRouteComboBox.SelectedItem as RouteDraft;
+        ServiceReportSheetNameTextBlock.Text = OfficialTemplateProfile.For(
+            selectedRoute?.ProgramType ?? GetSelectedTransportationProgramType()).ServiceReportSheetName;
         var routePayments = selectedRoute is null
             ? _progressHistory.ToArray()
             : _progressHistory
@@ -7760,7 +7805,9 @@ public partial class MainWindow : Window
             : latest.ContractorName.Trim();
 
         return new OehsOfficialDocumentContext(
-            WorkName: string.IsNullOrWhiteSpace(latest.WorkName) ? route.Name : latest.WorkName.Trim(),
+            WorkName: OfficialTemplateProfile.DeriveWorkName(
+                string.IsNullOrWhiteSpace(latest.RouteName) ? route.Name : latest.RouteName,
+                string.IsNullOrWhiteSpace(latest.WorkName) ? contract?.WorkName : latest.WorkName),
             TenderNumber: latest.TenderNumber ?? route.TenderNumber,
             RouteNumber: latest.RouteNumber ?? route.RouteNumber,
             ContractorName: contractorName,
