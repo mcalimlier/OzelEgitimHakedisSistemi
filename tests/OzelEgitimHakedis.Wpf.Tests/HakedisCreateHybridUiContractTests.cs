@@ -167,9 +167,10 @@ public sealed class HakedisCreateHybridUiContractTests
                     SetField(window,"_dataStore",new OehsProgramScopedApplicationDataStore(Path.Combine(temp.FullName,"data")));
                     SetField(window,"_archiveStore",new ProgressPaymentArchiveStore(Path.Combine(temp.FullName,"archives")));
                     SetField(window,"_calculationConstantsHistory",new System.Collections.Generic.List<ProgressPaymentCalculationConstantsChange>());
-                    var contract=ArchiveProgressEditorContextTests.CreateArchive().Contract;
+                    var contract=ArchiveProgressEditorContextTests.CreateArchive().Contract
+                        with { ContractorName="Sözleşme Ana Firması" };
                     Collection(window,"_contracts").Add(contract);
-                    Collection(window,"_contractors").Add(CreateFirm("Firma","12345678901"));
+                    Collection(window,"_contractors").Add(CreateFirm("Seçilen Hat Firması","12345678901"));
                     Field<ComboBox>(window,"ProgressTenderListBox").Items.Add(contract);
                     Field<ComboBox>(window,"ProgressTenderListBox").SelectedItem=contract;
                     var routes=Field<ListBox>(window,"ProgressRouteComboBox");
@@ -190,8 +191,14 @@ public sealed class HakedisCreateHybridUiContractTests
                     Invoke(window,"CalculateProgressButton_Click",window,new RoutedEventArgs());
                     var saved=new OehsProgramScopedApplicationDataStore(Path.Combine(temp.FullName,"data")).Load();
                     Assert.Equal(count,saved.ProgressPayments!.Count);
+                    // A selected firm's route must not inherit a different tender-level
+                    // contractor name in the persisted batch identity.
                     foreach(var payment in saved.ProgressPayments)
                     {
+                        Assert.Contains("Seçilen Hat Firması", payment.BatchDisplayName ?? string.Empty,
+                            StringComparison.Ordinal);
+                        Assert.DoesNotContain("Sözleşme Ana Firması", payment.BatchDisplayName ?? string.Empty,
+                            StringComparison.Ordinal);
                         var index=int.Parse(payment.RouteNumber!,CultureInfo.InvariantCulture)-1;
                         Assert.Equal(16+index,payment.Input.WorkDays);
                         Assert.Equal(100+index*50,payment.Input.PriceDifference);
