@@ -41,6 +41,30 @@ public static class ProgressPaymentMonthService
         return result;
     }
 
+    /// <summary>
+    /// Rejects physically impossible service-day counts for the clipped contractual
+    /// month. This checks calendar capacity only: it is NOT school-attendance or
+    /// puantaj verification and does not assume 20, 22 or another official day count.
+    /// </summary>
+    public static string? GetCalendarCapacityError(
+        ProgressPaymentMonthOption period, decimal transportWorkDays, decimal guideWorkDays)
+    {
+        ArgumentNullException.ThrowIfNull(period);
+        if (period.EndDate < period.StartDate
+            || period.EndDate.Year != period.StartDate.Year
+            || period.EndDate.Month != period.StartDate.Month)
+            return "Seçilen hakediş dönemi geçerli bir sözleşme ayı değil.";
+
+        var calendarDays = period.EndDate.DayNumber - period.StartDate.DayNumber + 1;
+        if (transportWorkDays < 0 || guideWorkDays < 0)
+            return "Taşıma ve rehber iş günü negatif olamaz.";
+        if (transportWorkDays > calendarDays)
+            return $"Taşıma günü ({transportWorkDays}) sözleşmenin bu ayındaki {calendarDays} takvim gününü aşıyor. Puantajı kontrol edin.";
+        if (guideWorkDays > calendarDays)
+            return $"Rehber günü ({guideWorkDays}) sözleşmenin bu ayındaki {calendarDays} takvim gününü aşıyor. Puantajı kontrol edin.";
+        return null;
+    }
+
     public static ProgressPaymentMonthOption? FindForPeriod(IEnumerable<ProgressPaymentMonthOption> options, DateOnly periodDate)
     {
         ArgumentNullException.ThrowIfNull(options);
