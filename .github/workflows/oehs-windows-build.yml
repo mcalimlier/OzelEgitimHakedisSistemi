@@ -114,7 +114,16 @@ jobs:
           if (-not $code.Contains("private bool ConfirmLiveHistoryCorrection(")) { throw "Non-archived corrections must require confirmation before overwriting history." }
           if (-not $code.Contains("private void RefreshViewsAfterHistoryCorrection()")) { throw "Corrected history must refresh summary, report, and progress views." }
           if (-not $code.Contains('ConfirmLiveHistoryCorrection("Hakediş girdileri", historyItem)')) { throw "Editing a history payment must ask for confirmation before replacing its existing row." }
-          if ($code -notmatch 'if \(clearTenderSelection\)[\s\S]{0,220}ProgressRouteComboBox\.ItemsSource = Array\.Empty<RouteDraft>\(\);') { throw "Clearing a fresh payment form must also clear stale route choices when the tender is cleared." }
+          $clearProgressMethod = [regex]::Match($code, 'private void ClearProgressEntryFields\(bool clearTenderSelection = true\)[\s\S]*?(?=\n    private )').Value
+          if ([string]::IsNullOrWhiteSpace($clearProgressMethod)) { throw "Could not find ClearProgressEntryFields." }
+          $clearTenderMatch = [regex]::Match($clearProgressMethod, 'if \(clearTenderSelection\)\s*\{(?<body>[\s\S]*?)\n\s*\}')
+          if (-not $clearTenderMatch.Success) { throw "ClearProgressEntryFields must retain a clearTenderSelection branch." }
+          $clearTenderBody = $clearTenderMatch.Groups['body'].Value
+          if (-not $clearTenderBody.Contains('ProgressRouteComboBox.ItemsSource = Array.Empty<RouteDraft>();')) { throw "Clearing a fresh payment form must reset the route choices when the tender is cleared." }
+          if (-not $clearProgressMethod.Contains('_multiRouteDraftCache.Clear();')) { throw "Clearing a fresh payment form must clear the multi-route draft cache." }
+          $conditionalIndex = $clearProgressMethod.IndexOf('if (clearTenderSelection)')
+          $routeSelectionClearIndex = $clearProgressMethod.IndexOf('ProgressRouteComboBox.SelectedItems.Clear();')
+          if ($routeSelectionClearIndex -lt $conditionalIndex) { throw "Clearing a fresh payment form must clear the selected routes after evaluating the tender reset." }
           if (-not $archiveTests.Contains("SaveRevision_ShouldCreateV02AndKeepV01ForRecalculatedPayment")) { throw "Archive correction must create v02 and preserve v01 in a regression test." }
           if (-not $archiveTests.Contains("SaveRevision_ShouldCreateNewRevisionAndPreserveOriginalWhenRouteChanges")) { throw "Archive identity corrections must preserve the earlier revision." }
 
