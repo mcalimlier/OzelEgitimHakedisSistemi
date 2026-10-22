@@ -637,7 +637,16 @@
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="1.05*"/><ColumnDefinition Width="0.95*"/><ColumnDefinition Width="1.25*"/></Grid.ColumnDefinitions>
                                         <Border Grid.Column="0" Background="#0A2A49" BorderBrush="#D9A62E" BorderThickness="1" CornerRadius="10" Padding="8" Margin="0,0,5,0">
                                             <StackPanel>
-                                                <TextBlock Text="İKN VE SÖZLEŞME BİLGİLERİ" Foreground="#F4C247" FontSize="11.5" FontWeight="Bold"/>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="78"/></Grid.ColumnDefinitions>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Border Width="25" Height="25" Background="#F4C247" CornerRadius="5" Margin="0,0,6,0">
+                                                            <TextBlock Text="&#xE8D2;" FontFamily="Segoe MDL2 Assets" Foreground="#082845" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <TextBlock Text="İKN VE SÖZLEŞME BİLGİLERİ" Foreground="#F4C247" FontSize="11.5" FontWeight="Bold" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                    <Button x:Name="ProgressNewTenderShortcutButton" Grid.Column="1" Tag="Contract" Content="YENİ İKN" Click="NavigationButton_Click" Style="{StaticResource ModernButton}" Height="27" FontSize="9.5" Padding="5,1" ToolTip="İhale Bilgileri ekranında yeni İKN ve sözleşme kaydı oluşturun."/>
+                                                </Grid>
                                                 <TextBlock Text="İhale / dosya numarası" Foreground="#D5E1EC" FontSize="10.5" Margin="0,6,0,0"/>
                                                 <ComboBox x:Name="ProgressTenderListBox" Height="34" Margin="0,3,0,0" SelectionChanged="ProgressTenderListBox_SelectionChanged" Style="{StaticResource FieldComboBox}" ToolTip="İhale / dosya numarasını seçin">
                                                     <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding TenderNumber}" FontSize="11.5" FontWeight="SemiBold"/></DataTemplate></ComboBox.ItemTemplate>
@@ -647,7 +656,16 @@
                                         </Border>
                                         <Border Grid.Column="1" Background="#0A2A49" BorderBrush="#D9A62E" BorderThickness="1" CornerRadius="10" Padding="8" Margin="2,0,3,0">
                                             <StackPanel>
-                                                <TextBlock Text="YÜKLENİCİ (FİRMA) BİLGİLERİ" Foreground="#F4C247" FontSize="11.5" FontWeight="Bold"/>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="58"/></Grid.ColumnDefinitions>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Border Width="25" Height="25" Background="#F4C247" CornerRadius="5" Margin="0,0,6,0">
+                                                            <TextBlock Text="&#xE70B;" FontFamily="Segoe MDL2 Assets" Foreground="#082845" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <TextBlock Text="YÜKLENİCİ (FİRMA) BİLGİLERİ" Foreground="#F4C247" FontSize="11.5" FontWeight="Bold" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                    <Button x:Name="ProgressContractorDetailShortcutButton" Grid.Column="1" Tag="Contractors" Content="DETAY" Click="NavigationButton_Click" Style="{StaticResource ModernButton}" Height="27" FontSize="9.5" Padding="5,1" ToolTip="Yüklenici Firmalar ekranında firma bilgilerini görüntüleyin veya düzenleyin."/>
+                                                </Grid>
                                                 <ComboBox x:Name="ProgressContractorComboBox" Height="34" Margin="0,6,0,0" SelectionChanged="ProgressContractorComboBox_SelectionChanged" Style="{StaticResource FieldComboBox}" ToolTip="Seçilen İKN/sözleşme altındaki yüklenici firmayı seçin">
                                                     <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Name}" FontSize="11.5" FontWeight="SemiBold"/></DataTemplate></ComboBox.ItemTemplate>
                                                 </ComboBox>
@@ -656,7 +674,12 @@
                                         </Border>
                                         <Border Grid.Column="2" Background="#0A2A49" BorderBrush="#D9A62E" BorderThickness="1" CornerRadius="10" Padding="8" Margin="3,0,0,0">
                                             <StackPanel>
-                                                <TextBlock Text="HAKEDİŞ DÖNEMİ" Foreground="#F4C247" FontSize="11.5" FontWeight="Bold"/>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Border Width="25" Height="25" Background="#F4C247" CornerRadius="5" Margin="0,0,6,0">
+                                                        <TextBlock Text="&#xE787;" FontFamily="Segoe MDL2 Assets" Foreground="#082845" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                    <TextBlock Text="HAKEDİŞ DÖNEMİ" Foreground="#F4C247" FontSize="11.5" FontWeight="Bold" VerticalAlignment="Center"/>
+                                                </StackPanel>
                                                 <TextBlock Text="Ay / yıl" Foreground="#D5E1EC" FontSize="10.5" Margin="0,4,0,0"/>
                                                 <ComboBox x:Name="ProgressPeriodMonthComboBox" Height="30" Margin="0,3,0,4" Style="{StaticResource FieldComboBox}" DisplayMemberPath="DisplayText" SelectionChanged="ProgressPeriodMonthComboBox_SelectionChanged" ToolTip="Sözleşme tarihleri içindeki hakediş ayını seçin."/>
                                                 <TextBlock Text="Seçilen dönemin çalışma günü" Foreground="#D5E1EC" FontSize="10.5"/>
@@ -810,8 +833,8 @@
                                                     </StackPanel>
                                                     <TextBlock x:Name="InspectionPenaltyLabel" Grid.Row="7" Grid.Column="2" Text="Denetim Cezası" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="7,4.5,0,4.5"/>
                                                     <TextBox x:Name="InspectionPenaltyTextBox" Grid.Row="7" Grid.Column="3" Margin="4.5" Style="{StaticResource PremiumFieldTextBox}"/>
-                                                    <TextBlock x:Name="ManualAdditionalGuaranteeLabel" Grid.Row="8" Grid.Column="0" Text="Ek Kesin Teminat (Excel formülü)" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
-                                                    <TextBox x:Name="ManualAdditionalGuaranteeTextBox" Grid.Row="8" Grid.Column="1" Margin="4.5" Style="{StaticResource PremiumFieldTextBox}" Text="Excel formülüyle hesaplanır" IsReadOnly="True" ToolTip="Tutar, seçili programın güncel kaynak Excel formülünden hesaplanır; elle giriş kullanılmaz."/>
+                                                    <TextBlock x:Name="ManualAdditionalGuaranteeLabel" Grid.Row="8" Grid.Column="0" Text="Ek Kesin Teminat (Hesaplanan)" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
+                                                    <TextBox x:Name="ManualAdditionalGuaranteeTextBox" Grid.Row="8" Grid.Column="1" Margin="4.5" Style="{StaticResource PremiumFieldTextBox}" Text="0,00 ₺" IsReadOnly="True" ToolTip="Tutar seçili programın kaynak Excel formülüne göre hesaplanır; elle giriş kullanılmaz."/>
                                                     <TextBlock x:Name="GuaranteeRuleHintTextBlock" Grid.Row="8" Grid.Column="2" Grid.ColumnSpan="2" Text="Temel/Ortaöğretim: I × %6 • Özel Eğitim: (I × %6) + (R × %6)" Foreground="#FFD180" TextWrapping="Wrap" VerticalAlignment="Center" Margin="7,4.5"/>
                                                 </Grid>
                                                 <Border x:Name="MultiRouteEntryBorder" Visibility="Collapsed" Style="{StaticResource Card}" Padding="7" Margin="4.5,7,0,0">

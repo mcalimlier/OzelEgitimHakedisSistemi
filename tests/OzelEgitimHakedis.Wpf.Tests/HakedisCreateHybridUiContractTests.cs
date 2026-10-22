@@ -27,9 +27,23 @@ public sealed class HakedisCreateHybridUiContractTests
         Assert.Contains("ProgressTenderListBox", named.Keys);
         Assert.Equal("ProgressTenderListBox_SelectionChanged",
             EventName(named["ProgressTenderListBox"], "SelectionChanged"));
+        Assert.Contains("ProgressNewTenderShortcutButton", named.Keys);
+        Assert.Equal("Contract", (string?)named["ProgressNewTenderShortcutButton"].Attribute("Tag"));
+        Assert.Equal("NavigationButton_Click",
+            EventName(named["ProgressNewTenderShortcutButton"], "Click"));
         Assert.Contains("ProgressContractorComboBox", named.Keys);
+        Assert.Contains("ProgressContractorDetailShortcutButton", named.Keys);
+        Assert.Equal("Contractors", (string?)named["ProgressContractorDetailShortcutButton"].Attribute("Tag"));
+        Assert.Equal("NavigationButton_Click",
+            EventName(named["ProgressContractorDetailShortcutButton"], "Click"));
         Assert.Contains("ProgressPeriodMonthComboBox", named.Keys);
         Assert.Contains("ProgressWorkDaysCardTextBlock", named.Keys);
+        Assert.Contains("ManualAdditionalGuaranteeTextBox", named.Keys);
+        Assert.Equal("True", (string?)named["ManualAdditionalGuaranteeTextBox"].Attribute("IsReadOnly"));
+        Assert.Equal("0,00 ₺", (string?)named["ManualAdditionalGuaranteeTextBox"].Attribute("Text"));
+        Assert.Contains("Hesaplanan", (string?)named["ManualAdditionalGuaranteeLabel"].Attribute("Text"), StringComparison.Ordinal);
+        Assert.Contains("I × %6",
+            (string?)named["GuaranteeRuleHintTextBlock"].Attribute("Text"), StringComparison.Ordinal);
         Assert.Contains("ProgressRouteComboBox", named.Keys);
         Assert.Contains("ProgressRouteTableHeaderGrid", named.Keys);
         var routeTableHeaders = named["ProgressRouteTableHeaderGrid"].Descendants()

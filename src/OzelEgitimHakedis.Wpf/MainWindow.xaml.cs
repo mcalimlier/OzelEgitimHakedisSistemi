@@ -4663,6 +4663,7 @@ public partial class MainWindow : Window
         MinimumWageSupportResultTextBlock.Text = FormatMoney(deductions.MinimumWageSupport);
         InspectionPenaltyResultTextBlock.Text = FormatMoney(deductions.InspectionPenalty);
         AdditionalGuaranteeResultTextBlock.Text = FormatMoney(deductions.AdditionalGuarantee);
+        ManualAdditionalGuaranteeTextBox.Text = FormatMoney(deductions.AdditionalGuarantee);
         ProgressWorkDaysSummaryTextBlock.Text = batch.Sum(x => x.Input.WorkDays).ToString(CultureInfo.CurrentCulture);
         ProgressWorkDaysCardTextBlock.Text = ProgressWorkDaysSummaryTextBlock.Text + " gün";
         ProgressNetSummaryTextBlock.Text = FormatMoney(Sum(x => x.NetPayable));
@@ -5080,6 +5081,7 @@ public partial class MainWindow : Window
             MinimumWageSupportResultTextBlock.Text = FormatMoney(result.Deductions.MinimumWageSupport);
             InspectionPenaltyResultTextBlock.Text = FormatMoney(result.Deductions.InspectionPenalty);
             AdditionalGuaranteeResultTextBlock.Text = FormatMoney(result.AdditionalGuarantee);
+            ManualAdditionalGuaranteeTextBox.Text = FormatMoney(result.AdditionalGuarantee);
             ProgressWorkDaysSummaryTextBlock.Text = workDays.ToString(CultureInfo.CurrentCulture);
             ProgressWorkDaysCardTextBlock.Text = ProgressWorkDaysSummaryTextBlock.Text + " gün";
         ProgressWorkDaysCardTextBlock.Text = workDays.ToString(CultureInfo.CurrentCulture) + " gün";
@@ -6936,9 +6938,9 @@ public partial class MainWindow : Window
     {
         var selectedProgram = (ProgressTenderListBox.SelectedItem as ContractDraftData)?.ProgramType
             ?? TransportationProgramType.SpecialEducation;
-        ManualAdditionalGuaranteeTextBox.IsEnabled = false;
-        ManualAdditionalGuaranteeTextBox.Text = selectedProgram == TransportationProgramType.BasicOrSecondary ? "I × %6" : "(I × %6) + (R × %6)";
-        ManualAdditionalGuaranteeLabel.Text = "Ek Kesin Teminat (Excel formülü)";
+        ManualAdditionalGuaranteeTextBox.IsEnabled = true;
+        ManualAdditionalGuaranteeTextBox.Text = FormatMoney(0m);
+        ManualAdditionalGuaranteeLabel.Text = "Ek Kesin Teminat (Hesaplanan)";
         GuaranteeRuleHintTextBlock.Text = selectedProgram == TransportationProgramType.BasicOrSecondary
             ? "Temel/Ortaöğretim: kaynak Excel formülü = I × %6"
             : "Özel Eğitim: kaynak Excel formülü = (I × %6) + (R × %6)";
@@ -8043,6 +8045,7 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         MinimumWageSupportResultTextBlock.Text = FormatMoney(0m);
         InspectionPenaltyResultTextBlock.Text = FormatMoney(0m);
         AdditionalGuaranteeResultTextBlock.Text = FormatMoney(0m);
+        ManualAdditionalGuaranteeTextBox.Text = FormatMoney(0m);
         ProgressWorkDaysSummaryTextBlock.Text = "0";
         ProgressWorkDaysCardTextBlock.Text = "0 gün";
         ProgressNetSummaryTextBlock.Text = FormatMoney(0m);
