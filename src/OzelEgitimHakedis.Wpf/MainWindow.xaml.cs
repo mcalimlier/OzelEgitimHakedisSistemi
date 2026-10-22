@@ -1303,15 +1303,26 @@ public partial class MainWindow : Window
 
         var selected = ProgressPeriodMonthComboBox.SelectedItem as ProgressPaymentMonthOption;
         var monthKey = selected?.StartDate.ToString("yyyy-MM", CultureInfo.InvariantCulture);
-        if (_lastSelectedPaymentMonthKey is not null &&
-            monthKey is not null &&
-            !string.Equals(_lastSelectedPaymentMonthKey, monthKey, StringComparison.Ordinal))
-        {
+        var transition = ResolveMonthlyDraftPeriodTransition(_lastSelectedPaymentMonthKey, monthKey);
+        if (transition.ResetMonthlyDraft)
             ResetMonthlyInputsForNewMonth();
-        }
 
-        _lastSelectedPaymentMonthKey = monthKey;
+        // Programmatic clearing of a ComboBox can produce a transient null between
+        // period selections. Forgetting the old month here can leak a cached route's
+        // unsaved October values into a newly selected November claim.
+        _lastSelectedPaymentMonthKey = transition.LastMonthKey;
         UpdateAutomaticProgressNumber();
+    }
+
+    internal static (string? LastMonthKey, bool ResetMonthlyDraft) ResolveMonthlyDraftPeriodTransition(
+        string? previousMonthKey, string? selectedMonthKey)
+    {
+        if (selectedMonthKey is null)
+            return (previousMonthKey, false);
+
+        var changed = previousMonthKey is not null &&
+            !string.Equals(previousMonthKey, selectedMonthKey, StringComparison.Ordinal);
+        return (selectedMonthKey, changed);
     }
 
     private void ResetMonthlyInputsForNewMonth()
