@@ -53,3 +53,15 @@ git status --short
 ```
 
 3. Sonuç yeşil ise kullanıcıya özet ver. Push/PR/merge yapma; kullanıcı açıkça isterse `finishing-a-development-branch` akışını uygula.
+
+## 22.10.2026 — MuratPC doğrulama eki
+
+- Güncel çalışma alanı: `C:\Users\MuratPC\Documents\GitHub\OzelEgitimHakedisSistemi`.
+- `b7c161b..fc1a738` uygulama değişiklikleri plan ve tasarımla karşılaştırılarak bu oturumda incelendi; düzeltme gerektiren somut hata bulunmadı. Kaynak kod değiştirilmedi.
+- Ayrı, salt-okunur Codex CLI incelemesi başlatılmaya çalışıldı ancak model erişimi hatasıyla sonlandı. Bağımsız inceleme tamamlanmış sayılmamalıdır; kullanılabilir inceleyiciyle yeniden yapılması bekleniyor.
+- İlk `--no-restore` denemesinde eski yerel `project.assets.json` PdfPig başvurusunu içermediğinden WPF test derlemesi `CS0246` verdi. `dotnet restore .\OzelEgitimHakedisSistemi.sln` başarılı oldu; paket/proje dosyası değişikliği gerekmedi.
+- Ardından `dotnet test .\OzelEgitimHakedisSistemi.sln --configuration Release --no-restore` çıkış kodu 0 ile tamamlandı: çekirdek 247/247, WPF 124/124; toplam 371/371, başarısız/atlanan 0.
+- Windows CI dosyasındaki dört `Verify` PowerShell adımının yerel çalıştırması başarılı: çözüm metadatası, WPF çıktı sözleşmesi, kompakt düzen, arşiv/iş akışı.
+- `git diff --check b7c161b fc1a738` ve `git diff --check` temiz. CA analiz uyarıları devam ediyor.
+- Etkileşimli masaüstü görsel kabul testi yapılmadı; düzen doğrulaması WPF otomatik ölçüm testleriyle sınırlı.
+- Push, PR veya merge yapılmadı. Kalan iş bağımsız bütün-plan incelemesidir; testlerin tamamlanmış olması bu adımın yerine geçmez.
