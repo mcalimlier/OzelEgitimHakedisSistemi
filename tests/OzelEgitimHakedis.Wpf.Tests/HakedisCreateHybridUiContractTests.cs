@@ -230,6 +230,66 @@ public sealed class HakedisCreateHybridUiContractTests
     }
 
     [Fact]
+    public void HybridSave_ShouldRejectDaysBeyondClippedContractMonthAndRetainZeroRecords()
+    {
+        RunOnSta(() =>
+        {
+            var temp = Directory.CreateTempSubdirectory("oehs-workday-guard-");
+            try
+            {
+                var window = CreateEditorHarness();
+                var root = Path.Combine(temp.FullName, "data");
+                SetField(window, "_dataStore", new OehsProgramScopedApplicationDataStore(root));
+                SetField(window, "_calculationConstantsHistory",
+                    new System.Collections.Generic.List<ProgressPaymentCalculationConstantsChange>());
+                var contract = ArchiveProgressEditorContextTests.CreateArchive().Contract with
+                {
+                    StartDate = new DateOnly(2026, 10, 14),
+                    EndDate = new DateOnly(2026, 12, 31)
+                };
+                Collection(window, "_contracts").Add(contract);
+                Collection(window, "_contractors").Add(CreateFirm("Seçilen Firma", "12345678901"));
+                var tender = Field<ComboBox>(window, "ProgressTenderListBox");
+                tender.Items.Add(contract);
+                tender.SelectedItem = contract;
+                var routes = Field<ListBox>(window, "ProgressRouteComboBox");
+                var route = CreateRoute("01", "Hat 01", "12345678901");
+                routes.Items.Add(route);
+                Collection(window, "_routes").Add(route);
+                routes.SelectedItems.Add(route);
+                var period = new ProgressPaymentMonthOption(
+                    new DateOnly(2026, 10, 14), new DateOnly(2026, 10, 31));
+                var month = Field<ComboBox>(window, "ProgressPeriodMonthComboBox");
+                month.Items.Add(period);
+                month.SelectedItem = period;
+                Invoke(window, "UpdateHybridRouteDraftRows");
+                var rows = Field<System.Collections.ObjectModel.ObservableCollection<MainWindow.MultiRoutePaymentDraftRow>>(
+                    window, "_multiRoutePaymentRows");
+                Assert.Single(rows).WorkDays = 19m; // Only 18 calendar days remain in October
+                Invoke(window, "CalculateProgressButton_Click", window, new RoutedEventArgs());
+                Assert.Empty(new OehsProgramScopedApplicationDataStore(root).Load().ProgressPayments!);
+                Assert.Contains("18 takvim",
+                    Field<TextBlock>(window, "ProgressValidationMessageTextBlock").Text,
+                    StringComparison.Ordinal);
+            }
+            finally { temp.Delete(true); }
+        });
+    }
+
+    [Fact]
+    public void HybridSaveButton_ShouldWarnThatCalculationPersistsARecord()
+    {
+        var xaml = LoadMainWindowXaml();
+        var button = NamedElement(xaml, "CalculateProgressButton");
+        Assert.Equal("HAKEDİŞİ HESAPLA VE KAYDET", (string?)button.Attribute("Content"));
+        Assert.Equal("CalculateProgressButton_Click", EventName(button, "Click"));
+        var grid = NamedElement(xaml, "MultiRoutePaymentGrid");
+        Assert.Equal("HybridGrid_PreviewKeyDown", EventName(grid, "PreviewKeyDown"));
+        Assert.Equal("HybridPasteButton_Click", EventName(NamedElement(xaml, "HybridPasteButton"), "Click"));
+        Assert.Equal("HybridUndoButton_Click", EventName(NamedElement(xaml, "HybridUndoButton"), "Click"));
+    }
+
+    [Fact]
     public void HybridPreview_ShouldNotifyAndCalculateEachRoutesOwnValues()
     {
         var first=new MainWindow.MultiRoutePaymentDraftRow{WorkDays=22,DailyPrice=100,PriceDifference=50,TaxDebt=10};
