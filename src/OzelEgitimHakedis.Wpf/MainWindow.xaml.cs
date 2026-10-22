@@ -4788,8 +4788,7 @@ public partial class MainWindow : Window
         ProgressNetSummaryTextBlock.Text = FormatMoney(Sum(x => x.NetPayable));
         ProgressCalculationSummaryTextBlock.Text = "TAMAM";
 
-        _lastCalculatedHistoryId = batch[^1].Id;
-        SetProgressEditorMode(false);
+        ResetNewProgressDraftAfterCalculation(batch[^1]);
         UpdateHistoryView();
         UpdateSummaryView();
         UpdateReportView();
@@ -4806,7 +4805,7 @@ public partial class MainWindow : Window
         CalculationStatusTextBlock.FontWeight = FontWeights.SemiBold;
         CalculationStatusTextBlock.Text = aggregateMessage;
         ArchiveCurrentProgressButton.Visibility = Visibility.Visible;
-        CorrectCurrentProgressButton.Visibility = Visibility.Collapsed;
+        CorrectCurrentProgressButton.Visibility = Visibility.Visible;
     }
 
     private void ShowMultiRouteValidation(string message)
@@ -5296,6 +5295,11 @@ public partial class MainWindow : Window
             UpdateAcceptanceView();
             if (_historyCorrectionSection == HistoryCorrectionSection.ProgressPayment)
                 RefreshViewsAfterHistoryCorrection();
+
+            if (!editingHistoryId.HasValue)
+            {
+                ResetNewProgressDraftAfterCalculation(historyItem);
+            }
 
             CalculationStatusTextBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(36, 104, 216));
             CalculationStatusTextBlock.FontWeight = FontWeights.SemiBold;
@@ -8090,6 +8094,14 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         }
     }
 
+    private void ResetNewProgressDraftAfterCalculation(ProgressPaymentHistoryData lastCalculated)
+    {
+        ClearProgressEntryFields();
+        // Completed-record actions belong to the persisted payment, not the next draft's selectors.
+        _lastCalculatedHistoryId = lastCalculated.Id;
+        SetProgressEditorMode(false);
+    }
+
     private void ClearProgressEntryFields(bool clearTenderSelection = true)
     {
         foreach (var textBox in new[]
@@ -8104,7 +8116,6 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
 
         ProgressNumberTextBox.Clear();
         _lastSelectedPaymentMonthKey = null;
-        ProgressPeriodMonthComboBox.SelectedItem = null;
         _multiRoutePaymentRows.Clear();
         _multiRouteDraftCache.Clear();
         MultiRouteEntryBorder.Visibility = Visibility.Collapsed;
@@ -8113,15 +8124,19 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         _suppressSelectionEvents = true;
         try
         {
+            ProgressPeriodMonthComboBox.SelectedItem = null;
             if (clearTenderSelection)
             {
                 ProgressTenderListBox.SelectedItem = null;
+                ProgressContractorComboBox.ItemsSource = Array.Empty<ContractorDraft>();
+                ProgressContractorComboBox.SelectedItem = null;
+                ProgressPeriodMonthComboBox.ItemsSource = Array.Empty<ProgressPaymentMonthOption>();
                 ProgressRouteComboBox.ItemsSource = Array.Empty<RouteDraft>();
                 ProgressContractorTextBlock.Text = "Seçilmedi";
                 ProgressRouteRelationTextBlock.Text = "İhale ve hat seçiniz.";
             }
 
-            ProgressRouteComboBox.SelectedItem = null;
+            ProgressRouteComboBox.SelectedItems.Clear();
         }
         finally
         {

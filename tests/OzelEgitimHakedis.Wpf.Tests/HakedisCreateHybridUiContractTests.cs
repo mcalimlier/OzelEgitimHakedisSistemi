@@ -196,6 +196,100 @@ public sealed class HakedisCreateHybridUiContractTests
         Assert.Contains("ClearArchiveCorrectionState();", cancelProgressEdit, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void NewProgressCalculation_ShouldClearDraftAndRetainCompletedRecordActions()
+    {
+        var source = File.ReadAllText(LoadProjectFile(
+            "src", "OzelEgitimHakedis.Wpf", "MainWindow.xaml.cs"));
+        var reset = MethodBody(source, "ResetNewProgressDraftAfterCalculation");
+        var clear = MethodBody(source, "ClearProgressEntryFields");
+
+        Assert.Contains("ClearProgressEntryFields();", reset, StringComparison.Ordinal);
+        Assert.Contains("_lastCalculatedHistoryId = lastCalculated.Id;", reset, StringComparison.Ordinal);
+        Assert.True(reset.IndexOf("ClearProgressEntryFields();", StringComparison.Ordinal) <
+                    reset.IndexOf("_lastCalculatedHistoryId = lastCalculated.Id;", StringComparison.Ordinal));
+        Assert.True(reset.IndexOf("_lastCalculatedHistoryId = lastCalculated.Id;", StringComparison.Ordinal) <
+                    reset.IndexOf("SetProgressEditorMode(false);", StringComparison.Ordinal));
+
+        foreach (var clearedState in new[]
+        {
+            "ProgressTenderListBox.SelectedItem = null;",
+            "ProgressContractorComboBox.SelectedItem = null;",
+            "ProgressContractorComboBox.ItemsSource = Array.Empty<ContractorDraft>();",
+            "ProgressPeriodMonthComboBox.SelectedItem = null;",
+            "ProgressPeriodMonthComboBox.ItemsSource = Array.Empty<ProgressPaymentMonthOption>();",
+            "ProgressRouteComboBox.SelectedItems.Clear();",
+            "_multiRoutePaymentRows.Clear();", "_multiRouteDraftCache.Clear();",
+            "ProgressNumberTextBox.Clear();", "textBox.Clear();"
+        })
+            Assert.Contains(clearedState, clear, StringComparison.Ordinal);
+
+        Assert.True(clear.IndexOf("_suppressSelectionEvents = true;", StringComparison.Ordinal) <
+                    clear.IndexOf("ProgressPeriodMonthComboBox.SelectedItem = null;", StringComparison.Ordinal));
+        Assert.DoesNotContain("_lastCalculatedHistoryId = null;", clear, StringComparison.Ordinal);
+        Assert.Contains("GetLastCalculatedProgress() is not null", MethodBody(source, "SetProgressEditorMode"), StringComparison.Ordinal);
+        Assert.Contains("_progressHistory.FirstOrDefault(x => x.Id == id)", MethodBody(source, "GetLastCalculatedProgress"), StringComparison.Ordinal);
+        Assert.Contains("GetLastCalculatedProgress()", MethodBody(source, "ArchiveCurrentProgressButton_Click"), StringComparison.Ordinal);
+        Assert.Contains("GetLastCalculatedProgress()", MethodBody(source, "CorrectCurrentProgressButton_Click"), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void NewSingleRouteCalculation_ShouldResetOnlyAfterPersistenceAndOutsideCorrections()
+    {
+        var source = File.ReadAllText(LoadProjectFile(
+            "src", "OzelEgitimHakedis.Wpf", "MainWindow.xaml.cs"));
+        var calculate = MethodBody(source, "CalculateProgressButton_Click");
+        var resetIndex = calculate.IndexOf("ResetNewProgressDraftAfterCalculation(historyItem);", StringComparison.Ordinal);
+
+        Assert.True(resetIndex >= 0, "A successful new single-route payment must reset its draft.");
+        var persistenceFailure = BlockAfter(calculate, "if (!SavePersistedData())");
+        Assert.Contains("return;", persistenceFailure, StringComparison.Ordinal);
+        Assert.DoesNotContain("ResetNewProgressDraftAfterCalculation", persistenceFailure, StringComparison.Ordinal);
+        Assert.True(resetIndex > calculate.IndexOf(persistenceFailure, StringComparison.Ordinal) + persistenceFailure.Length);
+        Assert.Contains("ResetNewProgressDraftAfterCalculation(historyItem);",
+            BlockAfter(calculate, "if (!editingHistoryId.HasValue)"), StringComparison.Ordinal);
+
+        var archiveSave = calculate.IndexOf("SaveArchiveCorrectionSnapshot(", StringComparison.Ordinal);
+        Assert.True(archiveSave >= 0 && archiveSave < resetIndex);
+        Assert.True(calculate.IndexOf("return;", archiveSave, StringComparison.Ordinal) < resetIndex);
+        Assert.DoesNotContain("ResetNewProgressDraftAfterCalculation", MethodBody(source, "SaveArchiveCorrectionSnapshot"), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void NewMultiRouteCalculation_ShouldResetOnlyAfterPersistenceAndKeepActionsVisible()
+    {
+        var source = File.ReadAllText(LoadProjectFile(
+            "src", "OzelEgitimHakedis.Wpf", "MainWindow.xaml.cs"));
+        var save = MethodBody(source, "SaveMultiRouteProgressPayment");
+        var resetIndex = save.IndexOf("ResetNewProgressDraftAfterCalculation(batch[^1]);", StringComparison.Ordinal);
+
+        Assert.True(resetIndex >= 0, "A successful new multi-route batch must reset its draft.");
+        var persistenceFailure = BlockAfter(save, "if (!SavePersistedData())");
+        Assert.Contains("return;", persistenceFailure, StringComparison.Ordinal);
+        Assert.DoesNotContain("ResetNewProgressDraftAfterCalculation", persistenceFailure, StringComparison.Ordinal);
+        Assert.True(resetIndex > save.IndexOf(persistenceFailure, StringComparison.Ordinal) + persistenceFailure.Length);
+        Assert.DoesNotContain("CorrectCurrentProgressButton.Visibility = Visibility.Collapsed;", save[resetIndex..], StringComparison.Ordinal);
+        Assert.DoesNotContain("ArchiveCurrentProgressButton.Visibility = Visibility.Collapsed;", save[resetIndex..], StringComparison.Ordinal);
+        Assert.Equal(2, Regex.Matches(source, @"ResetNewProgressDraftAfterCalculation\((?:historyItem|batch\[\^1\])\);").Count);
+    }
+
+    private static string BlockAfter(string source, string marker)
+    {
+        var markerIndex = source.IndexOf(marker, StringComparison.Ordinal);
+        Assert.True(markerIndex >= 0, $"Expected source to contain {marker}.");
+        var bodyStart = source.IndexOf('{', markerIndex);
+        var depth = 0;
+        for (var index = bodyStart; index < source.Length; index++)
+        {
+            if (source[index] == '{')
+                depth++;
+            else if (source[index] == '}' && --depth == 0)
+                return source[(bodyStart + 1)..index];
+        }
+
+        throw new InvalidOperationException($"Expected {marker} to have a closing brace.");
+    }
+
     private static string EventName(XElement element, string eventAttribute) =>
         (string?)element.Attribute(eventAttribute) ?? string.Empty;
 
