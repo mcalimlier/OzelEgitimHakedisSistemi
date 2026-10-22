@@ -72,8 +72,8 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
             Assert.Contains("₺339.466,96", basicIcmal, System.StringComparison.Ordinal); // I appears once in A+B
             Assert.DoesNotContain("₺346.832,31", basicIcmal, System.StringComparison.Ordinal);
 
-            SaveToTemporaryA4Pdfs(specialOutputs);
-            SaveToTemporaryA4Pdfs(basicOutputs);
+            SaveAndAssertA4(specialOutputs, "Latest_Special");
+            SaveAndAssertA4(basicOutputs, "Latest_Basic");
         });
     }
 
@@ -194,33 +194,6 @@ public sealed class HistoricalWorkbookPdfSourceComparisonTests
             2643686m, new DateOnly(2026, 8, 26), new DateOnly(2026, 9, 14),
             new DateOnly(2026, 9, 14), new DateOnly(2027, 6, 25), 181,
             new DateOnly(2026, 11, 30), new DateOnly(2026, 10, 19));
-    }
-
-    private static void SaveToTemporaryA4Pdfs(IReadOnlyList<OehsOfficialDocumentOutput> outputs)
-    {
-        var directory = Directory.CreateTempSubdirectory("oehs-latest-source-pdf-").FullName;
-        try
-        {
-            foreach (var output in outputs)
-            {
-                Assert.Single(output.Document.Pages);
-                var page = Assert.IsType<FixedPage>(output.Document.Pages[0].Child);
-                Assert.Equal(793.7008d, page.Width, 2);
-                Assert.Equal(1122.5197d, page.Height, 2);
-                var path = Path.Combine(directory, $"{output.Kind}.pdf");
-                PdfVectorWriter.Save(output.Document, path);
-                Assert.True(new FileInfo(path).Length > 1000);
-                using var pdf = PdfReader.Open(path, PdfDocumentOpenMode.Import);
-                Assert.Single(pdf.Pages);
-                Assert.Equal(595.2756d, pdf.Pages[0].Width.Point, 1);
-                Assert.Equal(841.8898d, pdf.Pages[0].Height.Point, 1);
-            }
-        }
-        finally
-        {
-            if (Directory.Exists(directory))
-                Directory.Delete(directory, recursive: true);
-        }
     }
 
     private static OehsOfficialDocumentContext BuildSpecialEducationSourceContext()
