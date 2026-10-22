@@ -25,6 +25,126 @@ public sealed class HakedisCreateHybridUiContractTests
         "http://schemas.microsoft.com/winfx/2006/xaml";
 
     [Theory]
+    [InlineData("Summary", "SummaryPanel", "İcmal")]
+    [InlineData("Acceptance", "AcceptancePanel", "Kabul Tutanağı")]
+    [InlineData("Statistics", "StatisticsPanel", "İstatistikler")]
+    public void Navigation_ShouldExposeDedicatedButtonAndOnlyItsTargetPanel(string target, string panelName, string title)
+    {
+        var buttons = LoadMainWindowXaml().Descendants()
+            .Where(element => element.Name.LocalName == "Button"
+                && ((string?)element.Attribute(XamlNamespace + "Name"))?.StartsWith("Nav", StringComparison.Ordinal) == true)
+            .ToArray();
+        var targetButton = Assert.Single(buttons.Where(element => (string?)element.Attribute("Tag") == target));
+        Assert.Equal("NavigationButton_Click", EventName(targetButton, "Click"));
+        Assert.Contains(targetButton.Descendants(), element =>
+            string.Equals((string?)element.Attribute("Text"), title.ToUpper(CultureInfo.GetCultureInfo("tr-TR")), StringComparison.Ordinal));
+
+        RunOnSta(() =>
+        {
+            var window = CreateEditorHarness();
+            foreach (var element in buttons)
+                Field<Button>(window, (string)element.Attribute(XamlNamespace + "Name")!).Tag = (string?)element.Attribute("Tag");
+            var button = Field<Button>(window, (string)targetButton.Attribute(XamlNamespace + "Name")!);
+            // Start elsewhere so selection and stale visibility are both exercised.
+            Invoke(window, "NavigationButton_Click", Field<Button>(window, "NavProgress"), new RoutedEventArgs());
+            Invoke(window, "NavigationButton_Click", button, new RoutedEventArgs());
+
+            Assert.Equal(title, Field<TextBlock>(window, "HeaderModuleText").Text);
+            Assert.Equal("Active", button.Uid);
+            Assert.Empty(Field<Button>(window, "NavProgress").Uid);
+            foreach (var name in new[] { "HomePanel", "ProgressPanel", "SummaryPanel", "AcceptancePanel", "StatisticsPanel", "PlaceholderPanel" })
+                Assert.Equal(name == panelName ? Visibility.Visible : Visibility.Collapsed, Field<FrameworkElement>(window, name).Visibility);
+        });
+    }
+
+    [Theory]
+    [InlineData(null, "2026-10-31", true, false)]
+    [InlineData("2026-10-01", null, false, true)]
+    [InlineData(null, null, true, true)]
+    [InlineData("2026-10-31", "2026-10-01", true, true)]
+    public void ContractSave_ShouldRejectMissingOrReversedDatesBeforePreparingDraft(
+        string? start, string? end, bool invalidStart, bool invalidEnd)
+    {
+        RunOnSta(() =>
+        {
+            var window = CreateContractSaveHarness(start, end);
+            // Number assignment is the first draft-preparation side effect, before
+            // ContractDraftData construction or persistence. Fail safely if reached.
+            Field<TextBox>(window, "ContractNumberTextBox").TextChanged += (_, _) => throw new DraftPreparationReachedException();
+
+            Assert.Null(Record.Exception(() => Invoke(window, "SaveContractButton_Click", new Button(), new RoutedEventArgs())));
+
+            Assert.Equal(Visibility.Visible, Field<Border>(window, "ContractValidationBanner").Visibility);
+            Assert.False(string.IsNullOrWhiteSpace(Field<TextBlock>(window, "ContractValidationMessageTextBlock").Text));
+            Assert.Equal(invalidStart, Field<DatePicker>(window, "StartDatePicker").ToolTip is not null);
+            Assert.Equal(invalidEnd, Field<DatePicker>(window, "EndDatePicker").ToolTip is not null);
+            Assert.Empty(Collection(window, "_contracts"));
+            Assert.Empty(Field<TextBox>(window, "ContractNumberTextBox").Text);
+        });
+    }
+
+    [Theory]
+    [InlineData("2026-10-01", "2026-10-31")]
+    [InlineData("2026-10-01", "2026-10-01")]
+    public void ContractSave_ShouldAcceptOrderedOrEqualDates(string start, string end)
+    {
+        RunOnSta(() =>
+        {
+            var window = CreateContractSaveHarness(start, end);
+            Field<TextBox>(window, "ContractNumberTextBox").TextChanged += (_, _) => throw new DraftPreparationReachedException();
+            Assert.Throws<DraftPreparationReachedException>(() => Invoke(window, "SaveContractButton_Click", new Button(), new RoutedEventArgs()));
+            Assert.Equal(Visibility.Collapsed, Field<Border>(window, "ContractValidationBanner").Visibility);
+            Assert.Null(Field<DatePicker>(window, "StartDatePicker").ToolTip);
+            Assert.Null(Field<DatePicker>(window, "EndDatePicker").ToolTip);
+        });
+    }
+
+    [Theory]
+    [InlineData(null, "2026-10-31", true, false)]
+    [InlineData("2026-10-01", null, false, true)]
+    [InlineData(null, null, true, true)]
+    public void ArchivedContractSave_ShouldFlagMissingDates(string? start, string? end, bool invalidStart, bool invalidEnd)
+    {
+        RunOnSta(() =>
+        {
+            var window = CreateContractSaveHarness(start, end);
+            var saved = ArchiveProgressEditorContextTests.CreateArchive();
+            var archive = saved with
+            {
+                Contract = saved.Contract with { StartDate = new DateOnly(2026, 10, 1), EndDate = new DateOnly(2026, 10, 31) },
+                ProgressPayment = saved.ProgressPayment with { PeriodDate = new DateOnly(2026, 10, 1) },
+                PreviousPayments = Array.Empty<ProgressPaymentHistoryData>()
+            };
+            SetField(window, "_editingArchiveSnapshot", archive);
+            // Keep this validation-only harness outside archive persistence even
+            // before required-date validation exists.
+            Field<TextBox>(window, "ContractAmountTextBox").Text = "invalid";
+            Invoke(window, "SaveArchivedContractCorrection");
+
+            Assert.Equal(invalidStart, Field<DatePicker>(window, "StartDatePicker").ToolTip is not null);
+            Assert.Equal(invalidEnd, Field<DatePicker>(window, "EndDatePicker").ToolTip is not null);
+            Assert.Same(archive, Field<ProgressPaymentArchive>(window, "_editingArchiveSnapshot"));
+        });
+    }
+
+    private sealed class DraftPreparationReachedException : Exception;
+
+    private static MainWindow CreateContractSaveHarness(string? start, string? end)
+    {
+        var window = CreateEditorHarness();
+        var program = new ComboBoxItem { Tag = "SpecialEducation" };
+        Field<ComboBox>(window, "TransportProgramTypeComboBox").Items.Add(program);
+        Field<ComboBox>(window, "TransportProgramTypeComboBox").SelectedItem = program;
+        Field<TextBox>(window, "TenderNumberTextBox").Text = "IHALE-DATE-TEST";
+        Field<TextBox>(window, "ContractAmountTextBox").Text = "10000";
+        Field<TextBox>(window, "ContractWorkDaysTextBox").Text = "20";
+        Field<TextBox>(window, "ContractTransportDailyPriceTextBox").Text = "500";
+        Field<DatePicker>(window, "StartDatePicker").SelectedDate = start is null ? null : DateTime.Parse(start, CultureInfo.InvariantCulture);
+        Field<DatePicker>(window, "EndDatePicker").SelectedDate = end is null ? null : DateTime.Parse(end, CultureInfo.InvariantCulture);
+        return window;
+    }
+
+    [Theory]
     [InlineData(TransportationProgramType.BasicOrSecondary, "Hesaplama Bilgileri", "Hizmet İşleri Hakediş Raporu", Visibility.Collapsed)]
     [InlineData(TransportationProgramType.SpecialEducation, "Hesaplama", "Hizmetişleri Hakediş Raporu", Visibility.Visible)]
     public void PaymentLabels_ShouldFollowSelectedContractProgram(

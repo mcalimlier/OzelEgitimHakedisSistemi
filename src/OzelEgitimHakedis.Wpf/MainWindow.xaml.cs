@@ -813,7 +813,7 @@ public partial class MainWindow : Window
         ArchivePanel.Visibility = page == "Archives" ? Visibility.Visible : Visibility.Collapsed;
         SummaryPanel.Visibility = page == "Summary" ? Visibility.Visible : Visibility.Collapsed;
         ReportsPanel.Visibility = page == "Reports" ? Visibility.Visible : Visibility.Collapsed;
-        AcceptancePanel.Visibility = Visibility.Collapsed;
+        AcceptancePanel.Visibility = page == "Acceptance" ? Visibility.Visible : Visibility.Collapsed;
         StatisticsPanel.Visibility = page == "Statistics" ? Visibility.Visible : Visibility.Collapsed;
         SettingsPanel.Visibility = page == "Settings" ? Visibility.Visible : Visibility.Collapsed;
         CalculationConstantsPanel.Visibility = page == "Constants" ? Visibility.Visible : Visibility.Collapsed;
@@ -858,7 +858,7 @@ public partial class MainWindow : Window
         foreach (var button in new[]
         {
             NavHome, NavContract, NavContractors, NavLines,
-            NavProgress, NavReports, NavHistory, NavArchives, NavAcceptance, NavSettings
+            NavProgress, NavReports, NavHistory, NavArchives, NavSummary, NavAcceptance, NavStatistics, NavSettings
         })
         {
             var buttonPage = button.Tag?.ToString();
@@ -2702,12 +2702,15 @@ public partial class MainWindow : Window
         if (!int.TryParse(ContractWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var contractWorkDays) || contractWorkDays < 0) errors.Add(ContractWorkDaysTextBox);
         if (!TryParseDecimal(ContractTransportDailyPriceTextBox.Text, out var transportDailyPrice) || transportDailyPrice < 0) errors.Add(ContractTransportDailyPriceTextBox);
 
-        var startDate = StartDatePicker.SelectedDate.HasValue
+        DateOnly? startDate = StartDatePicker.SelectedDate.HasValue
             ? DateOnly.FromDateTime(StartDatePicker.SelectedDate.Value)
-            : archive.Contract.StartDate;
-        var endDate = EndDatePicker.SelectedDate.HasValue
+            : null;
+        DateOnly? endDate = EndDatePicker.SelectedDate.HasValue
             ? DateOnly.FromDateTime(EndDatePicker.SelectedDate.Value)
-            : archive.Contract.EndDate;
+            : null;
+
+        if (!startDate.HasValue) errors.Add(StartDatePicker);
+        if (!endDate.HasValue) errors.Add(EndDatePicker);
 
         if (endDate < startDate)
         {
@@ -2723,7 +2726,7 @@ public partial class MainWindow : Window
         if (archive.ProgressPayment.PeriodDate is DateOnly currentPaymentPeriod)
             archivePaymentPeriods.Add(currentPaymentPeriod);
 
-        if (archivePaymentPeriods.Any(paymentPeriod =>
+        if (startDate.HasValue && endDate.HasValue && archivePaymentPeriods.Any(paymentPeriod =>
                 paymentPeriod < startDate || paymentPeriod > endDate))
         {
             errors.Add(StartDatePicker);
@@ -2743,8 +2746,8 @@ public partial class MainWindow : Window
             ContractNumber = archive.Contract.ContractNumber,
             // WorkName is a derived display; retain the archived legacy fallback.
             ContractAmount = contractAmount,
-            StartDate = startDate,
-            EndDate = endDate,
+            StartDate = startDate!.Value,
+            EndDate = endDate!.Value,
             VatExempt = archive.Contract.VatExempt,
             TenderDate = TenderDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(TenderDatePicker.SelectedDate.Value) : archive.Contract.TenderDate,
             ContractDate = ContractDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(ContractDatePicker.SelectedDate.Value) : archive.Contract.ContractDate,
@@ -3965,8 +3968,19 @@ public partial class MainWindow : Window
             errors.Add("Taşıma Günlük Fiyatı");
             MarkInvalid(ContractTransportDailyPriceTextBox);
         }
-        if (StartDatePicker.SelectedDate.HasValue && EndDatePicker.SelectedDate.HasValue &&
-            EndDatePicker.SelectedDate.Value.Date < StartDatePicker.SelectedDate.Value.Date)
+        var startDate = StartDatePicker.SelectedDate;
+        var endDate = EndDatePicker.SelectedDate;
+        if (!startDate.HasValue)
+        {
+            errors.Add("Başlangıç Tarihi");
+            MarkInvalid(StartDatePicker);
+        }
+        if (!endDate.HasValue)
+        {
+            errors.Add("Bitiş Tarihi");
+            MarkInvalid(EndDatePicker);
+        }
+        if (startDate.HasValue && endDate.HasValue && endDate.Value.Date < startDate.Value.Date)
         {
             errors.Add("Başlangıç / Bitiş Tarihi");
             MarkInvalid(StartDatePicker);
@@ -4003,8 +4017,8 @@ public partial class MainWindow : Window
             // Contractor identity is associated with the route and is entered/selected there.
             oldContract?.ContractorName ?? string.Empty,
             contractAmount,
-            DateOnly.FromDateTime(StartDatePicker.SelectedDate ?? DateTime.Today),
-            DateOnly.FromDateTime(EndDatePicker.SelectedDate ?? DateTime.Today),
+            DateOnly.FromDateTime(startDate!.Value),
+            DateOnly.FromDateTime(endDate!.Value),
             oldContract?.VatExempt ?? false,
             TenderDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(TenderDatePicker.SelectedDate.Value) : null,
             ContractDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(ContractDatePicker.SelectedDate.Value) : null,

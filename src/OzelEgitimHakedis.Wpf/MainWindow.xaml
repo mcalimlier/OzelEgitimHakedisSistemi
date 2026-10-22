@@ -175,7 +175,19 @@
                                 <TextBlock Text="HAKEDİŞ GEÇMİŞİ" FontSize="11.5" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
-                        <Button x:Name="NavAcceptance" Style="{StaticResource NavButton}" Tag="Statistics" Click="NavigationButton_Click">
+                        <Button x:Name="NavSummary" Style="{StaticResource NavButton}" Tag="Summary" Click="NavigationButton_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8A5;" FontSize="15" Width="42"/>
+                                <TextBlock Text="İCMAL" FontSize="11.5" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="NavAcceptance" Style="{StaticResource NavButton}" Tag="Acceptance" Click="NavigationButton_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE73E;" FontSize="15" Width="42"/>
+                                <TextBlock Text="KABUL TUTANAĞI" FontSize="11.5" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="NavStatistics" Style="{StaticResource NavButton}" Tag="Statistics" Click="NavigationButton_Click">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8A1;" FontSize="15" Width="42"/>
                                 <TextBlock Text="İSTATİSTİKLER" FontSize="11.5" FontWeight="SemiBold"/>
