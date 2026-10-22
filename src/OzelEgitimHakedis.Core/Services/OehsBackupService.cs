@@ -120,6 +120,14 @@ public sealed class OehsBackupService
                         var data=JsonSerializer.Deserialize<OehsApplicationData>(File.ReadAllText(target),JsonOptions)
                             ?? throw new InvalidDataException("Boş uygulama verisi.");
                         if(data.Routes is null || data.Contractors is null) throw new InvalidDataException("Eksik uygulama verisi.");
+                        if(data.CalculationConstants is not null && !data.CalculationConstants.TryValidate(out var error))
+                            throw new InvalidDataException("Geçersiz hesaplama oranları: "+error);
+                        var expected=pair.Key=="data/oehs-special-education.json"?TransportationProgramType.SpecialEducation:TransportationProgramType.BasicOrSecondary;
+                        if(data.Routes.Any(r=>r is null || r.ProgramType!=expected) ||
+                           data.Contractors.Any(c=>c is null || c.ProgramType!=expected) ||
+                           data.Contracts?.Any(c=>c is null || c.ProgramType!=expected)==true ||
+                           data.ProgressPayments?.Any(p=>p is null || p.Input is null || p.Calculation is null || p.Input.ProgramType!=expected)==true)
+                            throw new InvalidDataException("Paketin program/ilişki verileri tutarsız.");
                         contracts+=(data.Contracts?.Count ?? (data.Contract is null?0:1));routes+=data.Routes.Count;payments+=data.ProgressPayments?.Count ?? 0;
                     }
                     if(pair.Key.Contains("/Arsiv/Hakedisler/",StringComparison.OrdinalIgnoreCase))
@@ -170,7 +178,8 @@ public sealed class OehsBackupService
         finally
         {
             TryDelete(check);TryDelete(stageData);TryDelete(stageOutput);
-            if(!rollbackFailed) foreach(var item in moved) TryDelete(item.Old);
+            // Keep .before-* directories as a second recovery copy. They may contain
+            // older reset backups or unknown application files omitted from this package.
         }
     }
     private static void CopyTree(string source,string target)

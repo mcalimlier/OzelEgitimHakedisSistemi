@@ -20,6 +20,27 @@ namespace OzelEgitimHakedis.Wpf.Tests;
 
 public sealed class OfficialDocumentOutputTests
 {
+    [Fact]
+    public void OfficialPdf_ShouldKeepIknWithoutPrintingInternalContractId()
+    {
+        RunOnSta(() =>
+        {
+            var context=CreateDocumentContext(CreatePayment(new ProgressPaymentInput(1,100,0,0,100000,true,0,0,0))) with
+                {ContractNumber="INTERNAL-private-key",TenderNumber="2026/4242"};
+            var temporary=Directory.CreateTempSubdirectory("oehs-ikn-only-");
+            try
+            {
+                foreach(var output in OehsOfficialDocumentFactory.BuildSeparate(context).Where(o=>o.Kind is OehsOfficialDocumentKind.HizmetIsleriHakedisRaporu or OehsOfficialDocumentKind.KabulTutanagi))
+                {
+                    var path=Path.Combine(temporary.FullName,output.FileSuffix+".pdf");PdfVectorWriter.Save(output.Document,path);
+                    using var pdf=UglyToad.PdfPig.PdfDocument.Open(path);
+                    Assert.Contains("2026/4242",pdf.GetPage(1).Text,StringComparison.Ordinal);
+                    Assert.DoesNotContain("INTERNAL-",pdf.GetPage(1).Text,StringComparison.Ordinal);
+                }
+            }
+            finally {temporary.Delete(true);}
+        });
+    }
     [Theory]
     [InlineData(TransportationProgramType.SpecialEducation)]
     [InlineData(TransportationProgramType.BasicOrSecondary)]

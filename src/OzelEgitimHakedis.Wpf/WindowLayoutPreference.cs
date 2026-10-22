@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Text.Json;
 
 namespace OzelEgitimHakedis.Wpf;
@@ -41,18 +41,19 @@ public static class WindowLayoutMetrics
 internal static class WindowLayoutPreferenceStore
 {
     private static readonly string SettingsPath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "OEHS",
+        OzelEgitimHakedis.Core.Services.OehsRuntimePaths.DataRoot,
         "window-layout.json");
 
     public static WindowLayoutPreference Load()
     {
         try
         {
-            if (!File.Exists(SettingsPath))
+            var path = File.Exists(SettingsPath) ? SettingsPath : Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "OEHS", "window-layout.json");
+            if (!File.Exists(path))
                 return WindowLayoutPreference.Default;
 
-            return JsonSerializer.Deserialize<WindowLayoutPreference>(File.ReadAllText(SettingsPath))
+            return JsonSerializer.Deserialize<WindowLayoutPreference>(File.ReadAllText(path))
                 ?? WindowLayoutPreference.Default;
         }
         catch

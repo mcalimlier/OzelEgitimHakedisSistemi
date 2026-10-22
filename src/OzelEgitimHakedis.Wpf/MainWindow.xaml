@@ -1,4 +1,4 @@
-<Window x:Class="OzelEgitimHakedis.Wpf.MainWindow"
+﻿<Window x:Class="OzelEgitimHakedis.Wpf.MainWindow"
         xml:lang="tr-TR"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -226,233 +226,50 @@
                 <!-- İÇERİK -->
                 <Border Grid.Row="1" Grid.Column="1" Background="White" CornerRadius="13,0,13,0" Padding="11.5">
                     <Grid>
-                        <Grid x:Name="HomePanel">
-                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0">
-                            <StackPanel>
-                                <TextBlock Text="TAŞIMALI EĞİTİM HAKEDİŞ YÖNETİM SİSTEMİ" Style="{StaticResource PageTitle}"/>
-                                <TextBlock Text="Hakediş sürecini sözleşmeden hesaplamaya kadar tek akışta yönetin." Style="{StaticResource PageSubtitle}"/>
-                                <Border Style="{StaticResource PremiumPanel}" Padding="12.5" Margin="0,0,0,8.5">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="220"/></Grid.ColumnDefinitions>
-                                        <StackPanel>
-                                            <StackPanel Orientation="Horizontal">
-                                                <Border Background="#1D4B70" CornerRadius="11" Padding="7,4" Margin="0,0,8,0">
-                                                    <TextBlock Text="AKTİF İŞLEM" Foreground="#D9E9F6" FontSize="11" FontWeight="Bold"/>
-                                                </Border>
-                                                <TextBlock Text="HAZIR" Foreground="{StaticResource Gold500Brush}" FontSize="11.5" FontWeight="Bold"/>
-                                            </StackPanel>
-                                            <TextBlock Text="Önce sözleşmeyi tanımlayın" Foreground="White" FontSize="15" FontWeight="SemiBold" Margin="0,5,0,0"/>
-                                            <TextBlock Text="İhale → Yüklenici → Hat → Hakediş → Çıktı akışı burada ilerleyecek." Foreground="#C5D7E7" FontSize="11.5" Margin="0,5,0,0"/>
-                                            <Button Content="İHALE BİLGİLERİ TANIMLA" Tag="Contract" Click="NavigationButton_Click"
-                                                    Style="{StaticResource ModernButton}" Width="245" Height="31"
-                                                    HorizontalAlignment="Left" Margin="0,11.5,0,0"/>
-                                        </StackPanel>
-                                        <Border Grid.Column="1" Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="11" Padding="9,8" VerticalAlignment="Center">
-                                            <StackPanel>
-                                                <TextBlock Text="SİSTEM" Foreground="#91ABC0" FontSize="10.5" FontWeight="Bold" HorizontalAlignment="Right"/>
-                                                <TextBlock Text="OEHS v0.5" Foreground="White" FontSize="13.5" FontWeight="Bold" HorizontalAlignment="Right" Margin="0,4,0,0"/>
-                                                <Border Height="1" Background="#315371" Margin="0,7.5,0,7"/>
-                                                <TextBlock Text="HESAPLAMA MOTORU" Foreground="#91ABC0" FontSize="10.5" FontWeight="Bold" HorizontalAlignment="Right"/>
-                                                <TextBlock Text="HAZIR" Foreground="{StaticResource Gold500Brush}" FontSize="11.5" FontWeight="SemiBold" HorizontalAlignment="Right" Margin="0,3,0,0"/>
-                                            </StackPanel>
-                                        </Border>
-                                    </Grid>
-                                </Border>
-                                                                                                <Border Style="{StaticResource Card}" Padding="8.5" Margin="0,0,0,8.5">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions><ColumnDefinition Width="1.1*"/><ColumnDefinition Width="1.8*"/></Grid.ColumnDefinitions>
-                                        <StackPanel Grid.Column="0">
-                                            <TextBlock Text="AKTİF İHALE / DOSYA NO" Style="{StaticResource CardTitle}"/>
-                                            <ComboBox x:Name="HomeTenderListBox"
-                                                      Height="34"
-                                                      Margin="0,6,8,0"
-                                                      SelectionChanged="HomeTenderListBox_SelectionChanged"
-                                                      Style="{StaticResource FieldComboBox}"
-                                                      ToolTip="İhale / dosya numarasını seçin">
-                                                <ComboBox.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <StackPanel>
-                                                            <StackPanel>
-                                                                <TextBlock Text="{Binding TenderNumber}" FontSize="11.5" FontWeight="SemiBold"/>
-                                                                <TextBlock Text="{Binding TenderNumber, StringFormat='İKN: {0}'}" FontSize="10" Foreground="{StaticResource Text600Brush}"/>
-                                                            </StackPanel>
-                                                            <TextBlock FontSize="10.5" Foreground="{StaticResource Text600Brush}" TextTrimming="CharacterEllipsis">
-                                                                <TextBlock.Text>
-                                                                    <MultiBinding Converter="{StaticResource ContractWorkNameConverter}" Mode="OneWay">
-                                                                        <Binding/>
-                                                                        <Binding Path="Titles" Source="{StaticResource ContractWorkNameConverter}"/>
-                                                                    </MultiBinding>
-                                                                </TextBlock.Text>
-                                                            </TextBlock>
-                                                        </StackPanel>
-                                                    </DataTemplate>
-                                                </ComboBox.ItemTemplate>
-                                            </ComboBox>
-                                        </StackPanel>
-                                        <Border Grid.Column="1" Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="9" Padding="8.5">
-                                            <StackPanel>
-                                                <TextBlock Text="SEÇİLEN İHALE ÖZETİ" Foreground="{StaticResource Gold500Brush}" FontSize="11" FontWeight="Bold"/>
-                                                <TextBlock x:Name="HomeSelectedTenderSummaryTextBlock" Text="İhale seçiniz." Foreground="White" FontSize="11.5" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,5,0,0"/>
-                                            </StackPanel>
-                                        </Border>
-                                    </Grid>
-                                </Border>                                                                <Border Style="{StaticResource Card}" Padding="8.5" Margin="0,0,0,8.5">
-                                    <StackPanel>
-                                        <TextBlock Text="İŞ AKIŞI / İLERLEME ŞABLONU" Style="{StaticResource CardTitle}"/>
-                                        <TextBlock Text="Önce ana bilgileri girin; dönem hesabını kontrol edip arşivleyin, ardından dört belgeyi üretin. Ana kayıt formları kaydetme sonrası temizlenir." Style="{StaticResource CardSubtitle}" Margin="0,3,0,0" TextWrapping="Wrap"/>
-                                        <UniformGrid Columns="6" Margin="0,8,0,0">
-                                            <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="6" Margin="0,0,4,0">
-                                                <StackPanel>
-                                                    <TextBlock Text="01 →" Foreground="{StaticResource Gold500Brush}" FontSize="10.5" FontWeight="Bold"/>
-                                                    <Button Content="SÖZLEŞME" Tag="Contract" Click="NavigationButton_Click" Style="{StaticResource SecondaryButton}" Height="30" FontSize="10.5" Margin="0,4,0,3"/>
-                                                    <TextBlock Text="İhale no, bedel, tarihler" Foreground="#C5D7E7" FontSize="10" TextWrapping="Wrap"/>
-                                                </StackPanel>
-                                            </Border>
-                                            <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="6" Margin="0,0,4,0">
-                                                <StackPanel>
-                                                    <TextBlock Text="02 →" Foreground="{StaticResource Gold500Brush}" FontSize="10.5" FontWeight="Bold"/>
-                                                    <Button Content="YÜKLENİCİ" Tag="Contractors" Click="NavigationButton_Click" Style="{StaticResource SecondaryButton}" Height="30" FontSize="10.5" Margin="0,4,0,3"/>
-                                                    <TextBlock Text="Kimlik, iletişim, banka" Foreground="#C5D7E7" FontSize="10" TextWrapping="Wrap"/>
-                                                </StackPanel>
-                                            </Border>
-                                            <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="6" Margin="0,0,4,0">
-                                                <StackPanel>
-                                                    <TextBlock Text="03 →" Foreground="{StaticResource Gold500Brush}" FontSize="10.5" FontWeight="Bold"/>
-                                                    <Button Content="HAT" Tag="Lines" Click="NavigationButton_Click" Style="{StaticResource SecondaryButton}" Height="30" FontSize="10.5" Margin="0,4,0,3"/>
-                                                    <TextBlock Text="İş günleri, rehber fiyatı" Foreground="#C5D7E7" FontSize="10" TextWrapping="Wrap"/>
-                                                </StackPanel>
-                                            </Border>
-                                            <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="6" Margin="0,0,4,0">
-                                                <StackPanel>
-                                                    <TextBlock Text="04 →" Foreground="{StaticResource Gold500Brush}" FontSize="10.5" FontWeight="Bold"/>
-                                                    <Button Content="HAKEDİŞ" Tag="Progress" Click="NavigationButton_Click" Style="{StaticResource SecondaryButton}" Height="30" FontSize="10.5" Margin="0,4,0,3"/>
-                                                    <TextBlock Text="Dönem, farklar, kesintiler" Foreground="#C5D7E7" FontSize="10" TextWrapping="Wrap"/>
-                                                </StackPanel>
-                                            </Border>
-                                            <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="6" Margin="0,0,4,0">
-                                                <StackPanel>
-                                                    <TextBlock Text="05 →" Foreground="{StaticResource Gold500Brush}" FontSize="10.5" FontWeight="Bold"/>
-                                                    <Button Content="ARŞİV" Tag="Archives" Click="NavigationButton_Click" Style="{StaticResource SecondaryButton}" Height="30" FontSize="10.5" Margin="0,4,0,3"/>
-                                                    <TextBlock Text="Kontrol et, kaydı sakla" Foreground="#C5D7E7" FontSize="10" TextWrapping="Wrap"/>
-                                                </StackPanel>
-                                            </Border>
-                                            <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="6">
-                                                <StackPanel>
-                                                    <TextBlock Text="06 ✓" Foreground="{StaticResource Gold500Brush}" FontSize="10.5" FontWeight="Bold"/>
-                                                    <Button Content="ÇIKTILAR" Tag="Reports" Click="NavigationButton_Click" Style="{StaticResource SecondaryButton}" Height="30" FontSize="10.5" Margin="0,4,0,3"/>
-                                                    <TextBlock Text="Önizle, dört PDF kaydet" Foreground="#C5D7E7" FontSize="10" TextWrapping="Wrap"/>
-                                                </StackPanel>
-                                            </Border>
-                                        </UniformGrid>
-                                    </StackPanel>
-                                </Border>
-<Grid Margin="0,0,0,0">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition/><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/>
-                                    </Grid.ColumnDefinitions>
-
-                                    <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource Card}" Padding="9" Margin="0,0,5,5">
-                                        <StackPanel>
-                                            <TextBlock Text="TAŞIMA HİZMETİ" Style="{StaticResource CardTitle}"/>
-                                            <TextBlock Text="Taşıma Hizmet" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeTransportServiceTextBlock" Text="0,00 ₺" Foreground="White" FontSize="15" FontWeight="Bold"/>
-                                            <TextBlock x:Name="HomeTransportPriceDifferenceLabel" Text="Taşıma Fiyat Farkı KDV Hariç" Style="{StaticResource FieldLabel}" Margin="0,6,0,0" TextWrapping="Wrap"/>
-                                            <TextBlock x:Name="HomeTransportPriceDifferenceTextBlock" Text="0,00 ₺" Foreground="White" FontSize="12.5" FontWeight="SemiBold"/>
-                                            <TextBlock Text="Taşıma Hakediş" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeTransportNetTextBlock" Text="0,00 ₺" Foreground="White" FontSize="15" FontWeight="Bold"/>
-                                        </StackPanel>
-                                    </Border>
-
-                                    <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource Card}" Padding="9" Margin="2,0,3,5">
-                                        <StackPanel>
-                                            <TextBlock Text="REHBER HİZMETİ" Style="{StaticResource CardTitle}"/>
-                                            <TextBlock Text="Rehber Hizmet" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeGuideServiceTextBlock" Text="0,00 ₺" Foreground="White" FontSize="15" FontWeight="Bold"/>
-                                            <TextBlock Text="Rehber Hakediş" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeGuideNetTextBlock" Text="0,00 ₺" Foreground="White" FontSize="15" FontWeight="Bold"/>
-                                        </StackPanel>
-                                    </Border>
-
-                                    <Border Grid.Row="0" Grid.Column="2" Style="{StaticResource Card}" Padding="9" Margin="3,0,2,5">
-                                        <StackPanel>
-                                            <TextBlock Text="VERGİ &amp; TEVKİFAT" Style="{StaticResource CardTitle}"/>
-                                            <TextBlock Text="KDV" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeVatTextBlock" Text="0,00 ₺" Foreground="White" FontSize="15" FontWeight="Bold"/>
-                                            <TextBlock Text="KDV / Tevkifat" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeVatWithholdingTextBlock" Text="0,00 / 0,00 ₺" Foreground="White" FontSize="12.5" FontWeight="SemiBold"/>
-                                            <TextBlock Text="Tevkifat" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeWithholdingTextBlock" Text="0,00 ₺" Foreground="White" FontSize="15" FontWeight="Bold"/>
-                                        </StackPanel>
-                                    </Border>
-
-                                    <Border Grid.Row="0" Grid.Column="3" Style="{StaticResource Card}" Padding="9" Margin="5,0,0,5">
-                                        <StackPanel>
-                                            <TextBlock Text="DİĞER KESİNTİLER" Style="{StaticResource CardTitle}"/>
-                                            <TextBlock Text="Damga Vergisi" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeStampTaxTextBlock" Text="0,00 ₺" Foreground="White" FontSize="13.5" FontWeight="Bold"/>
-                                            <TextBlock Text="Fiyat Farkı Teminatı" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeGuaranteeTextBlock" Text="0,00 ₺" Foreground="White" FontSize="13.5" FontWeight="Bold"/>
-                                            <TextBlock Text="Toplam Kesinti" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeDeductionsTextBlock" Text="0,00 ₺" Foreground="White" FontSize="15" FontWeight="Bold"/>
-                                        </StackPanel>
-                                    </Border>
-
-                                    <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource Card}" Padding="9" Margin="0,5,5,0">
-                                        <StackPanel>
-                                            <TextBlock Text="TAHAKKUK" Style="{StaticResource CardTitle}"/>
-                                            <TextBlock Text="Toplam Tutar" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeTotalAmountTextBlock" Text="0,00 ₺" Foreground="White" FontSize="16" FontWeight="Bold"/>
-                                            <TextBlock Text="Fatura Tutarı" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeInvoiceTextBlock" Text="0,00 ₺" Foreground="White" FontSize="14.5" FontWeight="Bold"/>
-                                            <TextBlock Text="Brüt Tutar" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeGrossTextBlock" Text="0,00 ₺" Foreground="White" FontSize="14.5" FontWeight="Bold"/>
-                                        </StackPanel>
-                                    </Border>
-
-                                    <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource Card}" Padding="9" Margin="2,5,3,0">
-                                        <StackPanel>
-                                            <TextBlock Text="AKTİF İHALE" Style="{StaticResource CardTitle}"/>
-                                            <TextBlock Text="İş" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeWorkNameTextBlock" Text="—" Foreground="White" FontSize="11.5" FontWeight="Bold" TextWrapping="Wrap"/>
-                                            <TextBlock Text="Yüklenici" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeContractorTextBlock" Text="—" Foreground="White" FontSize="11.5" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                                        </StackPanel>
-                                    </Border>
-
-                                    <Border Grid.Row="1" Grid.Column="2" Style="{StaticResource Card}" Padding="9" Margin="3,5,2,0">
-                                        <StackPanel>
-                                            <TextBlock Text="HAKEDİŞ DURUMU" Style="{StaticResource CardTitle}"/>
-                                            <TextBlock Text="Son Hakediş" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeProgressTextBlock" Text="—" Foreground="White" FontSize="15" FontWeight="Bold"/>
-                                            <TextBlock Text="Dönem" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomePeriodTextBlock" Text="—" Foreground="White" FontSize="11.5" FontWeight="SemiBold"/>
-                                            <TextBlock Text="Son Net Ödeme" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeLatestNetTextBlock" Text="0,00 ₺" Foreground="White" FontSize="15" FontWeight="Bold"/>
-                                        </StackPanel>
-                                    </Border>
-
-                                    <Border Grid.Row="1" Grid.Column="3" Style="{StaticResource Card}" Padding="9" Margin="5,5,0,0">
-                                        <StackPanel>
-                                            <TextBlock Text="KAYIT / HAT DURUMU" Style="{StaticResource CardTitle}"/>
-                                            <TextBlock Text="Kayıtlı Net Toplam" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeNetPayableTextBlock" Text="0,00 ₺" Foreground="White" FontSize="15" FontWeight="Bold"/>
-                                            <TextBlock Text="Sözleşme / Hat Durumu" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeContractStatusTextBlock" Text="Bekleniyor" Foreground="White" FontSize="11.5" FontWeight="Bold" TextWrapping="Wrap"/>
-                                            <TextBlock Text="Tanımlı Hat" Style="{StaticResource FieldLabel}" Margin="0,6,0,0"/>
-                                            <TextBlock x:Name="HomeRouteCountTextBlock" Text="0" Foreground="White" FontSize="15" FontWeight="Bold"/>
-                                        </StackPanel>
-                                    </Border>
-                                </Grid>
-                            </StackPanel>
-                        
-                            </ScrollViewer>
+                        <Grid x:Name="HomePanel" Background="{StaticResource Navy950Brush}">
+ <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="10">
+  <StackPanel>
+   <TextBlock Text="ANA EKRAN" Foreground="White" FontSize="20" FontWeight="SemiBold"/>
+   <TextBlock Text="Ayı seçin, eksik işleri tamamlayın, belgelerinizi kontrol edin." Foreground="#C5D7E7" TextWrapping="Wrap" Margin="0,4,0,12"/>
+   <Border Style="{StaticResource PaymentWorkspaceCard}"><StackPanel>
+    <WrapPanel>
+     <StackPanel Width="195" Margin="0,0,10,6"><TextBlock Text="Program" Foreground="#C5D7E7"/><ComboBox x:Name="HomeProgramComboBox" Style="{StaticResource FieldComboBox}" SelectionChanged="HomeFilter_Changed" Margin="0,4,0,0"><ComboBoxItem Content="Özel Eğitim" Tag="SpecialEducation"/><ComboBoxItem Content="Temel / Ortaöğretim" Tag="BasicOrSecondary"/></ComboBox></StackPanel>
+     <StackPanel Width="200" Margin="0,0,10,6"><TextBlock Text="İKN · boş seçim tüm ihaleler" Foreground="#C5D7E7"/><ComboBox x:Name="HomeTenderListBox" Style="{StaticResource FieldComboBox}" SelectionChanged="HomeTenderListBox_SelectionChanged" Margin="0,4,0,0"><ComboBox.ItemTemplate><DataTemplate><StackPanel><TextBlock Text="{Binding TenderNumber}"/><TextBlock FontSize="10" TextTrimming="CharacterEllipsis"><TextBlock.Text><MultiBinding Converter="{StaticResource ContractWorkNameConverter}" Mode="OneWay"><Binding/><Binding Path="Titles" Source="{StaticResource ContractWorkNameConverter}"/></MultiBinding></TextBlock.Text></TextBlock></StackPanel></DataTemplate></ComboBox.ItemTemplate></ComboBox></StackPanel>
+     <StackPanel Width="150" Margin="0,0,10,6"><TextBlock Text="Hakediş ayı" Foreground="#C5D7E7"/><DatePicker x:Name="HomeMonthPicker" SelectedDateFormat="Short" SelectedDateChanged="HomeFilter_Changed" Margin="0,4,0,0" ToolTip="Seçtiğiniz tarihin ayı gösterilir."/></StackPanel>
+     <Button Content="Tüm ihaleler" Click="HomeAllTenders_Click" Style="{StaticResource SecondaryButton}" VerticalAlignment="Bottom" Margin="0,0,0,6"/>
+    </WrapPanel>
+    <TextBlock x:Name="HomeSelectedTenderSummaryTextBlock" Foreground="#C5D7E7" TextWrapping="Wrap" FontSize="11" Margin="0,3,0,0"/>
+   </StackPanel></Border>
+   <UniformGrid Columns="3" Margin="0,10,0,10">
+    <Button x:Name="HomePendingButton" Tag="Bekleyen" Click="HomeStatus_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,6,0" MinHeight="45"/>
+    <Button x:Name="HomeReadyButton" Tag="Kontrole hazır" Click="HomeStatus_Click" Style="{StaticResource SecondaryButton}" Margin="3,0" MinHeight="45"/>
+    <Button x:Name="HomeDoneButton" Tag="Tamamlanan" Click="HomeStatus_Click" Style="{StaticResource SecondaryButton}" Margin="6,0,0,0" MinHeight="45"/>
+   </UniformGrid>
+   <Border Style="{StaticResource PaymentWorkspaceCard}"><StackPanel>
+    <TextBlock Text="AYLIK İŞ LİSTESİ" Foreground="#F4C247" FontWeight="SemiBold"/>
+    <WrapPanel Margin="0,8,0,8">
+     <StackPanel Width="240" Margin="0,0,8,6"><TextBlock Text="Firma / hat / İKN ara" Foreground="#C5D7E7" Margin="0,0,0,4"/><TextBox x:Name="HomeSearchBox" Style="{StaticResource FieldTextBox}" TextChanged="HomeSearch_Changed"/></StackPanel>
+     <ComboBox x:Name="HomeStatusComboBox" VerticalAlignment="Bottom" Width="180" Style="{StaticResource FieldComboBox}" SelectionChanged="HomeFilter_Changed" SelectedIndex="0" Margin="0,0,8,6"><ComboBoxItem Content="Tüm durumlar" Tag=""/><ComboBoxItem Content="Bekleyen" Tag="Bekleyen"/><ComboBoxItem Content="Kontrole hazır" Tag="Kontrole hazır"/><ComboBoxItem Content="Tamamlanan" Tag="Tamamlanan"/></ComboBox>
+     <Button Content="Yenile" VerticalAlignment="Bottom" Click="HomeRefresh_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,0,6"/>
+    </WrapPanel>
+    <TextBlock x:Name="HomeListMessage" Foreground="#C5D7E7" TextWrapping="Wrap" Margin="0,0,0,8"/><Button x:Name="HomeSetupButton" Content="Başlangıç bilgilerini tamamla" Click="HomeSetup_Click" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Margin="0,0,0,8" Visibility="Collapsed"/>
+    <DataGrid x:Name="HomeMonthlyGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" Height="170" MinHeight="140" RowHeight="34" ColumnHeaderHeight="30" FontSize="12" GridLinesVisibility="Horizontal" AlternatingRowBackground="#F2F6FA" SelectionMode="Single" SelectionUnit="FullRow" SelectionChanged="HomeMonthlyGrid_SelectionChanged" HeadersVisibility="Column" Background="White" Foreground="#172B3A" HorizontalScrollBarVisibility="Auto">
+     <DataGrid.Columns><DataGridTextColumn Header="İKN" Binding="{Binding Tender}" Width="100"/><DataGridTextColumn Header="Firma" Binding="{Binding Firm}" Width="1.2*" MinWidth="130"/><DataGridTextColumn Header="Hat" Binding="{Binding RouteTitle}" Width="1.5*" MinWidth="140"/><DataGridTextColumn Header="Hesaplanan net" Binding="{Binding NetText}" Width="125"/><DataGridTextColumn Header="Durum" Binding="{Binding Status}" Width="190"/></DataGrid.Columns>
+    </DataGrid>
+    <Button x:Name="HomeNextActionButton" Content="Sonraki işlem" Click="HomeNextAction_Click" Style="{StaticResource ModernButton}" HorizontalAlignment="Left" Margin="0,8,0,0" IsEnabled="False"/>
+   </StackPanel></Border>
+   <Border x:Name="HomePreflightPanel" Style="{StaticResource PaymentWorkspaceCard}" Margin="0,10,0,0"><StackPanel>
+    <TextBlock Text="SEÇİLİ HAKEDİŞ · BELGE KONTROLÜ" Foreground="#F4C247" FontWeight="SemiBold"/>
+    <TextBlock x:Name="HomePaymentSummary" Text="Kontrol etmek için listeden bir hat seçin." Foreground="White" FontSize="13" TextWrapping="Wrap" Margin="0,8,0,6"/>
+    <TextBlock x:Name="HomePaymentAmounts" Foreground="#C5D7E7" TextWrapping="Wrap"/>
+    <ItemsControl x:Name="HomeIssuesList" Margin="0,6,0,0"><ItemsControl.ItemTemplate><DataTemplate><Button Content="{Binding Message}" Tag="{Binding}" Click="HomeIssue_Click" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Margin="0,2" ToolTip="İlgili kaydı aç"/></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+    <Expander Header="İmzacı ve hesaplama ayrıntıları" Foreground="#C5D7E7" Margin="0,8,0,0"><TextBlock x:Name="HomePaymentDetails" Foreground="#C5D7E7" TextWrapping="Wrap" Margin="0,6"/></Expander>
+    <WrapPanel Margin="0,10,0,0"><Button Content="Hakedişi aç" Click="HomeNextAction_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,6"/><Button x:Name="HomePreviewButton" Content="Belgeleri önizle" Tag="Preview" Click="HomeOutput_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,6" IsEnabled="False"/><Button x:Name="HomeSavePdfsButton" Content="Dört PDF'yi kaydet" Tag="Save" Click="HomeOutput_Click" Style="{StaticResource ModernButton}" Margin="0,0,0,6" IsEnabled="False"/></WrapPanel>
+   </StackPanel></Border>
+  </StackPanel>
+ </ScrollViewer>
 </Grid>
-
-                        <!-- İhale / Sözleşme -->
+<!-- İhale / Sözleşme -->
                         <Grid x:Name="ContractPanel" Visibility="Collapsed">
                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0">
                             <StackPanel>
@@ -1325,7 +1142,14 @@
 
 <Grid x:Name="HistoryPanel" Visibility="Collapsed">
                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Padding="0,0,4,0">
-    <StackPanel>
+    <StackPanel><Border Style="{StaticResource PaymentWorkspaceCard}" Margin="0,0,0,10"><StackPanel><TextBlock Text="ARA VE FİLTRELE · AKTİF PROGRAM" Foreground="#F4C247" FontWeight="SemiBold"/><WrapPanel Margin="0,8,0,0">
+ <StackPanel Width="180" Margin="0,0,8,6"><TextBlock Text="Firma / hat / İKN ara" Foreground="#C5D7E7"/><TextBox x:Name="HistorySearchBox" Style="{StaticResource FieldTextBox}" TextChanged="RecordsFilter_Changed"/></StackPanel>
+ <StackPanel Width="130" Margin="0,0,8,6"><TextBlock Text="İKN" Foreground="#C5D7E7"/><TextBox x:Name="HistoryTenderFilter" Style="{StaticResource FieldTextBox}" TextChanged="RecordsFilter_Changed"/></StackPanel>
+ <StackPanel Width="160" Margin="0,0,8,6"><TextBlock Text="Firma" Foreground="#C5D7E7"/><TextBox x:Name="HistoryFirmFilter" Style="{StaticResource FieldTextBox}" TextChanged="RecordsFilter_Changed"/></StackPanel>
+ <StackPanel Width="135" Margin="0,0,8,6"><TextBlock Text="Dönem (ayın bir günü)" Foreground="#C5D7E7"/><DatePicker x:Name="HistoryMonthFilter" SelectedDateChanged="RecordsDateFilter_Changed"/></StackPanel>
+ <ComboBox x:Name="HistoryStatusFilter" Width="155" SelectedIndex="0" Style="{StaticResource FieldComboBox}" SelectionChanged="RecordsDateFilter_Changed" Margin="0,0,8,6" VerticalAlignment="Bottom"><ComboBoxItem Content="Tüm durumlar" Tag=""/><ComboBoxItem Content="Arşivlenmiş" Tag="Archived"/><ComboBoxItem Content="Arşivlenmemiş" Tag="Unarchived"/><ComboBoxItem Content="Dönemi belirsiz" Tag="Undated"/></ComboBox>
+ <Button Content="Filtreleri temizle" Tag="History" Click="ClearRecordFilters_Click" Style="{StaticResource SecondaryButton}" VerticalAlignment="Bottom" Margin="0,0,0,6"/>
+ </WrapPanel><TextBlock x:Name="HistoryFilterSummary" Foreground="#C5D7E7" TextWrapping="Wrap"/></StackPanel></Border>
         <TextBlock Text="HAKEDİŞ GEÇMİŞİ" Style="{StaticResource PageTitle}"/>
         <TextBlock Text="Hesaplanan hakedişleri kayıt zamanı, tutar ve durum bilgileriyle izleyin." Style="{StaticResource PageSubtitle}"/>
         <Grid Margin="0,0,0,8.5">
@@ -1399,7 +1223,14 @@
 
 <Grid x:Name="ArchivePanel" Visibility="Collapsed">
                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0">
-                                <StackPanel>
+                                <StackPanel><Border Style="{StaticResource PaymentWorkspaceCard}" Margin="0,0,0,10"><StackPanel><TextBlock Text="ARA VE FİLTRELE · AKTİF PROGRAM" Foreground="#F4C247" FontWeight="SemiBold"/><WrapPanel Margin="0,8,0,0">
+ <StackPanel Width="180" Margin="0,0,8,6"><TextBlock Text="Firma / hat / İKN ara" Foreground="#C5D7E7"/><TextBox x:Name="ArchiveSearchBox" Style="{StaticResource FieldTextBox}" TextChanged="RecordsFilter_Changed"/></StackPanel>
+ <StackPanel Width="130" Margin="0,0,8,6"><TextBlock Text="İKN" Foreground="#C5D7E7"/><TextBox x:Name="ArchiveTenderFilter" Style="{StaticResource FieldTextBox}" TextChanged="RecordsFilter_Changed"/></StackPanel>
+ <StackPanel Width="160" Margin="0,0,8,6"><TextBlock Text="Firma" Foreground="#C5D7E7"/><TextBox x:Name="ArchiveFirmFilter" Style="{StaticResource FieldTextBox}" TextChanged="RecordsFilter_Changed"/></StackPanel>
+ <StackPanel Width="135" Margin="0,0,8,6"><TextBlock Text="Dönem (ayın bir günü)" Foreground="#C5D7E7"/><DatePicker x:Name="ArchiveMonthFilter" SelectedDateChanged="RecordsDateFilter_Changed"/></StackPanel>
+ <ComboBox x:Name="ArchiveStatusFilter" Width="155" SelectedIndex="0" Style="{StaticResource FieldComboBox}" SelectionChanged="RecordsDateFilter_Changed" Margin="0,0,8,6" VerticalAlignment="Bottom"><ComboBoxItem Content="Tüm durumlar" Tag=""/><ComboBoxItem Content="Geçerli arşiv" Tag="Valid"/><ComboBoxItem Content="Okunamayan" Tag="Invalid"/><ComboBoxItem Content="Dönemi belirsiz" Tag="Undated"/></ComboBox>
+ <Button Content="Filtreleri temizle" Tag="Archive" Click="ClearRecordFilters_Click" Style="{StaticResource SecondaryButton}" VerticalAlignment="Bottom" Margin="0,0,0,6"/>
+ </WrapPanel><CheckBox x:Name="ArchiveShowRevisions" Content="Önceki revizyonları göster" Foreground="White" Checked="RecordsToggleFilter_Changed" Unchecked="RecordsToggleFilter_Changed" Margin="0,4"/><TextBlock x:Name="ArchiveFilterSummary" Foreground="#C5D7E7" TextWrapping="Wrap"/></StackPanel></Border>
                                     <TextBlock Text="ARŞİVLER" Style="{StaticResource PageTitle}"/>
                                     <TextBlock Text="Arşivlenen hakediş snapshotlarını revision bilgileriyle çağırın, düzeltin ve klasörlerini açın." Style="{StaticResource PageSubtitle}"/>
                                     <Grid Margin="0,0,0,8.5">
@@ -1720,7 +1551,7 @@
 
             <Grid x:Name="SettingsPanel" Visibility="Collapsed">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0">
-                    <StackPanel>
+                    <StackPanel><Border Style="{StaticResource PaymentWorkspaceCard}" Margin="0,0,0,12"><StackPanel><TextBlock Text="YEDEKLEME" Foreground="#F4C247" FontSize="14" FontWeight="SemiBold"/><TextBlock Text="İki programın kayıtları, arşiv revizyonları, ayarlar ve PDF dosyaları tek pakette." Foreground="#C5D7E7" TextWrapping="Wrap" Margin="0,6"/><WrapPanel><Button x:Name="BackupCreateButton" Content="Tam yedek al" Click="BackupCreate_Click" Style="{StaticResource ModernButton}" Margin="0,0,8,6"/><Button x:Name="BackupRestoreButton" Content="Yedeği incele ve geri yükle" Click="BackupRestore_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,0,6"/></WrapPanel><TextBlock x:Name="BackupStatusText" Foreground="#C5D7E7" Text="Yalnız kaydedilmiş veriler yedeklenir." TextWrapping="Wrap"/></StackPanel></Border>
                         <TextBlock Text="AYARLAR" Style="{StaticResource PageTitle}"/>
                         <TextBlock Text="TEHYS uygulama tercihleri ve hesaplama yapılandırması." Style="{StaticResource PageSubtitle}"/>
                         <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>

@@ -27,6 +27,87 @@ public sealed class HakedisCreateHybridUiContractTests
         "http://schemas.microsoft.com/winfx/2006/xaml";
 
     [Fact]
+    public void PracticalHome_SearchShouldClearOldPaymentAndActions()
+    {
+        RunOnSta(() =>
+        {
+            var directory=Directory.CreateTempSubdirectory("oehs-home-handler-");
+            try
+            {
+                var window=CreateEditorHarness();
+                SetField(window,"_archiveStore",new ProgressPaymentArchiveStore(directory.FullName));
+                SetField(window,"_calculationConstantsHistory",new System.Collections.Generic.List<ProgressPaymentCalculationConstantsChange>());
+                var c=ArchiveProgressEditorContextTests.CreateArchive().Contract;
+                Collection(window,"_contracts").Add(c);
+                Collection(window,"_routes").Add(CreateRoute("01","Merkez","12345678901"));
+                Collection(window,"_contractors").Add(CreateFirm("IŞIK TAŞIMA","12345678901"));
+                var program=Field<ComboBox>(window,"HomeProgramComboBox");
+                program.Items.Add(new ComboBoxItem{Tag="SpecialEducation"});program.SelectedIndex=0;
+                Field<DatePicker>(window,"HomeMonthPicker").SelectedDate=c.StartDate.ToDateTime(TimeOnly.MinValue);
+                SetField(window,"_operationsReady",true);
+                Invoke(window,"RefreshHomeOperations");
+                var grid=Field<DataGrid>(window,"HomeMonthlyGrid");
+                Assert.Single(grid.Items.Cast<object>());
+                grid.SelectedIndex=0;Invoke(window,"RefreshSelectedPayment");
+                Assert.True(Field<Button>(window,"HomeNextActionButton").IsEnabled);
+                Field<TextBox>(window,"HomeSearchBox").Text="olmayan firma";
+                Invoke(window,"RefreshHomeOperations");
+                Assert.Empty(grid.Items.Cast<object>());
+                Assert.False(Field<Button>(window,"HomeSavePdfsButton").IsEnabled);
+                Assert.False(Field<Button>(window,"HomePreviewButton").IsEnabled);
+                Assert.False(Field<Button>(window,"HomeNextActionButton").IsEnabled);
+                Assert.Contains("seçin",Field<TextBlock>(window,"HomePaymentSummary").Text,StringComparison.Ordinal);
+            }
+            finally{directory.Delete(true);}
+        });
+    }
+
+    [Fact]
+    public void PracticalHome_ShouldKeepActionsReachableAtSupportedSizes()
+    {
+        RunOnSta(() =>
+        {
+            foreach (var size in new[] { (1024d,600d), (1280d,720d), (1366d,768d), (1920d,1080d) })
+            {
+                var layout=LoadLayoutFragment(NamedElement(LoadMainWindowXaml(),"HomePanel"));
+                ((Button)layout.FindName("HomePendingButton")).Content="Bekleyen · 4";
+                ((Button)layout.FindName("HomeReadyButton")).Content="Kontrole hazır · 8";
+                ((Button)layout.FindName("HomeDoneButton")).Content="Tamamlanan · 12";
+                ((TextBlock)layout.FindName("HomePaymentSummary")).Text="IŞIK TAŞIMACILIK · Hat 1 — Merkez İlkokulu\nİKN: 2026/42 · Ekim 2026 · Hakediş 2";
+                ((TextBlock)layout.FindName("HomePaymentAmounts")).Text="Taşıma: 16 gün × 19539,1608 ₺\nFiyat farkı: 7.365,35 ₺ · Kesinti: 2.847,16 ₺\nPDF net ödeme: 332.516,08 ₺";
+                ((DataGrid)layout.FindName("HomeMonthlyGrid")).ItemsSource=new[] {new {Tender="2026/42",Firm="IŞIK TAŞIMACILIK",RouteTitle="1 — Merkez İlkokulu",NetText="332.516,08 ₺",Status="Kontrole hazır"}};
+                ArrangeLayout(layout,size.Item1-215-38,size.Item2-60-38);
+                var viewer=VisualDescendants<ScrollViewer>(layout).First();
+                Assert.True(viewer.ViewportWidth>0);
+                foreach(var name in new[]{"HomeMonthlyGrid","HomePreflightPanel"})
+                {
+                    var element=(FrameworkElement)layout.FindName(name);
+                    var rect=element.TransformToAncestor(viewer).TransformBounds(new Rect(element.RenderSize));
+                    Assert.InRange(rect.Right,1,viewer.ActualWidth+1);
+                }
+                viewer.ScrollToBottom();layout.UpdateLayout();
+                foreach(var name in new[]{"HomePreviewButton","HomeSavePdfsButton"})
+                {
+                    var button=(Button)layout.FindName(name);
+                    var rect=button.TransformToAncestor(viewer).TransformBounds(new Rect(button.RenderSize));
+                    Assert.InRange(rect.Bottom,1,viewer.ActualHeight+1);
+                    Assert.InRange(rect.Right,1,viewer.ActualWidth+1);
+                }
+                var output=Environment.GetEnvironmentVariable("OEHS_LAYOUT_PREVIEW");
+                if(!string.IsNullOrWhiteSpace(output) && size.Item1==1366)
+                {
+                    viewer.ScrollToTop();layout.UpdateLayout();
+                    Directory.CreateDirectory(output);
+                    var image=new System.Windows.Media.Imaging.RenderTargetBitmap((int)layout.ActualWidth,(int)layout.ActualHeight,96,96,PixelFormats.Pbgra32);
+                    image.Render(layout);
+                    var png=new System.Windows.Media.Imaging.PngBitmapEncoder();png.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(image));
+                    using var file=File.Create(Path.Combine(output,"practical-home.png"));png.Save(file);
+                }
+            }
+        });
+    }
+
+    [Fact]
     public void ResponsiveNavigation_ShouldScrollToLastTargetAtMinimumHeight()
     {
         var document = LoadMainWindowXaml();
@@ -176,9 +257,11 @@ public sealed class HakedisCreateHybridUiContractTests
         }
         var resources = XDocument.Load(LoadProjectFile("src", "OzelEgitimHakedis.Wpf", "App.xaml"))
             .Root!.Element(presentation + "Application.Resources")!;
+        XNamespace local = "clr-namespace:OzelEgitimHakedis.Wpf;assembly=OEHS";
         var root = new XElement(presentation + "Grid",
             new XAttribute(XNamespace.Xmlns + "x", XamlNamespace),
-            new XElement(presentation + "Grid.Resources", resources.Elements()), fragment);
+            new XElement(presentation + "Grid.Resources", resources.Elements(),
+                new XElement(local + "ContractWorkNameConverter",new XAttribute(XamlNamespace+"Key","ContractWorkNameConverter"))), fragment);
         return (Grid)XamlReader.Parse(root.ToString());
     }
 

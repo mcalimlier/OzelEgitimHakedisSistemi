@@ -121,8 +121,8 @@ public static class PaymentOperationsService
         Add("Net ödeme", before.Calculation.NetPayable, after.Calculation.NetPayable);
         Add("Toplam kesinti", before.Calculation.TotalDeductions, after.Calculation.TotalDeductions);
         if (before.Calculation.AppliedConstants != after.Calculation.AppliedConstants)
-            result.Add(new("Hesaplama oranları", JsonSerializer.Serialize(before.Calculation.AppliedConstants),
-                JsonSerializer.Serialize(after.Calculation.AppliedConstants)));
+            result.Add(new("Hesaplama oranları", DescribeRates(before.Calculation.AppliedConstants),
+                DescribeRates(after.Calculation.AppliedConstants)));
         return result;
     }
     public static IReadOnlyList<PaymentDifference> CompareFields(object before, object after, string prefix)
@@ -132,7 +132,7 @@ public static class PaymentOperationsService
         {
             if (p.Name is "DisplayText" or "ContractNumber") continue;
             var oldValue = p.GetValue(before); var newValue = p.GetValue(after);
-            if (!Equals(oldValue, newValue)) result.Add(new($"{prefix} · {p.Name}", Display(oldValue), Display(newValue)));
+            if (!Equals(oldValue, newValue)) result.Add(new($"{prefix} · {FieldLabel(p.Name)}", Display(oldValue), Display(newValue)));
         }
         return result;
     }
@@ -140,6 +140,21 @@ public static class PaymentOperationsService
     {
         null => "—", DateOnly date => date.ToString("dd.MM.yyyy", Turkish),
         decimal number => number.ToString("0.############################", Turkish),
-        bool boolean => boolean ? "Evet" : "Hayır", _ => Convert.ToString(value, Turkish) ?? "—"
+        bool boolean => boolean ? "Evet" : "Hayır",
+        TransportationProgramType program => program == TransportationProgramType.SpecialEducation ? "Özel Eğitim" : "Temel / Ortaöğretim",
+        _ => Convert.ToString(value, Turkish) ?? "—"
+    };
+    public static string DescribeRates(ProgressPaymentCalculationConstants? c) => c is null ? "Eski kayıtta oran bilgisi yok" :
+        string.Create(Turkish, $"Taşıma KDV %{c.TransportVatRate*100:0.###} · Rehber KDV %{c.GuideVatRate*100:0.###}\nTaşıma tevkifat %{c.TransportWithholdingShare*100:0.###} · Rehber tevkifat %{c.GuideWithholdingShare*100:0.###}\nDamga vergisi %{c.StampTaxRate*100:0.###} · Ek kesin teminat %{c.AdditionalGuaranteeRate*100:0.###}");
+    private static string FieldLabel(string name) => name switch
+    {
+        "TenderNumber" => "İKN", "WorkName" => "İşin adı", "ContractorName" or "Name" => "Ad / unvan",
+        "ContractAmount" => "Sözleşme bedeli", "StartDate" => "Başlangıç tarihi", "EndDate" => "Bitiş tarihi",
+        "TenderDate" => "İhale tarihi", "ContractDate" => "Sözleşme tarihi", "ContractWorkDays" => "Sözleşme iş günü",
+        "TransportDailyPrice" or "DailyPrice" => "Taşıma günlük fiyatı", "VatExempt" => "KDV istisnası",
+        "ProgramType" => "Program", "TaxOrIdentityNumber" or "ContractorTaxOrIdentityNumber" => "Vergi / kimlik no",
+        "BankAccountNumber" => "Banka hesabı", "Address" => "Adres", "Phone" => "Telefon", "Email" => "E-posta",
+        "ContactPerson" => "Yetkili kişi", "RouteNumber" => "Hat no", "TransportWorkDays" => "Taşıma iş günü",
+        "GuideWorkDays" => "Rehber iş günü", "GuideDailyPrice" => "Rehber günlük fiyatı", _ => name
     };
 }

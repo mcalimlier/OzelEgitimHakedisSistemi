@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -693,7 +693,7 @@ internal static class OehsOfficialDocumentFactory
 
 
     private static string FormatContractContext(OehsOfficialDocumentContext context) =>
-        $"{FormatDate(context.ContractDate)} / No: {context.ContractNumber}\nİKN: {context.TenderNumber}";
+        $"{FormatDate(context.ContractDate)}{(string.IsNullOrWhiteSpace(context.ContractNumber) || context.ContractNumber.StartsWith("INTERNAL-", StringComparison.OrdinalIgnoreCase) ? string.Empty : " / No: " + context.ContractNumber)}\nİKN: {context.TenderNumber}";
 
     private static string FormatDate(DateOnly? date) =>
         date?.ToString("dd.MM.yyyy", Turkish) ?? "-";

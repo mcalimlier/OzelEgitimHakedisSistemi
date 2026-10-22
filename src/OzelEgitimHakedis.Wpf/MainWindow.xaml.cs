@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -138,6 +138,7 @@ public partial class MainWindow : Window
         ClearContractFormOnly();
         ClearProgressEntryFields();
         UpdateProgressRouteDefaults();
+        InitializeOperations();
     }
 
     private enum ArchiveCorrectionSection
@@ -1054,7 +1055,6 @@ public partial class MainWindow : Window
         ProgressRouteNameLabel.Text = profile.RouteNameLabel;
         PriceDifferenceLabel.Text = profile.TransportPriceDifferenceLabel;
         TransportPriceDifferenceResultLabel.Text = profile.TransportPriceDifferenceLabel;
-        HomeTransportPriceDifferenceLabel.Text = profile.TransportPriceDifferenceLabel;
         GuidePriceDifferenceLabel.Text = profile.GuidePriceDifferenceLabel ?? string.Empty;
         GuidePriceDifferenceResultLabel.Text = profile.GuidePriceDifferenceLabel ?? string.Empty;
         var guideVisibility = profile.GuidePriceDifferenceLabel is null ? Visibility.Collapsed : Visibility.Visible;
@@ -2300,32 +2300,18 @@ public partial class MainWindow : Window
             return false;
         }
 
-        decimal newNetPayable;
-        if (proposedPayment is not null)
+        if (proposedPayment is null)
         {
-            newNetPayable = proposedPayment.Calculation.NetPayable;
+            if (!TryCreateHistoryCorrectionPreview(out var previewInput, out var preview, out var message))
+            {
+                SetHistoryCorrectionStatus($"Düzeltme onaylanamadı: {message}", warning: true);
+                return false;
+            }
+            proposedPayment = original with { Input = previewInput, Calculation = preview };
         }
-        else if (TryCreateHistoryCorrectionPreview(out _, out var preview, out var message))
-        {
-            newNetPayable = preview.NetPayable;
-        }
-        else
-        {
-            SetHistoryCorrectionStatus($"Düzeltme onaylanamadı: {message}", warning: true);
-            return false;
-        }
-
-        var confirmation = MessageBox.Show(
-            $"{sectionName} değişiklikleri uygulansın mı?\n\n" +
-            $"İhale/Dosya: {original.TenderNumber ?? "-"} • Hat: {original.RouteNumber ?? "-"} • " +
-            $"Hakediş: {original.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"}\n" +
-            $"Önceki net tutar: {FormatMoney(original.Calculation.NetPayable)}\n" +
-            $"Yeni hesaplanan net tutar: {FormatMoney(newNetPayable)}\n\n" +
-            "Evet seçilirse mevcut hakediş kaydı yeniden hesaplanıp aynı kayıt üzerine yazılacak. " +
-            "Hayır seçilirse mevcut kayıt korunacak.",
-            "OEHS — Hakediş Düzeltme Onayı",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Question);
+        var confirmation = ShowPaymentComparison("OEHS — Hakediş Düzeltme Onayı",
+            $"{sectionName} değişiklikleri uygulansın mı? Mevcut canlı kayıt güncellenecek.",
+            original, proposedPayment, LiveEditorDifferences(original));
 
         if (confirmation == MessageBoxResult.Yes)
             return true;
@@ -2466,19 +2452,14 @@ public partial class MainWindow : Window
                 PdfFileName = BuildArchivePdfFileName(recalculatedPayment)
             };
 
-            var oldNetPayable = _editingArchiveSnapshot?.ProgressPayment.Calculation.NetPayable ?? 0m;
+            var originalArchive = _editingArchiveSnapshot!;
             var newNetPayable = recalculatedPayment.Calculation.NetPayable;
-            var confirmation = MessageBox.Show(
-                $"{sectionName} değişiklikleri uygulansın mı?\n\n" +
-                $"Hakediş No: {recalculatedPayment.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"}\n" +
-                $"Dönem: {recalculatedPayment.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"}\n" +
-                $"Önceki net tutar: {FormatMoney(oldNetPayable)}\n" +
-                $"Yeni hesaplanan net tutar: {FormatMoney(newNetPayable)}\n\n" +
-                "Evet seçilirse düzeltme yeni bir revision olarak kaydedilecek; eski revisionlar korunacak. " +
-                "Hayır seçilirse hiçbir revision değiştirilmeyecek.",
-                "OEHS — Değişiklik Onayı",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
+            var differences = PaymentOperationsService.CompareFields(originalArchive.Contract, updatedArchive.Contract, "Sözleşme")
+                .Concat(PaymentOperationsService.CompareFields(originalArchive.Contractor, updatedArchive.Contractor, "Firma"))
+                .Concat(PaymentOperationsService.CompareFields(originalArchive.Route, updatedArchive.Route, "Hat")).ToArray();
+            var confirmation = ShowPaymentComparison("OEHS — Değişiklik Onayı",
+                $"{sectionName} değişiklikleri uygulansın mı? Yeni revizyon oluşturulacak; v{originalArchive.Revision:00} korunacak.",
+                originalArchive.ProgressPayment, recalculatedPayment, differences);
 
             if (confirmation != MessageBoxResult.Yes)
             {
@@ -3281,74 +3262,13 @@ public partial class MainWindow : Window
 
     private void HomeTenderListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (_suppressSelectionEvents)
-            return;
-
-        if (HomeTenderListBox.SelectedItem is ContractDraftData contract)
-        {
-            UpdateHomeTenderSummary(contract);
-            var history = _progressHistory.Where(x => IsHistoryForContract(x, contract)).ToArray();
-            var latest = history
-                .OrderByDescending(x => x.PeriodDate ?? DateOnly.MinValue)
-                .ThenByDescending(x => x.CreatedAt)
-                .FirstOrDefault();
-
-            HomeWorkNameTextBlock.Text = GetContractWorkName(contract);
-            HomeContractorTextBlock.Text = "Hat üzerinden seçilir";
-            HomeProgressTextBlock.Text = latest?.ProgressPaymentNumber.HasValue == true
-                ? $"Hakediş No {latest.ProgressPaymentNumber.Value}"
-                : latest is null ? "Henüz hakediş yok" : "Son hesaplama";
-            HomePeriodTextBlock.Text = latest?.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "—";
-            HomeNetPayableTextBlock.Text = FormatMoney(history.Sum(x => x.Calculation.NetPayable));
-            UpdateHomeSummaryView();
-        }
+        if (!_suppressSelectionEvents) UpdateHomeSummaryView();
     }
 
     private void UpdateHomeSummaryView()
     {
-        var contract = HomeTenderListBox.SelectedItem as ContractDraftData
-                       ?? FindContract(TenderNumberTextBox.Text, ContractNumberTextBox.Text, GetSelectedTransportationProgramType())
-                       ?? _contracts.FirstOrDefault(x => x.ProgramType == GetSelectedTransportationProgramType());
-
-        UpdateHomeTenderSummary(contract);
-        var history = contract is null
-            ? _progressHistory.ToList()
-            : _progressHistory.Where(x => IsHistoryForContract(x, contract)).ToList();
-
-        HomeContractStatusTextBlock.Text = contract is null ? "İhale seçilmedi" : "KAYITLI";
-        HomeRouteCountTextBlock.Text = contract is null
-            ? "0"
-            : _routes.Count(x => IsRouteForContract(x, contract)).ToString(CultureInfo.CurrentCulture);
-        HomeWorkNameTextBlock.Text = contract is null ? "—" : GetContractWorkName(contract);
-        HomeContractorTextBlock.Text = contract is null ? "—" : "Hat üzerinden seçilir";
-        HomeNetPayableTextBlock.Text = FormatMoney(history.Sum(x => x.Calculation.NetPayable));
-
-        var latest = history
-            .OrderByDescending(x => x.PeriodDate ?? DateOnly.MinValue)
-            .ThenByDescending(x => x.CreatedAt)
-            .FirstOrDefault();
-
-        HomeProgressTextBlock.Text = latest?.ProgressPaymentNumber.HasValue == true
-            ? $"Hakediş No {latest.ProgressPaymentNumber.Value}"
-            : latest is null ? "Henüz hakediş yok" : "Son hesaplama";
-        HomePeriodTextBlock.Text = latest?.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "—";
-        HomeGrossTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.GrossAmount);
-        HomeDeductionsTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.TotalDeductions);
-        HomeLatestNetTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.NetPayable);
-        HomeVatWithholdingTextBlock.Text = latest is null
-            ? "0,00 / 0,00 ₺"
-            : $"{FormatMoney(latest.Calculation.Vat)} / {FormatMoney(latest.Calculation.Withholding)}";
-        HomeTransportServiceTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.ServiceAmount);
-        HomeTransportPriceDifferenceTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.PriceDifferenceExcludingVat);
-        HomeTransportNetTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.TransportNetAmount);
-        HomeGuideServiceTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.GuideServiceAmount);
-        HomeGuideNetTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.GuideNetAmount);
-        HomeTotalAmountTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.TotalAmount);
-        HomeVatTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.Vat);
-        HomeWithholdingTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.Withholding);
-        HomeInvoiceTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.InvoiceAmountAfterWithholding);
-        HomeGuaranteeTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.AdditionalGuarantee);
-        HomeStampTaxTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.StampTax);
+        UpdateHomeTenderSummary(HomeTenderListBox.SelectedItem as ContractDraftData);
+        RefreshHomeOperations();
     }
 
     private void UpdateContractSummaryView()
@@ -5954,7 +5874,7 @@ public partial class MainWindow : Window
     {
         _archiveRows.Clear();
 
-        foreach (var row in ArchiveDisplayService.BuildRows(_archiveStore))
+        foreach (var row in FilterArchives())
         {
             _archiveRows.Add(new ArchiveRow(
                 row.FullPath,
@@ -6226,7 +6146,7 @@ public partial class MainWindow : Window
     {
         _historyRows.Clear();
 
-        var orderedHistory = ProgressPaymentReportService.OrderByPaymentPeriod(_progressHistory);
+        var orderedHistory = FilterHistory();
 
         for (var index = 0; index < orderedHistory.Count; index++)
         {
@@ -6249,8 +6169,8 @@ public partial class MainWindow : Window
                 FormatMoney(item.Calculation.NetPayable)));
         }
 
-        HistoryCountTextBlock.Text = _progressHistory.Count.ToString(CultureInfo.CurrentCulture);
-        HistoryNetTotalTextBlock.Text = FormatMoney(_progressHistory.Sum(x => x.Calculation.NetPayable));
+        HistoryCountTextBlock.Text = orderedHistory.Count.ToString(CultureInfo.CurrentCulture);
+        HistoryNetTotalTextBlock.Text = FormatMoney(orderedHistory.Sum(x => x.Calculation.NetPayable));
         HistoryStatusTextBlock.Text = _progressHistory.Count == 0 ? "HAZIR" : "GÜNCEL";
         HistoryEmptyStateBorder.Visibility = _progressHistory.Count == 0
             ? Visibility.Visible
@@ -7763,11 +7683,10 @@ public partial class MainWindow : Window
 
     private OehsOfficialDocumentContext? BuildSelectedOfficialDocumentContext()
     {
-        if (!EnsureRouteForOutput())
-            return null;
-
-        var latest = GetSelectedRouteLatestPayment();
-        return latest is null ? null : BuildOfficialDocumentContextForPayment(latest);
+        if (_homeOutputPayment is null && !EnsureRouteForOutput()) return null;
+        var latest = _homeOutputPayment ?? GetSelectedRouteLatestPayment();
+        if (latest is null || !EnsurePaymentPreflight(latest)) return null;
+        return BuildOfficialDocumentContextForPayment(latest);
     }
 
     private OehsOfficialDocumentContext? BuildOfficialDocumentContextForPayment(ProgressPaymentHistoryData latest)
@@ -7940,7 +7859,7 @@ public partial class MainWindow : Window
         if (context is null)
             return;
 
-        var latest = GetSelectedRouteLatestPayment();
+        var latest = _homeOutputPayment ?? GetSelectedRouteLatestPayment();
         if (latest is null)
             return;
 
@@ -8065,6 +7984,8 @@ public partial class MainWindow : Window
             try
             {
                 SaveRouteDocumentsArchiveMetadata(latest, targetPaths);
+                OutputEvidenceStore.Save(OehsRuntimePaths.DesktopRoot, latest.Id, BuildOutputFingerprint(context), targetPaths);
+                RefreshHomeOperations();
             }
             catch (Exception ex)
             {

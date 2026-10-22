@@ -6,6 +6,19 @@ using Xunit;
 namespace OzelEgitimHakedis.Tests;
 public sealed class OehsBackupTests
 {
+    [Fact] public void Backup_RejectsSemanticallyInvalidCalculationRates()
+    {
+        var root=Directory.CreateTempSubdirectory("oehs-invalid-rates-");
+        try
+        {
+            var data=Path.Combine(root.FullName,"data");
+            new OehsProgramScopedApplicationDataStore(data).Save(PaymentOperationsTests.Data() with
+                {CalculationConstants=OzelEgitimHakedis.Core.Models.ProgressPaymentCalculationConstants.Defaults with {TransportVatRate=2m}});
+            Assert.Throws<InvalidDataException>(()=>new OehsBackupService(data,Path.Combine(root.FullName,"outputs"))
+                .Create(Path.Combine(root.FullName,"backup.zip")));
+        }
+        finally {root.Delete(true);}
+    }
     [Fact] public void FullBackup_RestoresToAnotherComputerAndPreservesAllFourOutputs()
     {
         var root = Directory.CreateTempSubdirectory("oehs-backup-test-");

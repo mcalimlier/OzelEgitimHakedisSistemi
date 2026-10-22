@@ -64,4 +64,16 @@ public sealed class PaymentOperationsTests
         var data = Data() with { Contracts = Array.Empty<ContractDraftData>(), Contract = null };
         Assert.NotEmpty(Assert.Single(PaymentOperationsService.BuildMonth(data, Contract.ProgramType, new DateOnly(2026,10,1))).Issues);
     }
+    [Fact] public void MonthlyTracking_RequiresCurrentArchiveAndVerifiedOutputsForCompletion()
+    {
+        var p=Payment;
+        var archive=new ProgressPaymentArchive("1",1,DateTime.UtcNow,"test",Contract,Data().Contractors[0],Route,p,
+            Array.Empty<ProgressPaymentHistoryData>(),"",Array.Empty<string>());
+        var reloaded=System.Text.Json.JsonSerializer.Deserialize<ProgressPaymentArchive>(System.Text.Json.JsonSerializer.Serialize(archive))!;
+        var row=Assert.Single(PaymentOperationsService.BuildMonth(Data(p),Contract.ProgramType,p.PeriodDate!.Value,new[]{reloaded},_=>true));
+        Assert.Equal("Tamamlandı",row.Status);
+        Assert.NotEqual("Tamamlandı",Assert.Single(PaymentOperationsService.BuildMonth(Data(p),Contract.ProgramType,p.PeriodDate.Value,new[]{reloaded},_=>false)).Status);
+        Assert.NotEqual("Tamamlandı",Assert.Single(PaymentOperationsService.BuildMonth(Data(p with {Input=p.Input with {PriceDifference=200}}),
+            Contract.ProgramType,p.PeriodDate.Value,new[]{reloaded},_=>true)).Status);
+    }
 }
