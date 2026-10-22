@@ -2,6 +2,7 @@
         xml:lang="tr-TR"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:OzelEgitimHakedis.Wpf"
         Title="Taşımalı Eğitim Hakediş Yönetim Sistemi (TEHYS)"
         Width="1440"
         Height="900"
@@ -17,6 +18,9 @@
         SnapsToDevicePixels="True"
         StateChanged="Window_StateChanged"
         SizeChanged="Window_SizeChanged">
+    <Window.Resources>
+        <local:ContractWorkNameConverter x:Key="ContractWorkNameConverter"/>
+    </Window.Resources>
     <Border x:Name="AppShellBorder"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
@@ -258,7 +262,14 @@
                                                                 <TextBlock Text="{Binding TenderNumber}" FontSize="11.5" FontWeight="SemiBold"/>
                                                                 <TextBlock Text="{Binding TenderNumber, StringFormat='İKN: {0}'}" FontSize="10" Foreground="{StaticResource Text600Brush}"/>
                                                             </StackPanel>
-                                                            <TextBlock Text="{Binding WorkName}" FontSize="10.5" Foreground="{StaticResource Text600Brush}" TextTrimming="CharacterEllipsis"/>
+                                                            <TextBlock FontSize="10.5" Foreground="{StaticResource Text600Brush}" TextTrimming="CharacterEllipsis">
+                                                                <TextBlock.Text>
+                                                                    <MultiBinding Converter="{StaticResource ContractWorkNameConverter}" Mode="OneWay">
+                                                                        <Binding/>
+                                                                        <Binding Path="Titles" Source="{StaticResource ContractWorkNameConverter}"/>
+                                                                    </MultiBinding>
+                                                                </TextBlock.Text>
+                                                            </TextBlock>
                                                         </StackPanel>
                                                     </DataTemplate>
                                                 </ComboBox.ItemTemplate>
@@ -552,7 +563,14 @@
                                                                         <StackPanel>
                                                                             <TextBlock Text="{Binding TenderNumber}" Foreground="White" FontSize="11.5" FontWeight="Bold"/>
                                                                             <TextBlock Text="{Binding TenderNumber, StringFormat='İKN: {0}'}" Foreground="#F2C66D" FontSize="10.5" FontWeight="SemiBold"/>
-                                                                            <TextBlock Text="{Binding WorkName}" Foreground="#C5D7E7" FontSize="11.5" TextWrapping="Wrap"/>
+                                                                            <TextBlock Foreground="#C5D7E7" FontSize="11.5" TextWrapping="Wrap">
+                                                                                <TextBlock.Text>
+                                                                                    <MultiBinding Converter="{StaticResource ContractWorkNameConverter}" Mode="OneWay">
+                                                                                        <Binding/>
+                                                                                        <Binding Path="Titles" Source="{StaticResource ContractWorkNameConverter}"/>
+                                                                                    </MultiBinding>
+                                                                                </TextBlock.Text>
+                                                                            </TextBlock>
                                                                         </StackPanel>
                                                                         <Button Grid.Column="1" Content="DÜZENLE" Tag="{Binding}" Click="EditContractButton_Click" Style="{StaticResource SecondaryButton}" Height="28" FontSize="10.5" Width="96" Margin="3,0"/>
                                                                         <Button Grid.Column="2" Content="SİL" Tag="{Binding}" Click="DeleteContractButton_Click" Style="{StaticResource SecondaryButton}" Height="28" FontSize="10.5" Width="56" Margin="3,0"/>

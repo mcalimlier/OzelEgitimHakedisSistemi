@@ -11,6 +11,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using OzelEgitimHakedis.Core.Models;
 using OzelEgitimHakedis.Core.Services;
 using OzelEgitimHakedis.Wpf;
@@ -98,6 +99,65 @@ public sealed class HakedisCreateHybridUiContractTests
             Assert.Equal(expected, Field<TextBox>(window, "WorkNameTextBox").Text);
             Assert.Equal(legacyWorkName, contract.WorkName);
         });
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("Stale stored title")]
+    public void ContractListsAndSummary_ShouldProjectAndRefreshRouteTitlesWithoutChangingStoredContracts(string storedTitle)
+    {
+        RunOnSta(() =>
+        {
+            var window = CreateEditorHarness();
+            var contract = ArchiveProgressEditorContextTests.CreateArchive().Contract with { WorkName = storedTitle };
+            Collection(window, "_contracts").Add(contract);
+            var displayedTitle = new TextBlock();
+            var converter = Field<ContractWorkNameConverter>(window, "_contractWorkNameConverter");
+            var titleBinding = new MultiBinding { Converter = converter, Mode = BindingMode.OneWay };
+            titleBinding.Bindings.Add(new Binding { Source = contract });
+            titleBinding.Bindings.Add(new Binding(nameof(ContractWorkNameConverter.Titles)) { Source = converter });
+            BindingOperations.SetBinding(displayedTitle, TextBlock.TextProperty, titleBinding);
+            var routes = Collection(window, "_routes");
+            routes.Add(CreateRoute("01", "Merkez", "12345678901"));
+            Invoke(window, "UpdateContractSelectors");
+
+            Assert.Contains("Merkez Hattı Öğrenci Taşıma İşi", Field<TextBlock>(window, "HomeSelectedTenderSummaryTextBlock").Text, StringComparison.Ordinal);
+            var titles = converter.Titles;
+            Assert.Equal("Merkez Hattı Öğrenci Taşıma İşi", titles[contract]);
+            Assert.Equal("Merkez Hattı Öğrenci Taşıma İşi", displayedTitle.Text);
+            Assert.Same(contract, Field<ComboBox>(window, "HomeTenderListBox").SelectedItem);
+            Assert.Same(contract, Assert.Single(Field<ItemsControl>(window, "ContractsListBox").Items.Cast<object>()));
+
+            routes[0] = CreateRoute("01", "Yeni Merkez", "12345678901");
+            Invoke(window, "UpdateRouteListView");
+            titles = converter.Titles;
+            Assert.Equal("Yeni Merkez Hattı Öğrenci Taşıma İşi", titles[contract]);
+            Assert.Equal("Yeni Merkez Hattı Öğrenci Taşıma İşi", displayedTitle.Text);
+            Assert.Contains("Yeni Merkez Hattı Öğrenci Taşıma İşi", Field<TextBlock>(window, "HomeSelectedTenderSummaryTextBlock").Text, StringComparison.Ordinal);
+
+            routes.Clear();
+            Invoke(window, "UpdateRouteListView");
+            titles = converter.Titles;
+            Assert.Equal(storedTitle, titles[contract]);
+            Assert.Equal(storedTitle, displayedTitle.Text);
+            Assert.Equal(storedTitle, contract.WorkName);
+            Assert.Same(contract, Assert.Single(Collection(window, "_contracts").Cast<object>()));
+        });
+    }
+
+    [Theory]
+    [InlineData("HomeTenderListBox")]
+    [InlineData("ContractsListBox")]
+    public void ContractListWorkTitle_ShouldBindToRouteDerivedPresentation(string listName)
+    {
+        var list = LoadMainWindowXaml().Descendants()
+            .Single(element => (string?)element.Attribute(XamlNamespace + "Name") == listName);
+        var title = list.Descendants().Last(element => element.Name.LocalName == "TextBlock");
+        var binding = Assert.Single(title.Descendants().Where(element => element.Name.LocalName == "MultiBinding"));
+        Assert.Equal("{StaticResource ContractWorkNameConverter}", (string?)binding.Attribute("Converter"));
+        // ComboBox popup items cannot rely on finding their Window visually.
+        Assert.Contains(binding.Elements(), element => (string?)element.Attribute("Path") == "Titles"
+            && (string?)element.Attribute("Source") == "{StaticResource ContractWorkNameConverter}");
     }
 
     [Theory]
@@ -260,6 +320,7 @@ public sealed class HakedisCreateHybridUiContractTests
         foreach (var field in typeof(MainWindow).GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
         {
             if (typeof(FrameworkElement).IsAssignableFrom(field.FieldType)
+                || field.FieldType == typeof(ContractWorkNameConverter)
                 || field.FieldType.IsGenericType &&
                 (field.FieldType.GetGenericTypeDefinition() == typeof(System.Collections.ObjectModel.ObservableCollection<>)
                  || field.FieldType.GetGenericTypeDefinition() == typeof(RouteDraftCache<>)))

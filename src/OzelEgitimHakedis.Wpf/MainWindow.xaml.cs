@@ -17,6 +17,8 @@ namespace OzelEgitimHakedis.Wpf;
 
 public partial class MainWindow : Window
 {
+    private readonly ContractWorkNameConverter _contractWorkNameConverter;
+
     // Pencere, ekran çalışma alanını doğrudan kullanır; eski Viewbox tasarım oranı
     // yatay alanı daraltıp metinleri sıkıştırıyordu.
 
@@ -78,6 +80,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        _contractWorkNameConverter = (ContractWorkNameConverter)Resources["ContractWorkNameConverter"];
         ContractorPhoneTextBox.Text = "0";
         ResetEditorUiToCreateMode();
         ConfigureWindow();
@@ -1033,6 +1036,14 @@ public partial class MainWindow : Window
         return names.Length == 0 ? contract.WorkName : string.Join(Environment.NewLine, names);
     }
 
+    private void RefreshContractWorkNameDisplays()
+    {
+        // Keep selectors bound to the original contracts; only presentation changes.
+        _contractWorkNameConverter.UpdateTitles(_contracts.Distinct()
+            .ToDictionary(contract => contract, GetContractWorkName));
+        UpdateHomeTenderSummary(HomeTenderListBox.SelectedItem as ContractDraftData);
+    }
+
     private void UpdateOfficialTemplateLabels(TransportationProgramType programType)
     {
         var profile = OfficialTemplateProfile.For(programType);
@@ -1168,6 +1179,7 @@ public partial class MainWindow : Window
 
     private void UpdateContractSelectors()
     {
+        RefreshContractWorkNameDisplays();
         var selectedProgram = GetSelectedTransportationProgramType();
         var scopedContracts = _contracts.Where(x => x.ProgramType == selectedProgram).ToArray();
         var selectedTender = TenderNumberTextBox.Text.Trim();
@@ -1249,6 +1261,7 @@ public partial class MainWindow : Window
 
     private void UpdateRouteListView()
     {
+        RefreshContractWorkNameDisplays();
         var contract = RouteTenderListBox.SelectedItem as ContractDraftData;
         var contractor = RouteContractorListBox.SelectedItem as ContractorDraft;
 
@@ -1589,7 +1602,7 @@ public partial class MainWindow : Window
         UpdateProgressRouteDefaults();
     }
 
-        private void UpdateHomeTenderSummary(ContractDraftData? contract)
+    private void UpdateHomeTenderSummary(ContractDraftData? contract)
     {
         if (contract is null)
         {
@@ -1597,7 +1610,7 @@ public partial class MainWindow : Window
             return;
         }
         HomeSelectedTenderSummaryTextBlock.Text =
-            $"İKN {contract.TenderNumber} • {contract.WorkName} • {FormatMoney(contract.ContractAmount)} • " +
+            $"İKN {contract.TenderNumber} • {GetContractWorkName(contract)} • {FormatMoney(contract.ContractAmount)} • " +
             $"{contract.StartDate:dd.MM.yyyy}–{contract.EndDate:dd.MM.yyyy} • " +
             $"{_routes.Count(x => IsRouteForContract(x, contract))} hat";
     }
