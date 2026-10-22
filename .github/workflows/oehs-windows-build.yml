@@ -67,8 +67,12 @@ jobs:
         run: |
           $xaml = Get-Content ".\src\OzelEgitimHakedis.Wpf\MainWindow.xaml" -Raw
           $app = Get-Content ".\src\OzelEgitimHakedis.Wpf\App.xaml" -Raw
+          [xml]$xamlDocument = $xaml
+          $namespaces = [System.Xml.XmlNamespaceManager]::new($xamlDocument.NameTable)
+          $namespaces.AddNamespace('x', 'http://schemas.microsoft.com/winfx/2006/xaml')
           foreach ($name in @('NavigationColumn', 'HeaderNavigationColumn')) {
-            if ($xaml -notmatch "<ColumnDefinition\\s+x:Name=`"$name`"\\s+Width=`"215`"\\s*/>") {
+            $column = $xamlDocument.SelectSingleNode("//*[local-name()='ColumnDefinition' and @x:Name='$name']", $namespaces)
+            if ($null -eq $column -or $column.Width -ne '215') {
               throw "Expected named sidebar column '$name' to start at 215 DIP."
             }
           }
