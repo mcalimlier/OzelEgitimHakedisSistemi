@@ -4,7 +4,11 @@
 
 Programı, İKN'yi ve hakediş ayını seçin. İKN seçimini boş bırakırsanız seçili programdaki tüm ihaleler gösterilir. Tarih seçiminde gün değil, o tarihin ayı esas alınır.
 
-Üç sayaç listeyi filtreler: **Bekleyen**, **Kontrole hazır**, **Tamamlanan**. Arama kutusunda firma, hat adı/numarası veya İKN arayabilirsiniz. **Yenile** dosyaların ve kayıtların güncel durumunu yeniden okur.
+**Altın Vurgulu Finans** görünümünde üstte dört, altta dört kart bulunur. Net ödeme kartı altın renktir; sekiz kartın da ayrı vektör simgesi vardır. Üst sıra hesaplanan net, brüt tutar, toplam kesinti ve KDV toplamını; alt sıra taşıma tutarı, fiyat farkı, hakedişli hat ve yüklenici firma sayısını gösterir.
+
+Kartlar seçili program, İKN ve ay kapsamındadır. Tutarlar her hattın o aydaki son kayıtlı hakedişinden alınır. Hakedişli hat, kayıtlı / beklenen hat sayısını gösterir; firma sayısı kapsamdaki hatlara bağlı benzersiz firma kimliklerinin sayısıdır. Taşıma tutarı rehber hariç hizmet tutarıdır. Fiyat farkı, taşıma ve rehber için iskontolar sonrası KDV hariç toplamdır; kartların araç ipuçlarında kapsam açıklanır.
+
+Eski üç durum sayacı kaldırıldı. **Listede ara / duruma göre süz** bölümünde firma, hat adı/numarası veya İKN arayabilir, duruma göre listeyi süzebilirsiniz. Bu liste filtreleri üstteki dönem toplamlarını değiştirmez. **Yenile** dosyaların ve kayıtların güncel durumunu yeniden okur.
 
 Bir hat seçtiğinizde alt bölümde o hakedişin günleri, günlük fiyatları, fiyat farkı, kesintileri ve PDF'deki net ödeme gösterilir. Eksik bilgi düğmesi ilgili kaydı açar. **Sonraki işlem** ödeme yoksa oluşturma, ödeme varsa düzenleme/arşivleme akışına götürür. İmzacı ve oranlar açılır ayrıntı bölümündedir.
 

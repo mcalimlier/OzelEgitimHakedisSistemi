@@ -216,39 +216,138 @@
                 <!-- İÇERİK -->
                 <Border Grid.Row="1" Grid.Column="1" Background="White" CornerRadius="13,0,13,0" Padding="11.5">
                     <Grid>
-                        <Grid x:Name="HomePanel" Background="{StaticResource Navy950Brush}">
- <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="10">
+                        <Grid x:Name="HomePanel" Background="#061C32">
+
+ <Grid.Resources>
+  <!-- Project-owned vector symbols: stable on every Windows installation. -->
+  <Geometry x:Key="HomeNetGeometry">M10,3 L22,3 20,8 12,8 Z M12,8 C9,12 5,18 5,23 C5,30 27,30 27,23 C27,18 23,12 20,8 M11,10 L22,10 M17,14 L15,25 M12,19 L21,17 M12,22 L20,20 M15,25 C20,27 22,23 22,22</Geometry>
+  <Geometry x:Key="HomeGrossGeometry">M3,17 C3,13 17,13 17,17 C17,21 3,21 3,17 M3,17 L3,25 C3,29 17,29 17,25 L17,17 M3,22 C3,26 17,26 17,22 M18,5 C18,1 31,1 31,5 C31,9 18,9 18,5 M18,5 L18,20 C18,24 31,24 31,20 L31,5 M18,10 C18,14 31,14 31,10 M18,15 C18,19 31,19 31,15</Geometry>
+  <Geometry x:Key="HomeDeductionsGeometry">M18,28 L4,28 4,3 19,3 25,9 25,15 M19,3 L19,9 25,9 M8,13 L19,13 M8,18 L14,18 M8,23 L13,23 M31,24 A8,8 0 1 1 15,24 A8,8 0 1 1 31,24 M19,24 L27,24</Geometry>
+  <Geometry x:Key="HomeVatGeometry">M6,27 L27,4 M13,8 A5,5 0 1 1 3,8 A5,5 0 1 1 13,8 M30,24 A5,5 0 1 1 20,24 A5,5 0 1 1 30,24</Geometry>
+  <Geometry x:Key="HomeTransportGeometry">M7,27 L7,30 10,30 10,27 M22,27 L22,30 25,30 25,27 M6,26 L26,26 26,7 Q26,3 22,3 L10,3 Q6,3 6,7 Z M7,10 L25,10 25,19 7,19 Z M12,6 L20,6 M10,23 L12,23 M20,23 L22,23 M3,11 L3,18 M29,11 L29,18</Geometry>
+  <Geometry x:Key="HomeDifferenceGeometry">M25,28 L5,28 5,3 19,3 25,9 Z M19,3 L19,9 25,9 M9,12 L17,12 M9,17 L21,17 M9,22 L15,22 M22,21 L27,21 27,17 M27,21 L23,17 M14,25 L9,25 9,29 M9,25 L13,29</Geometry>
+  <Geometry x:Key="HomeRoutesGeometry">M12,9 A5,5 0 1 0 2,9 C2,13 7,19 7,19 C7,19 12,13 12,9 M8,9 A1,1 0 1 1 6,9 A1,1 0 1 1 8,9 M30,17 A5,5 0 1 0 20,17 C20,21 25,27 25,27 C25,27 30,21 30,17 M26,17 A1,1 0 1 1 24,17 A1,1 0 1 1 26,17 M5,24 C5,29 10,29 12,27 M15,25 C18,23 19,27 21,29</Geometry>
+  <Geometry x:Key="HomeFirmsGeometry">M4,29 L4,3 21,3 21,29 M21,14 L28,14 28,29 M1,29 L31,29 M8,7 L10,7 M15,7 L17,7 M8,12 L10,12 M15,12 L17,12 M8,17 L10,17 M15,17 L17,17 M10,29 L10,23 16,23 16,29 M24,19 L26,19 M24,24 L26,24</Geometry>
+  <Style x:Key="HomeFinanceIcon" TargetType="ContentControl">
+   <Setter Property="Width" Value="29"/><Setter Property="Height" Value="29"/>
+   <Setter Property="Foreground" Value="#D4E4FC"/>
+   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ContentControl">
+    <Viewbox><Path Width="32" Height="32" Stretch="Uniform" Data="{TemplateBinding Content}" Stroke="{TemplateBinding Foreground}" StrokeThickness="1.7" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/></Viewbox>
+   </ControlTemplate></Setter.Value></Setter>
+  </Style>
+  <Style x:Key="HomeFinanceCard" TargetType="Border">
+   <Setter Property="Background" Value="#0D2B49"/><Setter Property="BorderBrush" Value="#234361"/>
+   <Setter Property="BorderThickness" Value="1"/><Setter Property="CornerRadius" Value="6"/>
+   <Setter Property="Margin" Value="0,0,10,10"/><Setter Property="MinHeight" Value="124"/>
+  </Style>
+  <Style x:Key="HomeGoldButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+   <Setter Property="Background" Value="#F4C247"/><Setter Property="Foreground" Value="#08223A"/>
+   <Setter Property="BorderBrush" Value="#FFDC7D"/><Setter Property="Padding" Value="20,10"/>
+   <Setter Property="FontWeight" Value="SemiBold"/><Setter Property="Height" Value="Auto"/><Setter Property="MinHeight" Value="48"/>
+   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+    <Border x:Name="GoldActionBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="{TemplateBinding Padding}">
+     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"><Viewbox Width="25" Height="25" Margin="0,0,10,0"><Path Width="32" Height="32" Stretch="Uniform" Data="M20,29 L4,29 4,2 20,2 26,8 26,17 M20,2 L20,8 26,8 M8,13 L19,13 M8,18 L16,18 M32,24 A8,8 0 1 1 16,24 A8,8 0 1 1 32,24 M20,24 L28,24 M24,20 L24,28" Stroke="{TemplateBinding Foreground}" StrokeThickness="1.7" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/></Viewbox><ContentPresenter VerticalAlignment="Center"/></StackPanel>
+    </Border>
+    <ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="GoldActionBorder" Property="Background" Value="#FFDA77"/></Trigger><Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="GoldActionBorder" Property="BorderBrush" Value="White"/></Trigger><Trigger Property="IsPressed" Value="True"><Setter TargetName="GoldActionBorder" Property="Opacity" Value="0.8"/></Trigger><Trigger Property="IsEnabled" Value="False"><Setter TargetName="GoldActionBorder" Property="Opacity" Value="0.45"/></Trigger></ControlTemplate.Triggers>
+   </ControlTemplate></Setter.Value></Setter>
+  </Style>
+  <Style x:Key="HomeComboItem" TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+   <Setter Property="Background" Value="#0B2946"/><Setter Property="Foreground" Value="White"/>
+   <Style.Triggers><Trigger Property="IsHighlighted" Value="True"><Setter Property="Background" Value="#254D70"/></Trigger><Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="#315777"/></Trigger></Style.Triggers>
+  </Style>
+  <Style x:Key="HomeFilterCombo" TargetType="ComboBox" BasedOn="{StaticResource FieldComboBox}">
+   <Setter Property="Height" Value="36"/><Setter Property="Background" Value="#0B2946"/><Setter Property="Foreground" Value="White"/><Setter Property="BorderBrush" Value="#315371"/>
+   <Setter Property="ItemContainerStyle" Value="{StaticResource HomeComboItem}"/>
+   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ComboBox"><Grid>
+    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="5"/>
+    <ContentPresenter Margin="10,3,30,3" VerticalAlignment="Center" IsHitTestVisible="False" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"/>
+    <Path Data="M0,0 L5,5 10,0" Stroke="#C6D9F0" StrokeThickness="1.5" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,12,0"/>
+    <ToggleButton Focusable="False" ClickMode="Press" IsChecked="{Binding IsDropDownOpen,RelativeSource={RelativeSource TemplatedParent},Mode=TwoWay}"><ToggleButton.Template><ControlTemplate TargetType="ToggleButton"><Border Background="Transparent"/></ControlTemplate></ToggleButton.Template></ToggleButton>
+    <Popup Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False"><Border Background="#0B2946" BorderBrush="#315371" BorderThickness="1" MinWidth="{Binding ActualWidth,RelativeSource={RelativeSource TemplatedParent}}" MaxHeight="280"><ScrollViewer CanContentScroll="True"><ItemsPresenter/></ScrollViewer></Border></Popup>
+   </Grid><ControlTemplate.Triggers><Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.5"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
+  </Style>
+ </Grid.Resources>
+
+ <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="14">
   <StackPanel>
-   <TextBlock Text="ANA EKRAN" Foreground="White" FontSize="20" FontWeight="SemiBold"/>
-   <TextBlock Text="Ayı seçin, eksik işleri tamamlayın, belgelerinizi kontrol edin." Foreground="#C5D7E7" TextWrapping="Wrap" Margin="0,4,0,12"/>
-   <Border Style="{StaticResource PaymentWorkspaceCard}"><StackPanel>
-    <WrapPanel>
-     <StackPanel Width="195" Margin="0,0,10,6"><TextBlock Text="Program" Foreground="#C5D7E7"/><ComboBox x:Name="HomeProgramComboBox" Style="{StaticResource FieldComboBox}" SelectionChanged="HomeFilter_Changed" Margin="0,4,0,0"><ComboBoxItem Content="Özel Eğitim" Tag="SpecialEducation"/><ComboBoxItem Content="Temel / Ortaöğretim" Tag="BasicOrSecondary"/></ComboBox></StackPanel>
-     <StackPanel Width="200" Margin="0,0,10,6"><TextBlock Text="İKN · boş seçim tüm ihaleler" Foreground="#C5D7E7"/><ComboBox x:Name="HomeTenderListBox" Style="{StaticResource FieldComboBox}" SelectionChanged="HomeTenderListBox_SelectionChanged" Margin="0,4,0,0"><ComboBox.ItemTemplate><DataTemplate><StackPanel><TextBlock Text="{Binding TenderNumber}"/><TextBlock FontSize="10" TextTrimming="CharacterEllipsis"><TextBlock.Text><MultiBinding Converter="{StaticResource ContractWorkNameConverter}" Mode="OneWay"><Binding/><Binding Path="Titles" Source="{StaticResource ContractWorkNameConverter}"/></MultiBinding></TextBlock.Text></TextBlock></StackPanel></DataTemplate></ComboBox.ItemTemplate></ComboBox></StackPanel>
-     <StackPanel Width="150" Margin="0,0,10,6"><TextBlock Text="Hakediş ayı" Foreground="#C5D7E7"/><DatePicker x:Name="HomeMonthPicker" SelectedDateFormat="Short" SelectedDateChanged="HomeFilter_Changed" Margin="0,4,0,0" ToolTip="Seçtiğiniz tarihin ayı gösterilir."/></StackPanel>
-     <Button Content="Tüm ihaleler" Click="HomeAllTenders_Click" Style="{StaticResource SecondaryButton}" VerticalAlignment="Bottom" Margin="0,0,0,6"/>
-    </WrapPanel>
-    <TextBlock x:Name="HomeSelectedTenderSummaryTextBlock" Foreground="#C5D7E7" TextWrapping="Wrap" FontSize="11" Margin="0,3,0,0"/>
-   </StackPanel></Border>
-   <UniformGrid Columns="3" Margin="0,10,0,10">
-    <Button x:Name="HomePendingButton" Tag="Bekleyen" Click="HomeStatus_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,6,0" MinHeight="45"/>
-    <Button x:Name="HomeReadyButton" Tag="Kontrole hazır" Click="HomeStatus_Click" Style="{StaticResource SecondaryButton}" Margin="3,0" MinHeight="45"/>
-    <Button x:Name="HomeDoneButton" Tag="Tamamlanan" Click="HomeStatus_Click" Style="{StaticResource SecondaryButton}" Margin="6,0,0,0" MinHeight="45"/>
+   <TextBlock Text="ANA EKRAN" Foreground="White" FontSize="21" FontWeight="SemiBold" Margin="0,0,0,14"/>
+   <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="1.05*"/><ColumnDefinition Width="1.2*"/><ColumnDefinition Width="0.85*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+    <StackPanel Margin="0,0,12,0"><TextBlock Text="Program" Foreground="#DCE7F5" Margin="0,0,0,7"/><ComboBox x:Name="HomeProgramComboBox" Style="{StaticResource HomeFilterCombo}" SelectionChanged="HomeFilter_Changed"><ComboBoxItem Content="Özel Eğitim" Tag="SpecialEducation"/><ComboBoxItem Content="Temel / Ortaöğretim" Tag="BasicOrSecondary"/></ComboBox></StackPanel>
+    <StackPanel Grid.Column="1" Margin="0,0,12,0"><TextBlock Text="İKN" Foreground="#DCE7F5" Margin="0,0,0,7"/><ComboBox x:Name="HomeTenderListBox" Style="{StaticResource HomeFilterCombo}" SelectionChanged="HomeTenderListBox_SelectionChanged" ToolTip="Boş seçim tüm ihaleleri kapsar."><ComboBox.ItemTemplate><DataTemplate><StackPanel><TextBlock Text="{Binding TenderNumber}"/><TextBlock FontSize="10" TextTrimming="CharacterEllipsis"><TextBlock.Text><MultiBinding Converter="{StaticResource ContractWorkNameConverter}" Mode="OneWay"><Binding/><Binding Path="Titles" Source="{StaticResource ContractWorkNameConverter}"/></MultiBinding></TextBlock.Text></TextBlock></StackPanel></DataTemplate></ComboBox.ItemTemplate></ComboBox></StackPanel>
+    <StackPanel Grid.Column="2" Margin="0,0,10,0"><TextBlock Text="Hakediş ayı" Foreground="#DCE7F5" Margin="0,0,0,7"/><DatePicker x:Name="HomeMonthPicker" Height="36" SelectedDateFormat="Short" SelectedDateChanged="HomeFilter_Changed" Background="#0B2946" Foreground="White" BorderBrush="#315371" ToolTip="Seçilen tarihin ayı kullanılır."><DatePicker.Resources><Style TargetType="DatePickerTextBox"><Setter Property="Background" Value="#0B2946"/><Setter Property="Foreground" Value="White"/><Setter Property="BorderThickness" Value="0"/></Style></DatePicker.Resources></DatePicker></StackPanel>
+    <Button Grid.Column="3" Content="Tüm ihaleler" Click="HomeAllTenders_Click" Style="{StaticResource SecondaryButton}" VerticalAlignment="Bottom" Height="36"/>
+   </Grid>
+   <TextBlock x:Name="HomeSelectedTenderSummaryTextBlock" Foreground="#AFC5DD" TextWrapping="Wrap" FontSize="11" Margin="0,7,0,14"/>
+   <WrapPanel Margin="0,0,0,10"><TextBlock Text="Seçili dönemin özeti" Foreground="White" FontWeight="SemiBold" FontSize="17" Margin="0,0,14,0"/><TextBlock x:Name="HomeFinanceScopeText" Text="Program ve hakediş ayını seçin." Foreground="#AFC5DD" FontSize="11" VerticalAlignment="Center" TextWrapping="Wrap"/></WrapPanel>
+   <UniformGrid x:Name="HomeFinanceCards" Columns="4" Rows="2" Margin="0,0,-10,6">
+<Border x:Name="HomeNetCard" Background="#F4C247" BorderBrush="#FFD778" Style="{StaticResource HomeFinanceCard}" ToolTip="Kayıtlı hakedişlerin hesaplanan net ödeme toplamı."><Grid><StackPanel Margin="13,12,10,10">
+      <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="32"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><ContentControl x:Name="HomeNetIcon" Style="{StaticResource HomeFinanceIcon}" Content="{StaticResource HomeNetGeometry}" Foreground="#08223A"/>
+       <TextBlock Grid.Column="1" Text="Hesaplanan Net" Foreground="#08223A" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center" Margin="6,0,0,0"/>
+      </Grid>
+      <Viewbox Height="39" Stretch="Uniform" StretchDirection="DownOnly" HorizontalAlignment="Left" Margin="0,8,0,0"><TextBlock x:Name="HomeNetValue" Text="0,00 ₺" Foreground="#08223A" FontFamily="Segoe UI" FontSize="30" FontWeight="Bold"/></Viewbox>
+     </StackPanel></Grid></Border>
+<Border Style="{StaticResource HomeFinanceCard}" ToolTip="KDV dahil brüt hakediş toplamı."><Grid><StackPanel Margin="13,12,10,10">
+      <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="32"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><ContentControl x:Name="HomeGrossIcon" Style="{StaticResource HomeFinanceIcon}" Content="{StaticResource HomeGrossGeometry}" Foreground="#F4F7FF"/>
+       <TextBlock Grid.Column="1" Text="Brüt Tutar" Foreground="#F4F7FF" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center" Margin="6,0,0,0"/>
+      </Grid>
+      <Viewbox Height="39" Stretch="Uniform" StretchDirection="DownOnly" HorizontalAlignment="Left" Margin="0,8,0,0"><TextBlock x:Name="HomeGrossValue" Text="0,00 ₺" Foreground="#F4F7FF" FontFamily="Segoe UI" FontSize="30" FontWeight="Bold"/></Viewbox>
+     </StackPanel></Grid></Border>
+<Border Style="{StaticResource HomeFinanceCard}" ToolTip="Tevkifat ve diğer kesintilerin toplamı."><Grid><StackPanel Margin="13,12,10,10">
+      <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="32"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><ContentControl x:Name="HomeDeductionsIcon" Style="{StaticResource HomeFinanceIcon}" Content="{StaticResource HomeDeductionsGeometry}" Foreground="#F4F7FF"/>
+       <TextBlock Grid.Column="1" Text="Toplam Kesinti" Foreground="#F4F7FF" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center" Margin="6,0,0,0"/>
+      </Grid>
+      <Viewbox Height="39" Stretch="Uniform" StretchDirection="DownOnly" HorizontalAlignment="Left" Margin="0,8,0,0"><TextBlock x:Name="HomeDeductionsValue" Text="0,00 ₺" Foreground="#F4F7FF" FontFamily="Segoe UI" FontSize="30" FontWeight="Bold"/></Viewbox>
+     </StackPanel></Grid></Border>
+<Border Style="{StaticResource HomeFinanceCard}" ToolTip="Taşıma ve rehber KDV toplamı."><Grid><StackPanel Margin="13,12,10,10">
+      <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="32"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><ContentControl x:Name="HomeVatIcon" Style="{StaticResource HomeFinanceIcon}" Content="{StaticResource HomeVatGeometry}" Foreground="#F4F7FF"/>
+       <TextBlock Grid.Column="1" Text="KDV Toplamı" Foreground="#F4F7FF" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center" Margin="6,0,0,0"/>
+      </Grid>
+      <Viewbox Height="39" Stretch="Uniform" StretchDirection="DownOnly" HorizontalAlignment="Left" Margin="0,8,0,0"><TextBlock x:Name="HomeVatValue" Text="0,00 ₺" Foreground="#F4F7FF" FontFamily="Segoe UI" FontSize="30" FontWeight="Bold"/></Viewbox>
+     </StackPanel></Grid></Border>
+<Border Style="{StaticResource HomeFinanceCard}" ToolTip="Rehber hariç taşıma hizmet tutarı; gün × günlük fiyat toplamı."><Grid><Border Width="4" Background="#F4C247" CornerRadius="2" HorizontalAlignment="Left"/><StackPanel Margin="13,12,10,10">
+      <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="32"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><ContentControl x:Name="HomeTransportIcon" Style="{StaticResource HomeFinanceIcon}" Content="{StaticResource HomeTransportGeometry}" Foreground="#F4F7FF"/>
+       <TextBlock Grid.Column="1" Text="Taşıma Tutarı" Foreground="#F4F7FF" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center" Margin="6,0,0,0"/>
+      </Grid>
+      <Viewbox Height="39" Stretch="Uniform" StretchDirection="DownOnly" HorizontalAlignment="Left" Margin="0,8,0,0"><TextBlock x:Name="HomeTransportValue" Text="0,00 ₺" Foreground="#F4F7FF" FontFamily="Segoe UI" FontSize="30" FontWeight="Bold"/></Viewbox>
+     </StackPanel></Grid></Border>
+<Border Style="{StaticResource HomeFinanceCard}" ToolTip="Taşıma ve rehber fiyat farkı; iskontolar sonrası, KDV hariç."><Grid><Border Width="4" Background="#F4C247" CornerRadius="2" HorizontalAlignment="Left"/><StackPanel Margin="13,12,10,10">
+      <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="32"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><ContentControl x:Name="HomeDifferenceIcon" Style="{StaticResource HomeFinanceIcon}" Content="{StaticResource HomeDifferenceGeometry}" Foreground="#F4F7FF"/>
+       <TextBlock Grid.Column="1" Text="Fiyat Farkı" Foreground="#F4F7FF" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center" Margin="6,0,0,0"/>
+      </Grid>
+      <Viewbox Height="39" Stretch="Uniform" StretchDirection="DownOnly" HorizontalAlignment="Left" Margin="0,8,0,0"><TextBlock x:Name="HomeDifferenceValue" Text="0,00 ₺" Foreground="#F4F7FF" FontFamily="Segoe UI" FontSize="30" FontWeight="Bold"/></Viewbox>
+     </StackPanel></Grid></Border>
+<Border Style="{StaticResource HomeFinanceCard}" ToolTip="Kaydı oluşturulan hat / seçili dönemde beklenen hat."><Grid><Border Width="4" Background="#F4C247" CornerRadius="2" HorizontalAlignment="Left"/><StackPanel Margin="13,12,10,10">
+      <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="32"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><ContentControl x:Name="HomeRoutesIcon" Style="{StaticResource HomeFinanceIcon}" Content="{StaticResource HomeRoutesGeometry}" Foreground="#F4F7FF"/>
+       <TextBlock Grid.Column="1" Text="Hakedişli Hat" Foreground="#F4F7FF" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center" Margin="6,0,0,0"/>
+      </Grid>
+      <Viewbox Height="39" Stretch="Uniform" StretchDirection="DownOnly" HorizontalAlignment="Left" Margin="0,8,0,0"><TextBlock x:Name="HomeRoutesValue" Text="0 / 0" Foreground="#F4F7FF" FontFamily="Segoe UI" FontSize="30" FontWeight="Bold"/></Viewbox><TextBlock x:Name="HomeRoutesCaption" Text="Dönem kapsamında hat yok" Foreground="#BDD0E7" FontSize="11" TextWrapping="Wrap" Margin="0,3,0,0"/>
+     </StackPanel></Grid></Border>
+<Border Style="{StaticResource HomeFinanceCard}" ToolTip="Seçili dönemdeki hatlara bağlı benzersiz firma kimlikleri."><Grid><Border Width="4" Background="#F4C247" CornerRadius="2" HorizontalAlignment="Left"/><StackPanel Margin="13,12,10,10">
+      <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="32"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><ContentControl x:Name="HomeFirmsIcon" Style="{StaticResource HomeFinanceIcon}" Content="{StaticResource HomeFirmsGeometry}" Foreground="#F4F7FF"/>
+       <TextBlock Grid.Column="1" Text="Yüklenici Firma" Foreground="#F4F7FF" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center" Margin="6,0,0,0"/>
+      </Grid>
+      <Viewbox Height="39" Stretch="Uniform" StretchDirection="DownOnly" HorizontalAlignment="Left" Margin="0,8,0,0"><TextBlock x:Name="HomeFirmsValue" Text="0 firma" Foreground="#F4F7FF" FontFamily="Segoe UI" FontSize="30" FontWeight="Bold"/></Viewbox>
+     </StackPanel></Grid></Border>
    </UniformGrid>
-   <Border Style="{StaticResource PaymentWorkspaceCard}"><StackPanel>
-    <TextBlock Text="AYLIK İŞ LİSTESİ" Foreground="#F4C247" FontWeight="SemiBold"/>
-    <WrapPanel Margin="0,8,0,8">
-     <StackPanel Width="240" Margin="0,0,8,6"><TextBlock Text="Firma / hat / İKN ara" Foreground="#C5D7E7" Margin="0,0,0,4"/><TextBox x:Name="HomeSearchBox" Style="{StaticResource FieldTextBox}" TextChanged="HomeSearch_Changed"/></StackPanel>
-     <ComboBox x:Name="HomeStatusComboBox" VerticalAlignment="Bottom" Width="180" Style="{StaticResource FieldComboBox}" SelectionChanged="HomeFilter_Changed" SelectedIndex="0" Margin="0,0,8,6"><ComboBoxItem Content="Tüm durumlar" Tag=""/><ComboBoxItem Content="Bekleyen" Tag="Bekleyen"/><ComboBoxItem Content="Kontrole hazır" Tag="Kontrole hazır"/><ComboBoxItem Content="Tamamlanan" Tag="Tamamlanan"/></ComboBox>
-     <Button Content="Yenile" VerticalAlignment="Bottom" Click="HomeRefresh_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,0,6"/>
-    </WrapPanel>
-    <TextBlock x:Name="HomeListMessage" Foreground="#C5D7E7" TextWrapping="Wrap" Margin="0,0,0,8"/><Button x:Name="HomeSetupButton" Content="Başlangıç bilgilerini tamamla" Click="HomeSetup_Click" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Margin="0,0,0,8" Visibility="Collapsed"/>
-    <DataGrid x:Name="HomeMonthlyGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" Height="170" MinHeight="140" RowHeight="34" ColumnHeaderHeight="30" FontSize="12" GridLinesVisibility="Horizontal" AlternatingRowBackground="#F2F6FA" SelectionMode="Single" SelectionUnit="FullRow" SelectionChanged="HomeMonthlyGrid_SelectionChanged" HeadersVisibility="Column" Background="White" Foreground="#172B3A" HorizontalScrollBarVisibility="Auto">
-     <DataGrid.Columns><DataGridTextColumn Header="İKN" Binding="{Binding Tender}" Width="100"/><DataGridTextColumn Header="Firma" Binding="{Binding Firm}" Width="1.2*" MinWidth="130"/><DataGridTextColumn Header="Hat" Binding="{Binding RouteTitle}" Width="1.5*" MinWidth="140"/><DataGridTextColumn Header="Hesaplanan net" Binding="{Binding NetText}" Width="125"/><DataGridTextColumn Header="Durum" Binding="{Binding Status}" Width="190"/></DataGrid.Columns>
-    </DataGrid>
-    <Button x:Name="HomeNextActionButton" Content="Sonraki işlem" Click="HomeNextAction_Click" Style="{StaticResource ModernButton}" HorizontalAlignment="Left" Margin="0,8,0,0" IsEnabled="False"/>
-   </StackPanel></Border>
-   <Border x:Name="HomePreflightPanel" Style="{StaticResource PaymentWorkspaceCard}" Margin="0,10,0,0"><StackPanel>
+   <Border Background="#0A233C" BorderBrush="#2C4965" BorderThickness="1" CornerRadius="6" Padding="10">
+    <StackPanel>
+     <DockPanel><TextBlock Text="DÖNEM HATLARI" Foreground="#F4C247" FontWeight="SemiBold" VerticalAlignment="Center"/><Button Content="Yenile" Click="HomeRefresh_Click" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Right"/></DockPanel>
+     <Expander Header="Listede ara / duruma göre süz" Foreground="#C5D7E7" Margin="0,5,0,5"><WrapPanel Margin="0,5,0,0">
+      <StackPanel Width="240" Margin="0,0,8,6"><TextBlock Text="Firma / hat / İKN ara" Foreground="#C5D7E7" Margin="0,0,0,4"/><TextBox x:Name="HomeSearchBox" Style="{StaticResource FieldTextBox}" TextChanged="HomeSearch_Changed"/></StackPanel>
+      <ComboBox x:Name="HomeStatusComboBox" VerticalAlignment="Bottom" Width="180" Style="{StaticResource HomeFilterCombo}" SelectionChanged="HomeFilter_Changed" SelectedIndex="0" Margin="0,0,8,6"><ComboBoxItem Content="Tüm durumlar" Tag=""/><ComboBoxItem Content="Bekleyen" Tag="Bekleyen"/><ComboBoxItem Content="Kontrole hazır" Tag="Kontrole hazır"/><ComboBoxItem Content="Tamamlanan" Tag="Tamamlanan"/></ComboBox>
+     </WrapPanel></Expander>
+     <TextBlock x:Name="HomeListMessage" Foreground="#AFC5DD" TextWrapping="Wrap" Margin="0,0,0,6"/>
+     <Button x:Name="HomeSetupButton" Content="Başlangıç bilgilerini tamamla" Click="HomeSetup_Click" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Margin="0,0,0,8" Visibility="Collapsed"/>
+     <DataGrid x:Name="HomeMonthlyGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" Height="170" MinHeight="140" RowHeight="34" ColumnHeaderHeight="32" FontSize="12" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#294762" AlternatingRowBackground="#0B2742" RowBackground="#082039" SelectionMode="Single" SelectionUnit="FullRow" SelectionChanged="HomeMonthlyGrid_SelectionChanged" HeadersVisibility="Column" Background="#082039" Foreground="#EEF4FF" BorderThickness="0" HorizontalScrollBarVisibility="Auto">
+      <DataGrid.ColumnHeaderStyle><Style TargetType="DataGridColumnHeader"><Setter Property="Background" Value="#102E4B"/><Setter Property="Foreground" Value="White"/><Setter Property="Padding" Value="8,5"/><Setter Property="BorderBrush" Value="#294762"/><Setter Property="BorderThickness" Value="0,0,1,1"/><Setter Property="FontWeight" Value="SemiBold"/></Style></DataGrid.ColumnHeaderStyle>
+      <DataGrid.CellStyle><Style TargetType="DataGridCell"><Setter Property="BorderThickness" Value="0"/><Setter Property="Padding" Value="8,4"/><Setter Property="Foreground" Value="#EEF4FF"/><Style.Triggers><Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="#285477"/></Trigger></Style.Triggers></Style></DataGrid.CellStyle>
+      <DataGrid.RowStyle><Style TargetType="DataGridRow"><Setter Property="Foreground" Value="#EEF4FF"/><Setter Property="ToolTip"><Setter.Value><StackPanel><TextBlock Text="{Binding Tender,StringFormat=İKN: {0}}"/><TextBlock Text="{Binding Status}"/></StackPanel></Setter.Value></Setter></Style></DataGrid.RowStyle>
+      <DataGrid.Columns><DataGridTextColumn Header="Hat" Binding="{Binding RouteTitle}" Width="1.4*" MinWidth="135"/><DataGridTextColumn Header="Firma" Binding="{Binding Firm}" Width="1.1*" MinWidth="120"/><DataGridTextColumn Header="Taşıma günü" Binding="{Binding Payment.Input.WorkDays,StringFormat={}{0:0.##},TargetNullValue=—,FallbackValue=—}" Width="90"/><DataGridTextColumn Header="Net tutar" Binding="{Binding NetText}" Width="135"/></DataGrid.Columns>
+     </DataGrid>
+    </StackPanel>
+   </Border>
+   <Button x:Name="HomeNextActionButton" Content="Hakediş Oluştur" Click="HomeNextAction_Click" Style="{StaticResource HomeGoldButton}" HorizontalAlignment="Center" Margin="0,14,0,4" IsEnabled="False" ToolTip="Listeden bir hat seçin; mevcut hakedişi açın veya yeni hakediş oluşturun."/>
+   <Border x:Name="HomePreflightPanel" Margin="0,10,0,0"><Border.Style><Style TargetType="Border" BasedOn="{StaticResource PaymentWorkspaceCard}"><Setter Property="Visibility" Value="Visible"/><Style.Triggers><DataTrigger Binding="{Binding ElementName=HomeMonthlyGrid,Path=SelectedItem}" Value="{x:Null}"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers></Style></Border.Style><StackPanel>
     <TextBlock Text="SEÇİLİ HAKEDİŞ · BELGE KONTROLÜ" Foreground="#F4C247" FontWeight="SemiBold"/>
     <TextBlock x:Name="HomePaymentSummary" Text="Kontrol etmek için listeden bir hat seçin." Foreground="White" FontSize="13" TextWrapping="Wrap" Margin="0,8,0,6"/>
     <TextBlock x:Name="HomePaymentAmounts" Foreground="#C5D7E7" TextWrapping="Wrap"/>
@@ -256,6 +355,7 @@
     <Expander Header="İmzacı ve hesaplama ayrıntıları" Foreground="#C5D7E7" Margin="0,8,0,0"><TextBlock x:Name="HomePaymentDetails" Foreground="#C5D7E7" TextWrapping="Wrap" Margin="0,6"/></Expander>
     <WrapPanel Margin="0,10,0,0"><Button Content="Hakedişi aç" Click="HomeNextAction_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,6"/><Button x:Name="HomePreviewButton" Content="Belgeleri önizle" Tag="Preview" Click="HomeOutput_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,6" IsEnabled="False"/><Button x:Name="HomeSavePdfsButton" Content="Dört PDF'yi kaydet" Tag="Save" Click="HomeOutput_Click" Style="{StaticResource ModernButton}" Margin="0,0,0,6" IsEnabled="False"/></WrapPanel>
    </StackPanel></Border>
+
   </StackPanel>
  </ScrollViewer>
 </Grid>

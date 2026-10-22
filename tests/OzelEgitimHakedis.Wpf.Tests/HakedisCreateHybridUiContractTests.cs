@@ -27,6 +27,88 @@ public sealed class HakedisCreateHybridUiContractTests
         "http://schemas.microsoft.com/winfx/2006/xaml";
 
     [Fact]
+    public void GoldFinance_ShouldKeepEightCardsWithVectorSymbolsAndGoldNetCard()
+    {
+        RunOnSta(() =>
+        {
+            var home=NamedElement(LoadMainWindowXaml(),"HomePanel");
+            Assert.DoesNotContain(home.Descendants(),e=>(string?)e.Attribute(XamlNamespace+"Name")=="HomePendingButton");
+            var cards=home.Descendants().Single(e=>(string?)e.Attribute(XamlNamespace+"Name")=="HomeFinanceCards");
+            Assert.Equal("4",(string?)cards.Attribute("Columns"));
+            Assert.Equal("2",(string?)cards.Attribute("Rows"));
+            Assert.Equal(8,cards.Elements().Count());
+            var layout=LoadLayoutFragment(home);
+            foreach(var name in new[]{"Net","Gross","Deductions","Vat","Transport","Difference","Routes","Firms"})
+            {
+                var icon=(ContentControl)layout.FindName("Home"+name+"Icon");
+                Assert.NotNull(icon);
+                Assert.IsAssignableFrom<Geometry>(icon.Content);
+                icon.ApplyTemplate();
+                Assert.NotEmpty(VisualDescendants<System.Windows.Shapes.Path>(icon));
+            }
+            var net=(Border)layout.FindName("HomeNetCard");
+            Assert.Equal(Color.FromRgb(244,194,71),Assert.IsType<SolidColorBrush>(net.Background).Color);
+        });
+    }
+
+    [Fact]
+    public void GoldFinance_ShouldFollowProgramTenderMonthAndIgnoreListSearch()
+    {
+        RunOnSta(() =>
+        {
+            var directory=Directory.CreateTempSubdirectory("oehs-finance-");
+            try
+            {
+                var window=CreateEditorHarness();
+                SetField(window,"_archiveStore",new ProgressPaymentArchiveStore(directory.FullName));
+                SetField(window,"_calculationConstantsHistory",new System.Collections.Generic.List<ProgressPaymentCalculationConstantsChange>());
+                var c=ArchiveProgressEditorContextTests.CreateArchive().Contract;
+                var other=c with {TenderNumber="IHALE-02"};
+                var basic=c with {ProgramType=TransportationProgramType.BasicOrSecondary};
+                foreach(var item in new[]{c,other,basic}) Collection(window,"_contracts").Add(item);
+                Collection(window,"_routes").Add(CreateRoute("01","Merkez","12345678901"));
+                Collection(window,"_routes").Add(CreateRoute("02","Kuzey","12345678901"));
+                Collection(window,"_routes").Add(CreateRoute("03","Güney","22222222222",tender:"IHALE-02"));
+                Collection(window,"_routes").Add(CreateRoute("04","Temel","12345678901",TransportationProgramType.BasicOrSecondary));
+                Collection(window,"_contractors").Add(CreateFirm("Firma 1","12345678901"));
+                Collection(window,"_contractors").Add(CreateFirm("Firma 2","22222222222"));
+                var sample=ArchiveProgressEditorContextTests.CreateArchive().ProgressPayment;
+                var input=sample.Input with {WorkDays=18,DailyPrice=1234.5678m,PriceDifference=120,TaxDebt=25,GuideWorkDays=18,GuideDailyPrice=200};
+                var p=sample with {Input=input,Calculation=ProgressPaymentCalculator.Calculate(input),TenderNumber=c.TenderNumber,ContractNumber=c.ContractNumber,ContractorTaxOrIdentityNumber="12345678901",PeriodDate=new DateOnly(2026,10,1)};
+                var p2=p with {Id=Guid.NewGuid(),RouteNumber="03",TenderNumber=other.TenderNumber,ContractorTaxOrIdentityNumber="22222222222"};
+                var pb=p with {Id=Guid.NewGuid(),RouteNumber="04",Input=input with {ProgramType=TransportationProgramType.BasicOrSecondary}};
+                pb=pb with {Calculation=ProgressPaymentCalculator.Calculate(pb.Input)};
+                foreach(var item in new[]{p,p2,pb,p with {Id=Guid.NewGuid(),CreatedAt=p.CreatedAt.AddDays(-1)},p with {Id=Guid.NewGuid(),PeriodDate=new DateOnly(2026,9,1)}}) Collection(window,"_progressHistory").Add(item);
+                var program=Field<ComboBox>(window,"HomeProgramComboBox");
+                program.Items.Add(new ComboBoxItem{Tag="SpecialEducation"});program.Items.Add(new ComboBoxItem{Tag="BasicOrSecondary"});program.SelectedIndex=0;
+                Field<DatePicker>(window,"HomeMonthPicker").SelectedDate=new DateTime(2026,10,1);
+                SetField(window,"_operationsReady",true);
+                string Money(decimal value)=>value.ToString("N2",CultureInfo.GetCultureInfo("tr-TR"))+" ₺";
+                string Text(string key)=>Field<TextBlock>(window,"Home"+key+"Value").Text;
+                Invoke(window,"RefreshHomeOperations");
+                Assert.Equal(Money(2*p.Calculation.NetPayable),Text("Net"));
+                Assert.Equal(Money(2*p.Calculation.GrossAmount),Text("Gross"));
+                Assert.Equal(Money(2*p.Calculation.TotalDeductions),Text("Deductions"));
+                Assert.Equal(Money(2*p.Calculation.Vat),Text("Vat"));
+                Assert.Equal(Money(2*p.Calculation.ServiceAmount),Text("Transport"));
+                Assert.Equal(Money(2*p.Calculation.CombinedPriceDifferenceExcludingVat),Text("Difference"));
+                Assert.Equal("2 / 3",Text("Routes"));Assert.Equal("2 firma",Text("Firms"));
+                Field<TextBox>(window,"HomeSearchBox").Text="bulunmayan";Invoke(window,"RefreshHomeOperations");
+                Assert.Equal(Money(2*p.Calculation.NetPayable),Text("Net"));
+                Field<ComboBox>(window,"HomeTenderListBox").SelectedItem=c;Invoke(window,"RefreshHomeOperations");
+                Assert.Equal(Money(p.Calculation.NetPayable),Text("Net"));Assert.Equal("1 / 2",Text("Routes"));Assert.Equal("1 firma",Text("Firms"));
+                program.SelectedIndex=1;Invoke(window,"RefreshHomeOperations");
+                Assert.Equal(Money(pb.Calculation.NetPayable),Text("Net"));Assert.Equal("1 / 1",Text("Routes"));
+                Field<DatePicker>(window,"HomeMonthPicker").SelectedDate=new DateTime(2026,11,1);Invoke(window,"RefreshHomeOperations");
+                Assert.Equal(Money(0),Text("Net"));Assert.Equal("0 / 1",Text("Routes"));
+                program.SelectedIndex=-1;Invoke(window,"RefreshHomeOperations");
+                Assert.Equal(Money(0),Text("Net"));Assert.Equal("0 / 0",Text("Routes"));Assert.Equal("0 firma",Text("Firms"));
+            }
+            finally {directory.Delete(true);}
+        });
+    }
+
+    [Fact]
     public void HybridLayout_ShouldKeepPerRouteGridAndCalculateActionReachable()
     {
         RunOnSta(() =>
@@ -268,15 +350,39 @@ public sealed class HakedisCreateHybridUiContractTests
             foreach (var size in new[] { (1024d,600d), (1280d,720d), (1366d,768d), (1920d,1080d) })
             {
                 var layout=LoadLayoutFragment(NamedElement(LoadMainWindowXaml(),"HomePanel"));
-                ((Button)layout.FindName("HomePendingButton")).Content="Bekleyen · 4";
-                ((Button)layout.FindName("HomeReadyButton")).Content="Kontrole hazır · 8";
-                ((Button)layout.FindName("HomeDoneButton")).Content="Tamamlanan · 12";
+                ((ComboBox)layout.FindName("HomeProgramComboBox")).SelectedIndex=0;
+                var tender=(ComboBox)layout.FindName("HomeTenderListBox");
+                tender.Items.Add(ArchiveProgressEditorContextTests.CreateArchive().Contract with {TenderNumber="2026/123456"});tender.SelectedIndex=0;
+                ((DatePicker)layout.FindName("HomeMonthPicker")).SelectedDate=new DateTime(2026,10,1);
+                ((Button)layout.FindName("HomeNextActionButton")).IsEnabled=true;
+                ((Button)layout.FindName("HomeNextActionButton")).Content="Hakediş Oluştur";
+                ((Border)layout.FindName("HomePreflightPanel")).Visibility=Visibility.Visible;
+                var values=new[]{("Net","813.387,00 ₺"),("Gross","859.921,08 ₺"),("Deductions","46.534,08 ₺"),("Vat","78.174,64 ₺"),("Transport","781.566,43 ₺"),("Difference","180,00 ₺"),("Routes","4 / 6"),("Firms","3 firma")};
+                foreach(var (key,value) in values) ((TextBlock)layout.FindName("Home"+key+"Value")).Text=value;
+                ((TextBlock)layout.FindName("HomeRoutesCaption")).Text="2 hat için kayıt yok";
+                ((TextBlock)layout.FindName("HomeFinanceScopeText")).Text="Örnek veriler · Program / İKN / ay toplamı";
                 ((TextBlock)layout.FindName("HomePaymentSummary")).Text="IŞIK TAŞIMACILIK · Hat 1 — Merkez İlkokulu\nİKN: 2026/42 · Ekim 2026 · Hakediş 2";
                 ((TextBlock)layout.FindName("HomePaymentAmounts")).Text="Taşıma: 16 gün × 19539,1608 ₺\nFiyat farkı: 7.365,35 ₺ · Kesinti: 2.847,16 ₺\nPDF net ödeme: 332.516,08 ₺";
-                ((DataGrid)layout.FindName("HomeMonthlyGrid")).ItemsSource=new[] {new {Tender="2026/42",Firm="IŞIK TAŞIMACILIK",RouteTitle="1 — Merkez İlkokulu",NetText="332.516,08 ₺",Status="Kontrole hazır"}};
+                ((DataGrid)layout.FindName("HomeMonthlyGrid")).ItemsSource=new[]
+                {
+                    new {Tender="2026/123456",Firm="Anadolu Taşımacılık Ltd. Şti.",RouteTitle="H1 — Merkez Atatürk İlkokulu",NetText="245.320,00 ₺",Status="Kontrole hazır",Payment=new {Input=new {WorkDays=22m}}},
+                    new {Tender="2026/123456",Firm="Yeşil Vadi Turizm A.Ş.",RouteTitle="H3 — Cumhuriyet Ortaokulu",NetText="198.600,00 ₺",Status="Kontrole hazır",Payment=new {Input=new {WorkDays=20m}}},
+                    new {Tender="2026/123456",Firm="Mavi Tur Taşımacılık Ltd. Şti.",RouteTitle="H5 — Güneşköy Anadolu Lisesi",NetText="176.430,00 ₺",Status="Kontrole hazır",Payment=new {Input=new {WorkDays=18m}}},
+                    new {Tender="2026/123456",Firm="Anadolu Taşımacılık Ltd. Şti.",RouteTitle="H6 — Organize Sanayi Mesleki Lise",NetText="193.037,00 ₺",Status="Kontrole hazır",Payment=new {Input=new {WorkDays=16m}}}
+                };
                 ArrangeLayout(layout,size.Item1-215-38,size.Item2-60-38);
+                layout.Dispatcher.Invoke(()=>{},System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+                layout.UpdateLayout();
                 var viewer=VisualDescendants<ScrollViewer>(layout).First();
                 Assert.True(viewer.ViewportWidth>0);
+                var cards=(System.Windows.Controls.Primitives.UniformGrid)layout.FindName("HomeFinanceCards");
+                Assert.Equal(8,cards.Children.Count);
+                foreach(Border card in cards.Children)
+                {
+                    var bounds=card.TransformToAncestor(viewer).TransformBounds(new Rect(card.RenderSize));
+                    Assert.InRange(bounds.Right,1,viewer.ActualWidth+1);
+                    Assert.True(card.ActualHeight>=124);
+                }
                 foreach(var name in new[]{"HomeMonthlyGrid","HomePreflightPanel"})
                 {
                     var element=(FrameworkElement)layout.FindName(name);
@@ -292,14 +398,15 @@ public sealed class HakedisCreateHybridUiContractTests
                     Assert.InRange(rect.Right,1,viewer.ActualWidth+1);
                 }
                 var output=Environment.GetEnvironmentVariable("OEHS_LAYOUT_PREVIEW");
-                if(!string.IsNullOrWhiteSpace(output) && size.Item1==1366)
+                if(!string.IsNullOrWhiteSpace(output) && (size.Item1==1366 || size.Item1==1920))
                 {
+                    ((Border)layout.FindName("HomePreflightPanel")).Visibility=Visibility.Collapsed;
                     viewer.ScrollToTop();layout.UpdateLayout();
                     Directory.CreateDirectory(output);
                     var image=new System.Windows.Media.Imaging.RenderTargetBitmap((int)layout.ActualWidth,(int)layout.ActualHeight,96,96,PixelFormats.Pbgra32);
                     image.Render(layout);
                     var png=new System.Windows.Media.Imaging.PngBitmapEncoder();png.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(image));
-                    using var file=File.Create(Path.Combine(output,"practical-home.png"));png.Save(file);
+                    using var file=File.Create(Path.Combine(output,$"gold-finance-home-{size.Item1:0}.png"));png.Save(file);
                 }
             }
         });
@@ -915,9 +1022,9 @@ public sealed class HakedisCreateHybridUiContractTests
             name, identity, "", "", "", "", "", TransportationProgramType.SpecialEducation, vatExempt)!;
 
     private static object CreateRoute(string number, string name, string identity,
-        TransportationProgramType program = TransportationProgramType.SpecialEducation) =>
+        TransportationProgramType program = TransportationProgramType.SpecialEducation, string tender = "IHALE-01") =>
         Activator.CreateInstance(typeof(MainWindow).GetNestedType("RouteDraft", BindingFlags.NonPublic)!,
-            number, name, 1_000m, 0m, 0m, 20m, "IHALE-01", identity, "Same name", "SOZ-01",
+            number, name, 1_000m, 0m, 0m, 20m, tender, identity, "Same name", "SOZ-01",
             program)!;
 
     private static T Field<T>(MainWindow window, string name) =>

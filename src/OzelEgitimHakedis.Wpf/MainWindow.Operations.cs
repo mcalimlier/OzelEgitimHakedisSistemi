@@ -90,9 +90,7 @@ public partial class MainWindow
                 DateOnly.FromDateTime(month.Value),ReadOperationArchives(),HasCurrentOutput).ToList():new();
             if(HomeTenderListBox.SelectedItem is ContractDraftData c)
                 _monthlyRows=_monthlyRows.Where(r=>r.Contract==c).ToList();
-            HomePendingButton.Content=$"Bekleyen · {_monthlyRows.Count(r=>r.Group=="Bekleyen")}";
-            HomeReadyButton.Content=$"Kontrole hazır · {_monthlyRows.Count(r=>r.Group=="Kontrole hazır")}";
-            HomeDoneButton.Content=$"Tamamlanan · {_monthlyRows.Count(r=>r.Group=="Tamamlanan")}";
+            UpdateHomeFinanceCards(_monthlyRows);
             var status=Choice(HomeStatusComboBox);
             var visible=_monthlyRows.Where(r=>(status.Length==0 || r.Group==status) &&
                 PaymentOperationsService.Contains(r.Firm+" "+r.RouteTitle+" "+r.Tender,HomeSearchBox.Text)).ToArray();
@@ -106,7 +104,12 @@ public partial class MainWindow
             UpdateHomeTenderSummary(HomeTenderListBox.SelectedItem as ContractDraftData);
         }
         catch(Exception ex) when(ex is IOException or UnauthorizedAccessException or InvalidOperationException)
-        { HomeMonthlyGrid.ItemsSource=null;HomeListMessage.Text="Aylık liste yüklenemedi: "+ex.Message; }
+        {
+            _monthlyRows.Clear();
+            UpdateHomeFinanceCards(_monthlyRows);
+            HomeFinanceScopeText.Text="Dönem özeti yüklenemedi. Listeyi yenileyin.";
+            HomeMonthlyGrid.ItemsSource=null;HomeListMessage.Text="Aylık liste yüklenemedi: "+ex.Message;
+        }
         finally {_homeRefreshing=false;RefreshSelectedPayment();}
     }
     private void RefreshSelectedPayment()
@@ -154,8 +157,6 @@ public partial class MainWindow
         NavigationButton_Click(_contracts.Any(c=>c.ProgramType==program)?NavLines:NavContract,new RoutedEventArgs());
     }
     private void HomeAllTenders_Click(object sender,RoutedEventArgs e) {HomeTenderListBox.SelectedItem=null;RefreshHomeOperations();}
-    private void HomeStatus_Click(object sender,RoutedEventArgs e)
-    {if(sender is Button b) HomeStatusComboBox.SelectedItem=HomeStatusComboBox.Items.Cast<ComboBoxItem>().FirstOrDefault(i=>Equals(i.Tag,b.Tag));}
     private void HomeIssue_Click(object sender,RoutedEventArgs e)
     {if(sender is Button {Tag:PaymentIssue issue}) OpenHomeTarget(issue.Target);}
     private void HomeNextAction_Click(object sender,RoutedEventArgs e)
