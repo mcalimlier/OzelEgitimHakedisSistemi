@@ -2978,6 +2978,9 @@ public partial class MainWindow : Window
 
     private bool IsVatExemptForCurrentFirm(ContractDraftData? contract)
     {
+        if (_editingArchiveSnapshot is not null)
+            return _editingArchiveSnapshot.ProgressPayment.Input.IsVatExempt;
+
         if (ProgressContractorComboBox.SelectedItem is ContractorDraft selectedFirm)
             return selectedFirm.VatExempt;
 
@@ -4946,7 +4949,9 @@ public partial class MainWindow : Window
                 discount,
                 priceDifference,
                 selectedContract.ContractAmount,
-                (FindContractor(selectedRoute.ContractorTaxOrIdentityNumber, selectedRoute.ProgramType)?.VatExempt) ?? selectedContract.VatExempt,
+                _editingArchiveSnapshot?.ProgressPayment.Input.IsVatExempt
+                    ?? FindContractor(selectedRoute.ContractorTaxOrIdentityNumber, selectedRoute.ProgramType)?.VatExempt
+                    ?? selectedContract.VatExempt,
                 taxDebt,
                 socialSecurityDebt,
                 minimumWageSupport,
@@ -6564,8 +6569,18 @@ public partial class MainWindow : Window
         if (contract is not null)
         {
             _suppressSelectionEvents = true;
-            ProgressTenderListBox.SelectedItem = contract;
-            _suppressSelectionEvents = false;
+            try
+            {
+                ProgressTenderListBox.SelectedItem = contract;
+                ProgressContractorComboBox.ItemsSource = _contractors
+                    .Where(x => x.ProgramType == item.Input.ProgramType).ToArray();
+                ProgressContractorComboBox.SelectedItem = FindContractor(
+                    item.ContractorTaxOrIdentityNumber ?? string.Empty, item.Input.ProgramType);
+            }
+            finally
+            {
+                _suppressSelectionEvents = false;
+            }
             UpdateProgressContractorAndRoutes(contract);
         }
 

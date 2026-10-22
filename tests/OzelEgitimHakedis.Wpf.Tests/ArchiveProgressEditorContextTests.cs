@@ -1,4 +1,5 @@
 using OzelEgitimHakedis.Core.Models;
+using OzelEgitimHakedis.Core.Services;
 using OzelEgitimHakedis.Wpf;
 using Xunit;
 
@@ -19,7 +20,63 @@ public sealed class ArchiveProgressEditorContextTests
         Assert.Equal(archive.ProgressPayment.PeriodDate, context.PeriodDate);
     }
 
-    private static ProgressPaymentArchive CreateArchive()
+    [Theory]
+    [InlineData("Contract.TenderNumber", null)]
+    [InlineData("Contract.TenderNumber", "")]
+    [InlineData("Contract.TenderNumber", " \t")]
+    [InlineData("Contract.ContractNumber", null)]
+    [InlineData("Contract.ContractNumber", "")]
+    [InlineData("Contract.ContractNumber", " \t")]
+    [InlineData("Route.RouteNumber", null)]
+    [InlineData("Route.RouteNumber", "")]
+    [InlineData("Route.RouteNumber", " \t")]
+    [InlineData("ProgressPayment.PeriodDate", null)]
+    [InlineData("Contract", null)]
+    [InlineData("Contractor", null)]
+    [InlineData("Route", null)]
+    [InlineData("ProgressPayment", null)]
+    public void Create_ShouldDescribeMissingArchiveField(string field, string? value)
+    {
+        var archive = CreateArchive();
+        archive = field switch
+        {
+            "Contract.TenderNumber" => archive with { Contract = archive.Contract with { TenderNumber = value! } },
+            "Contract.ContractNumber" => archive with { Contract = archive.Contract with { ContractNumber = value! } },
+            "Route.RouteNumber" => archive with { Route = archive.Route with { RouteNumber = value! } },
+            "ProgressPayment.PeriodDate" => archive with { ProgressPayment = archive.ProgressPayment with { PeriodDate = null } },
+            "Contract" => archive with { Contract = null! },
+            "Contractor" => archive with { Contractor = null! },
+            "Route" => archive with { Route = null! },
+            "ProgressPayment" => archive with { ProgressPayment = null! },
+            _ => throw new ArgumentOutOfRangeException(nameof(field))
+        };
+
+        var exception = Assert.Throws<ProgressPaymentArchiveException>(() => ArchiveProgressEditorContext.Create(archive));
+
+        Assert.Contains(field, exception.Message, StringComparison.Ordinal);
+        Assert.Contains("Arşiv", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("eksik", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Create_ShouldAcceptHistoricSnapshotWithOptionalLinkageAndMidMonthPeriod()
+    {
+        var archive = CreateArchive();
+        archive = archive with
+        {
+            ProgressPayment = archive.ProgressPayment with { PeriodDate = new DateOnly(2026, 10, 15) }
+        };
+
+        var context = ArchiveProgressEditorContext.Create(archive);
+
+        Assert.Equal(new DateOnly(2026, 10, 15), context.PeriodDate);
+        Assert.Same(archive.Route, context.Route);
+        Assert.Empty(context.Route.TenderNumber);
+        Assert.Empty(context.Route.ContractNumber);
+        Assert.Empty(context.Route.ContractorTaxOrIdentityNumber);
+    }
+
+    internal static ProgressPaymentArchive CreateArchive()
     {
         var input = new ProgressPaymentInput(20m, 1_000m, 0m, 0m, 0m, false, 0m, 0m, 0m);
         var calculation = new ProgressPaymentCalculation(

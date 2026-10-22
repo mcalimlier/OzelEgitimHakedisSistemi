@@ -3,6 +3,17 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using System.Collections;
+using System.Globalization;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
+using System.Threading;
+using System.Windows;
+using System.Windows.Controls;
+using OzelEgitimHakedis.Core.Models;
+using OzelEgitimHakedis.Core.Services;
+using OzelEgitimHakedis.Wpf;
 using Xunit;
 
 namespace OzelEgitimHakedis.Wpf.Tests;
@@ -11,6 +22,177 @@ public sealed class HakedisCreateHybridUiContractTests
 {
     private static readonly XNamespace XamlNamespace =
         "http://schemas.microsoft.com/winfx/2006/xaml";
+
+    [Theory]
+    [InlineData(true, null, false, 0)]
+    [InlineData(false, null, true, 2000)]
+    [InlineData(true, false, false, 0)]
+    [InlineData(false, true, true, 2000)]
+    public void ArchiveCalculation_ShouldKeepPaymentVatWithMissingOrConflictingLiveFirm(
+        bool archivedVatExempt, bool? liveVatExempt, bool contractVatExempt, decimal expectedVat)
+    {
+        RunOnSta(() =>
+        {
+            var window = CreateEditorHarness();
+            var archive = ArchiveProgressEditorContextTests.CreateArchive();
+            archive = archive with
+            {
+                Contract = archive.Contract with { VatExempt = contractVatExempt },
+                Contractor = archive.Contractor with { VatExempt = !archivedVatExempt },
+                Route = archive.Route with { ContractorTaxOrIdentityNumber = "12345678901" },
+                ProgressPayment = archive.ProgressPayment with
+                {
+                    Input = archive.ProgressPayment.Input with { IsVatExempt = archivedVatExempt }
+                }
+            };
+            if (liveVatExempt.HasValue)
+                Collection(window, "_contractors").Add(CreateFirm("Live firm", "12345678901", liveVatExempt.Value));
+            SetField(window, "_editingArchiveSourcePath", "unused-archive.json");
+            SetField(window, "_editingArchiveSnapshot", archive);
+            Invoke(window, "BeginProgressHistoryEdit", archive.ProgressPayment);
+
+            // Unchanged inputs calculate but never open the save-confirmation dialog.
+            Assert.False((bool)Invoke(window, "ArchiveCorrectionInputsDiffer")!);
+            Invoke(window, "CalculateProgressButton_Click", window, new RoutedEventArgs());
+
+            Assert.Equal(expectedVat.ToString("N2", CultureInfo.CurrentCulture) + " ₺",
+                Field<TextBlock>(window, "VatResultTextBlock").Text);
+        });
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ArchiveCalculationTrace_ShouldUsePaymentVatInsteadOfSnapshotFirm(bool archivedVatExempt)
+    {
+        RunOnSta(() =>
+        {
+            var window = CreateEditorHarness();
+            var archive = ArchiveProgressEditorContextTests.CreateArchive();
+            archive = archive with
+            {
+                Contractor = archive.Contractor with { VatExempt = !archivedVatExempt },
+                ProgressPayment = archive.ProgressPayment with
+                {
+                    Input = archive.ProgressPayment.Input with { IsVatExempt = archivedVatExempt }
+                }
+            };
+            SetField(window, "_editingArchiveSourcePath", "unused-archive.json");
+            SetField(window, "_editingArchiveSnapshot", archive);
+            Invoke(window, "BeginProgressHistoryEdit", archive.ProgressPayment);
+
+            Assert.Equal(archivedVatExempt, Invoke(window, "IsVatExemptForCurrentFirm", archive.Contract));
+        });
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void HistoryCorrection_ShouldRestoreSavedFirmAndRouteForMultiFirmContract(bool resetDraft)
+    {
+        RunOnSta(() =>
+        {
+            var window = CreateEditorHarness();
+            var archive = ArchiveProgressEditorContextTests.CreateArchive();
+            var savedFirm = CreateFirm("Same name", "12345678901");
+            var otherFirm = CreateFirm("Same name", "98765432109");
+            var savedRoute = CreateRoute("01", "Saved route", "12345678901");
+            var otherRoute = CreateRoute("01", "Other firm's route", "98765432109");
+            var payment = archive.ProgressPayment with
+            {
+                TenderNumber = "IHALE-01", ContractNumber = "SOZ-01",
+                ContractorTaxOrIdentityNumber = "123 456 789 01"
+            };
+            Collection(window, "_contracts").Add(archive.Contract);
+            Collection(window, "_contractors").Add(savedFirm);
+            Collection(window, "_contractors").Add(otherFirm);
+            Collection(window, "_routes").Add(savedRoute);
+            Collection(window, "_routes").Add(otherRoute);
+            Collection(window, "_progressHistory").Add(payment);
+            Field<ComboBox>(window, "ProgressTenderListBox").ItemsSource = Collection(window, "_contracts");
+            Field<ComboBox>(window, "ProgressContractorComboBox").ItemsSource = Collection(window, "_contractors");
+            Field<ComboBox>(window, "ProgressContractorComboBox").SelectedItem = otherFirm;
+
+            if (resetDraft)
+            {
+                Invoke(window, "ResetNewProgressDraftAfterCalculation", payment);
+                Assert.Null(Field<ComboBox>(window, "ProgressContractorComboBox").SelectedItem);
+            }
+
+            Invoke(window, "BeginProgressHistoryEdit", payment);
+
+            Assert.Same(savedFirm, Field<ComboBox>(window, "ProgressContractorComboBox").SelectedItem);
+            var routes = Field<ListBox>(window, "ProgressRouteComboBox");
+            Assert.Same(savedRoute, Assert.Single(routes.SelectedItems.Cast<object>()));
+            Assert.Same(savedRoute, Assert.Single(routes.Items.Cast<object>()));
+            Assert.Equal(new DateOnly(2026, 10, 31),
+                Assert.IsType<ProgressPaymentMonthOption>(Field<ComboBox>(window, "ProgressPeriodMonthComboBox").SelectedItem).PeriodDate);
+        });
+    }
+
+    private static MainWindow CreateEditorHarness()
+    {
+        // Exercise real handlers and selectors without running the constructor's
+        // fresh-start migration, persistence loading, or visible window setup.
+        var window = (MainWindow)RuntimeHelpers.GetUninitializedObject(typeof(MainWindow));
+        foreach (var field in typeof(MainWindow).GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
+        {
+            if (typeof(FrameworkElement).IsAssignableFrom(field.FieldType)
+                || field.FieldType.IsGenericType &&
+                (field.FieldType.GetGenericTypeDefinition() == typeof(System.Collections.ObjectModel.ObservableCollection<>)
+                 || field.FieldType.GetGenericTypeDefinition() == typeof(RouteDraftCache<>)))
+                field.SetValue(window, Activator.CreateInstance(field.FieldType));
+        }
+        SetField(window, "_calculationConstants", ProgressPaymentCalculationConstants.Defaults);
+        Field<ListBox>(window, "ProgressRouteComboBox").SelectionMode = SelectionMode.Extended;
+        Field<Button>(window, "NavProgress").Tag = "Progress";
+        return window;
+    }
+
+    private static object CreateFirm(string name, string identity, bool vatExempt = false) =>
+        Activator.CreateInstance(typeof(MainWindow).GetNestedType("ContractorDraft", BindingFlags.NonPublic)!,
+            name, identity, "", "", "", "", "", TransportationProgramType.SpecialEducation, vatExempt)!;
+
+    private static object CreateRoute(string number, string name, string identity) =>
+        Activator.CreateInstance(typeof(MainWindow).GetNestedType("RouteDraft", BindingFlags.NonPublic)!,
+            number, name, 1_000m, 0m, 0m, 20m, "IHALE-01", identity, "Same name", "SOZ-01",
+            TransportationProgramType.SpecialEducation)!;
+
+    private static T Field<T>(MainWindow window, string name) =>
+        (T)typeof(MainWindow).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)!.GetValue(window)!;
+
+    private static IList Collection(MainWindow window, string name) => Field<IList>(window, name);
+
+    private static void SetField(MainWindow window, string name, object value) =>
+        typeof(MainWindow).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(window, value);
+
+    private static object? Invoke(MainWindow window, string name, params object[] arguments)
+    {
+        try
+        {
+            return typeof(MainWindow).GetMethod(name, BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window, arguments);
+        }
+        catch (TargetInvocationException error) when (error.InnerException is not null)
+        {
+            ExceptionDispatchInfo.Capture(error.InnerException).Throw();
+            throw;
+        }
+    }
+
+    private static void RunOnSta(Action test)
+    {
+        Exception? error = null;
+        var thread = new Thread(() =>
+        {
+            try { test(); }
+            catch (Exception exception) { error = exception; }
+        }) { IsBackground = true };
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+        Assert.True(thread.Join(TimeSpan.FromSeconds(30)), "Editor handler did not finish within 30 seconds.");
+        if (error is not null)
+            ExceptionDispatchInfo.Capture(error).Throw();
+    }
 
     [Fact]
     public void ProgressPanel_ShouldPlaceContextRouteSelectionAndActionsInWorkflowOrder()
@@ -33,16 +215,33 @@ public sealed class HakedisCreateHybridUiContractTests
         Assert.True(inputIndex < resultIndex && resultIndex < actionIndex,
             "The action bar must appear after the input and result cards.");
 
+        var actionPanel = panelElements[actionIndex];
+        foreach (var buttonName in new[]
+        {
+            "CalculateProgressButton", "CancelProgressEditButton", "EditCurrentProgressButton",
+            "ArchiveCurrentProgressButton", "CorrectCurrentProgressButton"
+        })
+        {
+            var button = panelElements[IndexOfNamedElement(panelElements, buttonName)];
+            Assert.Equal("Button", button.Name.LocalName);
+            Assert.True(button.Ancestors().Contains(actionPanel),
+                $"{buttonName} must be inside ProgressActionPanel.");
+        }
+
         var archiveCorrectionState = panelElements
             .Single(element => (string?)element.Attribute(XamlNamespace + "Name") == "ProgressArchiveCorrectionStateTextBlock");
         Assert.Contains("ARŞİV DÜZELTME", (string?)archiveCorrectionState.Attribute("Text"), StringComparison.Ordinal);
         Assert.Equal("#F4C247", (string?)archiveCorrectionState.Attribute("Foreground"));
         Assert.Contains("KİLİTLİ", (string?)archiveCorrectionState.Attribute("Text"), StringComparison.Ordinal);
         Assert.Null(archiveCorrectionState.Attribute("Visibility"));
-        Assert.Contains(archiveCorrectionState.Descendants(),
+        var archiveStateTrigger = Assert.Single(archiveCorrectionState.Descendants().Where(
             element => element.Name.LocalName == "DataTrigger"
                 && string.Equals((string?)element.Attribute("Value"), "False", StringComparison.Ordinal)
-                && ((string?)element.Attribute("Binding"))?.Contains("ProgressTenderListBox", StringComparison.Ordinal) == true);
+                && ((string?)element.Attribute("Binding"))?.Contains("ProgressTenderListBox", StringComparison.Ordinal) == true
+                && ((string?)element.Attribute("Binding"))?.Contains("Path=IsEnabled", StringComparison.Ordinal) == true));
+        Assert.Contains(archiveStateTrigger.Elements(), element => element.Name.LocalName == "Setter"
+            && string.Equals((string?)element.Attribute("Property"), "Visibility", StringComparison.Ordinal)
+            && string.Equals((string?)element.Attribute("Value"), "Visible", StringComparison.Ordinal));
     }
 
     [Fact]
