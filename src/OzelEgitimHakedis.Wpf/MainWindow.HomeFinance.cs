@@ -22,9 +22,9 @@ public partial class MainWindow
         var firms = rows.Select(row => OehsIdentityService.NormalizeIdentity(row.Route.ContractorTaxOrIdentityNumber))
             .Where(key => key.Length > 0).Distinct(StringComparer.Ordinal).Count();
         HomeFirmsValue.Text = $"{firms} firma";
-        HomeFinanceScopeText.Text = HomeProgram is null || HomeMonthPicker.SelectedDate is null
-            ? "Program ve hakediş ayını seçin."
+        HomeFinanceScopeText.Text = HomeProgram is null || HomeSelectedPeriod is null
+            ? "Program ve hakediş dönemini seçin."
             : payments.Length == 0 ? "Seçili dönemde kayıtlı hakediş yok."
-            : "Program · İKN · ay toplamı — kayıtlı hakedişler";
+            : "Program · İKN · dönem toplamı — kayıtlı hakedişler";
     }
 }

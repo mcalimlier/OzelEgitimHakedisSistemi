@@ -971,7 +971,6 @@ public partial class MainWindow : Window
         {
             TenderNumberTextBox.Text = contract.TenderNumber;
             ContractNumberTextBox.Text = contract.ContractNumber;
-            WorkNameTextBox.Text = GetContractWorkName(contract);
             ContractAmountTextBox.Text = FormatCalculationInput(contract.ContractAmount);
             ContractWorkDaysTextBox.Text = contract.ContractWorkDays.ToString(CultureInfo.CurrentCulture);
             ContractTransportDailyPriceTextBox.Text = FormatCalculationInput(contract.TransportDailyPrice);
@@ -999,7 +998,6 @@ public partial class MainWindow : Window
     {
         TenderNumberTextBox.Clear();
         ContractNumberTextBox.Clear();
-        WorkNameTextBox.Clear();
         ContractWorkDaysTextBox.Clear();
         ContractTransportDailyPriceTextBox.Clear();
         ContractAmountTextBox.Clear();
@@ -1664,7 +1662,7 @@ public partial class MainWindow : Window
     {
         foreach (var textBox in new TextBox[]
         {
-            TenderNumberTextBox, ContractNumberTextBox, WorkNameTextBox,
+            TenderNumberTextBox, ContractNumberTextBox,
             ContractAmountTextBox, ContractWorkDaysTextBox, ContractTransportDailyPriceTextBox,
             ContractorNameTextBox, ContractorTaxTextBox, ContractorAddressTextBox,
             ContractorPhoneTextBox, ContractorEmailTextBox, ContractorBankTextBox, ContractorContactTextBox,
@@ -3286,10 +3284,6 @@ public partial class MainWindow : Window
         var lookupContractNumber = _editingContractNumber ?? ContractNumberTextBox.Text.Trim();
         var contract = FindContract(lookupTender, lookupContractNumber, _editingContractProgramType ?? GetSelectedTransportationProgramType());
         var hasContract = contract is not null;
-        if (_editingArchiveSnapshot is { } archive)
-            WorkNameTextBox.Text = GetContractWorkName(archive.Contract);
-        else if (contract is not null)
-            WorkNameTextBox.Text = GetContractWorkName(contract);
 
         ContractStatusSummaryTextBlock.Text = hasContract ? "KAYITLI" : "TASLAK";
         ContractAmountSummaryTextBlock.Text =
@@ -4892,7 +4886,7 @@ public partial class MainWindow : Window
             if (!TryParseWorkDays(GuideWorkDaysTextBox.Text, out guideWorkDays) || guideWorkDays < 0)
                 invalidFields.Add((GuideWorkDaysTextBox, "Rehber İş Günü"));
             if (!TryParseDecimal(GuideDailyPriceTextBox.Text, out guideDailyPrice) || guideDailyPrice < 0)
-                invalidFields.Add((GuideDailyPriceTextBox, "Rehber Günlük Fiyat"));
+                invalidFields.Add((GuideDailyPriceTextBox, "Rehber Personel Günlük Fiyat"));
             if (!TryParseDecimalOrZero(GuideDiscountTextBox.Text, out guideDiscount) || guideDiscount < 0)
                 invalidFields.Add((GuideDiscountTextBox, "Rehber İskonto"));
             if (!TryParseDecimalOrZero(GuidePriceDifferenceTextBox.Text, out guidePriceDifference))
@@ -4913,7 +4907,7 @@ public partial class MainWindow : Window
         }
 
         if (!TryParseDecimal(DailyPriceTextBox.Text, out var dailyPrice) || dailyPrice < 0)
-            invalidFields.Add((DailyPriceTextBox, "Taşıma Günlük Fiyat"));
+            invalidFields.Add((DailyPriceTextBox, "Taşıma Günlük Fiyatı"));
         if (!TryParseDecimalOrZero(DiscountTextBox.Text, out var discount) || discount < 0)
             invalidFields.Add((DiscountTextBox, "Taşıma İskonto"));
         if (!TryParseDecimalOrZero(PriceDifferenceTextBox.Text, out var priceDifference))
@@ -8179,7 +8173,7 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         {
             TenderNumberTextBox,
             ContractNumberTextBox,
-            WorkNameTextBox,
+
             ContractAmountTextBox,
             ContractWorkDaysTextBox
         })
@@ -8248,7 +8242,7 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         {
             TenderNumberTextBox,
             ContractNumberTextBox,
-            WorkNameTextBox,
+
             ContractAmountTextBox,
             ContractWorkDaysTextBox,
             ContractTransportDailyPriceTextBox,
@@ -8319,7 +8313,7 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         public string DailyPriceText => $"Taşıma Günlük: {DailyPrice:N2} ₺";
         public string GuideDailyPriceText => $"Rehber: {GuideDailyPrice:N2} ₺";
         public string TransportSummaryText => $"Döneme Esas THGS: {TransportWorkDays} gün × {DailyPrice:N2} ₺";
-        public string GuideSummaryText => $"Rehber Günlük Fiyat: {GuideDailyPrice:N2} ₺";
+        public string GuideSummaryText => $"Rehber Personel Günlük Fiyat: {GuideDailyPrice:N2} ₺";
         public string ServiceSummaryText => $"Taşıma {TransportWorkDays} gün • Rehber günlük {GuideDailyPrice:N2} ₺";
         public string RelationshipText => $"İKN: {TenderNumber} • Yüklenici: {ContractorName}";
         public string DisplayText => string.IsNullOrWhiteSpace(ContractorName)

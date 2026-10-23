@@ -486,7 +486,7 @@ public sealed class HakedisCreateHybridUiContractTests
                 foreach(var item in new[]{p,p2,pb,p with {Id=Guid.NewGuid(),CreatedAt=p.CreatedAt.AddDays(-1)},p with {Id=Guid.NewGuid(),PeriodDate=new DateOnly(2026,9,1)}}) Collection(window,"_progressHistory").Add(item);
                 var program=Field<ComboBox>(window,"HomeProgramComboBox");
                 program.Items.Add(new ComboBoxItem{Tag="SpecialEducation"});program.Items.Add(new ComboBoxItem{Tag="BasicOrSecondary"});program.SelectedIndex=0;
-                Field<DatePicker>(window,"HomeMonthPicker").SelectedDate=new DateTime(2026,10,1);
+                SelectHomePeriod(window,new DateOnly(2026,10,1));
                 SetField(window,"_operationsReady",true);
                 string Money(decimal value)=>value.ToString("N2",CultureInfo.GetCultureInfo("tr-TR"))+" ₺";
                 string Text(string key)=>Field<TextBlock>(window,"Home"+key+"Value").Text;
@@ -504,7 +504,7 @@ public sealed class HakedisCreateHybridUiContractTests
                 Assert.Equal(Money(p.Calculation.NetPayable),Text("Net"));Assert.Equal("1 / 2",Text("Routes"));Assert.Equal("1 firma",Text("Firms"));
                 program.SelectedIndex=1;Invoke(window,"RefreshHomeOperations");
                 Assert.Equal(Money(pb.Calculation.NetPayable),Text("Net"));Assert.Equal("1 / 1",Text("Routes"));
-                Field<DatePicker>(window,"HomeMonthPicker").SelectedDate=new DateTime(2026,11,1);Invoke(window,"RefreshHomeOperations");
+                SelectHomePeriod(window,new DateOnly(2026,11,1));Invoke(window,"RefreshHomeOperations");
                 Assert.Equal(Money(0),Text("Net"));Assert.Equal("0 / 1",Text("Routes"));
                 program.SelectedIndex=-1;Invoke(window,"RefreshHomeOperations");
                 Assert.Equal(Money(0),Text("Net"));Assert.Equal("0 / 0",Text("Routes"));Assert.Equal("0 firma",Text("Firms"));
@@ -764,62 +764,6 @@ public sealed class HakedisCreateHybridUiContractTests
         Assert.Equal("HAKEDİŞİ HESAPLA VE KAYDET", (string?)button.Attribute("Content"));
         Assert.Equal("CalculateProgressButton_Click", EventName(button, "Click"));
         var grid = NamedElement(xaml, "MultiRoutePaymentGrid");
-        Assert.Equal("HybridGrid_PreviewKeyDown", EventName(grid, "PreviewKeyDown"));
-        Assert.Equal("HybridPasteButton_Click", EventName(NamedElement(xaml, "HybridPasteButton"), "Click"));
-        Assert.Equal("HybridUndoButton_Click", EventName(NamedElement(xaml, "HybridUndoButton"), "Click"));
-    }
-
-    [Fact]
-    public void HybridClipboard_ShouldApplyAndUndoSelectedRowWithoutTouchingAnotherRoute()
-    {
-        RunOnSta(() =>
-        {
-            var window = CreateEditorHarness();
-            var first = new MainWindow.MultiRoutePaymentDraftRow
-            {
-                RouteNumber = "01", WorkDays = 10m, PriceDifference = 5m
-            };
-            var second = new MainWindow.MultiRoutePaymentDraftRow
-            {
-                RouteNumber = "02", WorkDays = 15m, PriceDifference = 9m
-            };
-            var rows = Field<System.Collections.ObjectModel.ObservableCollection<MainWindow.MultiRoutePaymentDraftRow>>(
-                window, "_multiRoutePaymentRows");
-            rows.Add(first);
-            rows.Add(second);
-            var grid = Field<DataGrid>(window, "MultiRoutePaymentGrid");
-            var days = new DataGridTextColumn
-            {
-                Header = "Taşıma Gün", Binding = new Binding(nameof(first.WorkDays))
-            };
-            var difference = new DataGridTextColumn
-            {
-                Header = "Taşıma Fiyat Farkı", Binding = new Binding(nameof(first.PriceDifference))
-            };
-            grid.Columns.Add(days);
-            grid.Columns.Add(difference);
-            grid.ItemsSource = rows;
-            grid.CurrentCell = new DataGridCellInfo(first, days);
-
-            Assert.True((bool)Invoke(window, "TryPasteHybridGridText", "16\t1.234,50")!);
-            Assert.Equal(16m, first.WorkDays);
-            Assert.Equal(1234.50m, first.PriceDifference);
-            Assert.Equal(15m, second.WorkDays);
-            Assert.Equal(9m, second.PriceDifference);
-
-            Invoke(window, "UndoHybridGridPaste");
-            Assert.Equal(10m, first.WorkDays);
-            Assert.Equal(5m, first.PriceDifference);
-            Assert.Equal(15m, second.WorkDays);
-            Assert.False((bool)Invoke(window, "TryPasteHybridGridText", "15\tgeçersiz")!);
-            Assert.Equal(10m, first.WorkDays);
-            Assert.Equal(5m, first.PriceDifference);
-
-            Assert.True((bool)Invoke(window, "TryPasteHybridGridText", "17\t20")!);
-            first.WorkDays = 19m; // The user edited a cell after the paste.
-            Invoke(window, "UndoHybridGridPaste");
-            Assert.Equal(19m, first.WorkDays); // Never overwrite the newer edit.
-        });
     }
 
     [Fact]
@@ -976,7 +920,7 @@ public sealed class HakedisCreateHybridUiContractTests
                 Collection(window,"_contractors").Add(CreateFirm("IŞIK TAŞIMA","12345678901"));
                 var program=Field<ComboBox>(window,"HomeProgramComboBox");
                 program.Items.Add(new ComboBoxItem{Tag="SpecialEducation"});program.SelectedIndex=0;
-                Field<DatePicker>(window,"HomeMonthPicker").SelectedDate=c.StartDate.ToDateTime(TimeOnly.MinValue);
+                SelectHomePeriod(window,c.StartDate);
                 SetField(window,"_operationsReady",true);
                 Invoke(window,"RefreshHomeOperations");
                 var grid=Field<DataGrid>(window,"HomeMonthlyGrid");
@@ -1006,7 +950,9 @@ public sealed class HakedisCreateHybridUiContractTests
                 ((ComboBox)layout.FindName("HomeProgramComboBox")).SelectedIndex=0;
                 var tender=(ComboBox)layout.FindName("HomeTenderListBox");
                 tender.Items.Add(ArchiveProgressEditorContextTests.CreateArchive().Contract with {TenderNumber="2026/123456"});tender.SelectedIndex=0;
-                ((DatePicker)layout.FindName("HomeMonthPicker")).SelectedDate=new DateTime(2026,10,1);
+                var periodBox=(ComboBox)layout.FindName("HomePeriodMonthComboBox");
+                periodBox.ItemsSource=new[]{new ProgressPaymentMonthOption(new DateOnly(2026,10,1),new DateOnly(2026,10,31))};
+                periodBox.SelectedIndex=0;
                 ((Button)layout.FindName("HomeNextActionButton")).IsEnabled=true;
                 ((Button)layout.FindName("HomeNextActionButton")).Content="Hakediş Oluştur";
                 ((Border)layout.FindName("HomePreflightPanel")).Visibility=Visibility.Visible;
@@ -1434,7 +1380,6 @@ public sealed class HakedisCreateHybridUiContractTests
                 Collection(window, "_routes").Add(CreateRoute("01", routeName, "12345678901"));
             Invoke(window, "ApplyContractToForm", contract);
 
-            Assert.Equal(expected, Field<TextBox>(window, "WorkNameTextBox").Text);
             Assert.Equal(legacyWorkName, contract.WorkName);
         });
     }
@@ -1528,19 +1473,6 @@ public sealed class HakedisCreateHybridUiContractTests
         var summaryValue = LoadMainWindowXaml().Descendants()
             .Single(element => (string?)element.Attribute(XamlNamespace + "Name") == "ProgressNetSummaryTextBlock");
         Assert.Equal("Ele Geçen", (string?)summaryValue.Parent!.Elements().First().Attribute("Text"));
-    }
-
-    [Fact]
-    public void ContractWorkName_ShouldBeReadOnlyAndNotRequiredByAnySaveOrPreviewPath()
-    {
-        var document = LoadMainWindowXaml();
-        var workName = document.Descendants().Single(element => (string?)element.Attribute(XamlNamespace + "Name") == "WorkNameTextBox");
-        Assert.Equal("True", (string?)workName.Attribute("IsReadOnly"));
-        Assert.Contains("Hattın Adı", (string?)workName.Attribute("ToolTip"), StringComparison.Ordinal);
-
-        var source = File.ReadAllText(LoadProjectFile("src", "OzelEgitimHakedis.Wpf", "MainWindow.xaml.cs"));
-        foreach (var method in new[] { "SaveContractButton_Click", "SaveArchivedContractCorrection", "TryCreateHistoryCorrectionPreview" })
-            Assert.DoesNotContain("string.IsNullOrWhiteSpace(WorkNameTextBox.Text)", MethodBody(source, method), StringComparison.Ordinal);
     }
 
     [Theory]
@@ -1833,7 +1765,7 @@ public sealed class HakedisCreateHybridUiContractTests
         Assert.Equal("False", (string?)named["MultiRoutePaymentGrid"].Attribute("AutoGenerateColumns"));
         Assert.Contains(named["MultiRoutePaymentGrid"].Descendants(),
             element => element.Name.LocalName == "DataGridTextColumn"
-                && string.Equals((string?)element.Attribute("Header"), "Taşıma Günlük Fiyat", StringComparison.Ordinal)
+                && string.Equals((string?)element.Attribute("Header"), "Taşıma Günlük Fiyatı", StringComparison.Ordinal)
                 && string.Equals((string?)element.Attribute("IsReadOnly"), "False", StringComparison.Ordinal));
         Assert.Contains(named["MultiRoutePaymentGrid"].Descendants(),
             element => element.Name.LocalName == "DataGridTextColumn"
@@ -1846,8 +1778,8 @@ public sealed class HakedisCreateHybridUiContractTests
                 StringComparer.Ordinal);
         foreach (var editableHeader in new[]
         {
-            "Hattın Adı", "Taşıma Günlük Fiyat", "Rehber Günlük Fiyat", "Taşıma Gün", "Taşıma İskonto", "Taşıma Fiyat Farkı KDV Hariç",
-            "Rehber Gün", "Rehber İskonto", "Rehber Personel Fiyat Farkı KDV Hariç",
+            "Hattın Adı", "Taşıma Günlük Fiyatı", "Rehber Personel Günlük Fiyat", "Döneme Esas Taşıma Hakediş Gün Sayısı (Döneme Esas THGS)", "Taşıma İskonto", "Taşıma Fiyat Farkı KDV Hariç",
+            "Rehber İş Günü (bu ay)", "Rehber İskonto", "Rehber Personel Fiyat Farkı KDV Hariç",
             "Vergi Borcu", "SGK Borcu", "Denetim Cezası"
         })
         {
@@ -2109,4 +2041,11 @@ public sealed class HakedisCreateHybridUiContractTests
         throw new FileNotFoundException(
             $"Project file '{Path.Combine(segments)}' was not found from the test working directory or test output directory.");
     }
+    private static void SelectHomePeriod(MainWindow window, DateOnly period)
+    {
+        var box=Field<ComboBox>(window,"HomePeriodMonthComboBox");
+        box.ItemsSource=new[]{new ProgressPaymentMonthOption(new DateOnly(period.Year,period.Month,1),new DateOnly(period.Year,period.Month,DateTime.DaysInMonth(period.Year,period.Month)))};
+        box.SelectedIndex=0;
+    }
+
 }

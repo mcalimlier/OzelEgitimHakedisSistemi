@@ -15,7 +15,7 @@ public sealed class PracticalHomeTests
         var doc=XDocument.Load(Path.Combine(Root,"src/OzelEgitimHakedis.Wpf/MainWindow.xaml"));
         XNamespace x="http://schemas.microsoft.com/winfx/2006/xaml";
         var home=doc.Descendants().Single(e=>(string?)e.Attribute(x+"Name")=="HomePanel");
-        foreach(var name in new[]{"HomeMonthPicker","HomeMonthlyGrid","HomePreflightPanel","HomePreviewButton","HomeSavePdfsButton"})
+        foreach(var name in new[]{"HomePeriodMonthComboBox","HomeMonthlyGrid","HomePreflightPanel","HomePreviewButton","HomeSavePdfsButton"})
             Assert.Contains(home.Descendants(),e=>(string?)e.Attribute(x+"Name")==name);
         Assert.DoesNotContain("HESAPLAMA MOTORU",home.ToString(),StringComparison.Ordinal);
         Assert.DoesNotContain("İŞ AKIŞI / İLERLEME ŞABLONU",home.ToString(),StringComparison.Ordinal);

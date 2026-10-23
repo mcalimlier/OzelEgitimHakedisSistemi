@@ -21,7 +21,6 @@ public partial class MainWindow
 
     private void InitializeOperations()
     {
-        HomeMonthPicker.SelectedDate=DateTime.Today;
         if(TryGetSelectedTransportationProgramType(out var program)) HomeProgramComboBox.SelectedIndex=program==TransportationProgramType.SpecialEducation?0:1;
         else if(_contracts.Select(c=>c.ProgramType).Distinct().Count()==1)
             HomeProgramComboBox.SelectedIndex=_contracts[0].ProgramType==TransportationProgramType.SpecialEducation?0:1;
@@ -85,9 +84,10 @@ public partial class MainWindow
             var previousTender=HomeTenderListBox.SelectedItem as ContractDraftData;
             HomeTenderListBox.ItemsSource=_contracts.Where(c=>c.ProgramType==program).ToArray();
             HomeTenderListBox.SelectedItem=previousTender is not null && previousTender.ProgramType==program?previousTender:null;
-            var month=HomeMonthPicker.SelectedDate;
+            UpdateHomePeriodOptions();
+            var month=HomeSelectedPeriod;
             _monthlyRows=program.HasValue && month.HasValue?PaymentOperationsService.BuildMonth(SnapshotData(),program.Value,
-                DateOnly.FromDateTime(month.Value),ReadOperationArchives(),HasCurrentOutput).ToList():new();
+                month.Value,ReadOperationArchives(),HasCurrentOutput).ToList():new();
             if(HomeTenderListBox.SelectedItem is ContractDraftData c)
                 _monthlyRows=_monthlyRows.Where(r=>r.Contract==c).ToList();
             UpdateHomeFinanceCards(_monthlyRows);
@@ -96,8 +96,8 @@ public partial class MainWindow
                 PaymentOperationsService.Contains(r.Firm+" "+r.RouteTitle+" "+r.Tender,HomeSearchBox.Text)).ToArray();
             HomeMonthlyGrid.ItemsSource=visible;
             HomeMonthlyGrid.SelectedItem=visible.FirstOrDefault(r=>PaymentOperationsService.RouteKey(r.Route)==selectedKey);
-            HomeListMessage.Text=program is null?"Önce bir taşıma programı seçin.":month is null?"Bir hakediş ayı seçin.":
-                visible.Length==0?(_monthlyRows.Count==0?"Bu ayda beklenen hat yok. Sözleşme ve hat tanımlarını kontrol edin.":"Filtreye uyan kayıt yok."):
+            HomeListMessage.Text=program is null?"Önce bir taşıma programı seçin.":month is null?"Bir hakediş dönemi seçin.":
+                visible.Length==0?(_monthlyRows.Count==0?"Bu dönemde beklenen hat yok. Sözleşme ve hat tanımlarını kontrol edin.":"Filtreye uyan kayıt yok."):
                 $"{month:MMMM yyyy} · {visible.Length} hat gösteriliyor / {_monthlyRows.Count} hat";
             HomeSetupButton.Visibility=program.HasValue&&_monthlyRows.Count==0?Visibility.Visible:Visibility.Collapsed;
             HomeSetupButton.Content=_contracts.Any(c=>c.ProgramType==program)?"Hatları ve sözleşme tarihlerini kontrol et":"Sözleşme oluştur";
@@ -185,7 +185,7 @@ public partial class MainWindow
             ProgressTenderListBox.SelectedItem=row.Contract;
             ProgressContractorComboBox.SelectedItem=_contractors.FirstOrDefault(c=>c.ProgramType==row.Route.ProgramType&&c.TaxOrIdentityNumber==row.Route.ContractorTaxOrIdentityNumber);
             ProgressRouteComboBox.SelectedItem=_routes.FirstOrDefault(r=>PaymentOperationsService.RouteKey(ToCoreRoute(r))==PaymentOperationsService.RouteKey(row.Route));
-            if(HomeMonthPicker.SelectedDate.HasValue) SelectProgressPeriod(DateOnly.FromDateTime(HomeMonthPicker.SelectedDate.Value));
+            if(HomeSelectedPeriod.HasValue) SelectProgressPeriod(HomeSelectedPeriod.Value);
         }
     }
     private void HomeOutput_Click(object sender,RoutedEventArgs e)
