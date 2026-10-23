@@ -27,6 +27,98 @@ public sealed class HakedisCreateHybridUiContractTests
         "http://schemas.microsoft.com/winfx/2006/xaml";
 
     [Fact]
+    public void HybridSourceValues_ShouldRemainEditableAndNotBeOverwrittenOnReselection()
+    {
+        RunOnSta(() =>
+        {
+            var window = CreateEditorHarness();
+            var selector = Field<ListBox>(window, "ProgressRouteComboBox");
+            var route = CreateRoute("01", "Merkez", "12345678901");
+            selector.Items.Add(route);
+            Collection(window, "_routes").Add(route);
+            selector.SelectedItems.Add(route);
+            Invoke(window, "UpdateHybridRouteDraftRows");
+            var rows = Field<System.Collections.ObjectModel.ObservableCollection<MainWindow.MultiRoutePaymentDraftRow>>(window, "_multiRoutePaymentRows");
+            var row = Assert.Single(rows);
+            row.DailyPrice = 1234.5678m;
+            row.GuideDailyPrice = 333.25m;
+            row.RouteName = "Yeni Merkez";
+            Invoke(window, "UpdateHybridRouteDraftRows");
+            Assert.Equal(1234.5678m, row.DailyPrice);
+            Assert.Equal(333.25m, row.GuideDailyPrice);
+            Assert.Equal("Yeni Merkez", row.RouteName);
+        });
+    }
+
+    [Fact]
+    public void HybridSourceUpdate_ShouldKeepCancelDirtyThenPersistAllSelectedChangesOnConfirmation()
+    {
+        RunOnSta(() =>
+        {
+            var temp = Directory.CreateTempSubdirectory("oehs-source-update-");
+            try
+            {
+                var window = CreateEditorHarness();
+                var store = new OehsProgramScopedApplicationDataStore(Path.Combine(temp.FullName, "data"));
+                SetField(window, "_dataStore", store);
+                SetField(window, "_calculationConstantsHistory", new System.Collections.Generic.List<ProgressPaymentCalculationConstantsChange>());
+                var contract = ArchiveProgressEditorContextTests.CreateArchive().Contract;
+                Collection(window, "_contracts").Add(contract);
+                Collection(window, "_contractors").Add(CreateFirm("Test firma", "12345678901"));
+                var tender = Field<ComboBox>(window, "ProgressTenderListBox");
+                tender.Items.Add(contract); tender.SelectedItem = contract;
+                var selector = Field<ListBox>(window, "ProgressRouteComboBox");
+                foreach (var number in new[] { "01", "02" })
+                {
+                    var route = CreateRoute(number, "Hat " + number, "12345678901");
+                    Collection(window, "_routes").Add(route);
+                    selector.Items.Add(route); selector.SelectedItems.Add(route);
+                }
+                var month = new ProgressPaymentMonthOption(new DateOnly(2026,10,1),new DateOnly(2026,10,31));
+                var months = Field<ComboBox>(window, "ProgressPeriodMonthComboBox");
+                months.Items.Add(month); months.SelectedItem = month;
+                Invoke(window, "UpdateHybridRouteDraftRows");
+                var buttonField = typeof(MainWindow).GetField("UpdateHybridRoutesButton",BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public);
+                Assert.NotNull(buttonField);
+                var button = Assert.IsType<Button>(buttonField!.GetValue(window));
+                Assert.False(button.IsEnabled);
+                var rows = Field<System.Collections.ObjectModel.ObservableCollection<MainWindow.MultiRoutePaymentDraftRow>>(window, "_multiRoutePaymentRows");
+                rows[0].WorkDays = 18.5m; rows[0].DailyPrice = 1234.5678m;
+                rows[0].GuideWorkDays = 17m; rows[0].GuideDailyPrice = 333.25m;
+                rows[0].TaxDebt = 12m; rows[0].RouteName = "Yeni Merkez";
+                rows[1].WorkDays = 14m; rows[1].GuideDailyPrice = 222m;
+                Assert.True(button.IsEnabled);
+                Assert.False((bool)Invoke(window,"ApplyHybridRouteChanges",false)!);
+                Assert.True(button.IsEnabled);
+                Assert.Equal(1000m,(decimal)Collection(window,"_routes")[0]!.GetType().GetProperty("DailyPrice")!.GetValue(Collection(window,"_routes")[0])!);
+                Assert.Empty(store.Load().Routes);
+                Assert.True((bool)Invoke(window,"ApplyHybridRouteChanges",true)!);
+                Assert.False(button.IsEnabled);
+                var saved = store.Load();
+                Assert.Equal(2,saved.Routes.Count);
+                var first = saved.Routes.Single(route => route.RouteNumber == "01");
+                Assert.Equal("Yeni Merkez",first.Name);
+                Assert.Equal(18.5m,first.TransportWorkDays);
+                Assert.Equal(1234.5678m,first.DailyPrice);
+                Assert.Equal(333.25m,first.GuideDailyPrice);
+                Assert.Equal(14m,saved.Routes.Single(route=>route.RouteNumber=="02").TransportWorkDays);
+                Assert.Empty(saved.ProgressPayments!);
+                using var json = System.Text.Json.JsonDocument.Parse(System.Text.Json.JsonSerializer.Serialize(saved));
+                var drafts = json.RootElement.GetProperty("HybridPaymentDrafts");
+                Assert.Equal(2,drafts.GetArrayLength());
+                var input = drafts.EnumerateArray().Single(d=>d.GetProperty("RouteKey").GetString()==rows[0].RouteKey).GetProperty("Input");
+                Assert.Equal(17m,input.GetProperty("GuideWorkDays").GetDecimal());
+                Assert.Equal(12m,input.GetProperty("TaxDebt").GetDecimal());
+                rows[0].WorkDays=16m;
+                Assert.True(button.IsEnabled);
+                rows[0].WorkDays=18.5m;
+                Assert.False(button.IsEnabled);
+            }
+            finally { temp.Delete(true); }
+        });
+    }
+
+    [Fact]
     public void GoldFinance_ShouldKeepEightCardsWithVectorSymbolsAndGoldNetCard()
     {
         RunOnSta(() =>
