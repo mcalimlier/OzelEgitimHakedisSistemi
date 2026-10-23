@@ -10,14 +10,15 @@ public partial class MainWindow
     private bool _clearingRecordFilters;
     private PaymentFilter ReadRecordFilter(bool archive)
     {
-        var date=(archive?ArchiveMonthFilter:HistoryMonthFilter).SelectedDate;
-        return new((archive?ArchiveSearchBox:HistorySearchBox).Text,date.HasValue?DateOnly.FromDateTime(date.Value):null,
+        var date=((archive?ArchiveMonthFilter:HistoryMonthFilter).SelectedItem as ProgressPaymentMonthOption)?.PeriodDate;
+        return new((archive?ArchiveSearchBox:HistorySearchBox).Text,date,
             (archive?ArchiveTenderFilter:HistoryTenderFilter).Text,(archive?ArchiveFirmFilter:HistoryFirmFilter).Text,
             HomeProgram??GetSelectedTransportationProgramType(),Choice(archive?ArchiveStatusFilter:HistoryStatusFilter)=="Undated");
     }
     private IReadOnlyList<ProgressPaymentHistoryData> FilterHistory()
     {
         if(!_operationsReady) return ProgressPaymentReportService.OrderByPaymentPeriod(_progressHistory);
+        UpdateRecordPeriodOptions(false);
         var filter=ReadRecordFilter(false);var status=Choice(HistoryStatusFilter);
         var archived=ReadOperationArchives().Select(a=>(a.ProgressPayment.Id,a.ProgressPayment.Input.ProgramType)).ToHashSet();
         var items=_progressHistory.Where(p=>PaymentOperationsService.Matches(p,filter) &&
@@ -30,6 +31,7 @@ public partial class MainWindow
     {
         var rows=ArchiveDisplayService.BuildRows(_archiveStore);
         if(!_operationsReady) return rows;
+        UpdateRecordPeriodOptions(true);
         var filter=ReadRecordFilter(true);var status=Choice(ArchiveStatusFilter);
         var valid=new List<(ArchiveDisplayRow Row,ProgressPaymentArchive Archive)>();
         var invalid=new List<ArchiveDisplayRow>();
@@ -53,14 +55,14 @@ public partial class MainWindow
     private void RecordsDateFilter_Changed(object sender,SelectionChangedEventArgs e) => RefreshRecordFilters();
     private void RecordsToggleFilter_Changed(object sender,RoutedEventArgs e) => RefreshRecordFilters();
     private void RefreshRecordFilters()
-    {if(_operationsReady&&!_clearingRecordFilters) {UpdateHistoryView();UpdateArchiveView();}}
+    {if(_operationsReady&&!_clearingRecordFilters&&!_updatingRecordPeriods) {UpdateHistoryView();UpdateArchiveView();}}
     private void ClearRecordFilters_Click(object sender,RoutedEventArgs e)
     {
         var archive=sender is Button{Tag:"Archive"};_clearingRecordFilters=true;
         try
         {
             (archive?ArchiveSearchBox:HistorySearchBox).Clear();(archive?ArchiveTenderFilter:HistoryTenderFilter).Clear();
-            (archive?ArchiveFirmFilter:HistoryFirmFilter).Clear();(archive?ArchiveMonthFilter:HistoryMonthFilter).SelectedDate=null;
+            (archive?ArchiveFirmFilter:HistoryFirmFilter).Clear();(archive?ArchiveMonthFilter:HistoryMonthFilter).SelectedItem=null;
             (archive?ArchiveStatusFilter:HistoryStatusFilter).SelectedIndex=0;
             if(archive) ArchiveShowRevisions.IsChecked=false;
         }

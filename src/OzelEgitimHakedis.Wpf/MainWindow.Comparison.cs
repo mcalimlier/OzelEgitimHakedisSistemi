@@ -46,9 +46,9 @@ public partial class MainWindow
                 OehsIdentityService.NormalizeIdentity(f.TaxOrIdentityNumber)==OehsIdentityService.NormalizeIdentity(original.ContractorTaxOrIdentityNumber??""));
             if(firm is not null)
             {
-                var old=new Contractor(firm.Name,firm.TaxOrIdentityNumber,firm.Address,firm.Phone,firm.Email,firm.BankAccountNumber,firm.ContactPerson,firm.ProgramType,firm.VatExempt);
+                var old=new Contractor(firm.Name,firm.TaxOrIdentityNumber,firm.Address,NormalizePhoneNumber(firm.Phone),firm.Email,firm.BankAccountNumber,firm.ContactPerson,firm.ProgramType,firm.VatExempt);
                 var next=old with {Name=ContractorNameTextBox.Text.Trim(),TaxOrIdentityNumber=ContractorTaxTextBox.Text.Trim(),
-                    Address=ContractorAddressTextBox.Text.Trim(),Phone=ContractorPhoneTextBox.Text.Trim(),Email=ContractorEmailTextBox.Text.Trim(),
+                    Address=ContractorAddressTextBox.Text.Trim(),Phone=NormalizePhoneNumber(ContractorPhoneTextBox.Text),Email=ContractorEmailTextBox.Text.Trim(),
                     BankAccountNumber=ContractorBankTextBox.Text.Trim(),ContactPerson=ContractorContactTextBox.Text.Trim(),VatExempt=ContractorVatExemptCheckBox.IsChecked==true};
                 return PaymentOperationsService.CompareFields(old,next,"Firma");
             }

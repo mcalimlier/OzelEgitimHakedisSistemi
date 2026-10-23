@@ -81,7 +81,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         _contractWorkNameConverter = (ContractWorkNameConverter)Resources["ContractWorkNameConverter"];
-        ContractorPhoneTextBox.Text = "0";
+        SetContractorPhoneText(string.Empty);
         ResetEditorUiToCreateMode();
         ConfigureWindow();
         ConfigureZeroValueInputs();
@@ -196,9 +196,8 @@ public partial class MainWindow : Window
         RouteSelectionCard.Visibility = Visibility.Visible;
         RouteNumberTextBox.IsReadOnly = false;
 
-        CalculateProgressButton.Content = "HAKEDİŞİ HESAPLA";
+        CalculateProgressButton.Content = "HAKEDİŞ HESAPLA/KAYDET";
         CancelProgressEditButton.Visibility = Visibility.Collapsed;
-        EditCurrentProgressButton.IsEnabled = true;
         ProgressEditorTitleTextBlock.Text = "DÖNEM HESAP BİLGİLERİ";
         ProgressTenderListBox.IsEnabled = true;
         ProgressRouteComboBox.IsEnabled = true;
@@ -245,10 +244,9 @@ public partial class MainWindow : Window
 
     private void SetProgressEditorMode(bool editing, bool archiveCorrection = false)
     {
-        CalculateProgressButton.Content = editing ? "DÜZENLE" : "HAKEDİŞİ HESAPLA";
+        CalculateProgressButton.Content = editing ? "DÜZENLE" : "HAKEDİŞ HESAPLA/KAYDET";
         SinglePaymentFieldsGrid.Visibility = editing ? Visibility.Visible : Visibility.Collapsed;
         CancelProgressEditButton.Visibility = editing ? Visibility.Visible : Visibility.Collapsed;
-        EditCurrentProgressButton.IsEnabled = !editing;
 
         if (editing)
         {
@@ -1788,7 +1786,7 @@ public partial class MainWindow : Window
                     OehsIdentityService.NormalizeIdentity(archive.Contractor.TaxOrIdentityNumber),
                     StringComparison.Ordinal) ||
                 TextDiffers(ContractorAddressTextBox, archive.Contractor.Address) ||
-                TextDiffers(ContractorPhoneTextBox, archive.Contractor.Phone) ||
+                ContractorPhoneDiffers(archive.Contractor.Phone) ||
                 TextDiffers(ContractorEmailTextBox, archive.Contractor.Email) ||
                 TextDiffers(ContractorBankTextBox, archive.Contractor.BankAccountNumber) ||
                 TextDiffers(ContractorContactTextBox, archive.Contractor.ContactPerson),
@@ -2080,7 +2078,7 @@ public partial class MainWindow : Window
                     OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber),
                     StringComparison.Ordinal) ||
                 TextDiffers(ContractorAddressTextBox, contractor.Address) ||
-                TextDiffers(ContractorPhoneTextBox, contractor.Phone) ||
+                ContractorPhoneDiffers(contractor.Phone) ||
                 TextDiffers(ContractorEmailTextBox, contractor.Email) ||
                 TextDiffers(ContractorBankTextBox, contractor.BankAccountNumber) ||
                 TextDiffers(ContractorContactTextBox, contractor.ContactPerson) ||
@@ -2592,7 +2590,7 @@ public partial class MainWindow : Window
                 ContractorNameTextBox.Clear();
                 ContractorTaxTextBox.Clear();
                 ContractorAddressTextBox.Clear();
-                ContractorPhoneTextBox.Text = "0";
+                SetContractorPhoneText(string.Empty);
                 ContractorEmailTextBox.Clear();
                 ContractorBankTextBox.Clear();
                 ContractorContactTextBox.Clear();
@@ -2620,6 +2618,8 @@ public partial class MainWindow : Window
     private void SaveArchivedContractorCorrection()
     {
         var archive = _editingArchiveSnapshot!;
+        if (!ValidateContractorPhone()) return;
+
         var name = ContractorNameTextBox.Text.Trim();
         var tax = OehsIdentityService.NormalizeIdentity(ContractorTaxTextBox.Text);
 
@@ -2914,6 +2914,8 @@ public partial class MainWindow : Window
             return;
         }
 
+        if (!ValidateContractorPhone()) return;
+
         var name = ContractorNameTextBox.Text.Trim();
         var tax = OehsIdentityService.NormalizeIdentity(ContractorTaxTextBox.Text);
         if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(tax))
@@ -2952,7 +2954,7 @@ public partial class MainWindow : Window
             name,
             tax,
             ContractorAddressTextBox.Text.Trim(),
-            ContractorPhoneTextBox.Text.Trim(),
+            NormalizePhoneNumber(ContractorPhoneTextBox.Text),
             ContractorEmailTextBox.Text.Trim(),
             ContractorBankTextBox.Text.Trim(),
             ContractorContactTextBox.Text.Trim(),
@@ -3063,7 +3065,7 @@ public partial class MainWindow : Window
         ContractorNameTextBox.Text = contractor.Name;
         ContractorTaxTextBox.Text = contractor.TaxOrIdentityNumber;
         ContractorAddressTextBox.Text = contractor.Address;
-        ContractorPhoneTextBox.Text = NormalizePhoneNumber(contractor.Phone);
+        SetContractorPhoneText(contractor.Phone);
         ContractorEmailTextBox.Text = contractor.Email;
         ContractorBankTextBox.Text = contractor.BankAccountNumber;
         ContractorContactTextBox.Text = contractor.ContactPerson;
@@ -3086,7 +3088,7 @@ public partial class MainWindow : Window
             ContractorNameTextBox.Clear();
             ContractorTaxTextBox.Clear();
             ContractorAddressTextBox.Clear();
-            ContractorPhoneTextBox.Text = "0";
+            SetContractorPhoneText(string.Empty);
             ContractorEmailTextBox.Clear();
             ContractorBankTextBox.Clear();
             ContractorContactTextBox.Clear();
@@ -3099,7 +3101,7 @@ public partial class MainWindow : Window
             ContractorNameTextBox.Text = original.Name;
             ContractorTaxTextBox.Text = original.TaxOrIdentityNumber;
             ContractorAddressTextBox.Text = original.Address;
-            ContractorPhoneTextBox.Text = original.Phone;
+            SetContractorPhoneText(original.Phone);
             ContractorEmailTextBox.Text = original.Email;
             ContractorBankTextBox.Text = original.BankAccountNumber;
             ContractorContactTextBox.Text = original.ContactPerson;
@@ -3163,7 +3165,7 @@ public partial class MainWindow : Window
         ContractorNameTextBox.Clear();
         ContractorTaxTextBox.Clear();
         ContractorAddressTextBox.Clear();
-        ContractorPhoneTextBox.Text = "0";
+        SetContractorPhoneText(string.Empty);
         ContractorEmailTextBox.Clear();
         ContractorBankTextBox.Clear();
         ContractorContactTextBox.Clear();
@@ -5701,7 +5703,7 @@ public partial class MainWindow : Window
         var item = GetLastCalculatedProgress();
         if (item is null)
         {
-            MessageBox.Show("Arşivlenecek tamamlanmış bir hakediş bulunamadı. Önce HAKEDİŞİ HESAPLA düğmesine basın.", "OEHS",
+            MessageBox.Show("Arşivlenecek tamamlanmış bir hakediş bulunamadı. Önce HAKEDİŞ HESAPLA/KAYDET düğmesine basın.", "OEHS",
                 MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
@@ -6243,19 +6245,6 @@ public partial class MainWindow : Window
         });
     }
 
-    private void EditCurrentProgressButton_Click(object sender, RoutedEventArgs e)
-    {
-        ClearArchiveCorrectionState();
-        var latest = GetSelectedProgressLatestPayment();
-        if (latest is null)
-        {
-            MessageBox.Show("Seçilen ihale/hat için düzenlenecek kayıt bulunamadı.", "OEHS", MessageBoxButton.OK, MessageBoxImage.Information);
-            return;
-        }
-
-        BeginHistoryOrArchiveCorrection(latest);
-    }
-
     private void EditHistoryButton_Click(object sender, RoutedEventArgs e)
     {
         ClearArchiveCorrectionState();
@@ -6431,7 +6420,7 @@ public partial class MainWindow : Window
             ContractorNameTextBox.Text = archivedContractor.Name;
             ContractorTaxTextBox.Text = archivedContractor.TaxOrIdentityNumber;
             ContractorAddressTextBox.Text = archivedContractor.Address;
-            ContractorPhoneTextBox.Text = archivedContractor.Phone;
+            SetContractorPhoneText(archivedContractor.Phone);
             ContractorEmailTextBox.Text = archivedContractor.Email;
             ContractorBankTextBox.Text = archivedContractor.BankAccountNumber;
             ContractorContactTextBox.Text = archivedContractor.ContactPerson;
@@ -6457,7 +6446,7 @@ public partial class MainWindow : Window
         ContractorNameTextBox.Text = contractor.Name;
         ContractorTaxTextBox.Text = contractor.TaxOrIdentityNumber;
         ContractorAddressTextBox.Text = contractor.Address;
-        ContractorPhoneTextBox.Text = contractor.Phone;
+        SetContractorPhoneText(contractor.Phone);
         ContractorEmailTextBox.Text = contractor.Email;
         ContractorBankTextBox.Text = contractor.BankAccountNumber;
         ContractorContactTextBox.Text = contractor.ContactPerson;
@@ -8209,7 +8198,7 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         else if (digits.StartsWith("90", StringComparison.Ordinal) && digits.Length >= 12)
             digits = digits[2..];
 
-        // The textbox starts with 0, so users who type another 0 must not save 00...
+        // Stored/document values use one domestic prefix; the editor omits it.
         digits = digits.TrimStart('0');
         return digits.Length == 0 ? string.Empty : "0" + digits;
     }

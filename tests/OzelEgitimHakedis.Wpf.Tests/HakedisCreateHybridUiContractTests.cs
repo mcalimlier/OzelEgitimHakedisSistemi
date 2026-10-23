@@ -864,7 +864,7 @@ public sealed class HakedisCreateHybridUiContractTests
     {
         var xaml = LoadMainWindowXaml();
         var button = NamedElement(xaml, "CalculateProgressButton");
-        Assert.Equal("HAKEDİŞİ HESAPLA VE KAYDET", (string?)button.Attribute("Content"));
+        Assert.Equal("HAKEDİŞ HESAPLA/KAYDET", (string?)button.Attribute("Content"));
         Assert.Equal("CalculateProgressButton_Click", EventName(button, "Click"));
         var grid = NamedElement(xaml, "MultiRoutePaymentGrid");
     }
@@ -1173,7 +1173,7 @@ public sealed class HakedisCreateHybridUiContractTests
     [Theory]
     [InlineData("AddRouteButton", "CancelRouteEditButton", "ClearRouteButton", 240)]
     [InlineData("SaveContractorButton", "CancelContractorEditButton", "ClearContractorButton", 300)]
-    [InlineData("CalculateProgressButton", "EditCurrentProgressButton", "ArchiveCurrentProgressButton", 680)]
+    [InlineData("CalculateProgressButton", "CancelProgressEditButton", "ArchiveCurrentProgressButton", 680)]
     public void ResponsiveActions_ShouldWrapEveryVisibleButtonWithinAvailableWidth(
         string firstName, string secondName, string lastName, double availableWidth)
     {
@@ -1784,7 +1784,7 @@ public sealed class HakedisCreateHybridUiContractTests
         var actionPanel = panelElements[actionIndex];
         foreach (var buttonName in new[]
         {
-            "CalculateProgressButton", "CancelProgressEditButton", "EditCurrentProgressButton",
+            "CalculateProgressButton", "CancelProgressEditButton",
             "ArchiveCurrentProgressButton", "CorrectCurrentProgressButton"
         })
         {
