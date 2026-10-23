@@ -169,6 +169,66 @@ public sealed class HakedisCreateHybridUiContractTests
     }
 
     [Fact]
+    public void HybridCalculation_ShouldPersistRoutePeriodDaysWithoutImportingAnnualGuideDays()
+    {
+        RunOnSta(() =>
+        {
+            foreach(var count in new[]{1,2})
+            {
+                var temp=Directory.CreateTempSubdirectory("oehs-hybrid-save-");
+                try
+                {
+                    var window=CreateEditorHarness();
+                    SetField(window,"_dataStore",new OehsProgramScopedApplicationDataStore(Path.Combine(temp.FullName,"data")));
+                    SetField(window,"_archiveStore",new ProgressPaymentArchiveStore(Path.Combine(temp.FullName,"archives")));
+                    SetField(window,"_calculationConstantsHistory",new System.Collections.Generic.List<ProgressPaymentCalculationConstantsChange>());
+                    var contract=ArchiveProgressEditorContextTests.CreateArchive().Contract
+                        with { ContractorName="Sözleşme Ana Firması" };
+                    Collection(window,"_contracts").Add(contract);
+                    Collection(window,"_contractors").Add(CreateFirm("Seçilen Hat Firması","12345678901"));
+                    Field<ComboBox>(window,"ProgressTenderListBox").Items.Add(contract);
+                    Field<ComboBox>(window,"ProgressTenderListBox").SelectedItem=contract;
+                    var routes=Field<ListBox>(window,"ProgressRouteComboBox");
+                    for(var index=0;index<count;index++)
+                    {
+                        var route=CreateRoute((index+1).ToString("00",CultureInfo.InvariantCulture),"Hat "+index,"12345678901", transportDays: 16.5m + index, guideDays: 180m);
+                        routes.Items.Add(route);Collection(window,"_routes").Add(route);routes.SelectedItems.Add(route);
+                    }
+                    var period=new ProgressPaymentMonthOption(new DateOnly(2026,10,1),new DateOnly(2026,10,31));
+                    Field<ComboBox>(window,"ProgressPeriodMonthComboBox").Items.Add(period);
+                    Field<ComboBox>(window,"ProgressPeriodMonthComboBox").SelectedItem=period;
+                    Invoke(window,"UpdateHybridRouteDraftRows");
+                    var rows=Field<System.Collections.ObjectModel.ObservableCollection<MainWindow.MultiRoutePaymentDraftRow>>(window,"_multiRoutePaymentRows");
+                    for(var index=0;index<count;index++)
+                    {Assert.Equal(16.5m+index,rows[index].WorkDays);Assert.Equal(0m,rows[index].GuideWorkDays);rows[index].PriceDifference=100+index*50;rows[index].TaxDebt=3+index*4;}
+                    foreach(var name in new[]{"WorkDaysTextBox","DailyPriceTextBox","PriceDifferenceTextBox","TaxDebtTextBox"})
+                        Field<TextBox>(window,name).Text="geçersiz ortak alan";
+                    Invoke(window,"CalculateProgressButton_Click",window,new RoutedEventArgs());
+                    var saved=new OehsProgramScopedApplicationDataStore(Path.Combine(temp.FullName,"data")).Load();
+                    Assert.Equal(count,saved.ProgressPayments!.Count);
+                    // A selected firm's route must not inherit a different tender-level
+                    // contractor name in the persisted batch identity.
+                    foreach(var payment in saved.ProgressPayments)
+                    {
+                        Assert.Contains("Seçilen Hat Firması", payment.BatchDisplayName ?? string.Empty,
+                            StringComparison.Ordinal);
+                        Assert.DoesNotContain("Sözleşme Ana Firması", payment.BatchDisplayName ?? string.Empty,
+                            StringComparison.Ordinal);
+                        var index=int.Parse(payment.RouteNumber!,CultureInfo.InvariantCulture)-1;
+                        Assert.Equal(16.5m+index,payment.Input.WorkDays);
+                        Assert.Equal(0m,payment.Input.GuideWorkDays);
+                        Assert.Equal((16.5m+index)*1000m,payment.Calculation.ServiceAmount);
+                        Assert.Equal(100+index*50,payment.Input.PriceDifference);
+                        Assert.Equal(3+index*4,payment.Input.TaxDebt);
+                        Assert.Equal(ProgressPaymentCalculator.Calculate(payment.Input).NetPayable,payment.Calculation.NetPayable);
+                    }
+                }
+                finally {temp.Delete(true);}
+            }
+        });
+    }
+
+    [Fact]
     public void HybridCalculation_ShouldPersistSingleAndMultipleRowsIgnoringInvalidSharedInputs()
     {
         RunOnSta(() =>
@@ -388,6 +448,41 @@ public sealed class HakedisCreateHybridUiContractTests
         Assert.DoesNotContain(NamedElement(doc,"SettingsPanel"),signatory.Ancestors());
     }
 
+    [Theory]
+    [InlineData(TransportationProgramType.SpecialEducation)]
+    [InlineData(TransportationProgramType.BasicOrSecondary)]
+    public void HybridRows_ShouldImportEachRoutePeriodDaysAndKeepEditedDraft(TransportationProgramType program)
+    {
+        RunOnSta(() =>
+        {
+            var window = CreateEditorHarness();
+            var routes = Field<ListBox>(window, "ProgressRouteComboBox");
+            var firstRoute = CreateRoute("01", "Merkez", "12345678901", program, transportDays: 18.5m, guideDays: 180m);
+            var secondRoute = CreateRoute("02", "Kuzey", "12345678901", program, transportDays: 12m, guideDays: 180m);
+            routes.Items.Add(firstRoute);
+            routes.Items.Add(secondRoute);
+            routes.SelectedItems.Add(firstRoute);
+            Invoke(window, "UpdateHybridRouteDraftRows");
+            var rows = Field<System.Collections.ObjectModel.ObservableCollection<MainWindow.MultiRoutePaymentDraftRow>>(window, "_multiRoutePaymentRows");
+            var first = Assert.Single(rows);
+            Assert.Equal(18.5m, first.WorkDays);
+            Assert.Equal(0m, first.GuideWorkDays);
+            Assert.Equal(18500m, first.Preview!.ServiceAmount);
+            first.WorkDays = 17m;
+            first.GuideWorkDays = program == TransportationProgramType.SpecialEducation ? 15m : 0m;
+            routes.SelectedItems.Add(secondRoute);
+            Invoke(window, "UpdateHybridRouteDraftRows");
+            Assert.Equal(12m, rows.Single(row => row.RouteNumber == "02").WorkDays);
+            routes.SelectedItems.Remove(firstRoute);
+            Invoke(window, "UpdateHybridRouteDraftRows");
+            routes.SelectedItems.Add(firstRoute);
+            Invoke(window, "UpdateHybridRouteDraftRows");
+            Assert.Same(first, rows.Single(row => row.RouteNumber == "01"));
+            Assert.Equal(17m, first.WorkDays);
+            Assert.Equal(program == TransportationProgramType.SpecialEducation ? 15m : 0m, first.CreateInput().GuideWorkDays);
+        });
+    }
+
     [Fact]
     public void HybridRows_ShouldKeepSingleAndMultipleRouteEditsWithoutSharedFieldOverwrite()
     {
@@ -404,7 +499,7 @@ public sealed class HakedisCreateHybridUiContractTests
             Invoke(window,"UpdateHybridRouteDraftRows");
             Assert.Equal(Visibility.Visible,Field<Border>(window,"MultiRouteEntryBorder").Visibility);
             var rows=Field<System.Collections.ObjectModel.ObservableCollection<MainWindow.MultiRoutePaymentDraftRow>>(window,"_multiRoutePaymentRows");
-            var first=Assert.Single(rows);Assert.Equal(0,first.WorkDays);Assert.Equal(0,first.PriceDifference);
+            var first=Assert.Single(rows);Assert.Equal(20,first.WorkDays);Assert.Equal(0,first.PriceDifference);
             first.WorkDays=22;first.PriceDifference=150;first.TaxDebt=10;
             var grid=Field<DataGrid>(window,"MultiRoutePaymentGrid");
             var expression=BindingOperations.SetBinding(grid,FrameworkElement.TagProperty,new Binding(nameof(first.WorkDays)){Source=first});
@@ -413,7 +508,7 @@ public sealed class HakedisCreateHybridUiContractTests
             Assert.Single(rows);
             Validation.ClearInvalid(expression);
             Invoke(window,"UpdateHybridRouteDraftRows");
-            Assert.Equal(2,rows.Count);Assert.Equal(22,rows[0].WorkDays);Assert.Equal(0,rows[1].WorkDays);
+            Assert.Equal(2,rows.Count);Assert.Equal(22,rows[0].WorkDays);Assert.Equal(20,rows[1].WorkDays);
             rows[1].WorkDays=18;rows[1].PriceDifference=30;
             Field<TextBox>(window,"PriceDifferenceTextBox").Text="999";
             routes.SelectedItems.Clear();routes.SelectedItems.Add(b);Invoke(window,"UpdateHybridRouteDraftRows");
@@ -1175,9 +1270,10 @@ public sealed class HakedisCreateHybridUiContractTests
             name, identity, "", "", "", "", "", TransportationProgramType.SpecialEducation, vatExempt)!;
 
     private static object CreateRoute(string number, string name, string identity,
-        TransportationProgramType program = TransportationProgramType.SpecialEducation, string tender = "IHALE-01") =>
+        TransportationProgramType program = TransportationProgramType.SpecialEducation, string tender = "IHALE-01",
+        decimal transportDays = 20m, decimal guideDays = 0m) =>
         Activator.CreateInstance(typeof(MainWindow).GetNestedType("RouteDraft", BindingFlags.NonPublic)!,
-            number, name, 1_000m, 0m, 0m, 20m, tender, identity, "Same name", "SOZ-01",
+            number, name, 1_000m, guideDays, 0m, transportDays, tender, identity, "Same name", "SOZ-01",
             program)!;
 
     private static T Field<T>(MainWindow window, string name) =>
