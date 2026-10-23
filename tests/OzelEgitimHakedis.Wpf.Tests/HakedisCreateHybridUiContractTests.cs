@@ -311,6 +311,30 @@ public sealed class HakedisCreateHybridUiContractTests
         return window;
     }
 
+    [Theory]
+    [InlineData("WorkDays","18,5",18.5)]
+    [InlineData("GuideWorkDays","18,5",18.5)]
+    [InlineData("DailyPrice","1.234,5678",1234.5678)]
+    [InlineData("GuideDailyPrice","1.234,5678",1234.5678)]
+    public void HybridActualCellBinding_ShouldReadTurkishDaysAndPrices(string property,string entered,double expected)
+    {
+        RunOnSta(() =>
+        {
+            var layout=LoadLayoutFragment(NamedElement(LoadMainWindowXaml(),"ProgressPanel"));
+            var grid=(DataGrid)layout.FindName("MultiRoutePaymentGrid");
+            var column=grid.Columns.OfType<DataGridBoundColumn>().Single(column=>(column.Binding as Binding)?.Path?.Path==property);
+            var binding=(Binding)column.Binding;
+            var row=new MainWindow.MultiRoutePaymentDraftRow();
+            binding.Source=row;
+            var editor=new TextBox();
+            var expression=BindingOperations.SetBinding(editor,TextBox.TextProperty,binding);
+            editor.SetCurrentValue(TextBox.TextProperty,entered);
+            expression.UpdateSource();
+            Assert.False(Validation.GetHasError(editor));
+            Assert.Equal((decimal)expected,(decimal)typeof(MainWindow.MultiRoutePaymentDraftRow).GetProperty(property)!.GetValue(row)!);
+        });
+    }
+
     [Fact]
     public void GoldFinance_ShouldKeepEightCardsWithVectorSymbolsAndGoldNetCard()
     {
