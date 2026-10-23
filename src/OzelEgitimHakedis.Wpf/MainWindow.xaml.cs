@@ -1302,6 +1302,8 @@ public partial class MainWindow : Window
         var transition = ResolveMonthlyDraftPeriodTransition(_lastSelectedPaymentMonthKey, monthKey);
         if (transition.ResetMonthlyDraft)
             ResetMonthlyInputsForNewMonth();
+        else if (_lastSelectedPaymentMonthKey is null && monthKey is not null)
+            RestoreHybridInputsForSelectedPeriod();
 
         // Programmatic clearing of a ComboBox can produce a transient null between
         // period selections. Forgetting the old month here can leak a cached route's
@@ -2965,6 +2967,8 @@ public partial class MainWindow : Window
         var contractsBeforeSave = _contracts.ToArray();
         var contractorsBeforeSave = _contractors.ToArray();
         var routesBeforeSave = _routes.ToArray();
+        var hybridDraftsBeforeSave = SavedHybridPaymentDrafts.ToArray();
+        var hybridKeysBeforeSave = _multiRouteDraftCache.ToArray();
         var historyBeforeSave = _progressHistory.ToArray();
         var editingContractorKeyBeforeSave = _editingContractorKey;
 
@@ -2996,6 +3000,7 @@ public partial class MainWindow : Window
 
         if (!SavePersistedData())
         {
+            RestoreHybridDraftIdentitySnapshot(hybridDraftsBeforeSave,hybridKeysBeforeSave,routesBeforeSave);
             RestoreLiveDataCollections(
                 contractsBeforeSave, contractorsBeforeSave, routesBeforeSave, historyBeforeSave);
             _editingContractorKey = editingContractorKeyBeforeSave;
@@ -3236,7 +3241,10 @@ public partial class MainWindow : Window
             .ToArray();
 
         foreach (var item in routeUpdates)
+        {
+            RekeyHybridDrafts(_routes[item.index],item.route);
             _routes[item.index] = item.route;
+        }
 
         for (var index = 0; index < _contracts.Count; index++)
         {
@@ -3479,6 +3487,8 @@ public partial class MainWindow : Window
         var routesBeforeSave = _routes.ToArray();
         var historyBeforeSave = _progressHistory.ToArray();
         var editingRouteBeforeSave = _editingRoute;
+        var routeDraftsBeforeSave = SavedHybridPaymentDrafts.ToArray();
+        var hybridRouteKeysBeforeSave = _multiRouteDraftCache.ToArray();
 
         if (_editingRoute is null)
         {
@@ -3499,6 +3509,7 @@ public partial class MainWindow : Window
                     if (!ConfirmLiveHistoryCorrection("Hat bilgileri", proposedTargetPayment))
                         return;
 
+                    RekeyHybridDrafts(old,proposed);
                     _routes[index] = proposed;
                     _progressHistory.Clear();
                     foreach (var item in propagated)
@@ -3519,6 +3530,7 @@ public partial class MainWindow : Window
             foreach (var item in routesBeforeSave) _routes.Add(item);
             _progressHistory.Clear();
             foreach (var item in historyBeforeSave) _progressHistory.Add(item);
+            RestoreHybridDraftIdentitySnapshot(routeDraftsBeforeSave,hybridRouteKeysBeforeSave,routesBeforeSave);
             _editingRoute = editingRouteBeforeSave;
             RefreshViewsAfterPersistenceRollback();
             SetRouteEditorMode(editingRouteBeforeSave is not null);
@@ -3953,6 +3965,8 @@ public partial class MainWindow : Window
 
         var contractsBeforeSave = _contracts.ToArray();
         var routesBeforeSave = _routes.ToArray();
+        var hybridDraftsBeforeSave = SavedHybridPaymentDrafts.ToArray();
+        var hybridKeysBeforeSave = _multiRouteDraftCache.ToArray();
         var historyBeforeSave = _progressHistory.ToArray();
         var editingContractTenderBeforeSave = _editingContractTender;
         var editingContractNumberBeforeSave = _editingContractNumber;
@@ -4016,14 +4030,17 @@ public partial class MainWindow : Window
             foreach (var entry in affectedRouteIndices)
             {
                 var updatedRoute = propagatedRoutes[entry.routeIndex];
-                _routes[entry.routeIndex] = entry.route with
+                var nextRoute = entry.route with
                 {
                     TenderNumber = updatedRoute.TenderNumber,
                     ContractNumber = updatedRoute.ContractNumber,
-                    DailyPrice = proposedContract.TransportDailyPrice,
+                    DailyPrice = oldContract.TransportDailyPrice != proposedContract.TransportDailyPrice
+                        ? proposedContract.TransportDailyPrice : entry.route.DailyPrice,
                     GuideDailyPrice = updatedRoute.GuideDailyPrice,
                     ProgramType = updatedRoute.ProgramType
                 };
+                RekeyHybridDrafts(entry.route,nextRoute);
+                _routes[entry.routeIndex] = nextRoute;
             }
 
             _progressHistory.Clear();
@@ -4033,6 +4050,7 @@ public partial class MainWindow : Window
 
         if (!SavePersistedData())
         {
+            RestoreHybridDraftIdentitySnapshot(hybridDraftsBeforeSave,hybridKeysBeforeSave,routesBeforeSave);
             RestoreLiveDataCollections(
                 contractsBeforeSave, _contractors.ToArray(), routesBeforeSave, historyBeforeSave);
             _editingContractTender = editingContractTenderBeforeSave;
@@ -4242,6 +4260,8 @@ public partial class MainWindow : Window
             return false;
         }
 
+        var savedDraftsBeforeSave = SavedHybridPaymentDrafts.ToArray();
+        ReconcileSavedHybridSources();
         var activeContract = GetSelectedContract() ?? _contracts.FirstOrDefault();
         var data = new OehsApplicationData(
             activeContract,
@@ -4263,8 +4283,9 @@ public partial class MainWindow : Window
             SetHeaderSaveStatus("Kaydedildi", isError: false);
             return true;
         }
-        catch (OehsApplicationDataStoreException ex)
+        catch (Exception ex) when (ex is OehsApplicationDataStoreException or IOException or UnauthorizedAccessException)
         {
+            _savedHybridPaymentDrafts = savedDraftsBeforeSave.ToList();
             SetHeaderSaveStatus("Kaydetme hatası", isError: true);
             if (showErrorDialog) MessageBox.Show(
                 $"{ex.Message}\n\nMevcut veri dosyası korunmuştur. OEHS değişikliklerinizi kaydetmedi.",

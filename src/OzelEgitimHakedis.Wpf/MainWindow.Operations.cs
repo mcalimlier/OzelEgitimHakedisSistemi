@@ -33,7 +33,7 @@ public partial class MainWindow
     private OehsApplicationData SnapshotData() => new(GetSelectedContract(),
         _routes.Select(ToCoreRoute).ToArray(),_contractors.Select(c=>new Contractor(c.Name,c.TaxOrIdentityNumber,
             c.Address,c.Phone,c.Email,c.BankAccountNumber,c.ContactPerson,c.ProgramType,c.VatExempt)).ToArray(),
-        _progressHistory.ToArray(),_contracts.ToArray(),_calculationConstants,_calculationConstantsHistory.ToArray());
+        _progressHistory.ToArray(),_contracts.ToArray(),_calculationConstants,_calculationConstantsHistory.ToArray(),SavedHybridPaymentDrafts.ToArray());
     private static RouteData ToCoreRoute(RouteDraft r) => new(r.RouteNumber,r.Name,r.DailyPrice,
         r.GuideDailyPrice,r.TransportWorkDays,r.TenderNumber,r.ContractorTaxOrIdentityNumber,r.ContractNumber,r.ProgramType);
     private List<ProgressPaymentArchive> ReadOperationArchives()

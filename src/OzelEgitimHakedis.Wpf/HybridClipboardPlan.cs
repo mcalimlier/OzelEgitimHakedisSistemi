@@ -13,13 +13,13 @@ internal static class HybridClipboardPlan
 
     private static readonly HashSet<string> EditableFields = new(StringComparer.Ordinal)
     {
-        "WorkDays", "DiscountAmount", "PriceDifference",
+        "DailyPrice", "GuideDailyPrice", "WorkDays", "DiscountAmount", "PriceDifference",
         "GuideWorkDays", "GuideDiscountAmount", "GuidePriceDifference",
         "TaxDebt", "SocialSecurityDebt", "MinimumWageSupport", "InspectionPenalty"
     };
     private static readonly HashSet<string> NonNegativeFields = new(StringComparer.Ordinal)
     {
-        "WorkDays", "DiscountAmount", "GuideWorkDays", "GuideDiscountAmount",
+        "DailyPrice", "GuideDailyPrice", "WorkDays", "DiscountAmount", "GuideWorkDays", "GuideDiscountAmount",
         "TaxDebt", "SocialSecurityDebt", "MinimumWageSupport", "InspectionPenalty"
     };
     private static readonly Regex TurkishNumber = new(

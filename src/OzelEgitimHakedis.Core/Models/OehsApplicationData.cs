@@ -81,4 +81,5 @@ public sealed record HybridPaymentDraftData(
     string RouteKey,
     DateOnly PeriodMonth,
     ProgressPaymentInput Input,
-    bool MinimumWageSupportEnabled = true);
+    bool MinimumWageSupportEnabled = true,
+    RouteData? SourceRoute = null);

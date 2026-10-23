@@ -36,11 +36,24 @@ public sealed class HybridClipboardPlanTests
         Assert.Contains(expectedError, error, StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData("DailyPrice")]
+    [InlineData("GuideDailyPrice")]
+    public void EditablePrices_ShouldAcceptPrecisePasteAndRejectNegativeAmounts(string field)
+    {
+        Assert.True(HybridClipboardPlan.TryCreate("1.234,5678",new[]{field},0,0,1,
+            (_,_)=>true,out var cells,out var error),error);
+        Assert.Equal(1234.5678m,Assert.Single(cells).Value);
+        Assert.False(HybridClipboardPlan.TryCreate("-1",new[]{field},0,0,1,
+            (_,_)=>true,out var invalid,out _));
+        Assert.Empty(invalid);
+    }
+
     [Fact]
-    public void Paste_ShouldRejectReadOnlyPricesAndNonSelectedRows()
+    public void Paste_ShouldRejectReadOnlyIdentityAndNonSelectedRows()
     {
         Assert.False(HybridClipboardPlan.TryCreate(
-            "100", new[] { "DailyPrice" }, 0, 0, 2,
+            "100", new[] { "RouteDisplayText" }, 0, 0, 2,
             (_, _) => true, out var readOnly, out var readonlyError));
         Assert.Empty(readOnly);
         Assert.Contains("salt okunur", readonlyError, StringComparison.Ordinal);

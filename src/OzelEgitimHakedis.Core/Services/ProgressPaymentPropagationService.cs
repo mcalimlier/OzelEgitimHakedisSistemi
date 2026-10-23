@@ -27,7 +27,7 @@ public static class ProgressPaymentPropagationService
         var appliedConstants = constants ?? ProgressPaymentCalculationConstants.Defaults;
         var updated = history
             .Select(item => IsHistoryForContract(item, oldContract)
-                ? RebuildForContract(item, newContract, appliedConstants)
+                ? RebuildForContract(item, newContract, appliedConstants, oldContract.TransportDailyPrice != newContract.TransportDailyPrice)
                 : item)
             .ToArray();
 
@@ -109,7 +109,8 @@ public static class ProgressPaymentPropagationService
     private static ProgressPaymentHistoryData RebuildForContract(
         ProgressPaymentHistoryData item,
         ContractDraftData contract,
-        ProgressPaymentCalculationConstants constants)
+        ProgressPaymentCalculationConstants constants,
+        bool updateTransportPrice)
     {
         var hasGuide = contract.ProgramType == TransportationProgramType.SpecialEducation;
         var input = item.Input with
@@ -118,7 +119,7 @@ public static class ProgressPaymentPropagationService
             // VAT exemption is now a firm-level choice. Editing contract terms must not
             // rewrite the VAT decision captured in an already-issued progress payment.
             IsVatExempt = item.Input.IsVatExempt,
-            DailyPrice = contract.TransportDailyPrice,
+            DailyPrice = updateTransportPrice ? contract.TransportDailyPrice : item.Input.DailyPrice,
             ProgramType = contract.ProgramType,
             GuideWorkDays = hasGuide ? item.Input.GuideWorkDays : 0,
             GuideDailyPrice = hasGuide ? item.Input.GuideDailyPrice : 0m,

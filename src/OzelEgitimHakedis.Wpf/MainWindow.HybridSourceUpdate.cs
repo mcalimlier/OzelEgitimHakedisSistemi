@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using OzelEgitimHakedis.Core.Models;
@@ -21,9 +22,73 @@ public partial class MainWindow
     private void RestoreSavedHybridInput(MultiRoutePaymentDraftRow row)
     {
         if (HybridPeriodMonth is not { } month) return;
+        ReconcileSavedHybridSources();
         var saved = SavedHybridPaymentDrafts.LastOrDefault(draft =>
             draft.PeriodMonth == month && string.Equals(draft.RouteKey, row.RouteKey, StringComparison.Ordinal));
         if (saved is not null) row.LoadInput(saved.Input, saved.MinimumWageSupportEnabled);
+    }
+
+    private void RestoreHybridInputsForSelectedPeriod()
+    {
+        foreach (var row in _multiRouteDraftCache.Values.Where(row => !row.HasChanges))
+        {
+            RestoreSavedHybridInput(row);
+            row.AcceptChanges();
+        }
+        RefreshHybridUpdateButton();
+        SyncHybridSelectedRowFields();
+        RefreshHybridTotals();
+    }
+
+    private void ReconcileSavedHybridSources()
+    {
+        for (var i = 0; i < SavedHybridPaymentDrafts.Count; i++)
+        {
+            var saved = SavedHybridPaymentDrafts[i];
+            var route = _routes.FirstOrDefault(route => HybridRouteKey(route) == saved.RouteKey);
+            if (route is null) continue;
+            var source = ToCoreRoute(route);
+            var old = saved.SourceRoute;
+            var input = saved.Input with
+            {
+                WorkDays = old is not null && old.TransportWorkDays != source.TransportWorkDays ? source.TransportWorkDays : saved.Input.WorkDays,
+                DailyPrice = old is not null && old.DailyPrice != source.DailyPrice ? source.DailyPrice : saved.Input.DailyPrice,
+                GuideDailyPrice = old is not null && old.GuideDailyPrice != source.GuideDailyPrice ? source.GuideDailyPrice : saved.Input.GuideDailyPrice
+            };
+            SavedHybridPaymentDrafts[i] = saved with { Input = input, SourceRoute = source };
+        }
+    }
+
+    private void RekeyHybridDrafts(RouteDraft oldRoute, RouteDraft updatedRoute)
+    {
+        var oldKey = HybridRouteKey(oldRoute);
+        var newKey = HybridRouteKey(updatedRoute);
+        if (oldKey == newKey) return;
+        for (var i = 0; i < SavedHybridPaymentDrafts.Count; i++)
+            if (SavedHybridPaymentDrafts[i].RouteKey == oldKey)
+                SavedHybridPaymentDrafts[i] = SavedHybridPaymentDrafts[i] with { RouteKey = newKey };
+        if (_multiRouteDraftCache.Remove(oldKey, out var row))
+        {
+            row.RouteKey = newKey;
+            row.RouteNumber = updatedRoute.RouteNumber;
+            _multiRouteDraftCache[newKey] = row;
+        }
+    }
+
+    private void RestoreHybridDraftIdentitySnapshot(
+        IReadOnlyList<HybridPaymentDraftData> saved,
+        IReadOnlyList<KeyValuePair<string,MultiRoutePaymentDraftRow>> cache,
+        IReadOnlyList<RouteDraft> routes)
+    {
+        _savedHybridPaymentDrafts = saved.ToList();
+        _multiRouteDraftCache.Clear();
+        foreach (var pair in cache)
+        {
+            pair.Value.RouteKey = pair.Key;
+            var original = routes.FirstOrDefault(route => HybridRouteKey(route) == pair.Key);
+            if (original is not null) pair.Value.RouteNumber = original.RouteNumber;
+            _multiRouteDraftCache[pair.Key] = pair.Value;
+        }
     }
 
     private void RefreshHybridUpdateButton()
@@ -89,8 +154,11 @@ public partial class MainWindow
                 return false;
             }
             var input = row.CreateInput();
-            var calendarError = ProgressPaymentMonthService.GetCalendarCapacityError(period, input.WorkDays, input.GuideWorkDays);
-            if (string.IsNullOrWhiteSpace(row.RouteName) || row.Preview is null || calendarError is not null)
+            var contractualPeriod = ProgressPaymentMonthService.FindForPeriod(
+                ProgressPaymentMonthService.BuildOptions(contract.StartDate,contract.EndDate),period.PeriodDate);
+            var calendarError = contractualPeriod is null ? "Dönem sözleşme tarihleri dışında." :
+                ProgressPaymentMonthService.GetCalendarCapacityError(contractualPeriod, input.WorkDays, input.GuideWorkDays);
+            if (string.IsNullOrWhiteSpace(row.RouteName) || row.Preview is null || input.DiscountAmount < 0m || input.GuideDiscountAmount < 0m || calendarError is not null)
             {
                 ShowMultiRouteValidation($"{row.RouteDisplayText}: {calendarError ?? "Hat adı ve sayısal girdileri kontrol edin."} Hiçbir kayıt değiştirilmedi.");
                 return false;
@@ -115,7 +183,7 @@ public partial class MainWindow
                 SavedHybridPaymentDrafts.RemoveAll(draft => draft.PeriodMonth == month &&
                     string.Equals(draft.RouteKey, update.Row.RouteKey, StringComparison.Ordinal));
                 SavedHybridPaymentDrafts.Add(new(update.Row.RouteKey, month, update.Row.CreateInput(),
-                    update.Row.MinimumWageSupportEnabled));
+                    update.Row.MinimumWageSupportEnabled,ToCoreRoute(update.Route)));
             }
             if (!SavePersistedData(showErrorDialog: false))
             {

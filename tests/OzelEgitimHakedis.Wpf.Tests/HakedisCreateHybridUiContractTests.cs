@@ -211,6 +211,11 @@ public sealed class HakedisCreateHybridUiContractTests
                 Field<TextBox>(window,"ContractTransportDailyPriceTextBox").Text=contract.TransportDailyPrice.ToString(CultureInfo.InvariantCulture);
                 Field<DatePicker>(window,"StartDatePicker").SelectedDate=contract.StartDate.ToDateTime(TimeOnly.MinValue);
                 Field<DatePicker>(window,"EndDatePicker").SelectedDate=contract.EndDate.ToDateTime(TimeOnly.MinValue);
+                var progressTenders=Field<ComboBox>(window,"ProgressTenderListBox");
+                progressTenders.Items.Clear();progressTenders.ItemsSource=Collection(window,"_contracts");
+                var progressRoutes=Field<ListBox>(window,"ProgressRouteComboBox");
+                progressRoutes.Items.Clear();progressRoutes.ItemsSource=Collection(window,"_routes");
+                Field<ComboBox>(window,"ProgressPeriodMonthComboBox").Items.Clear();
                 Invoke(window,"SaveContractButton_Click",window,new RoutedEventArgs());
                 var saved=new OehsProgramScopedApplicationDataStore(Path.Combine(temp.FullName,"data")).Load();
                 Assert.Equal(1600m,Assert.Single(saved.Routes).DailyPrice);
@@ -1678,7 +1683,7 @@ public sealed class HakedisCreateHybridUiContractTests
         Assert.Contains(named["MultiRoutePaymentGrid"].Descendants(),
             element => element.Name.LocalName == "DataGridTextColumn"
                 && string.Equals((string?)element.Attribute("Header"), "Taşıma Günlük Fiyat", StringComparison.Ordinal)
-                && string.Equals((string?)element.Attribute("IsReadOnly"), "True", StringComparison.Ordinal));
+                && string.Equals((string?)element.Attribute("IsReadOnly"), "False", StringComparison.Ordinal));
         Assert.Contains(named["MultiRoutePaymentGrid"].Descendants(),
             element => element.Name.LocalName == "DataGridTextColumn"
                 && string.Equals((string?)element.Attribute("Header"), "Taşıma Fiyat Farkı KDV Hariç", StringComparison.Ordinal)
@@ -1690,7 +1695,7 @@ public sealed class HakedisCreateHybridUiContractTests
                 StringComparer.Ordinal);
         foreach (var editableHeader in new[]
         {
-            "Taşıma Gün", "Taşıma İskonto", "Taşıma Fiyat Farkı KDV Hariç",
+            "Hattın Adı", "Taşıma Günlük Fiyat", "Rehber Günlük Fiyat", "Taşıma Gün", "Taşıma İskonto", "Taşıma Fiyat Farkı KDV Hariç",
             "Rehber Gün", "Rehber İskonto", "Rehber Personel Fiyat Farkı KDV Hariç",
             "Vergi Borcu", "SGK Borcu", "Denetim Cezası"
         })

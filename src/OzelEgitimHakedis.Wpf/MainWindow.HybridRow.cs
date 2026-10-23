@@ -24,6 +24,33 @@ public partial class MainWindow
         public bool HasChanges => _acceptedAmounts is not null &&
             (!_amounts.SequenceEqual(_acceptedAmounts) || _minimumWageSupport != _acceptedSupport ||
              _minimumWageSupportEnabled != _acceptedSupportEnabled || RouteName != _acceptedName);
+        private bool _hasSource;
+        private string _sourceName = string.Empty;
+        private decimal _sourceDays, _sourcePrice, _sourceGuidePrice;
+        public void ReconcileSource(string name, decimal days, decimal price, decimal guidePrice)
+        {
+            if (_hasSource)
+            {
+                void Merge(int index, decimal oldSource, decimal nextSource, Action<decimal> set)
+                {
+                    if (oldSource == nextSource) return;
+                    var edited = _acceptedAmounts is not null && _amounts[index] != _acceptedAmounts[index];
+                    if (!edited) set(nextSource);
+                    if (_acceptedAmounts is not null) _acceptedAmounts[index] = nextSource;
+                }
+                Merge(0, _sourceDays, days, value => WorkDays = value);
+                Merge(1, _sourcePrice, price, value => DailyPrice = value);
+                Merge(5, _sourceGuidePrice, guidePrice, value => GuideDailyPrice = value);
+                if (_sourceName != name)
+                {
+                    if (RouteName == _acceptedName) RouteName = name;
+                    _acceptedName = name;
+                }
+            }
+            _sourceName = name; _sourceDays = days; _sourcePrice = price; _sourceGuidePrice = guidePrice;
+            _hasSource = true;
+            Changed(nameof(HasChanges));
+        }
         public void AcceptChanges()
         {
             _acceptedAmounts = (decimal[])_amounts.Clone();
@@ -45,7 +72,8 @@ public partial class MainWindow
         }
         public event PropertyChangedEventHandler? PropertyChanged;
         public string RouteKey { get; set; } = string.Empty;
-        public string RouteNumber { get; set; } = string.Empty;
+        private string _routeNumber = string.Empty;
+        public string RouteNumber { get => _routeNumber; set { if (_routeNumber == value) return; _routeNumber = value; PropertyChanged?.Invoke(this,new(nameof(RouteDisplayText))); } }
         public string RouteName { get => _routeName; set { if (_routeName == value) return; _routeName = value; Changed(); PropertyChanged?.Invoke(this, new(nameof(RouteDisplayText))); } }
         public string RouteDisplayText => $"Hat {RouteNumber} — {RouteName}";
         public decimal WorkDays { get => _amounts[0]; set { if (_amounts[0] == value) return; _amounts[0] = value; Changed(); } }
