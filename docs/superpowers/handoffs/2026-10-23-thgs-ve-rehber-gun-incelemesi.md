@@ -61,7 +61,20 @@ Bu inceleme, yıllık değerin gerçekten puantajla doğrulanmış dönem günü
 
 ## 4. Test ve devam durumu
 
-Durum: Windows CI testleri bekleniyor. Sonuçlar tamamlandığında bu bölüm güncellenecek.
+Önce hatayı gösteren test commit'i: `507f09e48299904af6a8bf3ce1fa3ce1a0d19bd3`.
+Windows CI `39929667603`: Core 262/262 başarılı; WPF 148 başarılı / 4 beklenen başarısız.
+İki programda `Expected: 18.5 / Actual: 0`; kayıt testinde `Expected: 16.5 / Actual: 0`; mevcut taslak koruma testinin yeni varsayılan beklentisinde `Expected: 20 / Actual: 0`. Dört başarısızlık da eksik taşıma günü aktarımını gösterdi; derleme hatası yok.
+
+Düzeltme commit'i: `eaed7f2812042bb331fb43a81de6492565bd397b`.
+Sonuç: [Windows CI 39930050045](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39930050045) **success**.
+
+- Core: **262/262**; WPF: **152/152**; toplam **414/414**, başarısız/atlanan test 0.
+- Kırmızı aşamada eksik aktarımı gösteren dört test, düzeltme sonrasında geçti.
+- Tam çözüm/WPF derlemesi ve UI statik kontrolleri başarılı.
+- PDF smoke: 24 A4 PDF (8 temel smoke, 8 tarihsel kaynak, 8 en yeni workbook vektörü) üretim/doğrulama adımı başarılı. Bu, Microsoft Excel/VBA ile görsel birebir kabul demek değildir.
+- Windows EXE derleme/publish adımı başarılı; release veya üretim yayını yapılmadı.
+- Yerel XAML XML ayrıştırma ve `git diff --check` başarılı.
+- Bu sonuçlar yukarıdaki **kod commit'ine** aittir; ardından yalnız bu devam notunun test sonuçları güncellendi.
 
 Regresyon kapsamı:
 
