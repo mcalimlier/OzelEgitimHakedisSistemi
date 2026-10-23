@@ -44,7 +44,23 @@ Başlangıç: `fc8ac2e192653776e70aa1f394daca966a664852`, Windows CI `3993037202
 - CI `39933974155`: Core **264/264**; WPF **153 başarılı / 7 başarısız**. Onay/iptal ve temel kaynak yazma testi geçti; ek risk testleri başarısızlıkları gösterdi. Başarısızlıklardan biri eski salt-okunur fiyat beklentisiydi, biri test düzeneğinin ItemsSource kurulumu düzeltmesini gerektiriyordu.
 - `209a828`: kaynak uzlaştırma, ilk ay yükleme, atomik hata geri alma, ilgisiz sözleşme düzenlemesinde hat fiyatını koruma ve düzenlenebilir fiyat yapıştırma düzeltmeleri.
 
-Son tam Windows CI ve ek kimlik/program/ay regresyonları bekleniyor; sonuç tamamlanınca burası güncellenecek.
+- `209a828` için [CI 39934707882](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39934707882) **başarılı**: Core 264/264, WPF 162/162. İncelemenin dört önemli bulgusu ve negatif iskonto doğrulaması kapandı.
+- `33ad8e5` için [CI 39935159074](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39935159074) **başarılı**: Core **265/265**, WPF **163/163**, toplam **428/428**. Program/firma/ay ayrımı ve kimlik değişiminde taslak taşıma ek regresyonları da geçti. PDF smoke **24 A4 PDF** üretim/doğrulaması başarılı.
+- Mevcut `xml:lang="tr-TR"` sayısal hücre dilini doğrulamak için dört gerçek WPF Binding testi eklendi (`18,5` gün; `1.234,5678` günlük fiyat). Test editörü gerçek arayüzdeki gibi XAML dilini üst öğeden devralır. Bu kontrol için üretim hesaplama veya kültür kodu değiştirilmedi.
+
+**Son doğrulama:** `5567b5380f0e179f52d3fe8edd3b63539afa8e31` için [Windows CI 39935756432](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39935756432) **success**.
+
+- **Core 265/265 + WPF 167/167 = 432/432**; başarısız/atlanan test 0.
+- Gerçek WPF hücre bağlamalarıyla Türkçe gün ve fiyat girişinin dört testi geçti.
+- Tam çözüm/WPF derlemesi, UI sözleşmesi ve yerleşim kontrolleri başarılı.
+- Onay/iptal, hat bazlı kayıt, disk hatasında geri alma, kaynak panel değişiklikleriyle uzlaştırma, ilk ay yükleme, kimlik anahtarı taşıma, program/firma/ay ayrımı ve yeniden açılış regresyonları geçti.
+- PDF smoke adımındaki WPF test tekrarı da **167/167**; **24 A4 PDF** üretim/doğrulaması başarılı.
+- Windows EXE derleme/publish adımı başarılı; üretim release/yayın yapılmadı.
+- Yerel XAML XML ayrıştırması ve `git diff --check` başarılı.
+- Bağımsız incelemenin dört önemli bulgusu testlerle giderildi; ertelenmiş küçük inceleme bulgusu yok.
+- Bu kanıt yukarıdaki kod/test commit'ine aittir. Ardından yalnız bu devam notu/plan sonuçları güncellendi ve geçici yürütme kaydı temizlendi.
+
+**Tamamlanan görevler:** yıllık rehber gün kaldırılması; düzenlenebilir hat kaynak aktarımı; onaylı atomik kaynak/aylık taslak kaydı; fiyat başlığı eşlemesi; bağımsız inceleme düzeltmeleri ve tam CI doğrulaması.
 
 ## Açık kabul sınırı ve sonraki adım
 

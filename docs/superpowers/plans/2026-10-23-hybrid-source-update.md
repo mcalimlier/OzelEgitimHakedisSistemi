@@ -36,4 +36,8 @@ Files: MainWindow.HybridRow.cs, MainWindow.HybridEntry.cs, new MainWindow.Hybrid
 - [x] Track row baseline and expose HasChanges. Editable price/name columns; button directly below grid.
 - [x] Persist changed selected route values and period draft inputs in one save. Cancel/error preserve draft and original data. Restore saved monthly drafts by exact identity/period.
 - [x] Refresh all live source views with retained row edits; read route override when editing source route.
-- [ ] Verify full Windows suite and PDF smoke; review change; save continuation evidence and commit.
+- [x] Verify full Windows suite and PDF smoke; review change; save continuation evidence and commit.
+
+## Completion evidence
+
+Windows CI 39935756432 for 5567b5380f0e179f52d3fe8edd3b63539afa8e31: Core 265/265, WPF 167/167, 24 A4 PDF smoke PASS. Independent review findings were fixed and covered by passing regressions. Branch/PR preserved; no merge/release. Full evidence: `docs/superpowers/handoffs/2026-10-23-rehber-yillik-kaldirma-onayli-tablo-kaydi.md`.
