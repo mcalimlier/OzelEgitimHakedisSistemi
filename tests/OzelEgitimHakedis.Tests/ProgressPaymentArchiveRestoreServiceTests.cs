@@ -282,7 +282,7 @@ public sealed class ProgressPaymentArchiveRestoreServiceTests
                 ContractorTaxOrIdentityNumber: "12345678901"),
             new Contractor("Firma", "12345678901", BankAccountNumber: "TR-01"),
             new RouteData(
-                "01", "Hat 01", 1000m, 0, 0, 20,
+                "01", "Hat 01", 1000m, 0, 20,
                 "IHALE-01", "12345678901"),
             history,
             Array.Empty<ProgressPaymentHistoryData>(),
