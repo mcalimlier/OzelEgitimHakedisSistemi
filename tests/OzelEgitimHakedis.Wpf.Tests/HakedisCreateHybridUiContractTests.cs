@@ -405,16 +405,21 @@ public sealed class HakedisCreateHybridUiContractTests
                 var window=CreateHybridUpdateHarness(root);
                 var rows=Field<System.Collections.ObjectModel.ObservableCollection<MainWindow.MultiRoutePaymentDraftRow>>(window,"_multiRoutePaymentRows");
                 var row=Assert.Single(rows);row.WorkDays=18.5m;row.GuideDailyPrice=1234.5678m;row.RouteName="Düzenlenmiş hat";
-                var grid=Field<DataGrid>(window,"MultiRoutePaymentGrid");grid.ItemsSource=rows;
+                var grid=Field<DataGrid>(window,"MultiRoutePaymentGrid");grid.AutoGenerateColumns=false;grid.CanUserAddRows=false;grid.ItemsSource=rows;
                 var name=new DataGridTextColumn{Header="Hattın Adı",Binding=new Binding(nameof(row.RouteName)){Mode=BindingMode.TwoWay,UpdateSourceTrigger=UpdateSourceTrigger.LostFocus}};
                 var price=new DataGridTextColumn{Header="Rehber Personel Günlük Fiyat",Binding=new Binding(nameof(row.GuideDailyPrice))};
                 var days=new DataGridTextColumn{Header="Döneme Esas THGS",Binding=new Binding(nameof(row.WorkDays))};
                 grid.Columns.Add(name);grid.Columns.Add(price);grid.Columns.Add(days);
                 grid.Columns.Add(new DataGridTextColumn{Header="Gizli",Binding=new Binding(nameof(row.TaxDebt)),Visibility=Visibility.Collapsed});
                 price.DisplayIndex=0;
+                var host=new Window{Content=grid,Width=700,Height=300,ShowInTaskbar=false};
+                try
+                {
+                host.Show();
                 ArrangeLayout(grid,700,300);
                 grid.SelectedItem=row;
                 grid.CurrentCell=new DataGridCellInfo(row,name);
+                ((DataGridCell)name.GetCellContent(row).Parent).Focus();
                 Assert.True(grid.BeginEdit());
                 grid.UpdateLayout();
                 var editor=Assert.Single(VisualDescendants<TextBox>(grid));
@@ -434,6 +439,8 @@ public sealed class HakedisCreateHybridUiContractTests
                 Assert.True(row.HasChanges);
                 Assert.True(Field<Button>(window,"UpdateHybridRoutesButton").IsEnabled);
                 Assert.Empty(new OehsProgramScopedApplicationDataStore(root).Load().Routes);
+                }
+                finally {host.Close();}
             }
             finally {temp.Delete(true);}
         });
