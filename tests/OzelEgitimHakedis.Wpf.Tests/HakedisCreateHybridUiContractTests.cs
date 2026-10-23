@@ -1543,7 +1543,7 @@ public sealed class HakedisCreateHybridUiContractTests
                 (string?)columns[editableHeader].Attribute("Binding") ?? string.Empty);
         }
 
-        foreach (var readOnlyHeader in new[] { "Hat", "Taşıma Günlük Fiyat", "Rehber Günlük Fiyat" })
+        foreach (var readOnlyHeader in new[] { "Hat" })
         {
             Assert.Contains(readOnlyHeader, columns.Keys);
             Assert.Equal("True", (string?)columns[readOnlyHeader].Attribute("IsReadOnly"));

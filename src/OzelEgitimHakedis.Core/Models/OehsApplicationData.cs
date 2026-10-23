@@ -7,7 +7,8 @@ public sealed record OehsApplicationData(
     IReadOnlyList<ProgressPaymentHistoryData>? ProgressPayments = null,
     IReadOnlyList<ContractDraftData>? Contracts = null,
     ProgressPaymentCalculationConstants? CalculationConstants = null,
-    IReadOnlyList<ProgressPaymentCalculationConstantsChange>? CalculationConstantsHistory = null)
+    IReadOnlyList<ProgressPaymentCalculationConstantsChange>? CalculationConstantsHistory = null,
+    IReadOnlyList<HybridPaymentDraftData>? HybridPaymentDrafts = null)
 {
     public static OehsApplicationData Empty =>
         new(
@@ -75,3 +76,9 @@ public sealed record ProgressPaymentHistoryData(
     Guid? BatchId = null,
     string? BatchDisplayName = null,
     string? BatchRouteNumbers = null);
+/// <summary>Confirmed, period-specific grid input; never an issued payment or archive.</summary>
+public sealed record HybridPaymentDraftData(
+    string RouteKey,
+    DateOnly PeriodMonth,
+    ProgressPaymentInput Input,
+    bool MinimumWageSupportEnabled = true);

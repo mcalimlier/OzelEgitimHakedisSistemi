@@ -101,7 +101,9 @@ public sealed class OehsProgramScopedApplicationDataStore
                 .Where(x => x.Input.ProgramType == programType).ToArray(),
             scopedContracts,
             source.CalculationConstants,
-            source.CalculationConstantsHistory ?? Array.Empty<ProgressPaymentCalculationConstantsChange>());
+            source.CalculationConstantsHistory ?? Array.Empty<ProgressPaymentCalculationConstantsChange>(),
+            (source.HybridPaymentDrafts ?? Array.Empty<HybridPaymentDraftData>())
+                .Where(x => x.Input.ProgramType == programType).ToArray());
     }
 
     private void CommitPair(string stagedSpecial, string stagedBasic)
@@ -179,7 +181,10 @@ public sealed class OehsProgramScopedApplicationDataStore
             special.CalculationConstants ?? basic.CalculationConstants,
             (special.CalculationConstantsHistory ?? Array.Empty<ProgressPaymentCalculationConstantsChange>()).Count > 0
                 ? special.CalculationConstantsHistory
-                : basic.CalculationConstantsHistory);
+                : basic.CalculationConstantsHistory,
+            (special.HybridPaymentDrafts ?? Array.Empty<HybridPaymentDraftData>())
+                .Concat(basic.HybridPaymentDrafts ?? Array.Empty<HybridPaymentDraftData>())
+                .DistinctBy(x => (x.RouteKey, x.PeriodMonth, x.Input.ProgramType)).ToArray());
     }
 
     private static bool ExistsOrBackup(string path) =>

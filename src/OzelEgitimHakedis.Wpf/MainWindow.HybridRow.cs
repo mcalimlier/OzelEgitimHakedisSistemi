@@ -16,10 +16,37 @@ public partial class MainWindow
         private decimal _contractAmount;
         private bool _vatExempt;
         private ProgressPaymentCalculationConstants _constants = ProgressPaymentCalculationConstants.Defaults;
+        private decimal[]? _acceptedAmounts;
+        private decimal _acceptedSupport;
+        private bool _acceptedSupportEnabled;
+        private string _acceptedName = string.Empty;
+        private string _routeName = string.Empty;
+        public bool HasChanges => _acceptedAmounts is not null &&
+            (!_amounts.SequenceEqual(_acceptedAmounts) || _minimumWageSupport != _acceptedSupport ||
+             _minimumWageSupportEnabled != _acceptedSupportEnabled || RouteName != _acceptedName);
+        public void AcceptChanges()
+        {
+            _acceptedAmounts = (decimal[])_amounts.Clone();
+            _acceptedSupport = _minimumWageSupport;
+            _acceptedSupportEnabled = _minimumWageSupportEnabled;
+            _acceptedName = RouteName;
+            Changed(nameof(HasChanges));
+        }
+        public void LoadInput(ProgressPaymentInput input, bool minimumWageSupportEnabled)
+        {
+            WorkDays = input.WorkDays; DailyPrice = input.DailyPrice;
+            DiscountAmount = input.DiscountAmount; PriceDifference = input.PriceDifference;
+            GuideWorkDays = input.GuideWorkDays; GuideDailyPrice = input.GuideDailyPrice;
+            GuideDiscountAmount = input.GuideDiscountAmount; GuidePriceDifference = input.GuidePriceDifference;
+            TaxDebt = input.TaxDebt; SocialSecurityDebt = input.SocialSecurityDebt;
+            InspectionPenalty = input.InspectionPenalty;
+            MinimumWageSupportEnabled = minimumWageSupportEnabled;
+            MinimumWageSupport = input.MinimumWageSupport;
+        }
         public event PropertyChangedEventHandler? PropertyChanged;
         public string RouteKey { get; set; } = string.Empty;
         public string RouteNumber { get; set; } = string.Empty;
-        public string RouteName { get; set; } = string.Empty;
+        public string RouteName { get => _routeName; set { if (_routeName == value) return; _routeName = value; Changed(); PropertyChanged?.Invoke(this, new(nameof(RouteDisplayText))); } }
         public string RouteDisplayText => $"Hat {RouteNumber} — {RouteName}";
         public decimal WorkDays { get => _amounts[0]; set { if (_amounts[0] == value) return; _amounts[0] = value; Changed(); } }
         public decimal DailyPrice { get => _amounts[1]; set { if (_amounts[1] == value) return; _amounts[1] = value; Changed(); } }

@@ -14,8 +14,6 @@ public partial class MainWindow
     private void ConfigureHybridRow(MultiRoutePaymentDraftRow row,RouteDraft route)
     {
         row.PropertyChanged-=HybridRow_PropertyChanged;
-        row.DailyPrice=route.DailyPrice;
-        row.GuideDailyPrice=HasGuideStaff(route.ProgramType)?route.GuideDailyPrice:0m;
         var contract=ProgressTenderListBox.SelectedItem as ContractDraftData;
         var firm=FindContractor(route.ContractorTaxOrIdentityNumber,route.ProgramType);
         row.Configure(route.ProgramType,contract?.ContractAmount??0m,firm?.VatExempt??contract?.VatExempt??false,
@@ -25,7 +23,7 @@ public partial class MainWindow
     private void HybridRow_PropertyChanged(object? sender,PropertyChangedEventArgs e)
     {
         if(e.PropertyName==nameof(MultiRoutePaymentDraftRow.NetPayableText))
-        {RefreshHybridTotals();RefreshCalculationTraceLive();}
+        {RefreshHybridUpdateButton();SyncHybridSelectedRowFields();RefreshHybridTotals();RefreshCalculationTraceLive();}
     }
     private void RefreshHybridCalculationTrace()
     {

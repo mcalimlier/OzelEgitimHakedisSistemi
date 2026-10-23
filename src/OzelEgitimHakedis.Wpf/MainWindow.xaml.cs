@@ -1363,7 +1363,17 @@ public partial class MainWindow : Window
                 draftRoute.ProgramType != TransportationProgramType.BasicOrSecondary;
             row.MinimumWageSupport = 0m;
             row.InspectionPenalty = 0m;
+            if (draftRoute is not null)
+            {
+                row.RouteName = draftRoute.Name;
+                row.WorkDays = 0m;
+                row.DailyPrice = draftRoute.DailyPrice;
+                row.GuideDailyPrice = HasGuideStaff(draftRoute.ProgramType) ? draftRoute.GuideDailyPrice : 0m;
+            }
+            RestoreSavedHybridInput(row);
+            row.AcceptChanges();
         });
+        RefreshHybridUpdateButton();
 
         _lastCalculatedHistoryId = null;
         ArchiveCurrentProgressButton.Visibility = Visibility.Collapsed;
@@ -2845,7 +2855,7 @@ public partial class MainWindow : Window
         {
             RouteNumber = routeNumber,
             Name = routeName,
-            DailyPrice = archive.Contract.TransportDailyPrice,
+            DailyPrice = archive.Route.DailyPrice,
             TransportWorkDays = transportWorkDays,
             GuideDailyPrice = hasGuide ? guideDailyPrice : 0m,
             ProgramType = archive.Contract.ProgramType
@@ -2854,7 +2864,7 @@ public partial class MainWindow : Window
         var input = archive.ProgressPayment.Input with
         {
             WorkDays = transportWorkDays,
-            DailyPrice = archive.Contract.TransportDailyPrice,
+            DailyPrice = archive.Route.DailyPrice,
             GuideDailyPrice = hasGuide ? guideDailyPrice : 0m,
             GuideDiscountAmount = hasGuide ? archive.ProgressPayment.Input.GuideDiscountAmount : 0m,
             GuidePriceDifference = hasGuide ? archive.ProgressPayment.Input.GuidePriceDifference : 0m,
@@ -3405,7 +3415,7 @@ public partial class MainWindow : Window
         var proposed = new RouteDraft(
             routeNumber,
             routeName,
-            contract!.TransportDailyPrice,
+            _editingRoute?.DailyPrice ?? contract!.TransportDailyPrice,
             hasGuide ? guideDailyPrice : 0m,
             transportWorkDays,
             contract.TenderNumber,
@@ -4058,6 +4068,7 @@ public partial class MainWindow : Window
         try
         {
             var data = _dataStore.Load();
+            _savedHybridPaymentDrafts = (data.HybridPaymentDrafts ?? Array.Empty<HybridPaymentDraftData>()).ToList();
             var loadedConstants = data.CalculationConstants ?? ProgressPaymentCalculationConstants.Defaults;
             if (!loadedConstants.TryValidate(out var constantsError))
             {
@@ -4220,12 +4231,12 @@ public partial class MainWindow : Window
         HeaderSaveStatusDot.Fill = new System.Windows.Media.SolidColorBrush(indicator);
     }
 
-    private bool SavePersistedData()
+    private bool SavePersistedData(bool showErrorDialog = true)
     {
         if (_dataLoadFailed)
         {
             SetHeaderSaveStatus("Kaydetme durduruldu", isError: true);
-            MessageBox.Show(
+            if (showErrorDialog) MessageBox.Show(
                 "OEHS veri dosyası güvenli olarak yüklenemedi. Veri kaybını önlemek için kaydetme durduruldu.",
                 "OEHS — Kaydetme Durduruldu", MessageBoxButton.OK, MessageBoxImage.Error);
             return false;
@@ -4243,7 +4254,8 @@ public partial class MainWindow : Window
             _progressHistory.ToArray(),
             _contracts.ToArray(),
             _calculationConstants,
-            _calculationConstantsHistory.ToArray());
+            _calculationConstantsHistory.ToArray(),
+            SavedHybridPaymentDrafts.ToArray());
 
         try
         {
@@ -4254,7 +4266,7 @@ public partial class MainWindow : Window
         catch (OehsApplicationDataStoreException ex)
         {
             SetHeaderSaveStatus("Kaydetme hatası", isError: true);
-            MessageBox.Show(
+            if (showErrorDialog) MessageBox.Show(
                 $"{ex.Message}\n\nMevcut veri dosyası korunmuştur. OEHS değişikliklerinizi kaydetmedi.",
                 "OEHS — Veri Kaydetme Hatası", MessageBoxButton.OK, MessageBoxImage.Error);
             return false;
@@ -6880,6 +6892,7 @@ public partial class MainWindow : Window
                 _multiRouteDraftCache[row.RouteKey] = row;
             _multiRoutePaymentRows.Clear();
             MultiRouteEntryBorder.Visibility = Visibility.Collapsed;
+            RefreshHybridUpdateButton();
             SetGlobalMonetaryFieldsVisible(true);
             return;
         }
@@ -6921,7 +6934,9 @@ public partial class MainWindow : Window
                 GuideDailyPrice = hasGuide ? route.GuideDailyPrice : 0m
             };
 
+            RestoreSavedHybridInput(row);
             ConfigureHybridRow(row, route);
+            row.AcceptChanges();
             _multiRouteDraftCache[routeKey] = row;
             nextRows.Add(row);
         }
@@ -6934,6 +6949,8 @@ public partial class MainWindow : Window
         SetGlobalMonetaryFieldsVisible(false);
         ApplyHybridColumnView();
         RefreshHybridTotals();
+        RefreshHybridUpdateButton();
+        SyncHybridSelectedRowFields();
     }
 
     private void SetGlobalMonetaryFieldsVisible(bool visible)
@@ -7049,10 +7066,7 @@ public partial class MainWindow : Window
         GuideDailyPriceTextBox.Text = FormatCalculationInput(
             HasGuideStaff(route.ProgramType) ? route.GuideDailyPrice : 0m);
 
-        // Sözleşme ekranındaki iş günü yıllık/sözleşmesel bilgidir; Excel'de
-        // hakediş hesabına giren gün sayısı seçilen ay için ayrı girilir.
-        WorkDaysTextBox.Text = "0";
-        GuideWorkDaysTextBox.Text = "0";
+        SyncHybridSelectedRowFields();
         _lastProgressDefaultsRouteKey = routeKey;
 
         if (!_editingHistoryId.HasValue && !IsArchiveEditing)
