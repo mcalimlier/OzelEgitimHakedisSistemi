@@ -1047,8 +1047,9 @@
                                                 <TextBlock x:Name="RouteNameLabel" Text="Hattın Adı" Style="{StaticResource FieldLabel}"/>
                                                 <TextBox x:Name="RouteNameTextBox" Style="{StaticResource FieldTextBox}" Margin="0,4,0,6"/>
 
-                                                <TextBlock Text="Taşıma İş Günü" Style="{StaticResource FieldLabel}"/>
+                                                <TextBlock Text="Döneme Esas Taşıma Hakediş Gün Sayısı (Döneme Esas THGS)" TextWrapping="Wrap" Style="{StaticResource FieldLabel}"/>
                                                 <TextBox x:Name="RouteTransportWorkDaysTextBox"
+                                                         ToolTip="Hakediş Oluştur tablosunda hat ilk seçildiğinde Taşıma Gün alanına aktarılır. Tablodaki dönemsel düzenlemeler korunur."
                                                          Style="{StaticResource FieldTextBox}"
                                                          Margin="0,4,0,6"/>
 

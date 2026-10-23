@@ -1852,7 +1852,7 @@ public partial class MainWindow : Window
             case ArchiveCorrectionSection.Route:
                 if (!TryParseWorkDays(RouteTransportWorkDaysTextBox.Text, out var transportWorkDays) || transportWorkDays < 0)
                 {
-                    message = "Taşıma iş gününü sıfır veya daha büyük, en fazla 20 ondalık basamaklı bir sayı olarak girin.";
+                    message = "Döneme Esas THGS değerini sıfır veya daha büyük, en fazla 20 ondalık basamaklı bir sayı olarak girin.";
                     return false;
                 }
                 if (!TryParseWorkDays(RouteGuideWorkDaysTextBox.Text, out var guideWorkDays) || guideWorkDays < 0)
@@ -2178,7 +2178,7 @@ public partial class MainWindow : Window
                 }
                 if (!TryParseWorkDays(RouteTransportWorkDaysTextBox.Text, out var transportWorkDays) || transportWorkDays < 0)
                 {
-                    message = "Taşıma iş gününü sıfır veya daha büyük, en fazla 20 ondalık basamaklı bir sayı olarak girin.";
+                    message = "Döneme Esas THGS değerini sıfır veya daha büyük, en fazla 20 ondalık basamaklı bir sayı olarak girin.";
                     return false;
                 }
                 if (!TryParseWorkDays(RouteGuideWorkDaysTextBox.Text, out var guideWorkDays) || guideWorkDays < 0)
@@ -3407,7 +3407,7 @@ public partial class MainWindow : Window
         }
         if (!TryParseWorkDays(RouteTransportWorkDaysTextBox.Text, out var transportWorkDays) || transportWorkDays < 0)
         {
-            errors.Add("Taşıma İş Günü");
+            errors.Add("Döneme Esas Taşıma Hakediş Gün Sayısı (Döneme Esas THGS)");
             MarkInvalid(RouteTransportWorkDaysTextBox);
         }
         var hasGuide = HasGuideStaff(contract?.ProgramType ?? TransportationProgramType.SpecialEducation);
@@ -6964,8 +6964,9 @@ public partial class MainWindow : Window
                 RouteName = route.Name,
                 MinimumWageSupportEnabled =
                     route.ProgramType != TransportationProgramType.BasicOrSecondary,
-                // These are monthly inputs, not the route's annual workday totals.
-                WorkDays = 0,
+                // Seed a new period draft from the route's Döneme Esas THGS.
+                // Cached per-route edits above remain authoritative.
+                WorkDays = route.TransportWorkDays,
                 DailyPrice = route.DailyPrice,
                 GuideWorkDays = 0,
                 GuideDailyPrice = hasGuide ? route.GuideDailyPrice : 0m
@@ -8330,12 +8331,12 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         string ContractNumber = "",
         TransportationProgramType ProgramType = TransportationProgramType.SpecialEducation)
     {
-        public string TransportWorkDaysText => $"Taşıma İş Günü: {TransportWorkDays}";
+        public string TransportWorkDaysText => $"Döneme Esas THGS: {TransportWorkDays}";
         public decimal TransportAnnualPrice => TransportWorkDays * DailyPrice;
-        public string TransportAnnualPriceText => $"Taşıma Yıllık: {TransportAnnualPrice:N2} ₺";
+        public string TransportAnnualPriceText => $"Döneme Esas Taşıma: {TransportAnnualPrice:N2} ₺";
         public string DailyPriceText => $"Taşıma Günlük: {DailyPrice:N2} ₺";
         public string GuideDailyPriceText => $"Rehber: {GuideDailyPrice:N2} ₺";
-        public string TransportSummaryText => $"Taşıma: {TransportWorkDays} gün × {DailyPrice:N2} ₺";
+        public string TransportSummaryText => $"Döneme Esas THGS: {TransportWorkDays} gün × {DailyPrice:N2} ₺";
         public string GuideSummaryText => $"Rehber: {GuideWorkDays} gün × {GuideDailyPrice:N2} ₺";
         public string ServiceSummaryText => $"Taşıma {TransportWorkDays} gün • Rehber {GuideWorkDays} gün";
         public string RelationshipText => $"İKN: {TenderNumber} • Yüklenici: {ContractorName}";
