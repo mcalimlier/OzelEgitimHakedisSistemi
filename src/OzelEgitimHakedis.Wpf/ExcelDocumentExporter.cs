@@ -21,7 +21,7 @@ internal static class ExcelDocumentExporter
         if(headers.Count==0 || headers.Count>16384 || rows.Count>1048575 || rows.Any(r=>r.Count!=headers.Count))
             throw new ArgumentException("Excel tablosunun boyutu veya sütun sayısı geçersiz.");
         var sheet=new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?><worksheet xmlns=\""+MainNs+"\"><sheetViews><sheetView workbookViewId=\"0\"><pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/></sheetView></sheetViews><cols><col min=\"1\" max=\""+headers.Count+"\" width=\"28\" customWidth=\"1\"/></cols><sheetData><row r=\"1\" ht=\"60\" customHeight=\"1\">");
-        for(var c=0;c<headers.Count;c++) sheet.Append(Cell(TableColumn(c)+"1",headers[c],2));
+        for(var c=0;c<headers.Count;c++) sheet.Append(Cell(TableColumn(c)+"1",headers[c],3));
         sheet.Append("</row>");
         for(var r=0;r<rows.Count;r++)
         {
@@ -257,7 +257,10 @@ internal static class ExcelDocumentExporter
 
     private static string Cell(string reference, string value, int style)
     {
-        var safe = Xml(value);
+        // ST_Xstring interprets these sequences even in inline strings. Escape the
+        // original underscore once so a literal route title stays literal in Excel.
+        var literal = System.Text.RegularExpressions.Regex.Replace(value, @"_x[0-9A-Fa-f]{4}_", match => "_x005F_" + match.Value[1..]);
+        var safe = Xml(literal).Replace("\r", "&#13;", StringComparison.Ordinal);
         return "<c r=\"" + reference + "\" s=\"" + style + "\" t=\"inlineStr\"><is><t xml:space=\"preserve\">" + safe + "</t></is></c>";
     }
 

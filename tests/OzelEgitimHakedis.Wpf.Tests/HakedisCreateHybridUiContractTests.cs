@@ -406,12 +406,20 @@ public sealed class HakedisCreateHybridUiContractTests
                 var rows=Field<System.Collections.ObjectModel.ObservableCollection<MainWindow.MultiRoutePaymentDraftRow>>(window,"_multiRoutePaymentRows");
                 var row=Assert.Single(rows);row.WorkDays=18.5m;row.GuideDailyPrice=1234.5678m;row.RouteName="Düzenlenmiş hat";
                 var grid=Field<DataGrid>(window,"MultiRoutePaymentGrid");grid.ItemsSource=rows;
-                var name=new DataGridTextColumn{Header="Hattın Adı",Binding=new Binding(nameof(row.RouteName))};
+                var name=new DataGridTextColumn{Header="Hattın Adı",Binding=new Binding(nameof(row.RouteName)){Mode=BindingMode.TwoWay,UpdateSourceTrigger=UpdateSourceTrigger.LostFocus}};
                 var price=new DataGridTextColumn{Header="Rehber Personel Günlük Fiyat",Binding=new Binding(nameof(row.GuideDailyPrice))};
                 var days=new DataGridTextColumn{Header="Döneme Esas THGS",Binding=new Binding(nameof(row.WorkDays))};
                 grid.Columns.Add(name);grid.Columns.Add(price);grid.Columns.Add(days);
                 grid.Columns.Add(new DataGridTextColumn{Header="Gizli",Binding=new Binding(nameof(row.TaxDebt)),Visibility=Visibility.Collapsed});
                 price.DisplayIndex=0;
+                ArrangeLayout(grid,700,300);
+                grid.SelectedItem=row;
+                grid.CurrentCell=new DataGridCellInfo(row,name);
+                Assert.True(grid.BeginEdit());
+                grid.UpdateLayout();
+                var editor=Assert.Single(VisualDescendants<TextBox>(grid));
+                editor.Text="Düzenlenmiş hat — hücre düzenlemesi";
+                Assert.Equal("Düzenlenmiş hat",row.RouteName);
                 var path=Path.Combine(temp.FullName,"grid.xlsx");
                 Assert.True((bool)Invoke(window,"SaveHybridTableExcel",path)!);
                 using var zip=System.IO.Compression.ZipFile.OpenRead(path);
@@ -421,7 +429,7 @@ public sealed class HakedisCreateHybridUiContractTests
                 var cells=xml.Descendants(ns+"row").Last().Elements(ns+"c").ToArray();
                 Assert.Equal(3,cells.Length);
                 Assert.Equal("1234.5678",cells[0].Element(ns+"v")!.Value);
-                Assert.Equal("Düzenlenmiş hat",cells[1].Descendants(ns+"t").Single().Value);
+                Assert.Equal("Düzenlenmiş hat — hücre düzenlemesi",cells[1].Descendants(ns+"t").Single().Value);
                 Assert.Equal("18.5",cells[2].Element(ns+"v")!.Value);
                 Assert.True(row.HasChanges);
                 Assert.True(Field<Button>(window,"UpdateHybridRoutesButton").IsEnabled);
@@ -1380,6 +1388,7 @@ public sealed class HakedisCreateHybridUiContractTests
                 Collection(window, "_routes").Add(CreateRoute("01", routeName, "12345678901"));
             Invoke(window, "ApplyContractToForm", contract);
 
+            Assert.Equal(expected, Invoke(window, "GetContractWorkName", contract));
             Assert.Equal(legacyWorkName, contract.WorkName);
         });
     }

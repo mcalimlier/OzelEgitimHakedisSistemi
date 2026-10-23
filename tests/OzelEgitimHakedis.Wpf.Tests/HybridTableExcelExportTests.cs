@@ -42,4 +42,21 @@ public sealed class HybridTableExcelExportTests
         }
         finally {directory.Delete(true);}
     }
+    [Fact]
+    public void TableExport_ShouldPreserveExcelEscapeTokensAndCarriageReturns()
+    {
+        var directory=Directory.CreateTempSubdirectory("oehs-literal-xlsx-");
+        try
+        {
+            var target=Path.Combine(directory.FullName,"literal.xlsx");
+            System.Collections.Generic.IReadOnlyList<object?>[] rows={new object?[]{"_x0041_\rHat"}};
+            ExcelDocumentExporter.SaveTable(target,new[]{"Hattın Adı"},rows);
+            using var zip=ZipFile.OpenRead(target);
+            using var stream=zip.GetEntry("xl/worksheets/sheet1.xml")!.Open();
+            var xml=XDocument.Load(stream);XNamespace ns="http://schemas.openxmlformats.org/spreadsheetml/2006/main";
+            Assert.Equal("_x005F_x0041_\rHat",xml.Descendants(ns+"row").Last().Descendants(ns+"t").Single().Value);
+        }
+        finally {directory.Delete(true);}
+    }
+
 }
