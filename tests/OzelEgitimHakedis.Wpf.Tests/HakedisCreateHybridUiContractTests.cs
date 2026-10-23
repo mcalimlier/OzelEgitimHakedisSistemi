@@ -337,6 +337,94 @@ public sealed class HakedisCreateHybridUiContractTests
     }
 
     [Fact]
+    public void RecordPeriodsAndPaymentActions_ShouldUseSharedPeriodControlsAndSingleEditEntry()
+    {
+        var document=LoadMainWindowXaml();
+        foreach(var name in new[]{"HistoryMonthFilter","ArchiveMonthFilter"})
+        {
+            var control=NamedElement(document,name);
+            Assert.Equal("ComboBox",control.Name.LocalName);
+            Assert.Equal("DisplayText",(string?)control.Attribute("DisplayMemberPath"));
+            Assert.Equal("Hakediş Dönemi",(string?)control.Parent!.Elements().First().Attribute("Text"));
+        }
+        Assert.DoesNotContain(document.Descendants(),e=>(string?)e.Attribute(XamlNamespace+"Name")=="EditCurrentProgressButton");
+        Assert.Equal("HAKEDİŞ HESAPLA/KAYDET",(string?)NamedElement(document,"CalculateProgressButton").Attribute("Content"));
+        RunOnSta(()=>
+        {
+            var window=CreateEditorHarness();
+            Invoke(window,"SetProgressEditorMode",false,false);
+            Assert.Equal("HAKEDİŞ HESAPLA/KAYDET",Field<Button>(window,"CalculateProgressButton").Content);
+            Invoke(window,"SetProgressEditorMode",true,false);
+            Assert.Equal("DÜZENLE",Field<Button>(window,"CalculateProgressButton").Content);
+        });
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void RecordPeriods_ShouldClipToContractAndFilterByMonth(bool archive)
+    {
+        RunOnSta(()=>
+        {
+            var directory=Directory.CreateTempSubdirectory("oehs-record-periods-");
+            try
+            {
+                var window=CreateEditorHarness();
+                SetField(window,"_archiveStore",new ProgressPaymentArchiveStore(directory.FullName));
+                var sample=ArchiveProgressEditorContextTests.CreateArchive();
+                var contract=sample.Contract with {StartDate=new DateOnly(2026,10,14),EndDate=new DateOnly(2026,12,10)};
+                Collection(window,"_contracts").Add(contract);
+                var program=Field<ComboBox>(window,"HomeProgramComboBox");
+                program.Items.Add(new ComboBoxItem{Tag="SpecialEducation"});program.Items.Add(new ComboBoxItem{Tag="BasicOrSecondary"});program.SelectedIndex=0;
+                Invoke(window,"UpdateRecordPeriodOptions",archive);
+                var box=Field<ComboBox>(window,archive?"ArchiveMonthFilter":"HistoryMonthFilter");
+                var options=box.Items.Cast<ProgressPaymentMonthOption>().ToArray();
+                Assert.Equal(3,options.Length);
+                Assert.Equal(new DateOnly(2026,10,14),options[0].StartDate);
+                Assert.Equal(new DateOnly(2026,12,10),options[2].EndDate);
+                Assert.Null(box.SelectedItem);
+                box.SelectedIndex=0;
+                var filter=Assert.IsType<PaymentFilter>(Invoke(window,"ReadRecordFilter",archive));
+                Assert.Equal(new DateOnly(2026,10,31),filter.Month);
+                Assert.True(PaymentOperationsService.Matches(sample.ProgressPayment with {PeriodDate=new DateOnly(2026,10,18)},filter));
+                Assert.False(PaymentOperationsService.Matches(sample.ProgressPayment with {PeriodDate=new DateOnly(2026,11,18)},filter));
+                Invoke(window,"UpdateRecordPeriodOptions",archive);
+                Assert.NotNull(box.SelectedItem);
+                program.SelectedIndex=1;Invoke(window,"UpdateRecordPeriodOptions",archive);
+                Assert.Empty(box.Items.Cast<object>());Assert.Null(box.SelectedItem);
+            }
+            finally {directory.Delete(true);}
+        });
+    }
+
+    [Fact]
+    public void ContractorPhone_ShouldKeepFixedZeroOutsideEditableNationalNumber()
+    {
+        var document=LoadMainWindowXaml();var input=NamedElement(document,"ContractorPhoneTextBox");
+        Assert.Equal("10",(string?)input.Attribute("MaxLength"));
+        Assert.Contains(input.Parent!.Elements(),e=>e.Name.LocalName=="TextBlock"&&(string?)e.Attribute("Text")=="0");
+        RunOnSta(()=>
+        {
+            var window=CreateEditorHarness();
+            var box=Field<TextBox>(window,"ContractorPhoneTextBox");
+            box.TextChanged+=(sender,e)=>Invoke(window,"ContractorPhoneTextBox_TextChanged",sender,e);
+            Invoke(window,"SetContractorPhoneText","05321234567");
+            Assert.Equal("5321234567",box.Text);
+            Assert.False((bool)Invoke(window,"ContractorPhoneDiffers","05321234567")!);
+            box.Text="05321234567";Assert.Equal("5321234567",box.Text);
+            box.Text="abc";Assert.Equal("5321234567",box.Text);
+            box.Text="";box.Text="5";
+            Assert.False((bool)Invoke(window,"ValidateContractorPhone")!);
+            box.Text="5327654321";
+            Assert.True((bool)Invoke(window,"ValidateContractorPhone")!);
+            var normalize=typeof(MainWindow).GetMethod("NormalizePhoneNumber",BindingFlags.NonPublic|BindingFlags.Static)!;
+            Assert.Equal("05327654321",normalize.Invoke(null,new object[]{box.Text}));
+            Invoke(window,"SetContractorPhoneText","+90 532 123 45 67");Assert.Equal("5321234567",box.Text);
+            Invoke(window,"SetContractorPhoneText","00905321234567");Assert.Equal("5321234567",box.Text);
+        });
+    }
+
+    [Fact]
     public void HybridCaptions_ShouldExactlyMatchTheirSourceFields()
     {
         var document=LoadMainWindowXaml();
