@@ -25,16 +25,16 @@
 ### Task 1: Captions, Home period, work-name input cleanup
 
 Files: MainWindow.xaml/.cs; MainWindow.Operations.cs/HomeFinance.cs; WPF UI contract and Home tests.
-- [ ] Add contract-caption/period/input-removal tests and observe failures on Windows.
-- [ ] Replace Home DatePicker with shared month-option ComboBox; update filter/transfer paths and existing tests.
-- [ ] Correct captions; remove WorkName control and form references; keep official output titles.
-- [ ] Verify period scoping, explicit selection and report regressions.
+- [x] Add contract-caption/period/input-removal tests and observe failures on Windows.
+- [x] Replace Home DatePicker with shared month-option ComboBox; update filter/transfer paths and existing tests.
+- [x] Correct captions; remove WorkName control and form references; keep official output titles.
+- [x] Verify period scoping, explicit selection and report regressions.
 
 ### Task 2: Remove paste and export current grid
 
 Files: delete HybridClipboardPlan.cs/MainWindow.HybridClipboard.cs and obsolete tests; extend ExcelDocumentExporter.cs; create MainWindow.HybridExcelExport.cs; add XLSX package and grid integration tests.
-- [ ] Add export/paste-removal regressions and see failures.
-- [ ] Remove paste/undo controls, custom key hooks and code/test remnants.
-- [ ] Add EXCEL’E AKTAR SaveFileDialog and typed visible-grid XLSX snapshot writer.
-- [ ] Verify generated package content, precision, column ordering and zero persistence side effects.
-- [ ] Run full Windows suite/PDF smoke, independent review, fix important findings and record continuation evidence.
+- [x] Add export/paste-removal regressions and see failures.
+- [x] Remove paste/undo controls, custom key hooks and code/test remnants.
+- [x] Add EXCEL’E AKTAR SaveFileDialog and typed visible-grid XLSX snapshot writer.
+- [x] Verify generated package content, precision, column ordering and zero persistence side effects.
+- [x] Run full Windows suite/PDF smoke, independent review, fix important findings and record continuation evidence.
