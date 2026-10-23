@@ -4874,7 +4874,7 @@ public partial class MainWindow : Window
         var invalidFields = new List<(Control Control, string Name)>();
 
         if (!TryParseWorkDays(WorkDaysTextBox.Text, out var workDays) || workDays < 0)
-            invalidFields.Add((WorkDaysTextBox, "Taşıma İş Günü"));
+            invalidFields.Add((WorkDaysTextBox, "Döneme Esas Taşıma Hakediş Gün Sayısı (Döneme Esas THGS)"));
 
         decimal guideWorkDays = 0m;
         var guideDailyPrice = 0m;
@@ -4884,7 +4884,7 @@ public partial class MainWindow : Window
         if (hasGuide)
         {
             if (!TryParseWorkDays(GuideWorkDaysTextBox.Text, out guideWorkDays) || guideWorkDays < 0)
-                invalidFields.Add((GuideWorkDaysTextBox, "Rehber İş Günü"));
+                invalidFields.Add((GuideWorkDaysTextBox, "Rehber İş Günü (bu ay)"));
             if (!TryParseDecimal(GuideDailyPriceTextBox.Text, out guideDailyPrice) || guideDailyPrice < 0)
                 invalidFields.Add((GuideDailyPriceTextBox, "Rehber Personel Günlük Fiyat"));
             if (!TryParseDecimalOrZero(GuideDiscountTextBox.Text, out guideDiscount) || guideDiscount < 0)
