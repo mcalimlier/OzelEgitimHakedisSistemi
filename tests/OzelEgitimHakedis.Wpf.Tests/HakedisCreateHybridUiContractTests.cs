@@ -337,6 +337,101 @@ public sealed class HakedisCreateHybridUiContractTests
     }
 
     [Fact]
+    public void HybridCaptions_ShouldExactlyMatchTheirSourceFields()
+    {
+        var document=LoadMainWindowXaml();
+        var grid=NamedElement(document,"MultiRoutePaymentGrid");
+        string Header(string path)=>(string)grid.Descendants().Single(e=>
+            ((string?)e.Attribute("Binding"))?.StartsWith("{Binding "+path+",",StringComparison.Ordinal)==true
+            || string.Equals((string?)e.Attribute("Binding"),"{Binding "+path+"}",StringComparison.Ordinal)).Attribute("Header")!;
+        Assert.Equal((string?)NamedElement(document,"RouteGuideDailyPriceLabel").Attribute("Text"),Header("GuideDailyPrice"));
+        Assert.Equal((string?)NamedElement(document,"ProgressGuideWorkDaysLabel").Attribute("Text"),Header("GuideWorkDays"));
+        var days=NamedElement(document,"RouteTransportWorkDaysTextBox").ElementsBeforeSelf().Last(e=>e.Name.LocalName=="TextBlock");
+        Assert.Equal((string?)days.Attribute("Text"),Header("WorkDays"));
+        Assert.Equal((string?)NamedElement(document,"NetPayableLabel").Attribute("Text"),Header("NetPayableText"));
+    }
+
+    [Fact]
+    public void RemovedInputAndPasteFeature_ShouldBeReplacedBySingleExcelExportAction()
+    {
+        var document=LoadMainWindowXaml();
+        var names=document.Descendants().Select(e=>(string?)e.Attribute(XamlNamespace+"Name")).ToArray();
+        Assert.DoesNotContain("WorkNameTextBox",names);
+        Assert.DoesNotContain("HybridPasteButton",names);
+        Assert.DoesNotContain("HybridUndoButton",names);
+        var export=NamedElement(document,"HybridExportExcelButton");
+        Assert.Equal("EXCEL’E AKTAR",(string?)export.Attribute("Content"));
+        Assert.Equal("HybridExportExcelButton_Click",EventName(export,"Click"));
+        Assert.Null(NamedElement(document,"MultiRoutePaymentGrid").Attribute("PreviewKeyDown"));
+    }
+
+    [Fact]
+    public void HomePeriod_ShouldUseClippedContractMonthsAndClearIncompatibleSelection()
+    {
+        RunOnSta(() =>
+        {
+            var window=CreateEditorHarness();
+            var contract=ArchiveProgressEditorContextTests.CreateArchive().Contract with
+            {StartDate=new DateOnly(2026,10,14),EndDate=new DateOnly(2026,12,10)};
+            Collection(window,"_contracts").Add(contract);
+            var program=Field<ComboBox>(window,"HomeProgramComboBox");
+            program.Items.Add(new ComboBoxItem{Tag="SpecialEducation"});program.Items.Add(new ComboBoxItem{Tag="BasicOrSecondary"});program.SelectedIndex=0;
+            var tenders=Field<ComboBox>(window,"HomeTenderListBox");tenders.ItemsSource=Collection(window,"_contracts");tenders.SelectedItem=contract;
+            Invoke(window,"UpdateHomePeriodOptions");
+            var periods=Field<ComboBox>(window,"HomePeriodMonthComboBox");
+            var options=periods.Items.Cast<ProgressPaymentMonthOption>().ToArray();
+            Assert.Equal(3,options.Length);
+            Assert.Equal(new DateOnly(2026,10,14),options[0].StartDate);
+            Assert.Equal(new DateOnly(2026,10,31),options[0].EndDate);
+            Assert.Equal(new DateOnly(2026,12,10),options[2].EndDate);
+            Assert.Null(periods.SelectedItem);
+            periods.SelectedIndex=0;Invoke(window,"UpdateHomePeriodOptions");
+            Assert.Equal(new DateOnly(2026,10,14),Assert.IsType<ProgressPaymentMonthOption>(periods.SelectedItem).StartDate);
+            program.SelectedIndex=1;Invoke(window,"UpdateHomePeriodOptions");
+            Assert.Empty(periods.Items.Cast<object>());
+            Assert.Null(periods.SelectedItem);
+        });
+    }
+
+    [Fact]
+    public void HybridGridExcel_ShouldExportCurrentVisibleOrderAndKeepUnsavedChanges()
+    {
+        RunOnSta(() =>
+        {
+            var temp=Directory.CreateTempSubdirectory("oehs-current-grid-");
+            try
+            {
+                var root=Path.Combine(temp.FullName,"data");
+                var window=CreateHybridUpdateHarness(root);
+                var rows=Field<System.Collections.ObjectModel.ObservableCollection<MainWindow.MultiRoutePaymentDraftRow>>(window,"_multiRoutePaymentRows");
+                var row=Assert.Single(rows);row.WorkDays=18.5m;row.GuideDailyPrice=1234.5678m;row.RouteName="Düzenlenmiş hat";
+                var grid=Field<DataGrid>(window,"MultiRoutePaymentGrid");grid.ItemsSource=rows;
+                var name=new DataGridTextColumn{Header="Hattın Adı",Binding=new Binding(nameof(row.RouteName))};
+                var price=new DataGridTextColumn{Header="Rehber Personel Günlük Fiyat",Binding=new Binding(nameof(row.GuideDailyPrice))};
+                var days=new DataGridTextColumn{Header="Döneme Esas THGS",Binding=new Binding(nameof(row.WorkDays))};
+                grid.Columns.Add(name);grid.Columns.Add(price);grid.Columns.Add(days);
+                grid.Columns.Add(new DataGridTextColumn{Header="Gizli",Binding=new Binding(nameof(row.TaxDebt)),Visibility=Visibility.Collapsed});
+                price.DisplayIndex=0;
+                var path=Path.Combine(temp.FullName,"grid.xlsx");
+                Assert.True((bool)Invoke(window,"SaveHybridTableExcel",path)!);
+                using var zip=System.IO.Compression.ZipFile.OpenRead(path);
+                using var stream=zip.GetEntry("xl/worksheets/sheet1.xml")!.Open();
+                var xml=XDocument.Load(stream);XNamespace ns="http://schemas.openxmlformats.org/spreadsheetml/2006/main";
+                Assert.Equal(new[]{"Rehber Personel Günlük Fiyat","Hattın Adı","Döneme Esas THGS"},xml.Descendants(ns+"row").First().Descendants(ns+"t").Select(e=>e.Value).ToArray());
+                var cells=xml.Descendants(ns+"row").Last().Elements(ns+"c").ToArray();
+                Assert.Equal(3,cells.Length);
+                Assert.Equal("1234.5678",cells[0].Element(ns+"v")!.Value);
+                Assert.Equal("Düzenlenmiş hat",cells[1].Descendants(ns+"t").Single().Value);
+                Assert.Equal("18.5",cells[2].Element(ns+"v")!.Value);
+                Assert.True(row.HasChanges);
+                Assert.True(Field<Button>(window,"UpdateHybridRoutesButton").IsEnabled);
+                Assert.Empty(new OehsProgramScopedApplicationDataStore(root).Load().Routes);
+            }
+            finally {temp.Delete(true);}
+        });
+    }
+
+    [Fact]
     public void GoldFinance_ShouldKeepEightCardsWithVectorSymbolsAndGoldNetCard()
     {
         RunOnSta(() =>
