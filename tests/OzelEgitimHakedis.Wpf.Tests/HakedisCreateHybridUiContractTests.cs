@@ -327,6 +327,7 @@ public sealed class HakedisCreateHybridUiContractTests
             var row=new MainWindow.MultiRoutePaymentDraftRow();
             binding.Source=row;
             var editor=new TextBox();
+            layout.Children.Add(editor); // Inherit the same tr-TR XAML language as real grid editors.
             var expression=BindingOperations.SetBinding(editor,TextBox.TextProperty,binding);
             editor.SetCurrentValue(TextBox.TextProperty,entered);
             expression.UpdateSource();
