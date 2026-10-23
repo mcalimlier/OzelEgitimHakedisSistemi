@@ -21,15 +21,15 @@ Keep snapshot revisions, historic correction, successful-calculation persistence
 
 ### Task 1: Red regressions
 
-- [ ] Add real-handler tests for record periods and phone editing/storage; UI/action removal assertions and runtime button label.
-- [ ] Commit tests and observe expected Windows failures.
+- [x] Add real-handler tests for record periods and phone editing/storage; UI/action removal assertions and runtime button label.
+- [x] Commit tests and observe expected Windows failures.
 
 ### Task 2: Implement shared period filters and payment actions
 
-- [ ] Replace record DatePickers, refresh scoped options under event guards, preserve compatible month choices and reset behavior.
-- [ ] Remove EditCurrentProgressButton and handler/state references; align runtime/new-payment caption.
+- [x] Replace record DatePickers, refresh scoped options under event guards, preserve compatible month choices and reset behavior.
+- [x] Remove EditCurrentProgressButton and handler/state references; align runtime/new-payment caption.
 
 ### Task 3: Phone input and verification
 
-- [ ] Add fixed-prefix layout and input validation; normalize load/save/comparison paths without mutating records on load.
-- [ ] Run full Windows suite and PDF smoke; final review; record evidence and continuation note.
+- [x] Add fixed-prefix layout and input validation; normalize load/save/comparison paths without mutating records on load.
+- [x] Run full Windows suite and PDF smoke; final review; record evidence and continuation note.
