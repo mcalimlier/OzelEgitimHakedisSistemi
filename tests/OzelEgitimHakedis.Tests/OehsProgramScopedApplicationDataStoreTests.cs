@@ -7,6 +7,36 @@ namespace OzelEgitimHakedis.Tests;
 public sealed class OehsProgramScopedApplicationDataStoreTests
 {
     [Fact]
+    public void HybridDrafts_ShouldSurviveRestartAndRemainSeparatedByProgramFirmAndMonth()
+    {
+        var root=Directory.CreateTempSubdirectory("oehs-scoped-drafts-");
+        try
+        {
+            var store=new OehsProgramScopedApplicationDataStore(root.FullName);
+            var drafts=new List<HybridPaymentDraftData>();
+            foreach(var program in new[]{TransportationProgramType.SpecialEducation,TransportationProgramType.BasicOrSecondary})
+            foreach(var firm in new[]{"TEST-A","TEST-B"})
+            foreach(var month in new[]{10,11})
+            {
+                var key=OehsIdentityService.BuildRouteKey("T","01",firm,"C",program);
+                var input=new ProgressPaymentInput(month,1000,0,0,100000,false,month+1,0,0,ProgramType:program);
+                drafts.Add(new(key,new DateOnly(2026,month,1),input));
+            }
+            store.Save(OehsApplicationData.Empty with {HybridPaymentDrafts=drafts});
+            var reloaded=new OehsProgramScopedApplicationDataStore(root.FullName).Load();
+            Assert.Equal(8,reloaded.HybridPaymentDrafts!.Count);
+            Assert.All(drafts,draft=>Assert.Contains(draft,reloaded.HybridPaymentDrafts));
+            foreach(var (file,program) in new[]{("oehs-special-education.json",TransportationProgramType.SpecialEducation),("oehs-basic-secondary.json",TransportationProgramType.BasicOrSecondary)})
+            {
+                var partition=new OehsApplicationDataStore(Path.Combine(root.FullName,file)).Load();
+                Assert.Equal(4,partition.HybridPaymentDrafts!.Count);
+                Assert.All(partition.HybridPaymentDrafts,draft=>Assert.Equal(program,draft.Input.ProgramType));
+            }
+        }
+        finally {root.Delete(true);}
+    }
+
+    [Fact]
     public void Save_ShouldPersistEachProgramToItsOwnFile_AndMergeOnLoad()
     {
         var root = Directory.CreateTempSubdirectory("oehs-program-store-");

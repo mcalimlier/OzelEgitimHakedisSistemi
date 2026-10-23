@@ -262,6 +262,37 @@ public sealed class HakedisCreateHybridUiContractTests
         });
     }
 
+    [Fact]
+    public void HybridRouteIdentityEdit_ShouldKeepItsPersistedMonthlyDraftAndCachedEdits()
+    {
+        RunOnSta(() =>
+        {
+            var temp=Directory.CreateTempSubdirectory("oehs-draft-identity-");
+            try
+            {
+                var root=Path.Combine(temp.FullName,"data");
+                var window=CreateHybridUpdateHarness(root);
+                var row=Assert.Single(Field<System.Collections.ObjectModel.ObservableCollection<MainWindow.MultiRoutePaymentDraftRow>>(window,"_multiRoutePaymentRows"));
+                row.GuideDailyPrice=200m;row.TaxDebt=27m;
+                Assert.True((bool)Invoke(window,"ApplyHybridRouteChanges",true)!);
+                var oldKey=row.RouteKey;
+                var original=Collection(window,"_routes")[0]!;
+                var updated=CreateRoute("02","Merkez","12345678901",guidePrice:200m);
+                Invoke(window,"RekeyHybridDrafts",original,updated);
+                Collection(window,"_routes")[0]=updated;
+                Assert.True((bool)Invoke(window,"SavePersistedData",false)!);
+                var draft=Assert.Single(new OehsProgramScopedApplicationDataStore(root).Load().HybridPaymentDrafts!);
+                Assert.NotEqual(oldKey,draft.RouteKey);
+                Assert.Equal(row.RouteKey,draft.RouteKey);
+                Assert.Equal(27m,draft.Input.TaxDebt);
+                var cache=Field<RouteDraftCache<MainWindow.MultiRoutePaymentDraftRow>>(window,"_multiRouteDraftCache");
+                Assert.False(cache.ContainsKey(oldKey));
+                Assert.Same(row,cache[draft.RouteKey]);
+            }
+            finally {temp.Delete(true);}
+        });
+    }
+
     private static MainWindow CreateHybridUpdateHarness(string root)
     {
         var window=CreateEditorHarness();

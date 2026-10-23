@@ -24,16 +24,16 @@
 ### Task 1: Remove annual guide day field
 
 Files: route models, propagation service, MainWindow.xaml/.cs, affected constructor fixtures.
-- [ ] Write legacy JSON serialization and monthly-guide-preservation regression tests.
-- [ ] Run Windows CI and verify failures before implementing.
-- [ ] Remove route annual field/control/read/write/validation/summary paths; preserve monthly payment input. Adjust positional constructor callers.
-- [ ] Run Core/WPF build and tests; no annual field in active source.
+- [x] Write legacy JSON serialization and monthly-guide-preservation regression tests.
+- [x] Run Windows CI and verify failures before implementing.
+- [x] Remove route annual field/control/read/write/validation/summary paths; preserve monthly payment input. Adjust positional constructor callers.
+- [x] Run Core/WPF build and tests; no annual field in active source.
 
 ### Task 2: Confirmed grid source update
 
 Files: MainWindow.HybridRow.cs, MainWindow.HybridEntry.cs, new MainWindow.HybridSourceUpdate.cs; OehsApplicationData and program-scoped store; WPF interaction tests.
-- [ ] Add edit/cancel/confirm/persistence/reselection/rollback behavior tests and see expected failures.
-- [ ] Track row baseline and expose HasChanges. Editable price/name columns; button directly below grid.
-- [ ] Persist changed selected route values and period draft inputs in one save. Cancel/error preserve draft and original data. Restore saved monthly drafts by exact identity/period.
-- [ ] Refresh all live source views with retained row edits; read route override when editing source route.
+- [x] Add edit/cancel/confirm/persistence/reselection/rollback behavior tests and see expected failures.
+- [x] Track row baseline and expose HasChanges. Editable price/name columns; button directly below grid.
+- [x] Persist changed selected route values and period draft inputs in one save. Cancel/error preserve draft and original data. Restore saved monthly drafts by exact identity/period.
+- [x] Refresh all live source views with retained row edits; read route override when editing source route.
 - [ ] Verify full Windows suite and PDF smoke; review change; save continuation evidence and commit.
