@@ -1153,7 +1153,7 @@
                                 <TextBlock Grid.Row="0" Text="Telefon" Style="{StaticResource FieldLabel}" Margin="0,4"/>
                                 <DockPanel Grid.Row="0" Grid.Column="1" Margin="4" LastChildFill="True">
                                     <TextBlock Text="0" VerticalAlignment="Center" Margin="0,0,6,0" Style="{StaticResource FieldLabel}"/>
-                                    <TextBox x:Name="ContractorPhoneTextBox" MaxLength="10" TextChanged="ContractorPhoneTextBox_TextChanged" ToolTip="5 ile başlayan 10 haneli telefon numarası girin. Baştaki 0 sabittir." Style="{StaticResource FieldTextBox}"/>
+                                    <TextBox x:Name="ContractorPhoneTextBox" MaxLength="10" TextChanged="ContractorPhoneTextBox_TextChanged" DataObject.Pasting="ContractorPhoneTextBox_Pasting" ToolTip="5 ile başlayan 10 haneli telefon numarası girin. Baştaki 0 sabittir." Style="{StaticResource FieldTextBox}"/>
                                 </DockPanel>
                                 <TextBlock Grid.Row="1" Text="E-posta" Style="{StaticResource FieldLabel}" Margin="0,4"/>
                                 <TextBox x:Name="ContractorEmailTextBox" Grid.Row="1" Grid.Column="1" Margin="4" Style="{StaticResource FieldTextBox}"/>

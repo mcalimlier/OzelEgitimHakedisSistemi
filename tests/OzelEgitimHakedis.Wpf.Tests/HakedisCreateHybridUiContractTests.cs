@@ -501,6 +501,9 @@ public sealed class HakedisCreateHybridUiContractTests
             try
             {
                 var root=Path.Combine(directory.FullName,"data");var window=CreateHybridUpdateHarness(root);
+                Field<ComboBox>(window,"ProgressTenderListBox").Items.Clear();
+                Field<ListBox>(window,"ProgressRouteComboBox").Items.Clear();
+                Field<ComboBox>(window,"ProgressPeriodMonthComboBox").Items.Clear();
                 var program=Field<ComboBox>(window,"TransportProgramTypeComboBox");
                 program.Items.Add(new ComboBoxItem{Tag="SpecialEducation"});program.SelectedIndex=0;
                 Field<TextBox>(window,"ContractorNameTextBox").Text="Telefon test firması";

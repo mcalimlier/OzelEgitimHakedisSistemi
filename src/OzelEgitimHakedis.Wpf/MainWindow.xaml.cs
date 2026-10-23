@@ -2460,7 +2460,7 @@ public partial class MainWindow : Window
             var originalArchive = _editingArchiveSnapshot!;
             var newNetPayable = recalculatedPayment.Calculation.NetPayable;
             var differences = PaymentOperationsService.CompareFields(originalArchive.Contract, updatedArchive.Contract, "Sözleşme")
-                .Concat(PaymentOperationsService.CompareFields(originalArchive.Contractor, updatedArchive.Contractor, "Firma"))
+                .Concat(CompareContractorFields(originalArchive.Contractor, updatedArchive.Contractor))
                 .Concat(PaymentOperationsService.CompareFields(originalArchive.Route, updatedArchive.Route, "Hat")).ToArray();
             var confirmation = ShowPaymentComparison("OEHS — Değişiklik Onayı",
                 $"{sectionName} değişiklikleri uygulansın mı? Yeni revizyon oluşturulacak; v{originalArchive.Revision:00} korunacak.",

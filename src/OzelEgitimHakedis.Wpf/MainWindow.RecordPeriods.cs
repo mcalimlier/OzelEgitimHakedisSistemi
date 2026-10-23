@@ -14,19 +14,19 @@ public partial class MainWindow
         var program=HomeProgram??GetSelectedTransportationProgramType();
         var tender=(archive?ArchiveTenderFilter:HistoryTenderFilter).Text;
         var periods=new List<ProgressPaymentMonthOption>();
-        foreach(var contract in _contracts.Where(c=>c.ProgramType==program && PaymentOperationsService.Contains(c.TenderNumber,tender)))
+        foreach(var contract in _contracts.Where(c=>c.EndDate>=c.StartDate && c.ProgramType==program && PaymentOperationsService.Contains(c.TenderNumber,tender)))
             periods.AddRange(ProgressPaymentMonthService.BuildOptions(contract.StartDate,contract.EndDate));
         IEnumerable<ProgressPaymentHistoryData> payments=_progressHistory;
         if(archive)
         {
             var snapshots=ReadOperationArchives().Where(a=>a.Contract.ProgramType==program && PaymentOperationsService.Contains(a.Contract.TenderNumber,tender)).ToArray();
-            foreach(var snapshot in snapshots)
+            foreach(var snapshot in snapshots.Where(a=>a.Contract.EndDate>=a.Contract.StartDate))
                 periods.AddRange(ProgressPaymentMonthService.BuildOptions(snapshot.Contract.StartDate,snapshot.Contract.EndDate));
             payments=snapshots.Select(a=>a.ProgressPayment);
         }
         foreach(var payment in payments.Where(p=>p.Input.ProgramType==program && PaymentOperationsService.Contains(p.TenderNumber,tender)))
         {
-            if(payment.ContractStartDate is {} start && payment.ContractEndDate is {} end)
+            if(payment.ContractStartDate is {} start && payment.ContractEndDate is {} end && end>=start)
                 periods.AddRange(ProgressPaymentMonthService.BuildOptions(start,end));
             // A legacy payment with no contract dates must still be filterable.
             if(payment.PeriodDate is {} period && !periods.Any(p=>p.StartDate.Year==period.Year && p.StartDate.Month==period.Month))

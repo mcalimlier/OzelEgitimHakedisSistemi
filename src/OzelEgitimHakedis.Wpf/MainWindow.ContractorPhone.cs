@@ -1,4 +1,7 @@
+using System.Windows;
 using System.Windows.Controls;
+using OzelEgitimHakedis.Core.Models;
+using OzelEgitimHakedis.Core.Services;
 
 namespace OzelEgitimHakedis.Wpf;
 
@@ -28,6 +31,19 @@ public partial class MainWindow
         }
         finally {_settingContractorPhone=false;}
     }
+
+    private void ContractorPhoneTextBox_Pasting(object sender, DataObjectPastingEventArgs e)
+    {
+        var box=(TextBox)sender;
+        var pasted=e.SourceDataObject.GetData(DataFormats.UnicodeText) as string
+            ?? e.SourceDataObject.GetData(DataFormats.Text) as string;
+        if(pasted is null || !IsPhoneEntry(box.Text.Remove(box.SelectionStart,box.SelectionLength).Insert(box.SelectionStart,pasted)))
+            e.CancelCommand();
+    }
+
+    private IReadOnlyList<PaymentDifference> CompareContractorFields(Contractor original, Contractor updated) =>
+        PaymentOperationsService.CompareFields(original with {Phone=NormalizePhoneNumber(original.Phone)},
+            updated with {Phone=NormalizePhoneNumber(updated.Phone)},"Firma");
 
     private void SetContractorPhoneText(string? storedPhone)
     {
