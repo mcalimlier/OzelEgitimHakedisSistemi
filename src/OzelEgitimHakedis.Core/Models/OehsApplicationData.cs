@@ -46,7 +46,6 @@ public sealed record RouteData(
     string RouteNumber,
     string Name,
     decimal DailyPrice,
-    decimal GuideWorkDays = 0m,
     decimal GuideDailyPrice = 0m,
     decimal TransportWorkDays = 0m,
     string TenderNumber = "",

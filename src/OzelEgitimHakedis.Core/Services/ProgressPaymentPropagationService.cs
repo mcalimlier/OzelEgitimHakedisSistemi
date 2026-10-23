@@ -153,7 +153,7 @@ public static class ProgressPaymentPropagationService
         {
             WorkDays = route.TransportWorkDays,
             DailyPrice = route.DailyPrice,
-            GuideWorkDays = route.ProgramType == TransportationProgramType.BasicOrSecondary ? 0 : route.GuideWorkDays,
+            GuideWorkDays = route.ProgramType == TransportationProgramType.BasicOrSecondary ? 0 : item.Input.GuideWorkDays,
             GuideDailyPrice = route.ProgramType == TransportationProgramType.BasicOrSecondary
                 ? 0m
                 : route.GuideDailyPrice,

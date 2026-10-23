@@ -49,7 +49,6 @@ public static class TenderRoutePropagationService
                     TenderNumber = newContract.TenderNumber.Trim(),
                     ContractNumber = newContract.ContractNumber.Trim(),
                     ProgramType = newContract.ProgramType,
-                    GuideWorkDays = hasGuide ? route.GuideWorkDays : 0,
                     GuideDailyPrice = hasGuide ? route.GuideDailyPrice : 0m
                 };
             })

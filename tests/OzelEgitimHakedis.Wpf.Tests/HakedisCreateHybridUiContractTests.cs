@@ -283,7 +283,7 @@ public sealed class HakedisCreateHybridUiContractTests
                     var routes=Field<ListBox>(window,"ProgressRouteComboBox");
                     for(var index=0;index<count;index++)
                     {
-                        var route=CreateRoute((index+1).ToString("00",CultureInfo.InvariantCulture),"Hat "+index,"12345678901", transportDays: 16.5m + index, guideDays: 180m);
+                        var route=CreateRoute((index+1).ToString("00",CultureInfo.InvariantCulture),"Hat "+index,"12345678901", transportDays: 16.5m + index);
                         routes.Items.Add(route);Collection(window,"_routes").Add(route);routes.SelectedItems.Add(route);
                     }
                     var period=new ProgressPaymentMonthOption(new DateOnly(2026,10,1),new DateOnly(2026,10,31));
@@ -549,8 +549,8 @@ public sealed class HakedisCreateHybridUiContractTests
         {
             var window = CreateEditorHarness();
             var routes = Field<ListBox>(window, "ProgressRouteComboBox");
-            var firstRoute = CreateRoute("01", "Merkez", "12345678901", program, transportDays: 18.5m, guideDays: 180m);
-            var secondRoute = CreateRoute("02", "Kuzey", "12345678901", program, transportDays: 12m, guideDays: 180m);
+            var firstRoute = CreateRoute("01", "Merkez", "12345678901", program, transportDays: 18.5m);
+            var secondRoute = CreateRoute("02", "Kuzey", "12345678901", program, transportDays: 12m);
             routes.Items.Add(firstRoute);
             routes.Items.Add(secondRoute);
             routes.SelectedItems.Add(firstRoute);
@@ -1363,9 +1363,9 @@ public sealed class HakedisCreateHybridUiContractTests
 
     private static object CreateRoute(string number, string name, string identity,
         TransportationProgramType program = TransportationProgramType.SpecialEducation, string tender = "IHALE-01",
-        decimal transportDays = 20m, decimal guideDays = 0m) =>
+        decimal transportDays = 20m) =>
         Activator.CreateInstance(typeof(MainWindow).GetNestedType("RouteDraft", BindingFlags.NonPublic)!,
-            number, name, 1_000m, guideDays, 0m, transportDays, tender, identity, "Same name", "SOZ-01",
+            number, name, 1_000m, 0m, transportDays, tender, identity, "Same name", "SOZ-01",
             program)!;
 
     private static T Field<T>(MainWindow window, string name) =>

@@ -299,7 +299,6 @@ public sealed class ProgressPaymentPropagationTests
         {
             ProgramType = TransportationProgramType.BasicOrSecondary,
             DailyPrice = 2500m,
-            GuideWorkDays = 0,
             GuideDailyPrice = 0m
         };
         var basic = special with
@@ -357,7 +356,7 @@ public sealed class ProgressPaymentPropagationTests
         new("Firma", "12345678901", BankAccountNumber: "TR-OLD");
 
     private static RouteData Route(decimal price) =>
-        new("1", "Hat 1", price, GuideWorkDays: 5, GuideDailyPrice: 500m,
+        new("1", "Hat 1", price, GuideDailyPrice: 500m,
             TransportWorkDays: 10, TenderNumber: "TENDER", ContractorTaxOrIdentityNumber: "12345678901");
 
     private static ProgressPaymentHistoryData History(ProgressPaymentInput input) =>

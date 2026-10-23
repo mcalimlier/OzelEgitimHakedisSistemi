@@ -301,7 +301,6 @@ public partial class MainWindow : Window
             context.Route.RouteNumber,
             context.Route.Name,
             context.Route.DailyPrice,
-            context.Route.GuideWorkDays,
             context.Route.GuideDailyPrice,
             context.Route.TransportWorkDays,
             context.Route.TenderNumber,
@@ -1086,14 +1085,11 @@ public partial class MainWindow : Window
         RouteNameLabel.Text = OfficialTemplateProfile.For(contract?.ProgramType ?? GetSelectedTransportationProgramType()).RouteNameLabel;
         var visible = contract is not null && HasGuideStaff(contract.ProgramType);
         var visibility = visible ? Visibility.Visible : Visibility.Collapsed;
-        RouteGuideWorkDaysLabel.Visibility = visibility;
-        RouteGuideWorkDaysTextBox.Visibility = visibility;
         RouteGuideDailyPriceLabel.Visibility = visibility;
         RouteGuideDailyPriceTextBox.Visibility = visibility;
 
         if (!visible)
         {
-            RouteGuideWorkDaysTextBox.Text = "0";
             RouteGuideDailyPriceTextBox.Text = "0";
         }
     }
@@ -1661,7 +1657,7 @@ public partial class MainWindow : Window
             ContractorNameTextBox, ContractorTaxTextBox, ContractorAddressTextBox,
             ContractorPhoneTextBox, ContractorEmailTextBox, ContractorBankTextBox, ContractorContactTextBox,
             RouteNumberTextBox, RouteNameTextBox, RouteTransportWorkDaysTextBox,
-            RouteGuideWorkDaysTextBox, RouteGuideDailyPriceTextBox,
+            RouteGuideDailyPriceTextBox,
             WorkDaysTextBox, DailyPriceTextBox, GuideWorkDaysTextBox, GuideDailyPriceTextBox,
             DiscountTextBox, GuideDiscountTextBox, PriceDifferenceTextBox, GuidePriceDifferenceTextBox,
             TaxDebtTextBox, SocialSecurityDebtTextBox, MinimumWageSupportTextBox, InspectionPenaltyTextBox,
@@ -1791,7 +1787,6 @@ public partial class MainWindow : Window
                 TextDiffers(RouteNumberTextBox, archive.Route.RouteNumber) ||
                 TextDiffers(RouteNameTextBox, archive.Route.Name) ||
                 DecimalWorkDaysDiffer(RouteTransportWorkDaysTextBox, archive.Route.TransportWorkDays) ||
-                DecimalWorkDaysDiffer(RouteGuideWorkDaysTextBox, archive.Route.GuideWorkDays) ||
                 DecimalDiffers(RouteGuideDailyPriceTextBox, archive.Route.GuideDailyPrice),
 
             ArchiveCorrectionSection.ProgressPayment =>
@@ -1855,11 +1850,6 @@ public partial class MainWindow : Window
                     message = "Döneme Esas THGS değerini sıfır veya daha büyük, en fazla 20 ondalık basamaklı bir sayı olarak girin.";
                     return false;
                 }
-                if (!TryParseWorkDays(RouteGuideWorkDaysTextBox.Text, out var guideWorkDays) || guideWorkDays < 0)
-                {
-                    message = "Rehber iş gününü sıfır veya daha büyük, en fazla 20 ondalık basamaklı bir sayı olarak girin.";
-                    return false;
-                }
                 if (!TryParseDecimal(RouteGuideDailyPriceTextBox.Text, out var guideDailyPrice) || guideDailyPrice < 0)
                 {
                     message = "Rehber günlük fiyatını geçerli bir tutar olarak girin.";
@@ -1869,7 +1859,6 @@ public partial class MainWindow : Window
                 {
                     WorkDays = transportWorkDays,
                     DailyPrice = archive.Contract.TransportDailyPrice,
-                    GuideWorkDays = guideWorkDays,
                     GuideDailyPrice = guideDailyPrice
                 };
                 break;
@@ -2101,7 +2090,6 @@ public partial class MainWindow : Window
                 TextDiffers(RouteNumberTextBox, route.RouteNumber) ||
                 TextDiffers(RouteNameTextBox, route.Name) ||
                 DecimalWorkDaysDiffer(RouteTransportWorkDaysTextBox, route.TransportWorkDays) ||
-                DecimalWorkDaysDiffer(RouteGuideWorkDaysTextBox, route.GuideWorkDays) ||
                 DecimalDiffers(RouteGuideDailyPriceTextBox, route.GuideDailyPrice),
 
             HistoryCorrectionSection.ProgressPayment =>
@@ -2181,11 +2169,6 @@ public partial class MainWindow : Window
                     message = "Döneme Esas THGS değerini sıfır veya daha büyük, en fazla 20 ondalık basamaklı bir sayı olarak girin.";
                     return false;
                 }
-                if (!TryParseWorkDays(RouteGuideWorkDaysTextBox.Text, out var guideWorkDays) || guideWorkDays < 0)
-                {
-                    message = "Rehber iş gününü sıfır veya daha büyük, en fazla 20 ondalık basamaklı bir sayı olarak girin.";
-                    return false;
-                }
                 if (!TryParseDecimal(RouteGuideDailyPriceTextBox.Text, out var guideDailyPrice) || guideDailyPrice < 0)
                 {
                     message = "Rehber günlük fiyatını geçerli bir tutar olarak girin.";
@@ -2194,7 +2177,6 @@ public partial class MainWindow : Window
                 input = item.Input with
                 {
                     WorkDays = transportWorkDays,
-                    GuideWorkDays = guideWorkDays,
                     GuideDailyPrice = guideDailyPrice
                 };
                 break;
@@ -2612,7 +2594,6 @@ public partial class MainWindow : Window
                 RouteNumberTextBox.Clear();
                 RouteNameTextBox.Clear();
                 RouteTransportWorkDaysTextBox.Clear();
-                RouteGuideWorkDaysTextBox.Clear();
                 RouteGuideDailyPriceTextBox.Clear();
                 ClearRouteValidationVisuals();
                 RouteStatusTextBlock.Text = "Arşiv hattı güncellendi; giriş alanları temizlendi.";
@@ -2786,7 +2767,6 @@ public partial class MainWindow : Window
             TenderNumber = updatedContract.TenderNumber,
             ContractNumber = updatedContract.ContractNumber,
             DailyPrice = updatedContract.TransportDailyPrice,
-            GuideWorkDays = hasGuide ? archive.Route.GuideWorkDays : 0,
             GuideDailyPrice = hasGuide ? archive.Route.GuideDailyPrice : 0m,
             ProgramType = updatedContract.ProgramType
         };
@@ -2848,11 +2828,9 @@ public partial class MainWindow : Window
         if (string.IsNullOrWhiteSpace(routeName)) errors.Add(RouteNameTextBox);
         if (!TryParseWorkDays(RouteTransportWorkDaysTextBox.Text, out var transportWorkDays) || transportWorkDays < 0) errors.Add(RouteTransportWorkDaysTextBox);
         var hasGuide = HasGuideStaff(archive.Contract.ProgramType);
-        decimal guideWorkDays = 0m;
         var guideDailyPrice = 0m;
         if (hasGuide)
         {
-            if (!TryParseWorkDays(RouteGuideWorkDaysTextBox.Text, out guideWorkDays) || guideWorkDays < 0) errors.Add(RouteGuideWorkDaysTextBox);
             if (!TryParseDecimal(RouteGuideDailyPriceTextBox.Text, out guideDailyPrice) || guideDailyPrice < 0) errors.Add(RouteGuideDailyPriceTextBox);
         }
 
@@ -2869,7 +2847,6 @@ public partial class MainWindow : Window
             Name = routeName,
             DailyPrice = archive.Contract.TransportDailyPrice,
             TransportWorkDays = transportWorkDays,
-            GuideWorkDays = hasGuide ? guideWorkDays : 0,
             GuideDailyPrice = hasGuide ? guideDailyPrice : 0m,
             ProgramType = archive.Contract.ProgramType
         };
@@ -2878,7 +2855,6 @@ public partial class MainWindow : Window
         {
             WorkDays = transportWorkDays,
             DailyPrice = archive.Contract.TransportDailyPrice,
-            GuideWorkDays = hasGuide ? guideWorkDays : 0,
             GuideDailyPrice = hasGuide ? guideDailyPrice : 0m,
             GuideDiscountAmount = hasGuide ? archive.ProgressPayment.Input.GuideDiscountAmount : 0m,
             GuidePriceDifference = hasGuide ? archive.ProgressPayment.Input.GuidePriceDifference : 0m,
@@ -3411,15 +3387,9 @@ public partial class MainWindow : Window
             MarkInvalid(RouteTransportWorkDaysTextBox);
         }
         var hasGuide = HasGuideStaff(contract?.ProgramType ?? TransportationProgramType.SpecialEducation);
-        decimal guideWorkDays = 0m;
         var guideDailyPrice = 0m;
         if (hasGuide)
         {
-            if (!TryParseWorkDays(RouteGuideWorkDaysTextBox.Text, out guideWorkDays) || guideWorkDays < 0)
-            {
-                errors.Add("Rehber Yıllık İş Günü");
-                MarkInvalid(RouteGuideWorkDaysTextBox);
-            }
             if (!TryParseDecimal(RouteGuideDailyPriceTextBox.Text, out guideDailyPrice) || guideDailyPrice < 0)
             {
                 errors.Add("Rehber Personel Günlük Fiyat");
@@ -3436,7 +3406,6 @@ public partial class MainWindow : Window
             routeNumber,
             routeName,
             contract!.TransportDailyPrice,
-            hasGuide ? guideWorkDays : 0,
             hasGuide ? guideDailyPrice : 0m,
             transportWorkDays,
             contract.TenderNumber,
@@ -3465,7 +3434,6 @@ public partial class MainWindow : Window
             proposed.RouteNumber,
             proposed.Name,
             proposed.DailyPrice,
-            proposed.GuideWorkDays,
             proposed.GuideDailyPrice,
             proposed.TransportWorkDays,
             proposed.TenderNumber,
@@ -3477,7 +3445,6 @@ public partial class MainWindow : Window
                 x.RouteNumber,
                 x.Name,
                 x.DailyPrice,
-                x.GuideWorkDays,
                 x.GuideDailyPrice,
                 x.TransportWorkDays,
                 x.TenderNumber,
@@ -3566,11 +3533,11 @@ public partial class MainWindow : Window
     {
         var oldData = new RouteData(
             oldRoute.RouteNumber, oldRoute.Name, oldRoute.DailyPrice,
-            oldRoute.GuideWorkDays, oldRoute.GuideDailyPrice, oldRoute.TransportWorkDays,
+            oldRoute.GuideDailyPrice, oldRoute.TransportWorkDays,
             oldRoute.TenderNumber, oldRoute.ContractorTaxOrIdentityNumber, oldRoute.ContractNumber, oldRoute.ProgramType);
         var newData = new RouteData(
             updatedRoute.RouteNumber, updatedRoute.Name, updatedRoute.DailyPrice,
-            updatedRoute.GuideWorkDays, updatedRoute.GuideDailyPrice, updatedRoute.TransportWorkDays,
+            updatedRoute.GuideDailyPrice, updatedRoute.TransportWorkDays,
             updatedRoute.TenderNumber, updatedRoute.ContractorTaxOrIdentityNumber, updatedRoute.ContractNumber, updatedRoute.ProgramType);
 
         var contractor = FindContractor(updatedRoute.ContractorTaxOrIdentityNumber, updatedRoute.ProgramType);
@@ -3606,7 +3573,6 @@ public partial class MainWindow : Window
             RouteNumberTextBox,
             RouteNameTextBox,
             RouteTransportWorkDaysTextBox,
-            RouteGuideWorkDaysTextBox,
             RouteGuideDailyPriceTextBox
         })
             ClearInvalid(control);
@@ -3684,7 +3650,6 @@ public partial class MainWindow : Window
         RouteNumberTextBox.Text = route.RouteNumber;
         RouteNameTextBox.Text = route.Name;
         RouteTransportWorkDaysTextBox.Text = route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
-        RouteGuideWorkDaysTextBox.Text = route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
         RouteGuideDailyPriceTextBox.Text = FormatCalculationInput(route.GuideDailyPrice);
         RouteStatusTextBlock.Text = $"Düzenleme modu: İKN {route.TenderNumber} / Hat {route.RouteNumber}. DÜZENLE ile kaydedin.";
     }
@@ -3701,7 +3666,6 @@ public partial class MainWindow : Window
             RouteNumberTextBox.Clear();
             RouteNameTextBox.Clear();
             RouteTransportWorkDaysTextBox.Text = "0";
-            RouteGuideWorkDaysTextBox.Text = "0";
             RouteGuideDailyPriceTextBox.Text = "0";
             ClearRouteValidationVisuals();
             NavigationButton_Click(NavArchives, new RoutedEventArgs(Button.ClickEvent, NavArchives));
@@ -3718,7 +3682,6 @@ public partial class MainWindow : Window
             RouteNumberTextBox.Text = original.RouteNumber;
             RouteNameTextBox.Text = original.Name;
             RouteTransportWorkDaysTextBox.Text = original.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
-            RouteGuideWorkDaysTextBox.Text = original.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
             RouteGuideDailyPriceTextBox.Text = FormatCalculationInput(original.GuideDailyPrice);
         }
         else
@@ -3726,7 +3689,6 @@ public partial class MainWindow : Window
             RouteNumberTextBox.Clear();
             RouteNameTextBox.Clear();
             RouteTransportWorkDaysTextBox.Text = "0";
-            RouteGuideWorkDaysTextBox.Text = "0";
             RouteGuideDailyPriceTextBox.Text = "0";
         }
         SetRouteEditorMode(false);
@@ -3742,7 +3704,6 @@ public partial class MainWindow : Window
         RouteNumberTextBox.Clear();
         RouteNameTextBox.Clear();
         RouteTransportWorkDaysTextBox.Clear();
-        RouteGuideWorkDaysTextBox.Clear();
         RouteGuideDailyPriceTextBox.Clear();
 
         // Keep the chosen tender/contractor filters so the saved route remains
@@ -4013,7 +3974,6 @@ public partial class MainWindow : Window
                 x.RouteNumber,
                 x.Name,
                 x.DailyPrice,
-                x.GuideWorkDays,
                 x.GuideDailyPrice,
                 x.TransportWorkDays,
                 x.TenderNumber,
@@ -4051,7 +4011,6 @@ public partial class MainWindow : Window
                     TenderNumber = updatedRoute.TenderNumber,
                     ContractNumber = updatedRoute.ContractNumber,
                     DailyPrice = proposedContract.TransportDailyPrice,
-                    GuideWorkDays = updatedRoute.GuideWorkDays,
                     GuideDailyPrice = updatedRoute.GuideDailyPrice,
                     ProgramType = updatedRoute.ProgramType
                 };
@@ -4173,7 +4132,7 @@ public partial class MainWindow : Window
 
                 _routes.Add(new RouteDraft(
                     route.RouteNumber, route.Name, route.DailyPrice,
-                    route.GuideWorkDays, route.GuideDailyPrice, route.TransportWorkDays,
+                    route.GuideDailyPrice, route.TransportWorkDays,
                     tender, contractorTax, contractorName, contractNumber,
                     routeContract?.ProgramType ?? route.ProgramType));
             }
@@ -4276,7 +4235,7 @@ public partial class MainWindow : Window
         var data = new OehsApplicationData(
             activeContract,
             _routes.Select(x => new RouteData(
-                x.RouteNumber, x.Name, x.DailyPrice, x.GuideWorkDays, x.GuideDailyPrice,
+                x.RouteNumber, x.Name, x.DailyPrice, x.GuideDailyPrice,
                 x.TransportWorkDays, x.TenderNumber, x.ContractorTaxOrIdentityNumber, x.ContractNumber, x.ProgramType)).ToArray(),
             _contractors.Select(x => new Contractor(
                 x.Name, x.TaxOrIdentityNumber, x.Address, x.Phone, x.Email,
@@ -4569,7 +4528,6 @@ public partial class MainWindow : Window
                 x.RouteNumber,
                 x.Name,
                 x.DailyPrice,
-                x.GuideWorkDays,
                 x.GuideDailyPrice,
                 x.TransportWorkDays,
                 x.TenderNumber,
@@ -4635,7 +4593,7 @@ public partial class MainWindow : Window
         var data = new OehsApplicationData(
             contract,
             _routes.Select(x => new RouteData(
-                x.RouteNumber, x.Name, x.DailyPrice, x.GuideWorkDays, x.GuideDailyPrice,
+                x.RouteNumber, x.Name, x.DailyPrice, x.GuideDailyPrice,
                 x.TransportWorkDays, x.TenderNumber, x.ContractorTaxOrIdentityNumber,
                 x.ContractNumber, x.ProgramType)).ToArray(),
             contractors,
@@ -4754,7 +4712,7 @@ public partial class MainWindow : Window
                 data, contract,
                 new RouteData(
                     route.RouteNumber, route.Name, route.DailyPrice,
-                    route.GuideWorkDays, route.GuideDailyPrice, route.TransportWorkDays,
+                    route.GuideDailyPrice, route.TransportWorkDays,
                     route.TenderNumber, identity, route.ContractNumber, route.ProgramType),
                 item, editingExisting: false);
             errors.AddRange(validationErrors.Select(error => $"Hat {route.RouteNumber}: {error}"));
@@ -4960,7 +4918,6 @@ public partial class MainWindow : Window
                     archivedRoute.RouteNumber,
                     archivedRoute.Name,
                     archivedRoute.DailyPrice,
-                    archivedRoute.GuideWorkDays,
                     archivedRoute.GuideDailyPrice,
                     archivedRoute.TransportWorkDays,
                     archivedRoute.TenderNumber,
@@ -5160,7 +5117,6 @@ public partial class MainWindow : Window
                     x.RouteNumber,
                     x.Name,
                     x.DailyPrice,
-                    x.GuideWorkDays,
                     x.GuideDailyPrice,
                     x.TransportWorkDays,
                     x.TenderNumber,
@@ -5188,7 +5144,6 @@ public partial class MainWindow : Window
                         selectedRoute.RouteNumber,
                         selectedRoute.Name,
                         selectedRoute.DailyPrice,
-                        selectedRoute.GuideWorkDays,
                         selectedRoute.GuideDailyPrice,
                         selectedRoute.TransportWorkDays,
                         selectedRoute.TenderNumber,
@@ -5826,8 +5781,7 @@ public partial class MainWindow : Window
         }
 
         var routeData = new RouteData(
-            route.RouteNumber, route.Name, route.DailyPrice, route.GuideWorkDays,
-            route.GuideDailyPrice, route.TransportWorkDays, route.TenderNumber,
+            route.RouteNumber, route.Name, route.DailyPrice, route.GuideDailyPrice, route.TransportWorkDays, route.TenderNumber,
             route.ContractorTaxOrIdentityNumber, route.ContractNumber, route.ProgramType);
 
         var prior = _progressHistory
@@ -5996,7 +5950,6 @@ public partial class MainWindow : Window
                     x.RouteNumber,
                     x.Name,
                     x.DailyPrice,
-                    x.GuideWorkDays,
                     x.GuideDailyPrice,
                     x.TransportWorkDays,
                     x.TenderNumber,
@@ -6042,7 +5995,6 @@ public partial class MainWindow : Window
                     route.RouteNumber,
                     route.Name,
                     route.DailyPrice,
-                    route.GuideWorkDays,
                     route.GuideDailyPrice,
                     route.TransportWorkDays,
                     route.TenderNumber,
@@ -6094,7 +6046,6 @@ public partial class MainWindow : Window
                     archive.Route.RouteNumber,
                     archive.Route.Name,
                     archive.Route.DailyPrice,
-                    archive.Route.GuideWorkDays,
                     archive.Route.GuideDailyPrice,
                     archive.Route.TransportWorkDays,
                     archive.Route.TenderNumber,
@@ -6126,7 +6077,7 @@ public partial class MainWindow : Window
             // güncel değerlerinden değil, arşivlenen hat snapshot'ından yüklenir.
             WorkDaysTextBox.Text = archive.Route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
             DailyPriceTextBox.Text = FormatCalculationInput(archive.Route.DailyPrice);
-            GuideWorkDaysTextBox.Text = archive.Route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
+            GuideWorkDaysTextBox.Text = archive.ProgressPayment.Input.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
             GuideDailyPriceTextBox.Text = FormatCalculationInput(archive.Route.GuideDailyPrice);
             DiscountTextBox.Text = FormatCalculationInput(input.DiscountAmount);
             GuideDiscountTextBox.Text = FormatCalculationInput(input.GuideDiscountAmount);
@@ -6502,7 +6453,6 @@ public partial class MainWindow : Window
             RouteNumberTextBox.Text = archive.Route.RouteNumber;
             RouteNameTextBox.Text = archive.Route.Name;
             RouteTransportWorkDaysTextBox.Text = archive.Route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
-            RouteGuideWorkDaysTextBox.Text = archive.Route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
             RouteGuideDailyPriceTextBox.Text = FormatCalculationInput(archive.Route.GuideDailyPrice);
             RouteNumberTextBox.IsReadOnly = false;
             RouteSelectedTenderTextBlock.Text = $"Arşiv ihale: {archive.Route.TenderNumber}";
@@ -6566,7 +6516,6 @@ public partial class MainWindow : Window
         RouteNumberTextBox.IsReadOnly = false;
         RouteNameTextBox.Text = route.Name;
         RouteTransportWorkDaysTextBox.Text = route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
-        RouteGuideWorkDaysTextBox.Text = route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
         RouteGuideDailyPriceTextBox.Text = FormatCalculationInput(route.GuideDailyPrice);
         SetRouteEditorMode(true);
         NavigationButton_Click(NavLines, new RoutedEventArgs(Button.ClickEvent, NavLines));
@@ -8080,7 +8029,6 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
             DiscountTextBox,
             PriceDifferenceTextBox,
             RouteTransportWorkDaysTextBox,
-            RouteGuideWorkDaysTextBox,
             RouteGuideDailyPriceTextBox
         })
         {
@@ -8322,7 +8270,6 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         string RouteNumber,
         string Name,
         decimal DailyPrice,
-        decimal GuideWorkDays = 0,
         decimal GuideDailyPrice = 0m,
         decimal TransportWorkDays = 0,
         string TenderNumber = "",
@@ -8337,8 +8284,8 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         public string DailyPriceText => $"Taşıma Günlük: {DailyPrice:N2} ₺";
         public string GuideDailyPriceText => $"Rehber: {GuideDailyPrice:N2} ₺";
         public string TransportSummaryText => $"Döneme Esas THGS: {TransportWorkDays} gün × {DailyPrice:N2} ₺";
-        public string GuideSummaryText => $"Rehber: {GuideWorkDays} gün × {GuideDailyPrice:N2} ₺";
-        public string ServiceSummaryText => $"Taşıma {TransportWorkDays} gün • Rehber {GuideWorkDays} gün";
+        public string GuideSummaryText => $"Rehber Günlük Fiyat: {GuideDailyPrice:N2} ₺";
+        public string ServiceSummaryText => $"Taşıma {TransportWorkDays} gün • Rehber günlük {GuideDailyPrice:N2} ₺";
         public string RelationshipText => $"İKN: {TenderNumber} • Yüklenici: {ContractorName}";
         public string DisplayText => string.IsNullOrWhiteSpace(ContractorName)
             ? $"Hat {RouteNumber} — {Name}"

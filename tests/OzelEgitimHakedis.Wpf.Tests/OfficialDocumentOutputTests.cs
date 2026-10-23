@@ -595,7 +595,7 @@ public sealed class OfficialDocumentOutputTests
 
     private static object CreateRoute(ProgressPaymentInput input) =>
         Activator.CreateInstance(typeof(MainWindow).GetNestedType("RouteDraft", BindingFlags.NonPublic)!,
-            "01", "Hat 01", input.DailyPrice, input.GuideWorkDays, input.GuideDailyPrice,
+            "01", "Hat 01", input.DailyPrice, input.GuideDailyPrice,
             input.WorkDays, "IHALE-01", "12345678901", "Firma", "SOZ-01", input.ProgramType)!;
 
     private static T EditorField<T>(MainWindow window, string name) =>

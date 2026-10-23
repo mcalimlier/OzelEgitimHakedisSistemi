@@ -1053,8 +1053,6 @@
                                                          Style="{StaticResource FieldTextBox}"
                                                          Margin="0,4,0,6"/>
 
-                                                <TextBlock x:Name="RouteGuideWorkDaysLabel" Text="Rehber Yıllık İş Günü" Style="{StaticResource FieldLabel}"/>
-                                                <TextBox x:Name="RouteGuideWorkDaysTextBox" Style="{StaticResource FieldTextBox}" Margin="0,4,0,6"/>
 
                                                 <TextBlock x:Name="RouteGuideDailyPriceLabel" Text="Rehber Personel Günlük Fiyat" Style="{StaticResource FieldLabel}"/>
                                                 <TextBox x:Name="RouteGuideDailyPriceTextBox" Style="{StaticResource FieldTextBox}" Margin="0,4,0,8"/>
