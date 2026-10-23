@@ -16,6 +16,57 @@ internal static class ExcelDocumentExporter
     private const string RelNs = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
     private const string PackageRelNs = "http://schemas.openxmlformats.org/package/2006/relationships";
 
+    public static void SaveTable(string filePath, IReadOnlyList<string> headers, IReadOnlyList<IReadOnlyList<object?>> rows)
+    {
+        if(headers.Count==0 || headers.Count>16384 || rows.Count>1048575 || rows.Any(r=>r.Count!=headers.Count))
+            throw new ArgumentException("Excel tablosunun boyutu veya sütun sayısı geçersiz.");
+        var sheet=new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?><worksheet xmlns=\""+MainNs+"\"><sheetViews><sheetView workbookViewId=\"0\"><pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/></sheetView></sheetViews><cols><col min=\"1\" max=\""+headers.Count+"\" width=\"28\" customWidth=\"1\"/></cols><sheetData><row r=\"1\" ht=\"60\" customHeight=\"1\">");
+        for(var c=0;c<headers.Count;c++) sheet.Append(Cell(TableColumn(c)+"1",headers[c],3));
+        sheet.Append("</row>");
+        for(var r=0;r<rows.Count;r++)
+        {
+            sheet.Append("<row r=\"").Append(r+2).Append("\">");
+            for(var c=0;c<headers.Count;c++)
+            {
+                var reference=TableColumn(c)+(r+2).ToString(CultureInfo.InvariantCulture);
+                var value=rows[r][c];
+                if(value is bool flag) sheet.Append("<c r=\"").Append(reference).Append("\" t=\"b\"><v>").Append(flag?"1":"0").Append("</v></c>");
+                else if(value is decimal or int or long or double or float)
+                    sheet.Append("<c r=\"").Append(reference).Append("\"><v>").Append(Convert.ToString(value,CultureInfo.InvariantCulture)).Append("</v></c>");
+                else sheet.Append(Cell(reference,value?.ToString()??"",4));
+            }
+            sheet.Append("</row>");
+        }
+        sheet.Append("</sheetData><autoFilter ref=\"A1:").Append(TableColumn(headers.Count-1)).Append(rows.Count+1).Append("\"/></worksheet>");
+        // Validate before replacing an existing file, including XML control characters in user text.
+        System.Xml.Linq.XDocument.Parse(sheet.ToString());
+        var fullPath=Path.GetFullPath(filePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+        var temporary=fullPath+"."+Guid.NewGuid().ToString("N")+".tmp";
+        try
+        {
+            using(var file=File.Create(temporary))
+            using(var zip=new ZipArchive(file,ZipArchiveMode.Create))
+            {
+                AddEntry(zip,"[Content_Types].xml",BuildContentTypes(1));
+                AddEntry(zip,"_rels/.rels",BuildRootRelationships());
+                AddEntry(zip,"xl/workbook.xml","<?xml version=\"1.0\" encoding=\"UTF-8\"?><workbook xmlns=\""+MainNs+"\" xmlns:r=\""+RelNs+"\"><sheets><sheet name=\"Seçili Hatlar\" sheetId=\"1\" r:id=\"rId1\"/></sheets></workbook>");
+                AddEntry(zip,"xl/_rels/workbook.xml.rels",BuildWorkbookRelationships(1));
+                AddEntry(zip,"xl/styles.xml",BuildStyles());
+                AddEntry(zip,"xl/worksheets/sheet1.xml",sheet.ToString());
+            }
+            File.Move(temporary,fullPath,true);
+        }
+        finally {if(File.Exists(temporary)) File.Delete(temporary);}
+    }
+
+    private static string TableColumn(int index)
+    {
+        var result="";
+        for(var n=index+1;n>0;n=(n-1)/26) result=(char)('A'+(n-1)%26)+result;
+        return result;
+    }
+
     public static void Save(string filePath, string routeNumber, string routeName, string contractor, string workName, ProgressPaymentHistoryData latest)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
@@ -45,9 +96,9 @@ internal static class ExcelDocumentExporter
         var c = item.Calculation;
         return new SheetData("Hakediş Raporu", new[]
         {
-            Row("İşin Adı", workName, "Yüklenici", contractor),
+            Row($"{ProgramTypeLabel(item.Input.ProgramType)} • {workName}", workName, "Yüklenici", contractor),
             Row("Hat No", routeNumber, "Hat Adı", routeName),
-            Row("İhale / Dosya No", item.TenderNumber ?? "-", "Sözleşme No", item.ContractNumber ?? "-"),
+            Row("İhale Kayıt Numarası (İKN)", item.TenderNumber ?? "-", "Yüklenici", contractor),
             Row("Sözleşme Bedeli", Money(item.Input.ContractAmount), "Banka Hesap No", item.BankAccountNumber ?? "-"),
             Row("İhale Tarihi", item.TenderDate?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) ?? "-", "Sözleşme Tarihi", item.ContractDate?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) ?? "-"),
             Row("İş Başlangıcı", item.ContractStartDate?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) ?? "-", "İş Bitişi", item.ContractEndDate?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) ?? "-"),
@@ -69,9 +120,9 @@ internal static class ExcelDocumentExporter
         var d = c.Deductions;
         return new SheetData("Hizmet İşleri Hakediş", new[]
         {
-            Row("İşin Adı", workName, "Yüklenici", contractor),
+            Row($"{ProgramTypeLabel(item.Input.ProgramType)} • {workName}", workName, "Yüklenici", contractor),
             Row("Hat No", routeNumber, "Hat Adı", routeName),
-            Row("İhale / Dosya No", item.TenderNumber ?? "-", "Sözleşme No", item.ContractNumber ?? "-"),
+            Row("İhale Kayıt Numarası (İKN)", item.TenderNumber ?? "-", "Yüklenici", contractor),
             Row("Sözleşme Bedeli", Money(item.Input.ContractAmount), "Banka Hesap No", item.BankAccountNumber ?? "-"),
             Header("HİZMET / HESAP", "TUTAR", "KESİNTİ / MAHSUP", "TUTAR"),
             Row("Taşıma Hizmet", Money(c.ServiceAmount), "Vergi Borcu", Money(d.TaxDebt)),
@@ -91,14 +142,14 @@ internal static class ExcelDocumentExporter
         var input = item.Input;
         return new SheetData("Kabul Tutanağı", new[]
         {
-            Row("İşin Adı", workName, "Yüklenici", contractor),
+            Row($"{ProgramTypeLabel(item.Input.ProgramType)} • {workName}", workName, "Yüklenici", contractor),
             Row("Hat No", routeNumber, "Hat Adı", routeName),
             Row("Sözleşme Bedeli", Money(item.Input.ContractAmount), "Banka Hesap No", item.BankAccountNumber ?? "-"),
-            Row("Sözleşme No", item.ContractNumber ?? "-", "İhale / Dosya No", item.TenderNumber ?? "-"),
+            Row("İhale Kayıt Numarası (İKN)", item.TenderNumber ?? "-", "Sözleşme Tarihi", item.ContractDate?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) ?? "-"),
             Row("Sözleşme Tarihi", item.ContractDate?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) ?? "-", "Hakediş Tarihi", item.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) ?? "-"),
             Header("BİLGİ", "DEĞER", "BİLGİ", "DEĞER"),
-            Row("Taşıma İş Günü", input.WorkDays.ToString(CultureInfo.InvariantCulture), "Taşıma Günlük Fiyat", Money(input.DailyPrice)),
-            Row("Rehber İş Günü", input.GuideWorkDays.ToString(CultureInfo.InvariantCulture), "Rehber Günlük Fiyat", Money(input.GuideDailyPrice)),
+            Row("Döneme Esas Taşıma Hakediş Gün Sayısı (Döneme Esas THGS)", input.WorkDays.ToString(CultureInfo.InvariantCulture), "Taşıma Günlük Fiyatı", Money(input.DailyPrice)),
+            Row("Rehber İş Günü (bu ay)", input.GuideWorkDays.ToString(CultureInfo.InvariantCulture), "Rehber Personel Günlük Fiyat", Money(input.GuideDailyPrice)),
             Row("Dönem Taşıma Hizmet", Money(item.Calculation.ServiceAmount), "Dönem Rehber Hizmet", Money(item.Calculation.GuideServiceAmount)),
             Row("Toplam Hakediş", Money(item.Calculation.TotalAmount), "Net Ödenecek", Money(item.Calculation.NetPayable)),
             Row("Düzenleyen", "Aşkın KESKİNBALTA", "Kontrol Eden", "Halil ÖZENÇ"),
@@ -111,9 +162,9 @@ internal static class ExcelDocumentExporter
         var c = item.Calculation;
         return new SheetData("Hakediş İcmali", new[]
         {
-            Row("İşin Adı", workName, "Yüklenici", contractor),
+            Row($"{ProgramTypeLabel(item.Input.ProgramType)} • {workName}", workName, "Yüklenici", contractor),
             Row("Hat No", routeNumber, "Hat Adı", routeName),
-            Row("İhale / Dosya No", item.TenderNumber ?? "-", "Sözleşme No", item.ContractNumber ?? "-"),
+            Row("İhale Kayıt Numarası (İKN)", item.TenderNumber ?? "-", "Yüklenici", contractor),
             Row("Sözleşme Bedeli", Money(item.Input.ContractAmount), "Banka Hesap No", item.BankAccountNumber ?? "-"),
             Row("Hakediş No", item.ProgressPaymentNumber?.ToString(CultureInfo.InvariantCulture) ?? "-", "Dönem", item.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) ?? "-"),
             Header("KALEM", "TUTAR", "KALEM", "TUTAR"),
@@ -124,6 +175,11 @@ internal static class ExcelDocumentExporter
             Row("Brüt Tutar", Money(c.GrossAmount), "Net Ödenecek", Money(c.NetPayable))
         });
     }
+
+    private static string ProgramTypeLabel(TransportationProgramType type) =>
+        type == TransportationProgramType.BasicOrSecondary
+            ? "Temel / Ortaöğretim Taşıma"
+            : "Özel Eğitim Taşıma";
 
     private static RowData Row(string a, string b, string c, string d) => new(false, a, b, c, d);
     private static RowData Header(string a, string b, string c, string d) => new(true, a, b, c, d);
@@ -162,7 +218,7 @@ internal static class ExcelDocumentExporter
     {
         var rels = string.Join("", Enumerable.Range(1, count).Select(i =>
             "<Relationship Id=\"rId" + i + "\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet" + i + ".xml\"/>"));
-        return "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Relationships xmlns=\"" + PackageRelNs + "\">" + rels + "</Relationships>";
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Relationships xmlns=\"" + PackageRelNs + "\">" + rels + "<Relationship Id=\"styles\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/></Relationships>";
     }
 
     private static string BuildStyles() =>
@@ -197,11 +253,14 @@ internal static class ExcelDocumentExporter
         return sb.ToString();
     }
 
-    private static int StyleFor(string value) => value.Contains('₺') ? 5 : 4;
+    private static int StyleFor(string value) => value.Contains('₺', StringComparison.Ordinal) ? 5 : 4;
 
     private static string Cell(string reference, string value, int style)
     {
-        var safe = Xml(value);
+        // ST_Xstring interprets these sequences even in inline strings. Escape the
+        // original underscore once so a literal route title stays literal in Excel.
+        var literal = System.Text.RegularExpressions.Regex.Replace(value, @"_x[0-9A-Fa-f]{4}_", match => "_x005F_" + match.Value[1..]);
+        var safe = Xml(literal).Replace("\r", "&#13;", StringComparison.Ordinal);
         return "<c r=\"" + reference + "\" s=\"" + style + "\" t=\"inlineStr\"><is><t xml:space=\"preserve\">" + safe + "</t></is></c>";
     }
 

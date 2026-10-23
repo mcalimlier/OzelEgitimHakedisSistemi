@@ -1,3 +1,7 @@
+> **TARİHSEL KAYIT — GÜNCEL KABUL KAYNAĞI DEĞİL.** Bu belge eski tarihli XLSM kopyalarına ve o tarihteki bulgulara dayanır. Son yüklenen Excel dosyalarıyla çelişen formül, hücre adresi, tutar, kaynak hash'i veya test beklentisi geçerli değildir. Güncel kaynak kimliği, satır vektörleri ve bilinen icmal farkları için [SON_XLSM_KAYNAK_PARITESI_2026-10-20.md](SON_XLSM_KAYNAK_PARITESI_2026-10-20.md) esas alınmalıdır. Bu belge yalnızca geçmiş inceleme izi olarak korunur; güncel davranış için kopyalanmamalıdır.
+
+---
+
 # OEHS — Excel Referans Formülleri ve Dört PDF Şablonu
 
 **Hazırlanma tarihi:** 11.10.2026  
@@ -50,7 +54,7 @@ Aşağıdaki formüller workbook'un `Hesaplama` sayfasından okunmuştur. Taşı
 | D7 | `VLOOKUP(...,Hesaplama!... ,9,FALSE)+VLOOKUP(...,Hesaplama!... ,18,FALSE)` | Ham `I+R` fiyat farkı; rapor B satırı |
 | D8 | `D6+D7` | Rapor C satırı |
 | D10 | `VLOOKUP(...,'İcmal Verileri'!A4:AY103,15,FALSE)` | Kaynak workbook'un önceki hizmet tutarı değeri; rapor D satırı |
-| D11 | `IF(D7<0,H2-ABS(D7),H2+D7)` | Rapor E satırının gerçek formülü |
+| D11 | `IF(D7<0,H2-ABS(D7),H2+D7)-D7` | Rapor E satırının gerçek formülü |
 | D12 | Taşıma L + rehber U | Rapor F satırı, KDV toplamı |
 | D13 | `D11+D12` | Rapor G satırı, tahakkuk tutarı |
 | D15 | Hesaplama AD | Damga vergisi |
@@ -63,7 +67,7 @@ Aşağıdaki formüller workbook'un `Hesaplama` sayfasından okunmuştur. Taşı
 | D26 | `SUM(D14:F25)` | Kesintiler ve mahsuplar toplamı |
 | D28 | `ROUND(D13,2)-ROUND(D26,2)` | Bu PDF'nin “Yükleniciye Ödenecek Tutar” değeri |
 
-**Başlık-formül farkı korunarak test edilmelidir:** PDF/Excel'de E satırının açıklaması “C - D” şeklindeyken D11 formülü `H2 ± ABS(D7)` mantığındadır. Kaynak formül sessizce `C-D` biçimine çevrilmemeli; kullanıcı tarafından onaylanacak bir iş kuralı kararı olmadan birebir formül davranışı korunmalıdır.
+**Kaynak formül (iki XLSM'de de doğrulandı):** `=IF(D7<0,H2-ABS(D7),H2+D7)-D7`. Cebirsel olarak her iki dalda da `H2` değerine sadeleşir. PDF/Excel'de E satırının açıklaması “C - D” şeklinde olduğu için açıklama ile formül arasında fark vardır; formül sessizce `C-D` biçimine çevrilmemeli, kullanıcı tarafından onaylanacak iş kuralı kararı olmadan birebir formül davranışı korunmalıdır.
 
 **Ayrı net değerler:** `Hesaplama!AG = AF-AE` ile `Hakediş Raporu!D28 = ROUND(D13,2)-ROUND(D26,2)` farklı formüllerdir ve farklı sonuç verebilir. Resmî Hakediş Raporu PDF'sinin I satırı D28'e göre oluşturulmalı; hesaplama ekranındaki AG değeri onun yerine kullanılmamalıdır.
 
@@ -135,13 +139,14 @@ Dört resmi form artık OehsOfficialDocumentFactory tarafından sabit A4 FixedPa
 
 Mevcut CI smoke testi PDF'nin oluşmasını, A4 boyutunu ve yeniden açılabilirliğini kontrol ediyor. Bu henüz referans PDF'lerle piksel eşitliği kanıtlamıyor. Son smoke dosyaları GitHub Actions artifact alanına yazılmaya çalışıldı; GitHub artifact depolama kotası dolu olduğundan yükleme gerçekleşmedi. Kota temizlenince dört PDF indirilip kaynak örneklerle aynı DPI'da render ve görsel fark karşılaştırması yapılmalı.
 
-## 7. GitHub / GitHub Desktop durumu — 11.10.2026
+## 7. GitHub / GitHub Desktop durumu — 17.10.2026
 
-- [OEHS Windows Build #1186](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/38158074721): üç proje derlemesi, 93 Core testi, 1 WPF PDF smoke testi ve Windows x64 dotnet publish başarılı; derleme hatası 0.
-- Smoke PDF artifact upload adımı dosya yüklemeye ulaştı ancak GitHub “Artifact storage quota has been hit” yanıtı verdi. Bu nedenle PDF'ler test koşucusunda üretildi ama indirilebilir artifact olarak saklanmadı.
-- Ana uygulama OEHS-Windows-x64 artifact'i PR tetiklemelerinde bilerek atlanıyor; başarılı publish tek başına indirilebilir EXE olduğu anlamına gelmez.
-- Branch, son karşılaştırmada main'den 1 commit geride ve çok sayıda commit ilerideydi. PR #2 açık; main'e merge etmeden önce fark ve geride kalan commit elle gözden geçirilmeli.
-- GitHub Desktop'taki .sln VisualStudioVersion 17/18 değişikliği gibi makineye özel metadata değişiklikleri iş gereği değilse kaynak değişikliği olarak eklenmemeli. Stash içeriği ayrıca incelenmeden düşürülmemeli.
+- Aktif çalışma dalı: `feature/official-payment-document-templates`; son doğrulanan commit: `353da6b5732b33dff75590cec77352bae87cb77e` (`test: extend special education Excel report parity to D13 D26 D28`).
+- [OEHS Windows Build #1555](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/actions/runs/39054145081): 17.10.2026 tarihinde tamamlandı ve GitHub Actions sonucu **success** olarak raporlandı.
+- [Taslak PR #3](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/pull/3), `feature/wpf-contract-entry-v0.5` tabanına yöneliktir. Bu çalışma sırasında PR birleştirilmedi ve yayın yapılmadı.
+- Önceki #1186 koşusuna ilişkin kayıt tarihsel bağlam olarak değerlidir; güncel CI durumu için kullanılmamalıdır.
+- #1555 başarılı olması test/derleme hattının geçtiğini gösterir; tek başına dört PDF'nin kaynak örneklerle piksel düzeyinde eşitliğini, Excel'in masaüstü Excel'de yeniden hesaplanmış olduğunu veya gerçek yazıcı kabulünü kanıtlamaz.
+- PDF artifact depolama kotası sorunu ve gerçek PDF görsel karşılaştırması ayrıca takip edilmelidir.
 
 ## 8. Yol haritası ve kabul kriterleri
 

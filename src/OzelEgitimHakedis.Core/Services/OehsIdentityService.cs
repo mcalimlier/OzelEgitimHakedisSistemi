@@ -1,3 +1,4 @@
+using OzelEgitimHakedis.Core.Models;
 using System.Globalization;
 using System.Text;
 
@@ -20,6 +21,15 @@ public static class OehsIdentityService
         return builder.ToString();
     }
 
+    public static string BuildContractKey(string tenderNumber, string contractNumber) =>
+        string.Join("|", NormalizeText(tenderNumber), NormalizeText(contractNumber));
+
+    public static string BuildContractKey(
+        string tenderNumber,
+        string contractNumber,
+        TransportationProgramType programType) =>
+        string.Join("|", programType.ToString(), BuildContractKey(tenderNumber, contractNumber));
+
     public static string BuildRouteKey(
         string tenderNumber,
         string routeNumber,
@@ -28,6 +38,33 @@ public static class OehsIdentityService
         return string.Join(
             "|",
             NormalizeText(tenderNumber),
+            NormalizeText(routeNumber),
+            NormalizeIdentity(contractorTaxOrIdentityNumber));
+    }
+
+    public static string BuildRouteKey(
+        string tenderNumber,
+        string routeNumber,
+        string contractorTaxOrIdentityNumber,
+        string contractNumber)
+    {
+        return string.Join(
+            "|",
+            BuildContractKey(tenderNumber, contractNumber),
+            NormalizeText(routeNumber),
+            NormalizeIdentity(contractorTaxOrIdentityNumber));
+    }
+
+    public static string BuildRouteKey(
+        string tenderNumber,
+        string routeNumber,
+        string contractorTaxOrIdentityNumber,
+        string contractNumber,
+        TransportationProgramType programType)
+    {
+        return string.Join(
+            "|",
+            BuildContractKey(tenderNumber, contractNumber, programType),
             NormalizeText(routeNumber),
             NormalizeIdentity(contractorTaxOrIdentityNumber));
     }
@@ -42,6 +79,37 @@ public static class OehsIdentityService
         return string.Join(
             "|",
             BuildRouteKey(tenderNumber, routeNumber, contractorTaxOrIdentityNumber),
+            progressPaymentNumber.ToString(CultureInfo.InvariantCulture),
+            periodDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+    }
+
+    public static string BuildProgressPaymentKey(
+        string tenderNumber,
+        string routeNumber,
+        string contractorTaxOrIdentityNumber,
+        int progressPaymentNumber,
+        DateOnly periodDate,
+        string contractNumber)
+    {
+        return string.Join(
+            "|",
+            BuildRouteKey(tenderNumber, routeNumber, contractorTaxOrIdentityNumber, contractNumber),
+            progressPaymentNumber.ToString(CultureInfo.InvariantCulture),
+            periodDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+    }
+
+    public static string BuildProgressPaymentKey(
+        string tenderNumber,
+        string routeNumber,
+        string contractorTaxOrIdentityNumber,
+        int progressPaymentNumber,
+        DateOnly periodDate,
+        string contractNumber,
+        TransportationProgramType programType)
+    {
+        return string.Join(
+            "|",
+            BuildRouteKey(tenderNumber, routeNumber, contractorTaxOrIdentityNumber, contractNumber, programType),
             progressPaymentNumber.ToString(CultureInfo.InvariantCulture),
             periodDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
     }

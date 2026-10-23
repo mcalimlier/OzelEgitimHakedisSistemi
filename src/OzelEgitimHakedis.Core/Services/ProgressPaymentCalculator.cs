@@ -17,9 +17,44 @@ public sealed class ProgressPaymentCalculator
     public const decimal VatRate = TransportVatRate;
     public const decimal WithholdingRate = TransportWithholdingRate;
 
-    public static ProgressPaymentCalculation Calculate(ProgressPaymentInput input)
+    public static ProgressPaymentCalculation Calculate(ProgressPaymentInput input) =>
+        Calculate(input, ProgressPaymentCalculationConstants.Defaults);
+
+    public static ProgressPaymentCalculation Calculate(
+        ProgressPaymentInput input,
+        ProgressPaymentCalculationConstants constants)
     {
         ArgumentNullException.ThrowIfNull(input);
+        if (!Enum.IsDefined(input.ProgramType))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(input),
+                input.ProgramType,
+                "Taşımalı eğitim program türü tanımlı bir değer olmalıdır.");
+        }
+
+        ArgumentNullException.ThrowIfNull(constants);
+        if (!constants.TryValidate(out var constantsError))
+            throw new ArgumentOutOfRangeException(nameof(constants), constantsError);
+
+        // Temel/ortaöğretim kaynak Excel'inde rehber personel kalemi yoktur,
+        // ancak Asgari Ücret Destek Tutarı kesinti toplamına dahildir.
+        // Bu nedenle yalnızca rehber alanları program kapsamında sıfırlanır.
+        if (input.ProgramType == TransportationProgramType.BasicOrSecondary)
+        {
+            input = input with
+            {
+                GuideWorkDays = 0,
+                GuideDailyPrice = 0m,
+                GuideDiscountAmount = 0m,
+                GuidePriceDifference = 0m
+            };
+            constants = constants with
+            {
+                GuideVatRate = 0m,
+                GuideWithholdingShare = 0m
+            };
+        }
 
         if (input.WorkDays < 0 || input.GuideWorkDays < 0)
             throw new ArgumentOutOfRangeException(nameof(input), "İş günü negatif olamaz.");
@@ -67,17 +102,17 @@ public sealed class ProgressPaymentCalculator
         var totalAmount = transportNetAmount + guideNetAmount;
 
         var transportVat = input.IncludeVat
-            ? transportNetAmount * TransportVatRate
+            ? transportNetAmount * constants.TransportVatRate
             : 0m;
         var guideVat = input.IncludeVat
-            ? guideNetAmount * GuideVatRate
+            ? guideNetAmount * constants.GuideVatRate
             : 0m;
 
         var transportWithholding = input.IncludeVat
-            ? transportVat * TransportWithholdingShare
+            ? transportVat * constants.TransportWithholdingShare
             : 0m;
         var guideWithholding = input.IncludeVat
-            ? guideVat * GuideWithholdingShare
+            ? guideVat * constants.GuideWithholdingShare
             : 0m;
 
         var vat = transportVat + guideVat;
@@ -90,18 +125,26 @@ public sealed class ProgressPaymentCalculator
         var invoiceAmountAfterWithholding =
             transportInvoiceAmount + guideInvoiceAmount;
 
-        // Excel AD:
-        // AD = (K*9.48/1000) + (T*9.48/1000)
-        var transportStampTax = transportNetAmount * StampTaxRate;
-        var guideStampTax = guideNetAmount * StampTaxRate;
+        // Nihai kaynak XLSM formülleri:
+        // Temel Eğitim: U = K*9.48/1000.
+        // Özel Eğitim: AD = (K*9.48/1000) + (T*9.48/1000).
+        // Hakediş Raporu'nun ayrı D15 formülü rapor servisi içinde uygulanır.
+        var transportStampTax = transportNetAmount * constants.StampTaxRate;
+        var guideStampTax = input.ProgramType == TransportationProgramType.BasicOrSecondary
+            ? 0m
+            : guideNetAmount * constants.StampTaxRate;
+        // Hesaplama sayfası kaynak formülü negatif değerleri aynen korur.
+        // Temel Eğitim raporundaki D15 için negatif matrahın sıfırlanması ayrı rapor formülüdür.
         var stampTax = transportStampTax + guideStampTax;
 
-        // Excel AC doğrudan ham fiyat farkı hücrelerini kullanır:
-        // AC = (I*6%) + (R*6%).
-        var transportAdditionalGuarantee = input.PriceDifference * AdditionalGuaranteeRate;
-        var guideAdditionalGuarantee = input.GuidePriceDifference * AdditionalGuaranteeRate;
-        var additionalGuarantee =
-            transportAdditionalGuarantee + guideAdditionalGuarantee;
+        // Onaylanan kaynak davranışı: yeni yüklenen XLSM formülleri esas alınır.
+        // Temel Eğitim: Hesaplama Bilgileri!T4 = I4*6/100; I4, input.PriceDifference alanıdır.
+        // Özel Eğitim: Hesaplama!AC4 = (I4*6/100) + (R4*6/100).
+        // Her iki formülde de iskonto J/S kullanılmaz.
+        var additionalGuarantee = input.ProgramType == TransportationProgramType.BasicOrSecondary
+            ? input.PriceDifference * constants.AdditionalGuaranteeRate
+            : (input.PriceDifference * constants.AdditionalGuaranteeRate)
+              + (input.GuidePriceDifference * constants.AdditionalGuaranteeRate);
 
         // Excel AE = M+V+Y+Z+AA+AB+AC+AD.
         var totalDeductions =
@@ -118,6 +161,9 @@ public sealed class ProgressPaymentCalculator
         var transportGrossAmount = transportNetAmount + transportVat;
         var guideGrossAmount = guideNetAmount + guideVat;
         var grossAmount = transportGrossAmount + guideGrossAmount;
+
+        // Hesaplama sayfası neti: W = O - V / AG = AF - AE.
+        // Hakediş Raporu D28 ayrı bir hücre zinciridir ve rapor servisinde hesaplanır.
         var netPayable = grossAmount - totalDeductions;
 
         var deductions = new DeductionBreakdown(
@@ -149,6 +195,7 @@ public sealed class ProgressPaymentCalculator
             transportVat,
             guideVat,
             transportWithholding,
-            guideWithholding);
+            guideWithholding,
+            AppliedConstants: constants);
     }
 }

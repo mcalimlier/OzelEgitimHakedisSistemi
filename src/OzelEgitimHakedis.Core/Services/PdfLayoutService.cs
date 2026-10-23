@@ -19,10 +19,12 @@ public static class PdfLayoutService
         if (widths.Count == 0)
             return Array.Empty<double>();
 
-        if (widths.Any(width => width <= 0))
-            throw new ArgumentOutOfRangeException(nameof(widths), "Kolon genişlikleri sıfırdan büyük olmalıdır.");
+        if (widths.Any(width => !double.IsFinite(width) || width <= 0))
+            throw new ArgumentOutOfRangeException(nameof(widths), "Kolon genişlikleri sonlu ve sıfırdan büyük olmalıdır.");
 
         var total = widths.Sum();
+        if (!double.IsFinite(total))
+            throw new ArgumentOutOfRangeException(nameof(widths), "Kolon genişliklerinin toplamı sonlu olmalıdır.");
         if (total <= SafeContentWidth)
             return widths.ToArray();
 

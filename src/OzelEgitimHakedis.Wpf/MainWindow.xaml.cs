@@ -1,9 +1,11 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
@@ -15,6 +17,8 @@ namespace OzelEgitimHakedis.Wpf;
 
 public partial class MainWindow : Window
 {
+    private readonly ContractWorkNameConverter _contractWorkNameConverter;
+
     // Pencere, ekran çalışma alanını doğrudan kullanır; eski Viewbox tasarım oranı
     // yatay alanı daraltıp metinleri sıkıştırıyordu.
 
@@ -25,22 +29,39 @@ public partial class MainWindow : Window
     private readonly ObservableCollection<RouteDraft> _routes = new();
     private readonly ObservableCollection<ContractorDraft> _contractors = new();
     private readonly ObservableCollection<ProgressPaymentHistoryData> _progressHistory = new();
+    private readonly ObservableCollection<MultiRoutePaymentDraftRow> _multiRoutePaymentRows = new();
+    // Holds unsaved route drafts even while a route is temporarily deselected.
+    // The visible collection remains limited to the current selection.
+    private readonly RouteDraftCache<MultiRoutePaymentDraftRow> _multiRouteDraftCache = new();
+    private string? _lastProgressDefaultsRouteKey;
     private readonly ObservableCollection<HistoryRow> _historyRows = new();
     private readonly ObservableCollection<SummaryRow> _summaryRows = new();
     private readonly ObservableCollection<ReportRow> _reportRows = new();
     private Guid? _editingHistoryId;
     private string? _editingContractTender;
+    private string? _editingContractNumber;
+    private TransportationProgramType? _editingContractProgramType;
     private string? _editingContractorKey;
     private RouteDraft? _editingRoute;
     private bool _suppressSelectionEvents;
-    private readonly OehsApplicationDataStore _dataStore = new();
+    private bool _suppressMinimumWageSupportToggle;
+    private bool _suppressArchiveDirtyTracking;
+    private Guid? _historyCorrectionTargetId;
+    private HistoryCorrectionSection _historyCorrectionSection;
+    private readonly OehsProgramScopedApplicationDataStore _dataStore = new();
+    private ProgressPaymentCalculationConstants _calculationConstants =
+        ProgressPaymentCalculationConstants.Defaults;
+    private List<ProgressPaymentCalculationConstantsChange> _calculationConstantsHistory = new();
     private readonly ProgressPaymentArchiveStore _archiveStore = new();
     private readonly ObservableCollection<ArchiveRow> _archiveRows = new();
     private Guid? _lastCalculatedHistoryId;
+    private string? _lastSelectedPaymentMonthKey;
     private string? _editingArchiveSourcePath;
     private ProgressPaymentArchive? _editingArchiveSnapshot;
     private ArchiveCorrectionSection _archiveCorrectionSection;
     private bool _dataLoadFailed;
+    private WindowLayoutPreference _windowLayoutPreference = WindowLayoutPreference.Default;
+    private bool _suppressWindowLayoutSelectionChanged;
     private const double DocumentContentWidth = PdfLayoutService.SafeContentWidth;
     private static readonly double[] ThreeColumnWidths = { 58d, 438d, 194d };
     private static readonly double[] ThreeValueWidths = { 45d, 360d, 135d };
@@ -59,17 +80,21 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        _contractWorkNameConverter = (ContractWorkNameConverter)Resources["ContractWorkNameConverter"];
+        SetContractorPhoneText(string.Empty);
         ResetEditorUiToCreateMode();
         ConfigureWindow();
         ConfigureZeroValueInputs();
         ConfigureContractValidationInputs();
-        Loaded += MainWindow_Loaded;
+        ConfigureArchiveCorrectionChangeTracking();
+        ConfigureLiveCalculationTrace();
         SourceInitialized += MainWindow_SourceInitialized;
         StartDatePicker.SelectedDate = DateTime.Today;
         EndDatePicker.SelectedDate = DateTime.Today;
         TaxDebtTextBox.Text = "0";
         SocialSecurityDebtTextBox.Text = "0";
         MinimumWageSupportTextBox.Text = "0";
+        SetMinimumWageSupportInputMode(null);
         InspectionPenaltyTextBox.Text = "0";
         DiscountTextBox.Text = "0";
         GuideWorkDaysTextBox.Text = "0";
@@ -87,17 +112,16 @@ public partial class MainWindow : Window
         SummaryItemsControl.ItemsSource = _summaryRows;
         ReportItemsControl.ItemsSource = _reportRows;
         ProgressRouteComboBox.ItemsSource = _routes;
+        MultiRoutePaymentGrid.ItemsSource = _multiRoutePaymentRows;
         ReportRouteComboBox.ItemsSource = _routes;
         OutputTenderListBox.ItemsSource = _contracts;
         OehsFreshStartService.EnsureFreshStart();
         LoadPersistedData();
+        PopulateCalculationConstantsPanel();
 
         UpdateContractSelectors();
         if (_routes.Count > 0)
-        {
-            ProgressRouteComboBox.SelectedIndex = 0;
             ReportRouteComboBox.SelectedIndex = 0;
-        }
 
         UpdateRouteSummary();
         UpdateContractorSummary();
@@ -109,36 +133,24 @@ public partial class MainWindow : Window
         UpdateReportView();
         UpdateAcceptanceView();
         UpdateArchiveView();
-    }
 
-    private void MainWindow_Loaded(object sender, RoutedEventArgs e)
-    {
-        Dispatcher.BeginInvoke(
-            System.Windows.Threading.DispatcherPriority.Loaded,
-            new Action(() => NormalizeButtonWidths(this)));
-    }
-
-    private static void NormalizeButtonWidths(DependencyObject root)
-    {
-        if (root is Button button &&
-            button.Visibility == Visibility.Visible &&
-            !double.IsNaN(button.Width) &&
-            button.Width > 0)
-        {
-            var originalWidth = button.Width;
-            button.Width = double.NaN;
-            button.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-
-            var desiredWidth = Math.Ceiling(button.DesiredSize.Width + 32);
-            button.Width = Math.Max(originalWidth, desiredWidth);
-        }
-
-        var childCount = System.Windows.Media.VisualTreeHelper.GetChildrenCount(root);
-        for (var i = 0; i < childCount; i++)
-            NormalizeButtonWidths(System.Windows.Media.VisualTreeHelper.GetChild(root, i));
+        // Açılışta kayıtlı veriler yalnızca listelerde/özetlerde görünür; giriş formları boş başlar.
+        ClearContractFormOnly();
+        ClearProgressEntryFields();
+        UpdateProgressRouteDefaults();
+        InitializeOperations();
     }
 
     private enum ArchiveCorrectionSection
+    {
+        None,
+        Contract,
+        Contractor,
+        Route,
+        ProgressPayment
+    }
+
+    private enum HistoryCorrectionSection
     {
         None,
         Contract,
@@ -184,10 +196,11 @@ public partial class MainWindow : Window
         RouteSelectionCard.Visibility = Visibility.Visible;
         RouteNumberTextBox.IsReadOnly = false;
 
-        CalculateProgressButton.Content = "HAKEDİŞİ HESAPLA";
+        CalculateProgressButton.Content = "HAKEDİŞ HESAPLA/KAYDET";
         CancelProgressEditButton.Visibility = Visibility.Collapsed;
-        EditCurrentProgressButton.IsEnabled = true;
         ProgressEditorTitleTextBlock.Text = "DÖNEM HESAP BİLGİLERİ";
+        ProgressTenderListBox.IsEnabled = true;
+        ProgressRouteComboBox.IsEnabled = true;
     }
 
     private void SetContractEditorMode(bool editing)
@@ -231,9 +244,9 @@ public partial class MainWindow : Window
 
     private void SetProgressEditorMode(bool editing, bool archiveCorrection = false)
     {
-        CalculateProgressButton.Content = editing ? "DÜZENLE" : "HAKEDİŞİ HESAPLA";
+        CalculateProgressButton.Content = editing ? "DÜZENLE" : "HAKEDİŞ HESAPLA/KAYDET";
+        SinglePaymentFieldsGrid.Visibility = editing ? Visibility.Visible : Visibility.Collapsed;
         CancelProgressEditButton.Visibility = editing ? Visibility.Visible : Visibility.Collapsed;
-        EditCurrentProgressButton.IsEnabled = !editing;
 
         if (editing)
         {
@@ -251,15 +264,96 @@ public partial class MainWindow : Window
 
         ProgressEditorTitleTextBlock.Text = editing
             ? (archiveCorrection ? "ARŞİV HAKEDİŞ DÜZENLE" : "HAKEDİŞ DÜZENLE")
-            : "DÖNEM HESAP BİLGİLERİ";
+            : "HAT BAZINDA HAKEDİŞ GİRDİLERİ";
+        ProgressTenderListBox.IsEnabled = !(editing && archiveCorrection);
+        ProgressRouteComboBox.IsEnabled = !(editing && archiveCorrection);
+        if (!editing && ProgressRouteComboBox.SelectedItems.Count > 0) UpdateMultiRouteDraftRows();
     }
 
     private void ClearArchiveCorrectionState()
     {
+        if (_archiveCorrectionSection == ArchiveCorrectionSection.ProgressPayment)
+            RestoreLiveProgressEditorSelectorContext();
+
         _editingArchiveSourcePath = null;
         _editingArchiveSnapshot = null;
         _archiveCorrectionSection = ArchiveCorrectionSection.None;
+        _suppressArchiveDirtyTracking = false;
+        ClearLiveHistoryCorrectionContext();
         ResetEditorUiToCreateMode();
+    }
+
+    private void LoadArchiveProgressEditorContext(ArchiveProgressEditorContext context)
+    {
+        var snapshotContractor = new ContractorDraft(
+            context.Contractor.Name,
+            OehsIdentityService.NormalizeIdentity(context.Contractor.TaxOrIdentityNumber),
+            context.Contractor.Address,
+            context.Contractor.Phone,
+            context.Contractor.Email,
+            context.Contractor.BankAccountNumber,
+            context.Contractor.ContactPerson,
+            context.Contractor.ProgramType,
+            context.Contractor.VatExempt ?? false);
+        var snapshotRoute = new RouteDraft(
+            context.Route.RouteNumber,
+            context.Route.Name,
+            context.Route.DailyPrice,
+            context.Route.GuideDailyPrice,
+            context.Route.TransportWorkDays,
+            context.Route.TenderNumber,
+            OehsIdentityService.NormalizeIdentity(context.Route.ContractorTaxOrIdentityNumber),
+            context.Contractor.Name,
+            context.Route.ContractNumber,
+            context.Contract.ProgramType);
+
+        _suppressSelectionEvents = true;
+        try
+        {
+            _multiRoutePaymentRows.Clear();
+            _multiRouteDraftCache.Clear();
+            ProgressTenderListBox.ItemsSource = new[] { context.Contract };
+            ProgressTenderListBox.SelectedItem = context.Contract;
+            ProgressContractorComboBox.ItemsSource = new[] { snapshotContractor };
+            ProgressContractorComboBox.SelectedItem = snapshotContractor;
+            ProgressRouteComboBox.ItemsSource = new[] { snapshotRoute };
+            ProgressRouteComboBox.SelectedItems.Clear();
+            ProgressRouteComboBox.SelectedItem = snapshotRoute;
+            UpdateProgressProgramTypeFields(context.Contract);
+            UpdateProgressPeriodOptions(context.Contract, preserveSelection: false);
+            SelectProgressPeriod(context.PeriodDate);
+        }
+        finally
+        {
+            _suppressSelectionEvents = false;
+        }
+
+        UpdateMultiRouteDraftRows();
+    }
+
+    private void RestoreLiveProgressEditorSelectorContext()
+    {
+        _suppressSelectionEvents = true;
+        try
+        {
+            ProgressTenderListBox.ItemsSource = _contracts;
+            ProgressTenderListBox.SelectedItem = null;
+            ProgressContractorComboBox.ItemsSource = Array.Empty<ContractorDraft>();
+            ProgressContractorComboBox.SelectedItem = null;
+            ProgressPeriodMonthComboBox.ItemsSource = Array.Empty<ProgressPaymentMonthOption>();
+            ProgressPeriodMonthComboBox.SelectedItem = null;
+            ProgressRouteComboBox.ItemsSource = Array.Empty<RouteDraft>();
+            ProgressRouteComboBox.SelectedItems.Clear();
+        }
+        finally
+        {
+            _suppressSelectionEvents = false;
+        }
+
+        _multiRoutePaymentRows.Clear();
+        _multiRouteDraftCache.Clear();
+        _lastProgressDefaultsRouteKey = null;
+        _lastSelectedPaymentMonthKey = null;
     }
 
     private void ConfigureWindow()
@@ -272,21 +366,61 @@ public partial class MainWindow : Window
         Background = System.Windows.Media.Brushes.White;
         UseLayoutRounding = true;
         SnapsToDevicePixels = true;
-        ConfigureWindowForCurrentScreen();
+        _windowLayoutPreference = WindowLayoutPreferenceStore.Load();
+        ApplyWindowLayoutPreference(_windowLayoutPreference);
         UpdateMaximizeRestoreButton();
     }
 
-    private void ConfigureWindowForCurrentScreen()
+    private void ApplyWindowLayoutPreference(WindowLayoutPreference preference)
     {
+        _windowLayoutPreference = preference;
+
+        if (preference.GetRequestedSize() is not { } requestedSize)
+        {
+            WindowState = WindowState.Maximized;
+            SelectWindowLayoutMode(preference.Mode);
+            return;
+        }
+
+        WindowState = WindowState.Normal;
         var workArea = SystemParameters.WorkArea;
 
-        // Çalışma alanının neredeyse tamamını kullan: yatayda daha fazla alan,
-        // dikeyde görev çubuğunun altında kalmadan mümkün olan maksimum yükseklik.
-        Width = Math.Round(workArea.Width * 0.98);
-        Height = Math.Round(workArea.Height * 0.985);
+        Width = Math.Min(requestedSize.Width, workArea.Width);
+        Height = Math.Min(requestedSize.Height, workArea.Height);
 
         Left = workArea.Left + ((workArea.Width - Width) / 2.0);
         Top = workArea.Top + ((workArea.Height - Height) / 2.0);
+        SelectWindowLayoutMode(preference.Mode);
+    }
+
+    private void SelectWindowLayoutMode(WindowLayoutMode mode)
+    {
+        if (WindowLayoutModeComboBox is null)
+            return;
+
+        _suppressWindowLayoutSelectionChanged = true;
+        try
+        {
+            WindowLayoutModeComboBox.SelectedValue = mode.ToString();
+        }
+        finally
+        {
+            _suppressWindowLayoutSelectionChanged = false;
+        }
+    }
+
+    private void WindowLayoutModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_suppressWindowLayoutSelectionChanged ||
+            WindowLayoutModeComboBox.SelectedValue is not string selectedValue ||
+            !Enum.TryParse<WindowLayoutMode>(selectedValue, out var mode))
+        {
+            return;
+        }
+
+        var preference = new WindowLayoutPreference(mode);
+        ApplyWindowLayoutPreference(preference);
+        WindowLayoutPreferenceStore.Save(preference);
     }
 
     private void MainWindow_SourceInitialized(object? sender, EventArgs e)
@@ -357,6 +491,7 @@ public partial class MainWindow : Window
         var latest = _progressHistory
             .Where(x => selectedRoute is null ||
                         (string.Equals(x.TenderNumber, selectedRoute.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+                         string.Equals(x.ContractNumber, selectedRoute.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
                          string.Equals(x.RouteNumber, selectedRoute.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
                          string.Equals(
                         OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
@@ -397,6 +532,231 @@ public partial class MainWindow : Window
             $"Toplam kesinti: {FormatMoney(latest.Calculation.TotalDeductions)}";
     }
 
+    private void PopulateCalculationConstantsPanel()
+    {
+        if (TransportVatRateTextBox is null)
+            return;
+        TransportVatRateTextBox.Text = FormatPercentageInput(_calculationConstants.TransportVatRate);
+        GuideVatRateTextBox.Text = FormatPercentageInput(_calculationConstants.GuideVatRate);
+        TransportWithholdingShareTextBox.Text = FormatPercentageInput(_calculationConstants.TransportWithholdingShare);
+        GuideWithholdingShareTextBox.Text = FormatPercentageInput(_calculationConstants.GuideWithholdingShare);
+        StampTaxRateTextBox.Text = FormatPercentageInput(_calculationConstants.StampTaxRate);
+        AdditionalGuaranteeRateTextBox.Text = FormatPercentageInput(_calculationConstants.AdditionalGuaranteeRate);
+        UpdateCalculationConstantsAuditDisplay();
+    }
+
+    private static string FormatPercentageInput(decimal fraction) =>
+        (fraction * 100m).ToString("0.###", CultureInfo.CurrentCulture);
+
+    private static bool TryParsePercentageInput(string? text, out decimal fraction)
+    {
+        fraction = 0m;
+        if (!TryParseDecimal(text, out var percent) || percent < 0m || percent > 100m)
+            return false;
+        fraction = percent / 100m;
+        return true;
+    }
+
+    private void UpdateCalculationConstantsAuditDisplay()
+    {
+        if (CalculationConstantsAuditTextBlock is null)
+            return;
+        if (_calculationConstantsHistory.Count == 0)
+        {
+            CalculationConstantsAuditTextBlock.Text =
+                "Henüz sabit değişikliği kaydedilmedi. Başlangıç değerleri kaynak Excel'deki oranlardır; mevzuat uygunluğu teyidi değildir.";
+            return;
+        }
+
+        CalculationConstantsAuditTextBlock.Text = string.Join(
+            Environment.NewLine + Environment.NewLine,
+            _calculationConstantsHistory.OrderByDescending(x => x.ChangedAtUtc).Take(5).Select(x =>
+                $"{x.ChangedAtUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm", CultureInfo.CurrentCulture)} • {x.ChangedBy}" +
+                $"{Environment.NewLine}Gerekçe: {x.Reason}" +
+                $"{Environment.NewLine}Taşıma KDV: %{FormatPercentageInput(x.Previous.TransportVatRate)} → %{FormatPercentageInput(x.Current.TransportVatRate)}" +
+                $"; Rehber KDV: %{FormatPercentageInput(x.Previous.GuideVatRate)} → %{FormatPercentageInput(x.Current.GuideVatRate)}" +
+                $"{Environment.NewLine}Taşıma tevkifat payı: %{FormatPercentageInput(x.Previous.TransportWithholdingShare)} → %{FormatPercentageInput(x.Current.TransportWithholdingShare)}" +
+                $"; Rehber tevkifat payı: %{FormatPercentageInput(x.Previous.GuideWithholdingShare)} → %{FormatPercentageInput(x.Current.GuideWithholdingShare)}" +
+                $"{Environment.NewLine}Damga vergisi: %{FormatPercentageInput(x.Previous.StampTaxRate)} → %{FormatPercentageInput(x.Current.StampTaxRate)}" +
+                $"; Ek kesin teminat: %{FormatPercentageInput(x.Previous.AdditionalGuaranteeRate)} → %{FormatPercentageInput(x.Current.AdditionalGuaranteeRate)}"));
+    }
+
+    private void SaveCalculationConstantsButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (!TryParsePercentageInput(TransportVatRateTextBox.Text, out var transportVat) ||
+            !TryParsePercentageInput(GuideVatRateTextBox.Text, out var guideVat) ||
+            !TryParsePercentageInput(TransportWithholdingShareTextBox.Text, out var transportWithholding) ||
+            !TryParsePercentageInput(GuideWithholdingShareTextBox.Text, out var guideWithholding) ||
+            !TryParsePercentageInput(StampTaxRateTextBox.Text, out var stampTax) ||
+            !TryParsePercentageInput(AdditionalGuaranteeRateTextBox.Text, out var additionalGuarantee))
+        {
+            MessageBox.Show("Bütün oranları yüzde olarak girin. Her alan %0 ile %100 arasında olmalıdır (ör. 10 veya 0,948).",
+                "OEHS — Sabit Doğrulama", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        var changedBy = CalculationConstantsChangedByTextBox.Text.Trim();
+        var reason = CalculationConstantsReasonTextBox.Text.Trim();
+        if (changedBy.Length == 0 || reason.Length < 5)
+        {
+            MessageBox.Show("Sabit değişikliğini kaydetmek için işlemi yapan kişinin adını ve en az 5 karakterlik gerekçeyi girin.",
+                "OEHS — Değişiklik Kaydı", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        var proposed = new ProgressPaymentCalculationConstants(
+            transportVat, guideVat, transportWithholding, guideWithholding, stampTax, additionalGuarantee);
+        if (!proposed.TryValidate(out var validationError))
+        {
+            MessageBox.Show(validationError, "OEHS — Sabit Doğrulama", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+        if (proposed == _calculationConstants)
+        {
+            MessageBox.Show("Girilen sabitlerde değişiklik yok. Yeni kayıt oluşturulmadı.", "OEHS",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var previous = _calculationConstants;
+        var confirmation = MessageBox.Show(
+            "Hesaplama sabitleri değiştirilecek:" + Environment.NewLine + Environment.NewLine +
+            $"Taşıma KDV: %{FormatPercentageInput(previous.TransportVatRate)} → %{FormatPercentageInput(proposed.TransportVatRate)}" + Environment.NewLine +
+            $"Rehber KDV: %{FormatPercentageInput(previous.GuideVatRate)} → %{FormatPercentageInput(proposed.GuideVatRate)}" + Environment.NewLine +
+            $"Taşıma tevkifat payı: %{FormatPercentageInput(previous.TransportWithholdingShare)} → %{FormatPercentageInput(proposed.TransportWithholdingShare)}" + Environment.NewLine +
+            $"Rehber tevkifat payı: %{FormatPercentageInput(previous.GuideWithholdingShare)} → %{FormatPercentageInput(proposed.GuideWithholdingShare)}" + Environment.NewLine +
+            $"Damga vergisi: %{FormatPercentageInput(previous.StampTaxRate)} → %{FormatPercentageInput(proposed.StampTaxRate)}" + Environment.NewLine +
+            $"Ek kesin teminat: %{FormatPercentageInput(previous.AdditionalGuaranteeRate)} → %{FormatPercentageInput(proposed.AdditionalGuaranteeRate)}" + Environment.NewLine + Environment.NewLine +
+            $"İşlemi yapan: {changedBy}" + Environment.NewLine + $"Gerekçe: {reason}" + Environment.NewLine + Environment.NewLine +
+            "Onaylanırsa yeni sabitler kalıcı kaydedilecek ve yeni hesaplamalarda kullanılacak. Mevcut geçmiş/arşiv tutarları denetim izi korunarak otomatik değiştirilmeyecek.",
+            "OEHS — Hesaplama Sabitleri Onayı", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+        if (confirmation != MessageBoxResult.Yes)
+            return;
+
+        _calculationConstants = proposed;
+        _calculationConstantsHistory.Add(new ProgressPaymentCalculationConstantsChange(
+            DateTime.UtcNow, changedBy, reason, previous, proposed));
+        if (!SavePersistedData())
+        {
+            _calculationConstants = previous;
+            _calculationConstantsHistory.RemoveAt(_calculationConstantsHistory.Count - 1);
+            PopulateCalculationConstantsPanel();
+            return;
+        }
+
+        PopulateCalculationConstantsPanel();
+        CalculationConstantsReasonTextBox.Clear();
+        RefreshCalculationTraceLive();
+        MessageBox.Show("Sabitler kaydedildi. Yeni hesaplamalar güncel sabitleri kullanacak; geçmiş hakedişler yalnızca açık düzeltme/yeniden hesaplama işleminde değişir.",
+            "OEHS — Sabitler Kaydedildi", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    private void ResetCalculationConstantsFieldsButton_Click(object sender, RoutedEventArgs e)
+    {
+        var defaults = ProgressPaymentCalculationConstants.Defaults;
+        TransportVatRateTextBox.Text = FormatPercentageInput(defaults.TransportVatRate);
+        GuideVatRateTextBox.Text = FormatPercentageInput(defaults.GuideVatRate);
+        TransportWithholdingShareTextBox.Text = FormatPercentageInput(defaults.TransportWithholdingShare);
+        GuideWithholdingShareTextBox.Text = FormatPercentageInput(defaults.GuideWithholdingShare);
+        StampTaxRateTextBox.Text = FormatPercentageInput(defaults.StampTaxRate);
+        AdditionalGuaranteeRateTextBox.Text = FormatPercentageInput(defaults.AdditionalGuaranteeRate);
+        MessageBox.Show("Kaynak Excel başlangıç değerleri forma yüklendi; kaydetmek için yine gerekçeli onay gerekir.",
+            "OEHS — Başlangıç Değerleri", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    private void LoadSignatoriesIntoFields()
+    {
+        var signatories = OehsOfficialDocumentSettingsStore.Load();
+        SignatoryPreparerNameTextBox.Text = signatories.PreparerName;
+        SignatoryPreparerRoleTextBox.Text = signatories.PreparerRole;
+        SignatoryControllerNameTextBox.Text = signatories.ControllerName;
+        SignatoryControllerRoleTextBox.Text = signatories.ControllerRole;
+        SignatoryApproverNameTextBox.Text = signatories.ApproverName;
+        SignatoryApproverRoleTextBox.Text = signatories.ApproverRole;
+    }
+
+    private void LoadSignatoriesButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            LoadSignatoriesIntoFields();
+            MessageBox.Show(
+                "Kayıtlı imzacı bilgileri yeniden yüklendi.",
+                "OEHS — İmzacı Ayarları",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                ex.Message,
+                "OEHS — İmzacı Ayarları Okunamadı",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+    }
+
+    private void SaveSignatoriesButton_Click(object sender, RoutedEventArgs e)
+    {
+        var values = new[]
+        {
+            SignatoryPreparerNameTextBox.Text,
+            SignatoryPreparerRoleTextBox.Text,
+            SignatoryControllerNameTextBox.Text,
+            SignatoryControllerRoleTextBox.Text,
+            SignatoryApproverNameTextBox.Text,
+            SignatoryApproverRoleTextBox.Text
+        };
+
+        if (values.Any(string.IsNullOrWhiteSpace))
+        {
+            MessageBox.Show(
+                "Lütfen üç imzacının da adını ve görev/unvan bilgisini doldurun. Boş alanla kayıt yapılmadı.",
+                "OEHS — Eksik İmza Bilgisi",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
+        }
+
+        if (values.Any(value => value.Trim().Length > 150))
+        {
+            MessageBox.Show(
+                "İsim ve görev/unvan alanları 150 karakteri aşamaz.",
+                "OEHS — İmza Bilgisi Çok Uzun",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
+        }
+
+        try
+        {
+            var signatories = new OehsOfficialDocumentSignatories(
+                PreparerName: values[0].Trim(),
+                PreparerRole: values[1].Trim(),
+                ControllerName: values[2].Trim(),
+                ControllerRole: values[3].Trim(),
+                ApproverName: values[4].Trim(),
+                ApproverRole: values[5].Trim());
+
+            OehsOfficialDocumentSettingsStore.Save(signatories);
+            LoadSignatoriesIntoFields();
+
+            MessageBox.Show(
+                "İmzacı bilgileri kaydedildi. Yeni oluşturulacak dört resmî PDF bu bilgileri kullanacaktır. Önceden oluşturulmuş PDF dosyaları otomatik değişmez; gerekiyorsa yeniden oluşturun.",
+                "OEHS — İmzacı Ayarları Kaydedildi",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                "İmzacı ayarları kaydedilemedi. Dosya izinlerini ve ayar dosyasını kontrol edin.\n\n" + ex.Message,
+                "OEHS — Kayıt Hatası",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+    }
+
     private void NavigationButton_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not System.Windows.Controls.Button button)
@@ -426,7 +786,25 @@ public partial class MainWindow : Window
             }
         }
 
+        if (page == "Signatories" && _operationsReady)
+        {
+            try
+            {
+                LoadSignatoriesIntoFields();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    ex.Message,
+                    "OEHS — İmzacı Ayarları Okunamadı",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return;
+            }
+        }
+
         HomePanel.Visibility = page == "Home" ? Visibility.Visible : Visibility.Collapsed;
+        CalculationTracePanel.Visibility = page == "Trace" ? Visibility.Visible : Visibility.Collapsed;
         ContractPanel.Visibility = page == "Contract" ? Visibility.Visible : Visibility.Collapsed;
         ProgressPanel.Visibility = page == "Progress" ? Visibility.Visible : Visibility.Collapsed;
         LinesPanel.Visibility = page == "Lines" ? Visibility.Visible : Visibility.Collapsed;
@@ -436,9 +814,12 @@ public partial class MainWindow : Window
         SummaryPanel.Visibility = page == "Summary" ? Visibility.Visible : Visibility.Collapsed;
         ReportsPanel.Visibility = page == "Reports" ? Visibility.Visible : Visibility.Collapsed;
         AcceptancePanel.Visibility = page == "Acceptance" ? Visibility.Visible : Visibility.Collapsed;
+        StatisticsPanel.Visibility = page == "Statistics" ? Visibility.Visible : Visibility.Collapsed;
         SettingsPanel.Visibility = page == "Settings" ? Visibility.Visible : Visibility.Collapsed;
+        SignatoriesPanel.Visibility = page == "Signatories" ? Visibility.Visible : Visibility.Collapsed;
+        CalculationConstantsPanel.Visibility = page == "Constants" ? Visibility.Visible : Visibility.Collapsed;
         PlaceholderPanel.Visibility = page is "Home" or "Contract" or "Progress" or "Lines" or "Contractors"
-            or "History" or "Archives" or "Summary" or "Reports" or "Acceptance" or "Settings"
+            or "History" or "Archives" or "Summary" or "Reports" or "Acceptance" or "Statistics" or "Settings" or "Signatories" or "Constants" or "Trace"
             ? Visibility.Collapsed
             : Visibility.Visible;
 
@@ -453,7 +834,11 @@ public partial class MainWindow : Window
             "Summary" => "İcmal",
             "Reports" => "Çıktılar",
             "Acceptance" => "Kabul Tutanağı",
+            "Statistics" => "İstatistikler",
             "Settings" => "Ayarlar",
+            "Signatories" => "Resmî Belge İmzacıları",
+            "Constants" => "Hesaplama Sabitleri",
+            "Trace" => "Geçici Hesap Tutucu",
             _ => "Ana Ekran"
         };
 
@@ -474,25 +859,48 @@ public partial class MainWindow : Window
     {
         foreach (var button in new[]
         {
-            NavHome, NavContract, NavContractors, NavLines,
-            NavProgress, NavReports, NavHistory, NavArchives, NavAcceptance, NavSettings
+            NavHome, NavContract, NavSignatories, NavContractors, NavLines,
+            NavProgress, NavReports, NavHistory, NavArchives, NavStatistics, NavSettings
         })
         {
-            button.Uid = button.Tag?.ToString() == page ? "Active" : string.Empty;
+            var buttonPage = button.Tag?.ToString();
+            button.Uid = buttonPage == page || (page == "Constants" && buttonPage == "Settings")
+                ? "Active"
+                : string.Empty;
         }
     }
 
-    private ContractorDraft? FindContractor(string taxOrIdentityNumber)
+    private ContractorDraft? FindContractor(
+        string taxOrIdentityNumber,
+        TransportationProgramType? programType = null)
     {
         if (string.IsNullOrWhiteSpace(taxOrIdentityNumber))
             return null;
 
         var identity = OehsIdentityService.NormalizeIdentity(taxOrIdentityNumber);
-        return _contractors.FirstOrDefault(x =>
+        var matches = _contractors.Where(x =>
             string.Equals(
                 OehsIdentityService.NormalizeIdentity(x.TaxOrIdentityNumber),
                 identity,
                 StringComparison.Ordinal));
+        return programType.HasValue
+            ? matches.FirstOrDefault(x => x.ProgramType == programType.Value)
+            : matches.FirstOrDefault();
+    }
+
+    private static string BuildContractorKey(ContractorDraft contractor) =>
+        $"{contractor.ProgramType}|{OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber)}";
+
+    private ContractorDraft? FindContractorByKey(string? key)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+            return null;
+
+        var separator = key.IndexOf('|', StringComparison.Ordinal);
+        if (separator < 0 || !Enum.TryParse<TransportationProgramType>(key[..separator], out var programType))
+            return FindContractor(key);
+
+        return FindContractor(key[(separator + 1)..], programType);
     }
 
     private ContractDraftData? GetSelectedContract()
@@ -500,7 +908,58 @@ public partial class MainWindow : Window
         return HomeTenderListBox.SelectedItem as ContractDraftData
             ?? RouteTenderListBox.SelectedItem as ContractDraftData
             ?? ProgressTenderListBox.SelectedItem as ContractDraftData
-            ?? _contracts.FirstOrDefault(x => string.Equals(x.TenderNumber, TenderNumberTextBox.Text.Trim(), StringComparison.OrdinalIgnoreCase));
+            ?? FindContract(TenderNumberTextBox.Text, ContractNumberTextBox.Text, GetSelectedTransportationProgramType())
+            ?? _contracts.FirstOrDefault();
+    }
+
+    private ContractDraftData? FindContract(
+        string? tenderNumber,
+        string? contractNumber,
+        TransportationProgramType? programType = null)
+    {
+        if (string.IsNullOrWhiteSpace(tenderNumber))
+            return null;
+
+        var tenderContracts = _contracts.Where(x =>
+            string.Equals(x.TenderNumber.Trim(), tenderNumber.Trim(), StringComparison.OrdinalIgnoreCase) &&
+            (!programType.HasValue || x.ProgramType == programType.Value)).ToArray();
+        if (!string.IsNullOrWhiteSpace(contractNumber))
+        {
+            var matches = tenderContracts.Where(x =>
+                string.Equals(x.ContractNumber.Trim(), contractNumber.Trim(), StringComparison.OrdinalIgnoreCase)).ToArray();
+            return matches.Length == 1 ? matches[0] : null;
+        }
+
+        // Legacy records can only be assigned automatically while tender identity is unique.
+        return tenderContracts.Length == 1 ? tenderContracts[0] : null;
+    }
+
+    private bool IsHistoryForContract(ProgressPaymentHistoryData item, ContractDraftData contract)
+    {
+        if (!string.Equals(item.TenderNumber?.Trim(), contract.TenderNumber.Trim(), StringComparison.OrdinalIgnoreCase))
+            return false;
+        if (item.Input.ProgramType != contract.ProgramType)
+            return false;
+        if (!string.IsNullOrWhiteSpace(item.ContractNumber))
+            return string.Equals(item.ContractNumber.Trim(), contract.ContractNumber.Trim(), StringComparison.OrdinalIgnoreCase);
+
+        return _contracts.Count(x =>
+            x.ProgramType == contract.ProgramType &&
+            string.Equals(x.TenderNumber.Trim(), contract.TenderNumber.Trim(), StringComparison.OrdinalIgnoreCase)) == 1;
+    }
+
+    private bool IsRouteForContract(RouteDraft route, ContractDraftData contract)
+    {
+        if (!string.Equals(route.TenderNumber.Trim(), contract.TenderNumber.Trim(), StringComparison.OrdinalIgnoreCase))
+            return false;
+        if (route.ProgramType != contract.ProgramType)
+            return false;
+        if (!string.IsNullOrWhiteSpace(route.ContractNumber))
+            return string.Equals(route.ContractNumber.Trim(), contract.ContractNumber.Trim(), StringComparison.OrdinalIgnoreCase);
+
+        return _contracts.Count(x =>
+            x.ProgramType == contract.ProgramType &&
+            string.Equals(x.TenderNumber.Trim(), contract.TenderNumber.Trim(), StringComparison.OrdinalIgnoreCase)) == 1;
     }
 
     private void ApplyContractToForm(ContractDraftData contract)
@@ -510,15 +969,19 @@ public partial class MainWindow : Window
         {
             TenderNumberTextBox.Text = contract.TenderNumber;
             ContractNumberTextBox.Text = contract.ContractNumber;
-            WorkNameTextBox.Text = contract.WorkName;
-            ContractAmountTextBox.Text = contract.ContractAmount.ToString("N2", CultureInfo.CurrentCulture);
+            ContractAmountTextBox.Text = FormatCalculationInput(contract.ContractAmount);
             ContractWorkDaysTextBox.Text = contract.ContractWorkDays.ToString(CultureInfo.CurrentCulture);
-            ContractTransportDailyPriceTextBox.Text = contract.TransportDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+            ContractTransportDailyPriceTextBox.Text = FormatCalculationInput(contract.TransportDailyPrice);
             StartDatePicker.SelectedDate = contract.StartDate.ToDateTime(TimeOnly.MinValue);
             EndDatePicker.SelectedDate = contract.EndDate.ToDateTime(TimeOnly.MinValue);
             TenderDatePicker.SelectedDate = contract.TenderDate?.ToDateTime(TimeOnly.MinValue);
             ContractDatePicker.SelectedDate = contract.ContractDate?.ToDateTime(TimeOnly.MinValue);
-            VatExemptCheckBox.IsChecked = contract.VatExempt;
+            TransportProgramTypeComboBox.SelectedItem = TransportProgramTypeComboBox.Items
+                .OfType<ComboBoxItem>()
+                .FirstOrDefault(item => string.Equals(
+                    item.Tag?.ToString(),
+                    contract.ProgramType.ToString(),
+                    StringComparison.OrdinalIgnoreCase));
 
         }
         finally
@@ -533,54 +996,242 @@ public partial class MainWindow : Window
     {
         TenderNumberTextBox.Clear();
         ContractNumberTextBox.Clear();
-        WorkNameTextBox.Clear();
         ContractWorkDaysTextBox.Clear();
         ContractTransportDailyPriceTextBox.Clear();
         ContractAmountTextBox.Clear();
-        StartDatePicker.SelectedDate = DateTime.Today;
-        EndDatePicker.SelectedDate = DateTime.Today;
-        TenderDatePicker.SelectedDate = DateTime.Today;
-        ContractDatePicker.SelectedDate = DateTime.Today;
-        VatExemptCheckBox.IsChecked = false;
+        StartDatePicker.SelectedDate = null;
+        EndDatePicker.SelectedDate = null;
+        TenderDatePicker.SelectedDate = null;
+        ContractDatePicker.SelectedDate = null;
+    }
+
+    private bool TryGetSelectedTransportationProgramType(out TransportationProgramType programType)
+    {
+        var tag = (TransportProgramTypeComboBox.SelectedItem as ComboBoxItem)?.Tag?.ToString();
+        return Enum.TryParse<TransportationProgramType>(tag, ignoreCase: true, out programType);
+    }
+
+    private TransportationProgramType GetSelectedTransportationProgramType()
+    {
+        // Existing selector/summary code needs a stable value during initial view
+        // setup. Save handlers use TryGetSelectedTransportationProgramType and
+        // explicitly reject missing selection before creating official records.
+        return TryGetSelectedTransportationProgramType(out var programType)
+            ? programType
+            : TransportationProgramType.SpecialEducation;
+    }
+
+    private static bool HasGuideStaff(TransportationProgramType programType) =>
+        programType == TransportationProgramType.SpecialEducation;
+
+    private string GetContractWorkName(ContractDraftData contract)
+    {
+        if (_editingArchiveSnapshot is { } archive && ReferenceEquals(contract, archive.Contract))
+            return OfficialTemplateProfile.DeriveWorkName(archive.Route.Name, contract.WorkName);
+
+        var names = _routes.Where(route => IsRouteForContract(route, contract))
+            .Where(route => !string.IsNullOrWhiteSpace(route.Name))
+            .Select(route => OfficialTemplateProfile.DeriveWorkName(route.Name))
+            .Distinct(StringComparer.Ordinal).ToArray();
+        return names.Length == 0 ? contract.WorkName : string.Join(Environment.NewLine, names);
+    }
+
+    private void RefreshContractWorkNameDisplays()
+    {
+        // Keep selectors bound to the original contracts; only presentation changes.
+        _contractWorkNameConverter.UpdateTitles(_contracts.Distinct()
+            .ToDictionary(contract => contract, GetContractWorkName));
+        UpdateHomeTenderSummary(HomeTenderListBox.SelectedItem as ContractDraftData);
+    }
+
+    private void UpdateOfficialTemplateLabels(TransportationProgramType programType)
+    {
+        var profile = OfficialTemplateProfile.For(programType);
+        CalculationSheetNameTextBlock.Text = profile.CalculationSheetName;
+        ServiceReportSheetNameTextBlock.Text = OfficialTemplateProfile.For(
+            (ReportRouteComboBox.SelectedItem as RouteDraft)?.ProgramType ?? programType).ServiceReportSheetName;
+        RouteNameLabel.Text = profile.RouteNameLabel;
+        ProgressRouteNameLabel.Text = profile.RouteNameLabel;
+        PriceDifferenceLabel.Text = profile.TransportPriceDifferenceLabel;
+        TransportPriceDifferenceResultLabel.Text = profile.TransportPriceDifferenceLabel;
+        GuidePriceDifferenceLabel.Text = profile.GuidePriceDifferenceLabel ?? string.Empty;
+        GuidePriceDifferenceResultLabel.Text = profile.GuidePriceDifferenceLabel ?? string.Empty;
+        var guideVisibility = profile.GuidePriceDifferenceLabel is null ? Visibility.Collapsed : Visibility.Visible;
+        GuidePriceDifferenceResultLabel.Visibility = guideVisibility;
+        GuidePriceDifferenceResultTextBlock.Visibility = guideVisibility;
+        NetPayableLabel.Text = profile.NetPayableLabel;
+        NetControlLabel.Text = profile.NetPayableLabel;
+        ProgressNetSummaryLabel.Text = profile.NetPayableLabel;
+
+        foreach (var column in MultiRoutePaymentGrid.Columns.OfType<DataGridBoundColumn>())
+        {
+            var path = (column.Binding as System.Windows.Data.Binding)?.Path.Path;
+            if (path == nameof(MultiRoutePaymentDraftRow.PriceDifference))
+                column.Header = profile.TransportPriceDifferenceLabel;
+            if (path == nameof(MultiRoutePaymentDraftRow.GuidePriceDifference))
+            {
+                column.Header = profile.GuidePriceDifferenceLabel ?? string.Empty;
+                column.Visibility = guideVisibility;
+            }
+        }
+    }
+
+    private void UpdateRouteProgramTypeFields(ContractDraftData? contract)
+    {
+        RouteNameLabel.Text = OfficialTemplateProfile.For(contract?.ProgramType ?? GetSelectedTransportationProgramType()).RouteNameLabel;
+        var visible = contract is not null && HasGuideStaff(contract.ProgramType);
+        var visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+        RouteGuideDailyPriceLabel.Visibility = visibility;
+        RouteGuideDailyPriceTextBox.Visibility = visibility;
+
+        if (!visible)
+        {
+            RouteGuideDailyPriceTextBox.Text = "0";
+        }
+    }
+
+    private void UpdateProgressProgramTypeFields(ContractDraftData? contract)
+    {
+        UpdateOfficialTemplateLabels(contract?.ProgramType ?? GetSelectedTransportationProgramType());
+        var visible = contract is not null && HasGuideStaff(contract.ProgramType);
+        var visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+        ProgressGuideWorkDaysLabel.Visibility = visibility;
+        GuideWorkDaysTextBox.Visibility = visibility;
+        ProgressGuideDailyPriceLabel.Visibility = visibility;
+        GuideDailyPriceTextBox.Visibility = visibility;
+        GuideDiscountLabel.Visibility = visibility;
+        GuideDiscountTextBox.Visibility = visibility;
+        GuidePriceDifferenceLabel.Visibility = visibility;
+        GuidePriceDifferenceTextBox.Visibility = visibility;
+        SetMinimumWageSupportInputMode(contract?.ProgramType);
+
+        if (!visible)
+        {
+            GuideWorkDaysTextBox.Text = "0";
+            GuideDailyPriceTextBox.Text = "0";
+            GuideDiscountTextBox.Text = "0";
+            GuidePriceDifferenceTextBox.Text = "0";
+        }
+    }
+
+    private void SetMinimumWageSupportInputMode(
+        TransportationProgramType? programType,
+        bool restoreSavedValue = false,
+        decimal savedAmount = 0m)
+    {
+        var hasContract = programType.HasValue;
+        var isBasicOrSecondary = programType == TransportationProgramType.BasicOrSecondary;
+        var visibility = hasContract ? Visibility.Visible : Visibility.Collapsed;
+
+        MinimumWageSupportLabel.Visibility = visibility;
+        MinimumWageSupportTextBox.Visibility = visibility;
+        MinimumWageSupportEnabledCheckBox.Visibility =
+            hasContract && isBasicOrSecondary ? Visibility.Visible : Visibility.Collapsed;
+
+        _suppressMinimumWageSupportToggle = true;
+        try
+        {
+            if (isBasicOrSecondary)
+            {
+                MinimumWageSupportEnabledCheckBox.IsChecked =
+                    restoreSavedValue && savedAmount > 0m;
+                MinimumWageSupportTextBox.IsEnabled =
+                    MinimumWageSupportEnabledCheckBox.IsChecked == true;
+
+                // Temel/Ortaöğretim için yeni giriş varsayılanı sıfırdır.
+                // Kayıt yüklenirken pozitif tutar varsa yukarıda etkinleştirilir.
+                if (!MinimumWageSupportTextBox.IsEnabled)
+                    MinimumWageSupportTextBox.Text = "0";
+            }
+            else
+            {
+                // Özel Eğitim'de mevcut giriş davranışı korunur; destek alanı
+                // onay kutusu olmadan doğrudan kullanılabilir.
+                MinimumWageSupportEnabledCheckBox.IsChecked = true;
+                MinimumWageSupportTextBox.IsEnabled = hasContract;
+            }
+        }
+        finally
+        {
+            _suppressMinimumWageSupportToggle = false;
+        }
+    }
+
+    private void RestoreMinimumWageSupportInputState(
+        TransportationProgramType programType,
+        decimal savedAmount) =>
+        SetMinimumWageSupportInputMode(programType, restoreSavedValue: true, savedAmount: savedAmount);
+
+    private void MinimumWageSupportEnabledCheckBox_Changed(object sender, RoutedEventArgs e)
+    {
+        if (!IsInitialized || _suppressMinimumWageSupportToggle)
+            return;
+
+        var enabled = MinimumWageSupportEnabledCheckBox.IsChecked == true;
+        MinimumWageSupportTextBox.IsEnabled = enabled;
+        if (!enabled)
+            MinimumWageSupportTextBox.Text = "0";
     }
 
     private void UpdateContractSelectors()
     {
+        RefreshContractWorkNameDisplays();
+        var selectedProgram = GetSelectedTransportationProgramType();
+        var scopedContracts = _contracts.Where(x => x.ProgramType == selectedProgram).ToArray();
         var selectedTender = TenderNumberTextBox.Text.Trim();
-        HomeTenderListBox.ItemsSource = _contracts.ToArray();
-        RouteTenderListBox.ItemsSource = _contracts.ToArray();
-        ProgressTenderListBox.ItemsSource = _contracts.ToArray();
-        OutputTenderListBox.ItemsSource = _contracts.ToArray();
-        ContractsListBox.ItemsSource = _contracts.ToArray();
+        var selectedContractNumber = ContractNumberTextBox.Text.Trim();
+        var previousHome = HomeTenderListBox.SelectedItem as ContractDraftData;
+        var previousRoute = RouteTenderListBox.SelectedItem as ContractDraftData;
+        var previousProgress = ProgressTenderListBox.SelectedItem as ContractDraftData;
+        var previousOutput = OutputTenderListBox.SelectedItem as ContractDraftData;
 
-        var contract = _contracts.FirstOrDefault(x => string.Equals(x.TenderNumber, selectedTender, StringComparison.OrdinalIgnoreCase))
-                       ?? _contracts.FirstOrDefault();
+        var contract = FindContract(selectedTender, selectedContractNumber, selectedProgram)
+                       ?? (previousRoute is null ? null : FindContract(previousRoute.TenderNumber, previousRoute.ContractNumber, selectedProgram))
+                       ?? scopedContracts.FirstOrDefault();
+        var homeContract = previousHome is null
+            ? contract
+            : FindContract(previousHome.TenderNumber, previousHome.ContractNumber, previousHome.ProgramType) ?? contract;
+        var progressContract = previousProgress is null
+            ? null
+            : FindContract(previousProgress.TenderNumber, previousProgress.ContractNumber, previousProgress.ProgramType);
+        var outputContract = previousOutput is null
+            ? contract
+            : FindContract(previousOutput.TenderNumber, previousOutput.ContractNumber, previousOutput.ProgramType) ?? contract;
 
+        _suppressSelectionEvents = true;
+        try
+        {
+            HomeTenderListBox.ItemsSource = _contracts.ToArray();
+            RouteTenderListBox.ItemsSource = scopedContracts;
+            ProgressTenderListBox.ItemsSource = _contracts.ToArray();
+            OutputTenderListBox.ItemsSource = _contracts.ToArray();
+            ContractsListBox.ItemsSource = scopedContracts;
+            ContractorsListBox.ItemsSource = _contractors.Where(x => x.ProgramType == selectedProgram).ToArray();
+
+            HomeTenderListBox.SelectedItem = homeContract;
+            RouteTenderListBox.SelectedItem = contract;
+            ProgressTenderListBox.SelectedItem = progressContract;
+            OutputTenderListBox.SelectedItem = outputContract;
+        }
+        finally
+        {
+            _suppressSelectionEvents = false;
+        }
+
+        UpdateContractorSummary();
         if (contract is not null)
         {
-            _suppressSelectionEvents = true;
-            try
-            {
-                HomeTenderListBox.SelectedItem = contract;
-                RouteTenderListBox.SelectedItem = contract;
-                ProgressTenderListBox.SelectedItem = contract;
-                OutputTenderListBox.SelectedItem = contract;
-            }
-            finally
-            {
-                _suppressSelectionEvents = false;
-            }
-
             UpdateRouteContractorSelector(contract);
-            UpdateProgressContractorAndRoutes(contract);
-            UpdateOutputRoutesForContract(contract);
-            UpdateHomeTenderSummary(contract);
+            UpdateOutputRoutesForContract(outputContract);
+            UpdateHomeTenderSummary(homeContract);
         }
         else
         {
             RouteContractorListBox.ItemsSource = Array.Empty<ContractorDraft>();
-            ProgressRouteComboBox.ItemsSource = Array.Empty<RouteDraft>();
+            RoutesListBox.ItemsSource = Array.Empty<RouteDraft>();
         }
+
+        UpdateProgressContractorAndRoutes(progressContract, preserveSelection: false);
     }
 
     private void UpdateRouteContractorSelector(ContractDraftData? contract)
@@ -588,7 +1239,9 @@ public partial class MainWindow : Window
         _suppressSelectionEvents = true;
         try
         {
-            RouteContractorListBox.ItemsSource = _contractors.ToArray();
+            RouteContractorListBox.ItemsSource = contract is null
+                ? Array.Empty<ContractorDraft>()
+                : _contractors.Where(x => x.ProgramType == contract.ProgramType).ToArray();
             RouteContractorListBox.SelectedIndex = -1;
         }
         finally
@@ -596,6 +1249,7 @@ public partial class MainWindow : Window
             _suppressSelectionEvents = false;
         }
 
+        UpdateRouteProgramTypeFields(contract);
         UpdateRouteListView();
         RouteSelectedTenderTextBlock.Text = contract is null ? "İhale: seçilmedi" : $"İhale: {contract.TenderNumber}";
         RouteSelectedContractorTextBlock.Text = "Yüklenici: firma seçilmemiş";
@@ -603,47 +1257,367 @@ public partial class MainWindow : Window
 
     private void UpdateRouteListView()
     {
+        RefreshContractWorkNameDisplays();
         var contract = RouteTenderListBox.SelectedItem as ContractDraftData;
         var contractor = RouteContractorListBox.SelectedItem as ContractorDraft;
 
         RoutesListBox.ItemsSource = _routes.Where(x =>
             contract is not null &&
-            string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+            IsRouteForContract(x, contract) &&
             contractor is not null &&
             string.Equals(
-                    OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
-                    OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber),
-                    StringComparison.Ordinal))
+                OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
+                OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber),
+                StringComparison.Ordinal))
             .ToArray();
     }
 
-    private void UpdateProgressContractorAndRoutes(ContractDraftData? contract)
+    private void UpdateProgressPeriodOptions(ContractDraftData? contract, bool preserveSelection)
     {
-        if (contract is null)
+        var previousPeriod = preserveSelection
+            ? (ProgressPeriodMonthComboBox.SelectedItem as ProgressPaymentMonthOption)?.PeriodDate
+            : null;
+
+        var options = contract is null
+            ? Array.Empty<ProgressPaymentMonthOption>()
+            : ProgressPaymentMonthService.BuildOptions(contract.StartDate, contract.EndDate).ToArray();
+
+        ProgressPeriodMonthComboBox.ItemsSource = options;
+        ProgressPeriodMonthComboBox.SelectedItem = previousPeriod.HasValue
+            ? ProgressPaymentMonthService.FindForPeriod(options, previousPeriod.Value)
+            : null;
+    }
+
+    private void ProgressPeriodMonthComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!IsInitialized || _suppressSelectionEvents || _editingHistoryId.HasValue || IsArchiveEditing)
+            return;
+
+        var selected = ProgressPeriodMonthComboBox.SelectedItem as ProgressPaymentMonthOption;
+        var monthKey = selected?.StartDate.ToString("yyyy-MM", CultureInfo.InvariantCulture);
+        var transition = ResolveMonthlyDraftPeriodTransition(_lastSelectedPaymentMonthKey, monthKey);
+        if (transition.ResetMonthlyDraft)
+            ResetMonthlyInputsForNewMonth();
+        else if (_lastSelectedPaymentMonthKey is null && monthKey is not null)
+            RestoreHybridInputsForSelectedPeriod();
+
+        // Programmatic clearing of a ComboBox can produce a transient null between
+        // period selections. Forgetting the old month here can leak a cached route's
+        // unsaved October values into a newly selected November claim.
+        _lastSelectedPaymentMonthKey = transition.LastMonthKey;
+        UpdateAutomaticProgressNumber();
+    }
+
+    internal static (string? LastMonthKey, bool ResetMonthlyDraft) ResolveMonthlyDraftPeriodTransition(
+        string? previousMonthKey, string? selectedMonthKey)
+    {
+        if (selectedMonthKey is null)
+            return (previousMonthKey, false);
+
+        var changed = previousMonthKey is not null &&
+            !string.Equals(previousMonthKey, selectedMonthKey, StringComparison.Ordinal);
+        return (selectedMonthKey, changed);
+    }
+
+    private void ResetMonthlyInputsForNewMonth()
+    {
+        WorkDaysTextBox.Text = "0";
+        GuideWorkDaysTextBox.Text = "0";
+        DiscountTextBox.Text = "0";
+        PriceDifferenceTextBox.Text = "0";
+        GuideDiscountTextBox.Text = "0";
+        GuidePriceDifferenceTextBox.Text = "0";
+        TaxDebtTextBox.Text = "0";
+        SocialSecurityDebtTextBox.Text = "0";
+        MinimumWageSupportTextBox.Text = "0";
+        SetMinimumWageSupportInputMode((ProgressTenderListBox.SelectedItem as ContractDraftData)?.ProgramType);
+        InspectionPenaltyTextBox.Text = "0";
+
+        // A month change starts a fresh draft for every route, including routes
+        // temporarily deselected from the visible grid. Otherwise their cached
+        // prior-month adjustments could reappear when selected again.
+        _multiRouteDraftCache.ResetAll(row =>
         {
-            ProgressContractorTextBlock.Text = "Seçilmedi";
-            ProgressRouteComboBox.ItemsSource = Array.Empty<RouteDraft>();
-            ProgressRouteRelationTextBlock.Text = "Hat seçiniz.";
+            row.WorkDays = 0;
+            row.DiscountAmount = 0m;
+            row.PriceDifference = 0m;
+            row.GuideWorkDays = 0;
+            row.GuideDiscountAmount = 0m;
+            row.GuidePriceDifference = 0m;
+            row.TaxDebt = 0m;
+            row.SocialSecurityDebt = 0m;
+            var draftRoute = _routes.FirstOrDefault(route =>
+                string.Equals(
+                    OehsIdentityService.BuildRouteKey(
+                        route.TenderNumber,
+                        route.RouteNumber,
+                        route.ContractorTaxOrIdentityNumber,
+                        route.ContractNumber,
+                        route.ProgramType),
+                    row.RouteKey,
+                    StringComparison.Ordinal));
+            row.MinimumWageSupportEnabled =
+                draftRoute is not null &&
+                draftRoute.ProgramType != TransportationProgramType.BasicOrSecondary;
+            row.MinimumWageSupport = 0m;
+            row.InspectionPenalty = 0m;
+            if (draftRoute is not null)
+            {
+                row.RouteName = draftRoute.Name;
+                row.WorkDays = 0m;
+                row.DailyPrice = draftRoute.DailyPrice;
+                row.GuideDailyPrice = HasGuideStaff(draftRoute.ProgramType) ? draftRoute.GuideDailyPrice : 0m;
+            }
+            RestoreSavedHybridInput(row);
+            row.AcceptChanges();
+        });
+        RefreshHybridUpdateButton();
+
+        _lastCalculatedHistoryId = null;
+        ArchiveCurrentProgressButton.Visibility = Visibility.Collapsed;
+        CorrectCurrentProgressButton.Visibility = Visibility.Collapsed;
+        ClearProgressValidationVisuals();
+        ProgressValidationBanner.Visibility = Visibility.Collapsed;
+        ProgressValidationMessageTextBlock.Text = string.Empty;
+        ServiceAmountResultTextBlock.Text = FormatMoney(0m);
+        GuideServiceAmountResultTextBlock.Text = FormatMoney(0m);
+        TransportPriceDifferenceResultTextBlock.Text = FormatMoney(0m);
+        GuidePriceDifferenceResultTextBlock.Text = FormatMoney(0m);
+        CombinedPriceDifferenceResultTextBlock.Text = FormatMoney(0m);
+        TotalAmountResultTextBlock.Text = FormatMoney(0m);
+        VatResultTextBlock.Text = FormatMoney(0m);
+        DeductionsResultTextBlock.Text = FormatMoney(0m);
+        GrossResultTextBlock.Text = FormatMoney(0m);
+        NetResultTextBlock.Text = FormatMoney(0m);
+        NetControlResultTextBlock.Text = FormatMoney(0m);
+        WithholdingResultTextBlock.Text = FormatMoney(0m);
+        StampTaxResultTextBlock.Text = FormatMoney(0m);
+        TaxDebtResultTextBlock.Text = FormatMoney(0m);
+        SocialSecurityDebtResultTextBlock.Text = FormatMoney(0m);
+        MinimumWageSupportResultTextBlock.Text = FormatMoney(0m);
+        InspectionPenaltyResultTextBlock.Text = FormatMoney(0m);
+        AdditionalGuaranteeResultTextBlock.Text = FormatMoney(0m);
+        ProgressWorkDaysSummaryTextBlock.Text = "0";
+        ProgressWorkDaysCardTextBlock.Text = "0 gün";
+        ProgressNetSummaryTextBlock.Text = FormatMoney(0m);
+        ProgressCalculationSummaryTextBlock.Text = "HAZIR";
+        CalculationStatusTextBlock.Text = "Yeni ay seçildi. Bu aya ait iş günlerini, fiyat farklarını, iskontoları ve kesintileri yeniden girin.";
+    }
+
+    private void UpdateAutomaticProgressNumber()
+    {
+        var contract = ProgressTenderListBox.SelectedItem as ContractDraftData;
+        var selected = ProgressPeriodMonthComboBox.SelectedItem as ProgressPaymentMonthOption;
+        var selectedRoutes = ProgressRouteComboBox.SelectedItems.OfType<RouteDraft>().ToArray();
+        if (contract is null || selected is null || selectedRoutes.Length == 0)
+        {
+            ProgressNumberTextBox.Clear();
             return;
         }
 
-        var routes = _routes.Where(x =>
-            string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase))
+        var routeNumbers = selectedRoutes
+            .Select(route => new
+            {
+                Route = route,
+                Number = MonthlyProgressPaymentIdentityService.SuggestNextRouteNumber(
+                    _progressHistory,
+                    contract.TenderNumber,
+                    contract.ContractNumber,
+                    route.ContractorTaxOrIdentityNumber,
+                    route.RouteNumber,
+                    contract.ProgramType,
+                    selected.PeriodDate)
+            })
+            .OrderBy(x => x.Route.RouteNumber, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        var previous = ProgressRouteComboBox.SelectedItem as RouteDraft;
-        ProgressRouteComboBox.ItemsSource = routes;
+        // A combined batch can contain routes at different points in their payment
+        // history, so each route has its own Excel-compatible official number.
+        ProgressNumberTextBox.Text = routeNumbers.Length == 1
+            ? routeNumbers[0].Number.ToString(CultureInfo.CurrentCulture)
+            : string.Join(" • ", routeNumbers.Select(x => $"{x.Route.RouteNumber}: {x.Number}"));
+    }
 
-        if (previous is not null)
-            ProgressRouteComboBox.SelectedItem = routes.FirstOrDefault(x =>
-                x.RouteNumber == previous.RouteNumber &&
+    private void SelectProgressPeriod(DateOnly? periodDate)
+    {
+        var options = ProgressPeriodMonthComboBox.ItemsSource as IEnumerable<ProgressPaymentMonthOption>
+                      ?? Array.Empty<ProgressPaymentMonthOption>();
+        ProgressPeriodMonthComboBox.SelectedItem = periodDate.HasValue
+            ? ProgressPaymentMonthService.FindForPeriod(options, periodDate.Value)
+            : null;
+    }
+
+    private static bool ProgressPeriodDiffers(ComboBox comboBox, DateOnly? expected)
+    {
+        if (!expected.HasValue)
+            return comboBox.SelectedItem is not null;
+
+        if (comboBox.SelectedItem is not ProgressPaymentMonthOption actual)
+            return true;
+
+        // Historical records can carry any day in a month. The UI is month-based,
+        // so compare the calendar month rather than the clipped period end date.
+        return actual.StartDate.Year != expected.Value.Year
+               || actual.StartDate.Month != expected.Value.Month;
+    }
+
+    private void UpdateProgressContractorAndRoutes(ContractDraftData? contract, bool preserveSelection = true)
+    {
+        UpdateProgressProgramTypeFields(contract);
+        UpdateProgressPeriodOptions(contract, preserveSelection);
+        if (contract is null)
+        {
+            _suppressSelectionEvents = true;
+            try
+            {
+                ProgressContractorComboBox.ItemsSource = Array.Empty<ContractorDraft>();
+                ProgressContractorComboBox.SelectedItem = null;
+                ProgressContractorTextBlock.Text = "Firma seçiniz";
+                ProgressRouteComboBox.ItemsSource = Array.Empty<RouteDraft>();
+                ProgressRouteComboBox.SelectedItems.Clear();
+                ProgressRouteRelationTextBlock.Text = "İhale, sözleşme, firma ve hat seçiniz.";
+            }
+            finally
+            {
+                _suppressSelectionEvents = false;
+            }
+            UpdateMultiRouteDraftRows();
+            UpdateProgressRouteDefaults();
+            return;
+        }
+
+        var contractRoutes = _routes.Where(x => IsRouteForContract(x, contract)).ToArray();
+        // Do not silently treat routes without a tax/identity number as eligible for
+        // contractor selection: matching by a blank identifier could mix businesses.
+        // Keep them out of the payment selection until their identity data is fixed,
+        // and explicitly disclose the excluded count in the UI below.
+        var routesMissingContractorIdentity = contractRoutes.Count(x =>
+            string.IsNullOrWhiteSpace(x.ContractorTaxOrIdentityNumber));
+        var previousContractor = preserveSelection
+            ? ProgressContractorComboBox.SelectedItem as ContractorDraft
+            : null;
+        var firms = contractRoutes
+            .Where(x => !string.IsNullOrWhiteSpace(x.ContractorTaxOrIdentityNumber))
+            .GroupBy(x => OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber), StringComparer.Ordinal)
+            .Select(group =>
+            {
+                var route = group.First();
+                return _contractors.FirstOrDefault(x =>
+                           x.ProgramType == contract.ProgramType &&
+                           string.Equals(
+                               OehsIdentityService.NormalizeIdentity(x.TaxOrIdentityNumber),
+                               group.Key,
+                               StringComparison.Ordinal))
+                       ?? new ContractorDraft(
+                           string.IsNullOrWhiteSpace(route.ContractorName) ? "Firma adı tanımlanmamış" : route.ContractorName,
+                           route.ContractorTaxOrIdentityNumber,
+                           ProgramType: route.ProgramType);
+            })
+            .OrderBy(x => x.Name, StringComparer.CurrentCultureIgnoreCase)
+            .ToArray();
+
+        _suppressSelectionEvents = true;
+        try
+        {
+            ProgressContractorComboBox.ItemsSource = firms;
+            var matchedPrevious = previousContractor is null
+                ? null
+                : firms.FirstOrDefault(x => string.Equals(
+                    OehsIdentityService.NormalizeIdentity(x.TaxOrIdentityNumber),
+                    OehsIdentityService.NormalizeIdentity(previousContractor.TaxOrIdentityNumber),
+                    StringComparison.Ordinal));
+            ProgressContractorComboBox.SelectedItem = matchedPrevious
+                ?? (firms.Length == 1 ? firms[0] : null);
+
+            var selectedFirm = ProgressContractorComboBox.SelectedItem as ContractorDraft;
+            var visibleRoutes = selectedFirm is null
+                ? Array.Empty<RouteDraft>()
+                : contractRoutes.Where(x => string.Equals(
+                    OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
+                    OehsIdentityService.NormalizeIdentity(selectedFirm.TaxOrIdentityNumber),
+                    StringComparison.Ordinal)).ToArray();
+
+            var previousSelectedKeys = preserveSelection
+                ? ProgressRouteComboBox.SelectedItems.OfType<RouteDraft>()
+                    .Select(x => OehsIdentityService.BuildRouteKey(
+                        x.TenderNumber, x.RouteNumber, x.ContractorTaxOrIdentityNumber, x.ContractNumber, x.ProgramType))
+                    .ToHashSet(StringComparer.Ordinal)
+                : new HashSet<string>(StringComparer.Ordinal);
+
+            ProgressRouteComboBox.ItemsSource = visibleRoutes;
+            ProgressRouteComboBox.SelectedItems.Clear();
+            foreach (var route in visibleRoutes)
+            {
+                var key = OehsIdentityService.BuildRouteKey(
+                    route.TenderNumber, route.RouteNumber, route.ContractorTaxOrIdentityNumber, route.ContractNumber, route.ProgramType);
+                if (previousSelectedKeys.Contains(key))
+                    ProgressRouteComboBox.SelectedItems.Add(route);
+            }
+            ProgressContractorTextBlock.Text = selectedFirm is null
+                ? (firms.Length == 0 ? "Bu sözleşmede firmaya bağlı hat bulunamadı." : "Devam etmek için firmayı seçin.")
+                : $"{selectedFirm.Name} • {visibleRoutes.Length} hat";
+            var routeSelectionMessage = selectedFirm is null
+                ? (firms.Length == 0 ? "Vergi/T.C. kimlik numarası doğrulanmış firma bulunamadı." : "Önce yüklenici firmayı seçiniz.")
+                : visibleRoutes.Length == 0 ? "Bu firmaya bağlı hat bulunamadı." : "Yalnızca seçilen firmaya ait hatlar listeleniyor.";
+            ProgressRouteRelationTextBlock.Text = routesMissingContractorIdentity > 0
+                ? $"{routeSelectionMessage} UYARI: {routesMissingContractorIdentity} hat firma vergi/T.C. kimlik numarası eksik olduğu için seçime alınmadı; ödeme öncesi hat kaydını düzeltin."
+                : routeSelectionMessage;
+        }
+        finally
+        {
+            _suppressSelectionEvents = false;
+        }
+
+        UpdateMultiRouteDraftRows();
+        UpdateProgressRouteDefaults();
+    }
+
+    private void ProgressContractorComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!IsInitialized || _suppressSelectionEvents || IsArchiveEditing)
+            return;
+
+        var contract = ProgressTenderListBox.SelectedItem as ContractDraftData;
+        var contractor = ProgressContractorComboBox.SelectedItem as ContractorDraft;
+        var previousKeys = ProgressRouteComboBox.SelectedItems.OfType<RouteDraft>()
+            .Select(x => OehsIdentityService.BuildRouteKey(
+                x.TenderNumber, x.RouteNumber, x.ContractorTaxOrIdentityNumber, x.ContractNumber, x.ProgramType))
+            .ToHashSet(StringComparer.Ordinal);
+
+        var routes = contract is null || contractor is null
+            ? Array.Empty<RouteDraft>()
+            : _routes.Where(x =>
+                IsRouteForContract(x, contract) &&
                 string.Equals(
                     OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
-                    OehsIdentityService.NormalizeIdentity(previous.ContractorTaxOrIdentityNumber),
-                    StringComparison.Ordinal));
-        if (ProgressRouteComboBox.SelectedItem is null && routes.Length > 0)
-            ProgressRouteComboBox.SelectedIndex = 0;
+                    OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber),
+                    StringComparison.Ordinal)).ToArray();
 
+        _suppressSelectionEvents = true;
+        try
+        {
+            ProgressRouteComboBox.ItemsSource = routes;
+            ProgressRouteComboBox.SelectedItems.Clear();
+            foreach (var route in routes)
+            {
+                var key = OehsIdentityService.BuildRouteKey(
+                    route.TenderNumber, route.RouteNumber, route.ContractorTaxOrIdentityNumber, route.ContractNumber, route.ProgramType);
+                if (previousKeys.Contains(key))
+                    ProgressRouteComboBox.SelectedItems.Add(route);
+            }
+            ProgressContractorTextBlock.Text = contractor is null
+                ? "Devam etmek için firmayı seçin."
+                : $"{contractor.Name} • {routes.Length} hat";
+            ProgressRouteRelationTextBlock.Text = contractor is null
+                ? "Önce yüklenici firmayı seçiniz."
+                : routes.Length == 0 ? "Bu firmaya bağlı hat bulunamadı." : "Yalnızca seçilen firmaya ait hatlar listeleniyor.";
+        }
+        finally
+        {
+            _suppressSelectionEvents = false;
+        }
+
+        UpdateMultiRouteDraftRows();
         UpdateProgressRouteDefaults();
     }
 
@@ -651,15 +1625,13 @@ public partial class MainWindow : Window
     {
         if (contract is null)
         {
-            HomeSelectedTenderSummaryTextBlock.Text = "İhale seçiniz.";
+            HomeSelectedTenderSummaryTextBlock.Text = "İhale/sözleşme seçiniz.";
             return;
         }
-
         HomeSelectedTenderSummaryTextBlock.Text =
-            $"{contract.TenderNumber} • {contract.WorkName} • " +
-            $"Sözleşme {FormatMoney(contract.ContractAmount)} • " +
+            $"İKN {contract.TenderNumber} • {GetContractWorkName(contract)} • {FormatMoney(contract.ContractAmount)} • " +
             $"{contract.StartDate:dd.MM.yyyy}–{contract.EndDate:dd.MM.yyyy} • " +
-            $"{(_routes.Count(x => string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase)))} hat";
+            $"{_routes.Count(x => IsRouteForContract(x, contract))} hat";
     }
 
     private void ShowAlreadyRegistered(string message)
@@ -673,37 +1645,923 @@ public partial class MainWindow : Window
         {
             return OehsFileNameService.BuildProgressPdfFileName(
                 payment.TenderNumber ?? string.Empty,
+                payment.ContractNumber ?? string.Empty,
                 payment.RouteNumber ?? string.Empty,
                 payment.ProgressPaymentNumber.Value,
-                payment.PeriodDate.Value);
+                payment.PeriodDate.Value,
+                payment.Input.ProgramType,
+                payment.BatchRouteNumbers);
         }
 
         return "OEHS_Hakediş.pdf";
     }
 
-    private void SaveArchiveCorrectionSnapshot(ProgressPaymentArchive updatedArchive, string sectionName)
+    private void ConfigureArchiveCorrectionChangeTracking()
     {
+        foreach (var textBox in new TextBox[]
+        {
+            TenderNumberTextBox, ContractNumberTextBox,
+            ContractAmountTextBox, ContractWorkDaysTextBox, ContractTransportDailyPriceTextBox,
+            ContractorNameTextBox, ContractorTaxTextBox, ContractorAddressTextBox,
+            ContractorPhoneTextBox, ContractorEmailTextBox, ContractorBankTextBox, ContractorContactTextBox,
+            RouteNumberTextBox, RouteNameTextBox, RouteTransportWorkDaysTextBox,
+            RouteGuideDailyPriceTextBox,
+            WorkDaysTextBox, DailyPriceTextBox, GuideWorkDaysTextBox, GuideDailyPriceTextBox,
+            DiscountTextBox, GuideDiscountTextBox, PriceDifferenceTextBox, GuidePriceDifferenceTextBox,
+            TaxDebtTextBox, SocialSecurityDebtTextBox, MinimumWageSupportTextBox, InspectionPenaltyTextBox,
+            ProgressNumberTextBox
+        })
+        {
+            textBox.TextChanged += ArchiveCorrectionInput_TextChanged;
+        }
+
+        foreach (var datePicker in new DatePicker[]
+        {
+            StartDatePicker, EndDatePicker, TenderDatePicker, ContractDatePicker
+        })
+        {
+            datePicker.SelectedDateChanged += ArchiveCorrectionInput_DateChanged;
+        }
+
+        ProgressPeriodMonthComboBox.SelectionChanged += ArchiveCorrectionInput_DateChanged;
+        ContractorVatExemptCheckBox.Checked += ArchiveCorrectionInput_Toggled;
+        ContractorVatExemptCheckBox.Unchecked += ArchiveCorrectionInput_Toggled;
+    }
+
+    private void ArchiveCorrectionInput_TextChanged(object? sender, TextChangedEventArgs e) =>
+        RefreshArchiveCorrectionStatus();
+
+    private void ArchiveCorrectionInput_DateChanged(object? sender, SelectionChangedEventArgs e) =>
+        RefreshArchiveCorrectionStatus();
+
+    private void ArchiveCorrectionInput_Toggled(object? sender, RoutedEventArgs e) =>
+        RefreshArchiveCorrectionStatus();
+
+    private static bool TextDiffers(TextBox textBox, string? expected) =>
+        !string.Equals(textBox.Text.Trim(), expected?.Trim() ?? string.Empty, StringComparison.Ordinal);
+
+    private static bool DecimalDiffers(TextBox textBox, decimal expected) =>
+        !TryParseDecimalOrZero(textBox.Text, out var actual) || actual != expected;
+
+    private static bool IntDiffers(TextBox textBox, int expected)
+    {
+        if (string.IsNullOrWhiteSpace(textBox.Text))
+            return expected != 0;
+
+        return !int.TryParse(textBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var actual) ||
+               actual != expected;
+    }
+
+    private static bool TryParseWorkDays(string? text, out decimal value)
+    {
+        value = 0m;
+        if (string.IsNullOrWhiteSpace(text))
+            return false;
+
+        var trimmed = text.Trim();
+        var separator = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
+        var separatorIndex = trimmed.LastIndexOf(separator, StringComparison.Ordinal);
+        if (separatorIndex >= 0)
+        {
+            var fractionalDigits = trimmed.Length - separatorIndex - separator.Length;
+            if (fractionalDigits > 20)
+                return false;
+        }
+
+        return decimal.TryParse(
+            trimmed,
+            NumberStyles.Number,
+            CultureInfo.CurrentCulture,
+            out value);
+    }
+
+    private static bool DecimalWorkDaysDiffer(TextBox textBox, decimal expected)
+    {
+        if (string.IsNullOrWhiteSpace(textBox.Text))
+            return expected != 0m;
+
+        return !decimal.TryParse(textBox.Text, NumberStyles.Number, CultureInfo.CurrentCulture, out var actual) ||
+               actual != expected;
+    }
+
+    private static bool NullableIntDiffers(TextBox textBox, int? expected)
+    {
+        if (string.IsNullOrWhiteSpace(textBox.Text))
+            return expected.HasValue;
+
+        return !int.TryParse(textBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var actual) ||
+               !expected.HasValue || actual != expected.Value;
+    }
+
+    private static bool DatePickerDiffers(DatePicker picker, DateOnly? expected)
+    {
+        DateOnly? actual = picker.SelectedDate.HasValue
+            ? DateOnly.FromDateTime(picker.SelectedDate.Value)
+            : null;
+        return actual != expected;
+    }
+
+    private bool ArchiveCorrectionInputsDiffer()
+    {
+        if (_editingArchiveSnapshot is not ProgressPaymentArchive archive)
+            return false;
+
+        return _archiveCorrectionSection switch
+        {
+            ArchiveCorrectionSection.Contract =>
+                TextDiffers(TenderNumberTextBox, archive.Contract.TenderNumber) ||
+                TextDiffers(ContractNumberTextBox, archive.Contract.ContractNumber) ||
+                DecimalDiffers(ContractAmountTextBox, archive.Contract.ContractAmount) ||
+                IntDiffers(ContractWorkDaysTextBox, archive.Contract.ContractWorkDays) ||
+                DecimalDiffers(ContractTransportDailyPriceTextBox, archive.Contract.TransportDailyPrice) ||
+                DatePickerDiffers(StartDatePicker, archive.Contract.StartDate) ||
+                DatePickerDiffers(EndDatePicker, archive.Contract.EndDate) ||
+                DatePickerDiffers(TenderDatePicker, archive.Contract.TenderDate) ||
+                DatePickerDiffers(ContractDatePicker, archive.Contract.ContractDate),
+
+            ArchiveCorrectionSection.Contractor =>
+                TextDiffers(ContractorNameTextBox, archive.Contractor.Name) ||
+                !string.Equals(
+                    OehsIdentityService.NormalizeIdentity(ContractorTaxTextBox.Text),
+                    OehsIdentityService.NormalizeIdentity(archive.Contractor.TaxOrIdentityNumber),
+                    StringComparison.Ordinal) ||
+                TextDiffers(ContractorAddressTextBox, archive.Contractor.Address) ||
+                ContractorPhoneDiffers(archive.Contractor.Phone) ||
+                TextDiffers(ContractorEmailTextBox, archive.Contractor.Email) ||
+                TextDiffers(ContractorBankTextBox, archive.Contractor.BankAccountNumber) ||
+                TextDiffers(ContractorContactTextBox, archive.Contractor.ContactPerson),
+
+            ArchiveCorrectionSection.Route =>
+                TextDiffers(RouteNumberTextBox, archive.Route.RouteNumber) ||
+                TextDiffers(RouteNameTextBox, archive.Route.Name) ||
+                DecimalWorkDaysDiffer(RouteTransportWorkDaysTextBox, archive.Route.TransportWorkDays) ||
+                DecimalDiffers(RouteGuideDailyPriceTextBox, archive.Route.GuideDailyPrice),
+
+            ArchiveCorrectionSection.ProgressPayment =>
+                DecimalWorkDaysDiffer(WorkDaysTextBox, archive.ProgressPayment.Input.WorkDays) ||
+                DecimalDiffers(DailyPriceTextBox, archive.ProgressPayment.Input.DailyPrice) ||
+                DecimalWorkDaysDiffer(GuideWorkDaysTextBox, archive.ProgressPayment.Input.GuideWorkDays) ||
+                DecimalDiffers(GuideDailyPriceTextBox, archive.ProgressPayment.Input.GuideDailyPrice) ||
+                DecimalDiffers(DiscountTextBox, archive.ProgressPayment.Input.DiscountAmount) ||
+                DecimalDiffers(GuideDiscountTextBox, archive.ProgressPayment.Input.GuideDiscountAmount) ||
+                DecimalDiffers(PriceDifferenceTextBox, archive.ProgressPayment.Input.PriceDifference) ||
+                DecimalDiffers(GuidePriceDifferenceTextBox, archive.ProgressPayment.Input.GuidePriceDifference) ||
+                DecimalDiffers(TaxDebtTextBox, archive.ProgressPayment.Input.TaxDebt) ||
+                DecimalDiffers(SocialSecurityDebtTextBox, archive.ProgressPayment.Input.SocialSecurityDebt) ||
+                DecimalDiffers(MinimumWageSupportTextBox, archive.ProgressPayment.Input.MinimumWageSupport) ||
+                DecimalDiffers(InspectionPenaltyTextBox, archive.ProgressPayment.Input.InspectionPenalty) ||
+                NullableIntDiffers(ProgressNumberTextBox, archive.ProgressPayment.ProgressPaymentNumber) ||
+                ProgressPeriodDiffers(ProgressPeriodMonthComboBox, archive.ProgressPayment.PeriodDate),
+
+            _ => false
+        };
+    }
+
+    private bool TryCreateArchiveCorrectionPreview(
+        out ProgressPaymentInput input,
+        out ProgressPaymentCalculation calculation,
+        out string message)
+    {
+        var archive = _editingArchiveSnapshot!;
+        input = archive.ProgressPayment.Input;
+        calculation = archive.ProgressPayment.Calculation;
+        message = string.Empty;
+
+        switch (_archiveCorrectionSection)
+        {
+            case ArchiveCorrectionSection.Contract:
+                if (!TryParseDecimal(ContractAmountTextBox.Text, out var contractAmount) || contractAmount < 0)
+                {
+                    message = "Sözleşme bedelini geçerli bir tutar olarak girin.";
+                    return false;
+                }
+                if (!TryParseDecimal(ContractTransportDailyPriceTextBox.Text, out var contractDailyPrice) || contractDailyPrice < 0)
+                {
+                    message = "Taşıma günlük fiyatını geçerli bir tutar olarak girin.";
+                    return false;
+                }
+                input = input with
+                {
+                    ContractAmount = contractAmount,
+                    IsVatExempt = archive.ProgressPayment.Input.IsVatExempt,
+                    DailyPrice = contractDailyPrice
+                };
+                break;
+
+            case ArchiveCorrectionSection.Contractor:
+                // Firma bilgileri hesap girdisini değiştirmez; aynı girdilerle net tutarı yeniden göster.
+                break;
+
+            case ArchiveCorrectionSection.Route:
+                if (!TryParseWorkDays(RouteTransportWorkDaysTextBox.Text, out var transportWorkDays) || transportWorkDays < 0)
+                {
+                    message = "Döneme Esas THGS değerini sıfır veya daha büyük, en fazla 20 ondalık basamaklı bir sayı olarak girin.";
+                    return false;
+                }
+                if (!TryParseDecimal(RouteGuideDailyPriceTextBox.Text, out var guideDailyPrice) || guideDailyPrice < 0)
+                {
+                    message = "Rehber günlük fiyatını geçerli bir tutar olarak girin.";
+                    return false;
+                }
+                input = input with
+                {
+                    WorkDays = transportWorkDays,
+                    DailyPrice = archive.Contract.TransportDailyPrice,
+                    GuideDailyPrice = guideDailyPrice
+                };
+                break;
+
+            case ArchiveCorrectionSection.ProgressPayment:
+                if (!TryParseWorkDays(WorkDaysTextBox.Text, out var workDays) || workDays < 0)
+                {
+                    message = "Taşıma iş gününü kontrol edin (0 veya daha büyük; en fazla 20 ondalık basamak).";
+                    return false;
+                }
+                if (!TryParseWorkDays(GuideWorkDaysTextBox.Text, out var paymentGuideWorkDays) || paymentGuideWorkDays < 0)
+                {
+                    message = "Rehber iş gününü kontrol edin.";
+                    return false;
+                }
+                if (!TryParseDecimal(DailyPriceTextBox.Text, out var dailyPrice) || dailyPrice < 0)
+                {
+                    message = "Taşıma günlük fiyatını kontrol edin.";
+                    return false;
+                }
+                if (!TryParseDecimal(GuideDailyPriceTextBox.Text, out var paymentGuideDailyPrice) || paymentGuideDailyPrice < 0)
+                {
+                    message = "Rehber günlük fiyatını kontrol edin.";
+                    return false;
+                }
+                if (!TryParseDecimalOrZero(DiscountTextBox.Text, out var discount) ||
+                    !TryParseDecimalOrZero(GuideDiscountTextBox.Text, out var guideDiscount) ||
+                    !TryParseDecimalOrZero(PriceDifferenceTextBox.Text, out var priceDifference) ||
+                    !TryParseDecimalOrZero(GuidePriceDifferenceTextBox.Text, out var guidePriceDifference))
+                {
+                    message = "İskonto ve fiyat farkı alanlarını tutar olarak girin.";
+                    return false;
+                }
+                if (!TryParseDecimalOrZero(TaxDebtTextBox.Text, out var taxDebt) || taxDebt < 0 ||
+                    !TryParseDecimalOrZero(SocialSecurityDebtTextBox.Text, out var socialSecurityDebt) || socialSecurityDebt < 0 ||
+                    !TryParseDecimalOrZero(MinimumWageSupportTextBox.Text, out var minimumWageSupport) || minimumWageSupport < 0 ||
+                    !TryParseDecimalOrZero(InspectionPenaltyTextBox.Text, out var inspectionPenalty) || inspectionPenalty < 0)
+                {
+                    message = "Borç, destek ve ceza alanları negatif olamaz; tutarları kontrol edin.";
+                    return false;
+                }
+                input = input with
+                {
+                    WorkDays = workDays,
+                    DailyPrice = dailyPrice,
+                    GuideWorkDays = paymentGuideWorkDays,
+                    GuideDailyPrice = paymentGuideDailyPrice,
+                    DiscountAmount = discount,
+                    GuideDiscountAmount = guideDiscount,
+                    PriceDifference = priceDifference,
+                    GuidePriceDifference = guidePriceDifference,
+                    TaxDebt = taxDebt,
+                    SocialSecurityDebt = socialSecurityDebt,
+                    MinimumWageSupport = minimumWageSupport,
+                    InspectionPenalty = inspectionPenalty
+                };
+                break;
+
+            default:
+                message = "Düzenleme bölümü belirlenemedi.";
+                return false;
+        }
+
         try
         {
-            var finalPath = _archiveStore.Replace(_editingArchiveSourcePath!, updatedArchive);
-            ArchiveStatusTextBlock.Text = $"ARŞİV v{updatedArchive.Revision:00} GÜNCELLENDİ";
-            CalculationStatusTextBlock.Text =
-                $"{sectionName} düzeltmesi mevcut arşiv v{updatedArchive.Revision:00} üzerinde kaydedildi.";
+            calculation = ProgressPaymentCalculator.Calculate(input, _calculationConstants);
+            return true;
+        }
+        catch (Exception ex) when (ex is ArgumentException or OverflowException)
+        {
+            message = ex.Message;
+            return false;
+        }
+    }
 
-            ClearArchiveCorrectionState();
+    private void UpdateProgressCalculationDisplay(ProgressPaymentCalculation result, decimal workDays)
+    {
+        ServiceAmountResultTextBlock.Text = FormatMoney(result.ServiceAmount);
+        GuideServiceAmountResultTextBlock.Text = FormatMoney(result.GuideServiceAmount);
+        TransportPriceDifferenceResultTextBlock.Text = FormatMoney(result.PriceDifferenceExcludingVat);
+        GuidePriceDifferenceResultTextBlock.Text = FormatMoney(result.GuidePriceDifferenceExcludingVat);
+        CombinedPriceDifferenceResultTextBlock.Text = FormatMoney(result.CombinedPriceDifferenceExcludingVat);
+        TotalAmountResultTextBlock.Text = FormatMoney(result.TotalAmount);
+        VatResultTextBlock.Text = FormatMoney(result.Vat);
+        DeductionsResultTextBlock.Text = FormatMoney(result.TotalDeductions);
+        GrossResultTextBlock.Text = FormatMoney(result.GrossAmount);
+        NetResultTextBlock.Text = FormatMoney(result.NetPayable);
+        NetControlResultTextBlock.Text = FormatMoney(result.NetPayable);
+        WithholdingResultTextBlock.Text = FormatMoney(result.Withholding);
+        StampTaxResultTextBlock.Text = FormatMoney(result.StampTax);
+        TaxDebtResultTextBlock.Text = FormatMoney(result.Deductions.TaxDebt);
+        SocialSecurityDebtResultTextBlock.Text = FormatMoney(result.Deductions.SocialSecurityDebt);
+        MinimumWageSupportResultTextBlock.Text = FormatMoney(result.Deductions.MinimumWageSupport);
+        InspectionPenaltyResultTextBlock.Text = FormatMoney(result.Deductions.InspectionPenalty);
+        AdditionalGuaranteeResultTextBlock.Text = FormatMoney(result.AdditionalGuarantee);
+        ProgressWorkDaysSummaryTextBlock.Text = workDays.ToString(CultureInfo.CurrentCulture);
+
+        ProgressNetSummaryTextBlock.Text = FormatMoney(result.NetPayable);
+    }
+
+    private void SetArchiveCorrectionStatus(string message, bool warning)
+    {
+        var brush = new System.Windows.Media.SolidColorBrush(
+            warning
+                ? System.Windows.Media.Color.FromRgb(230, 163, 40)
+                : System.Windows.Media.Color.FromRgb(36, 104, 216));
+
+        switch (_archiveCorrectionSection)
+        {
+            case ArchiveCorrectionSection.Contract:
+                ContractStatusTextBlock.Text = message;
+                ContractStatusTextBlock.Foreground = brush;
+                ContractStatusTextBlock.FontWeight = warning ? FontWeights.Bold : FontWeights.SemiBold;
+                break;
+            case ArchiveCorrectionSection.Contractor:
+                ContractorStatusTextBlock.Text = message;
+                ContractorStatusTextBlock.Foreground = brush;
+                ContractorStatusTextBlock.FontWeight = warning ? FontWeights.Bold : FontWeights.SemiBold;
+                break;
+            case ArchiveCorrectionSection.Route:
+                RouteStatusTextBlock.Text = message;
+                RouteStatusTextBlock.Foreground = brush;
+                RouteStatusTextBlock.FontWeight = warning ? FontWeights.Bold : FontWeights.SemiBold;
+                break;
+            case ArchiveCorrectionSection.ProgressPayment:
+                CalculationStatusTextBlock.Text = message;
+                CalculationStatusTextBlock.Foreground = brush;
+                CalculationStatusTextBlock.FontWeight = warning ? FontWeights.Bold : FontWeights.SemiBold;
+                break;
+        }
+    }
+
+    private void ClearLiveHistoryCorrectionContext()
+    {
+        _historyCorrectionTargetId = null;
+        _historyCorrectionSection = HistoryCorrectionSection.None;
+    }
+
+    private void SetLiveHistoryCorrectionContext(Guid targetId, HistoryCorrectionSection section)
+    {
+        _historyCorrectionTargetId = targetId;
+        _historyCorrectionSection = section;
+        RefreshArchiveCorrectionStatus();
+    }
+
+    private ProgressPaymentHistoryData? GetLiveHistoryCorrectionTarget() =>
+        _historyCorrectionTargetId is Guid id
+            ? _progressHistory.FirstOrDefault(x => IsOperationPayment(x, id))
+            : null;
+
+    private void SetHistoryCorrectionStatus(string message, bool warning)
+    {
+        var brush = new System.Windows.Media.SolidColorBrush(
+            warning
+                ? System.Windows.Media.Color.FromRgb(230, 163, 40)
+                : System.Windows.Media.Color.FromRgb(36, 104, 216));
+
+        switch (_historyCorrectionSection)
+        {
+            case HistoryCorrectionSection.Contract:
+                ContractStatusTextBlock.Text = message;
+                ContractStatusTextBlock.Foreground = brush;
+                ContractStatusTextBlock.FontWeight = warning ? FontWeights.Bold : FontWeights.SemiBold;
+                break;
+            case HistoryCorrectionSection.Contractor:
+                ContractorStatusTextBlock.Text = message;
+                ContractorStatusTextBlock.Foreground = brush;
+                ContractorStatusTextBlock.FontWeight = warning ? FontWeights.Bold : FontWeights.SemiBold;
+                break;
+            case HistoryCorrectionSection.Route:
+                RouteStatusTextBlock.Text = message;
+                RouteStatusTextBlock.Foreground = brush;
+                RouteStatusTextBlock.FontWeight = warning ? FontWeights.Bold : FontWeights.SemiBold;
+                break;
+            case HistoryCorrectionSection.ProgressPayment:
+                CalculationStatusTextBlock.Text = message;
+                CalculationStatusTextBlock.Foreground = brush;
+                CalculationStatusTextBlock.FontWeight = warning ? FontWeights.Bold : FontWeights.SemiBold;
+                break;
+        }
+    }
+
+    private bool HistoryCorrectionInputsDiffer()
+    {
+        var item = GetLiveHistoryCorrectionTarget();
+        if (item is null)
+            return false;
+
+        return _historyCorrectionSection switch
+        {
+            HistoryCorrectionSection.Contract =>
+                _contracts.FirstOrDefault(x =>
+                    string.Equals(x.TenderNumber, item.TenderNumber, StringComparison.OrdinalIgnoreCase)) is not ContractDraftData contract ||
+                TextDiffers(TenderNumberTextBox, contract.TenderNumber) ||
+                TextDiffers(ContractNumberTextBox, contract.ContractNumber) ||
+                DecimalDiffers(ContractAmountTextBox, contract.ContractAmount) ||
+                IntDiffers(ContractWorkDaysTextBox, contract.ContractWorkDays) ||
+                DecimalDiffers(ContractTransportDailyPriceTextBox, contract.TransportDailyPrice) ||
+                DatePickerDiffers(StartDatePicker, contract.StartDate) ||
+                DatePickerDiffers(EndDatePicker, contract.EndDate) ||
+                DatePickerDiffers(TenderDatePicker, contract.TenderDate) ||
+                DatePickerDiffers(ContractDatePicker, contract.ContractDate),
+
+            HistoryCorrectionSection.Contractor =>
+                FindContractor(item.ContractorTaxOrIdentityNumber ?? string.Empty, item.Input.ProgramType) is not ContractorDraft contractor ||
+                TextDiffers(ContractorNameTextBox, contractor.Name) ||
+                !string.Equals(
+                    OehsIdentityService.NormalizeIdentity(ContractorTaxTextBox.Text),
+                    OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber),
+                    StringComparison.Ordinal) ||
+                TextDiffers(ContractorAddressTextBox, contractor.Address) ||
+                ContractorPhoneDiffers(contractor.Phone) ||
+                TextDiffers(ContractorEmailTextBox, contractor.Email) ||
+                TextDiffers(ContractorBankTextBox, contractor.BankAccountNumber) ||
+                TextDiffers(ContractorContactTextBox, contractor.ContactPerson) ||
+                (ContractorVatExemptCheckBox.IsChecked == true) != contractor.VatExempt,
+
+            HistoryCorrectionSection.Route =>
+                _routes.FirstOrDefault(x =>
+                    string.Equals(
+                        OehsIdentityService.BuildRouteKey(x.TenderNumber, x.RouteNumber, x.ContractorTaxOrIdentityNumber, x.ContractNumber, x.ProgramType),
+                        OehsIdentityService.BuildRouteKey(
+                            item.TenderNumber ?? string.Empty,
+                            item.RouteNumber ?? string.Empty,
+                            item.ContractorTaxOrIdentityNumber ?? string.Empty,
+                            item.ContractNumber ?? string.Empty,
+                            item.Input.ProgramType),
+                        StringComparison.Ordinal)) is not RouteDraft route ||
+                TextDiffers(RouteNumberTextBox, route.RouteNumber) ||
+                TextDiffers(RouteNameTextBox, route.Name) ||
+                DecimalWorkDaysDiffer(RouteTransportWorkDaysTextBox, route.TransportWorkDays) ||
+                DecimalDiffers(RouteGuideDailyPriceTextBox, route.GuideDailyPrice),
+
+            HistoryCorrectionSection.ProgressPayment =>
+                DecimalWorkDaysDiffer(WorkDaysTextBox, item.Input.WorkDays) ||
+                DecimalDiffers(DailyPriceTextBox, item.Input.DailyPrice) ||
+                DecimalWorkDaysDiffer(GuideWorkDaysTextBox, item.Input.GuideWorkDays) ||
+                DecimalDiffers(GuideDailyPriceTextBox, item.Input.GuideDailyPrice) ||
+                DecimalDiffers(DiscountTextBox, item.Input.DiscountAmount) ||
+                DecimalDiffers(GuideDiscountTextBox, item.Input.GuideDiscountAmount) ||
+                DecimalDiffers(PriceDifferenceTextBox, item.Input.PriceDifference) ||
+                DecimalDiffers(GuidePriceDifferenceTextBox, item.Input.GuidePriceDifference) ||
+                DecimalDiffers(TaxDebtTextBox, item.Input.TaxDebt) ||
+                DecimalDiffers(SocialSecurityDebtTextBox, item.Input.SocialSecurityDebt) ||
+                DecimalDiffers(MinimumWageSupportTextBox, item.Input.MinimumWageSupport) ||
+                DecimalDiffers(InspectionPenaltyTextBox, item.Input.InspectionPenalty) ||
+                NullableIntDiffers(ProgressNumberTextBox, item.ProgressPaymentNumber) ||
+                ProgressPeriodDiffers(ProgressPeriodMonthComboBox, item.PeriodDate),
+
+            _ => false
+        };
+    }
+
+    private bool TryCreateHistoryCorrectionPreview(
+        out ProgressPaymentInput input,
+        out ProgressPaymentCalculation calculation,
+        out string message)
+    {
+        var item = GetLiveHistoryCorrectionTarget();
+        input = item?.Input ?? default!;
+        calculation = item?.Calculation ?? default!;
+        message = string.Empty;
+        if (item is null)
+        {
+            message = "Düzenlenen hakediş geçmişinde bulunamadı. Kayıt değiştirilmedi.";
+            return false;
+        }
+
+        switch (_historyCorrectionSection)
+        {
+            case HistoryCorrectionSection.Contract:
+                if (string.IsNullOrWhiteSpace(TenderNumberTextBox.Text))
+                {
+                    message = "İhale Kayıt Numarası (İKN) zorunludur.";
+                    return false;
+                }
+                if (!TryParseDecimal(ContractAmountTextBox.Text, out var contractAmount) || contractAmount < 0)
+                {
+                    message = "Sözleşme bedelini geçerli bir tutar olarak girin.";
+                    return false;
+                }
+                if (!TryParseDecimal(ContractTransportDailyPriceTextBox.Text, out var contractDailyPrice) || contractDailyPrice < 0)
+                {
+                    message = "Taşıma günlük fiyatını geçerli bir tutar olarak girin.";
+                    return false;
+                }
+                input = item.Input with
+                {
+                    ContractAmount = contractAmount,
+                    DailyPrice = contractDailyPrice,
+                    IsVatExempt = item.Input.IsVatExempt
+                };
+                break;
+
+            case HistoryCorrectionSection.Contractor:
+                // Contractor identity/address changes do not alter the calculation inputs.
+                input = item.Input;
+                break;
+
+            case HistoryCorrectionSection.Route:
+                if (string.IsNullOrWhiteSpace(RouteNumberTextBox.Text) || string.IsNullOrWhiteSpace(RouteNameTextBox.Text))
+                {
+                    message = "Hat No ve hat adı zorunludur.";
+                    return false;
+                }
+                if (!TryParseWorkDays(RouteTransportWorkDaysTextBox.Text, out var transportWorkDays) || transportWorkDays < 0)
+                {
+                    message = "Döneme Esas THGS değerini sıfır veya daha büyük, en fazla 20 ondalık basamaklı bir sayı olarak girin.";
+                    return false;
+                }
+                if (!TryParseDecimal(RouteGuideDailyPriceTextBox.Text, out var guideDailyPrice) || guideDailyPrice < 0)
+                {
+                    message = "Rehber günlük fiyatını geçerli bir tutar olarak girin.";
+                    return false;
+                }
+                input = item.Input with
+                {
+                    WorkDays = transportWorkDays,
+                    GuideDailyPrice = guideDailyPrice
+                };
+                break;
+
+            case HistoryCorrectionSection.ProgressPayment:
+                if (!TryParseWorkDays(WorkDaysTextBox.Text, out var workDays) || workDays < 0)
+                {
+                    message = "Taşıma iş gününü kontrol edin (0 veya daha büyük; en fazla 20 ondalık basamak).";
+                    return false;
+                }
+                if (!TryParseWorkDays(GuideWorkDaysTextBox.Text, out var paymentGuideWorkDays) || paymentGuideWorkDays < 0)
+                {
+                    message = "Rehber iş gününü kontrol edin.";
+                    return false;
+                }
+                if (!TryParseDecimal(DailyPriceTextBox.Text, out var dailyPrice) || dailyPrice < 0)
+                {
+                    message = "Taşıma günlük fiyatını kontrol edin.";
+                    return false;
+                }
+                if (!TryParseDecimal(GuideDailyPriceTextBox.Text, out var paymentGuideDailyPrice) || paymentGuideDailyPrice < 0)
+                {
+                    message = "Rehber günlük fiyatını kontrol edin.";
+                    return false;
+                }
+                if (!TryParseDecimalOrZero(DiscountTextBox.Text, out var discount) ||
+                    !TryParseDecimalOrZero(GuideDiscountTextBox.Text, out var guideDiscount) ||
+                    !TryParseDecimalOrZero(PriceDifferenceTextBox.Text, out var priceDifference) ||
+                    !TryParseDecimalOrZero(GuidePriceDifferenceTextBox.Text, out var guidePriceDifference))
+                {
+                    message = "İskonto ve fiyat farkı alanlarını tutar olarak girin.";
+                    return false;
+                }
+                if (!TryParseDecimalOrZero(TaxDebtTextBox.Text, out var taxDebt) || taxDebt < 0 ||
+                    !TryParseDecimalOrZero(SocialSecurityDebtTextBox.Text, out var socialSecurityDebt) || socialSecurityDebt < 0 ||
+                    !TryParseDecimalOrZero(MinimumWageSupportTextBox.Text, out var minimumWageSupport) || minimumWageSupport < 0 ||
+                    !TryParseDecimalOrZero(InspectionPenaltyTextBox.Text, out var inspectionPenalty) || inspectionPenalty < 0)
+                {
+                    message = "Borç, destek ve ceza alanları negatif olamaz; tutarları kontrol edin.";
+                    return false;
+                }
+                input = item.Input with
+                {
+                    WorkDays = workDays,
+                    DailyPrice = dailyPrice,
+                    GuideWorkDays = paymentGuideWorkDays,
+                    GuideDailyPrice = paymentGuideDailyPrice,
+                    DiscountAmount = discount,
+                    GuideDiscountAmount = guideDiscount,
+                    PriceDifference = priceDifference,
+                    GuidePriceDifference = guidePriceDifference,
+                    TaxDebt = taxDebt,
+                    SocialSecurityDebt = socialSecurityDebt,
+                    MinimumWageSupport = minimumWageSupport,
+                    InspectionPenalty = inspectionPenalty
+                };
+                break;
+
+            default:
+                message = "Düzenleme bölümü belirlenemedi.";
+                return false;
+        }
+
+        try
+        {
+            calculation = ProgressPaymentCalculator.Calculate(input, _calculationConstants);
+            return true;
+        }
+        catch (Exception ex) when (ex is ArgumentException or OverflowException)
+        {
+            message = ex.Message;
+            return false;
+        }
+    }
+
+    private void RefreshHistoryCorrectionStatus()
+    {
+        var item = GetLiveHistoryCorrectionTarget();
+        if (item is null)
+            return;
+
+        if (!HistoryCorrectionInputsDiffer())
+        {
+            UpdateProgressCalculationDisplay(item.Calculation, item.Input.WorkDays);
+            ProgressCalculationSummaryTextBlock.Text = "KAYITLI HESAP";
+            SetHistoryCorrectionStatus("Hakediş düzeltme modu açık. Henüz değişiklik yok.", warning: false);
+            return;
+        }
+
+        if (!TryCreateHistoryCorrectionPreview(out var input, out var calculation, out var message))
+        {
+            ProgressCalculationSummaryTextBlock.Text = "KONTROL GEREKLİ";
+            SetHistoryCorrectionStatus(
+                $"DEĞİŞİKLİK ALGILANDI — {message} Net ödeme önizlemesi için alanı düzeltin.",
+                warning: true);
+            return;
+        }
+
+        UpdateProgressCalculationDisplay(calculation, input.WorkDays);
+        ProgressCalculationSummaryTextBlock.Text = "ÖNİZLEME • KAYDEDİLMEDİ";
+        SetHistoryCorrectionStatus(
+            $"DEĞİŞİKLİK ALGILANDI — Net ödeme: {FormatMoney(item.Calculation.NetPayable)} → " +
+            $"{FormatMoney(calculation.NetPayable)}. DÜZENLE düğmesine basıp onayladığınızda mevcut hakediş kaydı güncellenecek.",
+            warning: true);
+    }
+
+    private bool ConfirmLiveHistoryCorrection(string sectionName, ProgressPaymentHistoryData? proposedPayment = null)
+    {
+        if (_historyCorrectionTargetId is not Guid targetId ||
+            _historyCorrectionSection == HistoryCorrectionSection.None ||
+            !HistoryCorrectionInputsDiffer())
+            return true;
+
+        var original = _progressHistory.FirstOrDefault(x => IsOperationPayment(x, targetId));
+        if (original is null)
+        {
+            SetHistoryCorrectionStatus("Düzenlenen hakediş artık geçmiş listesinde bulunmuyor; kayıt değiştirilmedi.", warning: true);
+            return false;
+        }
+
+        if (proposedPayment is null)
+        {
+            if (!TryCreateHistoryCorrectionPreview(out var previewInput, out var preview, out var message))
+            {
+                SetHistoryCorrectionStatus($"Düzeltme onaylanamadı: {message}", warning: true);
+                return false;
+            }
+            proposedPayment = original with { Input = previewInput, Calculation = preview };
+        }
+        var confirmation = ShowPaymentComparison("OEHS — Hakediş Düzeltme Onayı",
+            $"{sectionName} değişiklikleri uygulansın mı? Mevcut canlı kayıt güncellenecek.",
+            original, proposedPayment, LiveEditorDifferences(original));
+
+        if (confirmation == MessageBoxResult.Yes)
+            return true;
+
+        SetHistoryCorrectionStatus("Değişiklikler iptal edildi; mevcut hakediş kaydı korunuyor. Alanları düzenleyip yeniden onaylayabilirsiniz.", warning: true);
+        return false;
+    }
+
+    private void RefreshViewsAfterHistoryCorrection()
+    {
+        var targetId = _historyCorrectionTargetId;
+        UpdateHistoryView();
+        UpdateSummaryView();
+        UpdateReportView();
+        UpdateHomeSummaryView();
+        UpdateAcceptanceView();
+
+        if (targetId is Guid id && _progressHistory.FirstOrDefault(x => IsOperationPayment(x, id)) is ProgressPaymentHistoryData item)
+        {
+            _lastCalculatedHistoryId = id;
+
+            var contract = FindContract(item.TenderNumber, item.ContractNumber, item.Input.ProgramType);
+            _suppressSelectionEvents = true;
+            try
+            {
+                ProgressTenderListBox.SelectedItem = contract;
+                ProgressRouteComboBox.ItemsSource = contract is null
+                    ? Array.Empty<RouteDraft>()
+                    : _routes.Where(x => IsRouteForContract(x, contract)).ToArray();
+                ProgressRouteComboBox.SelectedItem = _routes.FirstOrDefault(x =>
+                    string.Equals(x.TenderNumber, item.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(x.ContractNumber, item.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(x.RouteNumber, item.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(
+                        OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
+                        OehsIdentityService.NormalizeIdentity(item.ContractorTaxOrIdentityNumber),
+                        StringComparison.Ordinal));
+            }
+            finally
+            {
+                _suppressSelectionEvents = false;
+            }
+
+            ProgressContractorTextBlock.Text = item.ContractorName ?? "Seçilmedi";
+            ProgressRouteRelationTextBlock.Text = $"İhale: {item.TenderNumber} • Hat: {item.RouteNumber} — {item.RouteName}";
+            WorkDaysTextBox.Text = item.Input.WorkDays.ToString(CultureInfo.CurrentCulture);
+            DailyPriceTextBox.Text = FormatCalculationInput(item.Input.DailyPrice);
+            GuideWorkDaysTextBox.Text = item.Input.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
+            GuideDailyPriceTextBox.Text = FormatCalculationInput(item.Input.GuideDailyPrice);
+            DiscountTextBox.Text = FormatCalculationInput(item.Input.DiscountAmount);
+            GuideDiscountTextBox.Text = FormatCalculationInput(item.Input.GuideDiscountAmount);
+            PriceDifferenceTextBox.Text = FormatCalculationInput(item.Input.PriceDifference);
+            GuidePriceDifferenceTextBox.Text = FormatCalculationInput(item.Input.GuidePriceDifference);
+            TaxDebtTextBox.Text = FormatCalculationInput(item.Input.TaxDebt);
+            SocialSecurityDebtTextBox.Text = FormatCalculationInput(item.Input.SocialSecurityDebt);
+            MinimumWageSupportTextBox.Text = FormatCalculationInput(item.Input.MinimumWageSupport);
+            RestoreMinimumWageSupportInputState(item.Input.ProgramType, item.Input.MinimumWageSupport);
+            InspectionPenaltyTextBox.Text = FormatCalculationInput(item.Input.InspectionPenalty);
+            ProgressNumberTextBox.Text = item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
+            SelectProgressPeriod(item.PeriodDate);
+            UpdateProgressCalculationDisplay(item.Calculation, item.Input.WorkDays);
+            ProgressCalculationSummaryTextBlock.Text = "TAMAM";
+            SetProgressEditorMode(false);
+        }
+
+        ClearLiveHistoryCorrectionContext();
+    }
+
+    private void RefreshArchiveCorrectionStatus()
+    {
+        if (_suppressArchiveDirtyTracking)
+            return;
+
+        if (IsArchiveCorrection && _editingArchiveSnapshot is not null)
+        {
+            var archive = _editingArchiveSnapshot;
+            if (!ArchiveCorrectionInputsDiffer())
+            {
+                UpdateProgressCalculationDisplay(archive.ProgressPayment.Calculation, archive.ProgressPayment.Input.WorkDays);
+                ProgressCalculationSummaryTextBlock.Text = "KAYITLI HESAP";
+                SetArchiveCorrectionStatus("Arşiv düzeltme modu açık. Henüz değişiklik yok.", warning: false);
+                return;
+            }
+
+            if (!TryCreateArchiveCorrectionPreview(out var archiveInput, out var archiveCalculation, out var archiveMessage))
+            {
+                ProgressCalculationSummaryTextBlock.Text = "KONTROL GEREKLİ";
+                SetArchiveCorrectionStatus(
+                    $"DEĞİŞİKLİK ALGILANDI — {archiveMessage} Net ödeme önizlemesi için alanı düzeltin.",
+                    warning: true);
+                return;
+            }
+
+            UpdateProgressCalculationDisplay(archiveCalculation, archiveInput.WorkDays);
+            ProgressCalculationSummaryTextBlock.Text = "ÖNİZLEME • KAYDEDİLMEDİ";
+            SetArchiveCorrectionStatus(
+                $"DEĞİŞİKLİK ALGILANDI — Net ödeme: {FormatMoney(archive.ProgressPayment.Calculation.NetPayable)} → " +
+                $"{FormatMoney(archiveCalculation.NetPayable)}. DÜZENLE düğmesine basıp onayladığınızda mevcut arşiv kaydı güncellenir.",
+                warning: true);
+            return;
+        }
+
+        if (_historyCorrectionTargetId.HasValue && _historyCorrectionSection != HistoryCorrectionSection.None)
+            RefreshHistoryCorrectionStatus();
+    }
+
+    private static bool TryParseDecimalOrZero(string? text, out decimal value)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            value = 0m;
+            return true;
+        }
+
+        return TryParseDecimal(text, out value);
+    }
+
+    private bool SaveArchiveCorrectionSnapshot(ProgressPaymentArchive updatedArchive, string sectionName)
+    {
+        var correctionSection = _archiveCorrectionSection;
+
+        if (IsArchiveCorrection && !ArchiveCorrectionInputsDiffer())
+        {
+            SetArchiveCorrectionStatus("Herhangi bir değişiklik algılanmadı; arşiv kaydı değiştirilmedi.", warning: false);
+            return false;
+        }
+
+        try
+        {
+            // Recalculate from saved inputs before asking permission to replace the archive.
+            var recalculatedPayment = updatedArchive.ProgressPayment with
+            {
+                Calculation = ProgressPaymentCalculator.Calculate(updatedArchive.ProgressPayment.Input, _calculationConstants)
+            };
+            updatedArchive = updatedArchive with
+            {
+                ProgressPayment = recalculatedPayment,
+                PdfFileName = BuildArchivePdfFileName(recalculatedPayment)
+            };
+
+            var originalArchive = _editingArchiveSnapshot!;
+            var newNetPayable = recalculatedPayment.Calculation.NetPayable;
+            var differences = PaymentOperationsService.CompareFields(originalArchive.Contract, updatedArchive.Contract, "Sözleşme")
+                .Concat(CompareContractorFields(originalArchive.Contractor, updatedArchive.Contractor))
+                .Concat(PaymentOperationsService.CompareFields(originalArchive.Route, updatedArchive.Route, "Hat")).ToArray();
+            var confirmation = ShowPaymentComparison("OEHS — Değişiklik Onayı",
+                $"{sectionName} değişiklikleri uygulansın mı? Yeni revizyon oluşturulacak; v{originalArchive.Revision:00} korunacak.",
+                originalArchive.ProgressPayment, recalculatedPayment, differences);
+
+            if (confirmation != MessageBoxResult.Yes)
+            {
+                CalculationStatusTextBlock.Text = "Değişiklikler uygulanmadı; arşiv kaydı korunuyor.";
+                ArchiveStatusTextBlock.Text = "DEĞİŞİKLİK İPTAL EDİLDİ";
+                SetArchiveCorrectionStatus("Değişiklikler iptal edildi; arşiv kaydı korunuyor. Alanlarınızı gözden geçirip yeniden onaylayabilirsiniz.", warning: true);
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(_editingArchiveSourcePath))
+                throw new ProgressPaymentArchiveException("Güncellenecek arşiv dosyası belirlenemedi.");
+
+            updatedArchive = updatedArchive with
+            {
+                ArchivedAt = DateTime.UtcNow,
+                Source = "ArchiveCorrection"
+            };
+            var finalPath = _archiveStore.SaveRevision(_editingArchiveSourcePath, updatedArchive);
+            updatedArchive = ProgressPaymentArchiveStore.Load(finalPath);
+            recalculatedPayment = updatedArchive.ProgressPayment;
+
+            var historyMirrorUpdated = false;
+            var historyMirrorSaved = true;
+            var matchingHistoryIndex = _progressHistory
+                .Select((item, index) => (item, index))
+                .Where(pair => pair.item.Id == recalculatedPayment.Id && pair.item.Input.ProgramType == recalculatedPayment.Input.ProgramType)
+                .Select(pair => pair.index)
+                .DefaultIfEmpty(-1)
+                .First();
+
+            if (matchingHistoryIndex >= 0)
+            {
+                // Keep the editable history row synchronized with its authoritative archive snapshot.
+                // If the secondary JSON save fails, roll the in-memory mirror back instead of
+                // displaying unsaved data as though it were persisted. The archive revision remains
+                // authoritative and the warning below reports that the mirror could not be saved.
+                var previousHistoryItem = _progressHistory[matchingHistoryIndex];
+                _progressHistory[matchingHistoryIndex] = recalculatedPayment;
+                historyMirrorUpdated = true;
+                historyMirrorSaved = SavePersistedData();
+                if (!historyMirrorSaved)
+                {
+                    _progressHistory[matchingHistoryIndex] = previousHistoryItem;
+                    historyMirrorUpdated = false;
+                }
+                UpdateHistoryView();
+                UpdateSummaryView();
+                UpdateReportView();
+                UpdateHomeSummaryView();
+                UpdateAcceptanceView();
+            }
+
+            ArchiveStatusTextBlock.Text = $"YENİ ARŞİV REVİZYONU v{updatedArchive.Revision:00} OLUŞTURULDU";
+            CalculationStatusTextBlock.Text =
+                !historyMirrorSaved
+                    ? $"{sectionName} düzeltmesi yeni arşiv revision'ı olarak kaydedildi; ancak ana hakediş geçmişi diske yazılamadı. Kayıt durumunu kontrol edin."
+                    : historyMirrorUpdated
+                        ? $"{sectionName} değişiklikleri yeni arşiv revision'ı ve ana hakediş geçmişine kaydedildi. Önceki revisionlar korundu."
+                        : $"{sectionName} değişiklikleri yeni arşiv revision'ı v{updatedArchive.Revision:00} olarak kaydedildi. Önceki revisionlar korundu.";
+
+            _suppressArchiveDirtyTracking = true;
+            try
+            {
+                ClearArchivedEditorFields(correctionSection);
+                ClearArchiveCorrectionState();
+            }
+            finally
+            {
+                _suppressArchiveDirtyTracking = false;
+            }
             UpdateArchiveView();
             NavigationButton_Click(NavArchives, new RoutedEventArgs(Button.ClickEvent, NavArchives));
 
+            // Panel navigation and selection refreshes can restore previous payment
+            // editor values. Clear the hakediş inputs after navigation as a final guard.
+            if (correctionSection == ArchiveCorrectionSection.ProgressPayment)
+            {
+                ClearProgressEntryFields();
+                SetProgressEditorMode(false);
+            }
+
             MessageBox.Show(
-                $"{sectionName} başarıyla güncellendi.\n\n" +
-                $"Mevcut arşiv v{updatedArchive.Revision:00} aynı revision numarasıyla güncellendi.\n" +
-                "Yeni arşiv/revision oluşturulmadı.\n\n" +
+                $"{sectionName} değişiklikleri başarıyla uygulandı.\n\n" +
+                $"Yeni hesaplanan net tutar: {FormatMoney(newNetPayable)}\n" +
+                $"Yeni arşiv revision'ı: v{updatedArchive.Revision:00}. Önceki revisionlar korunmuştur.\n" +
+                (!historyMirrorSaved
+                    ? "DİKKAT: Arşiv güncellendi ancak ana hakediş geçmişi diske yazılamadı. Üstteki kayıt durumunu kontrol edin.\n\n"
+                    : historyMirrorUpdated
+                        ? "Ana hakediş geçmişi de güncellendi.\n\n"
+                        : "Bu arşiv için ana hakediş geçmişinde eşleşen satır yoktu; arşiv dosyası güncellendi.\n\n") +
                 $"Dosya: {Path.GetFileName(finalPath)}",
                 "OEHS — Arşiv Güncellendi",
                 MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                historyMirrorSaved ? MessageBoxImage.Information : MessageBoxImage.Warning);
+            return true;
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ProgressPaymentArchiveException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ProgressPaymentArchiveException or ArgumentOutOfRangeException)
         {
             ArchiveStatusTextBlock.Text = "ARŞİV HATASI";
             CalculationStatusTextBlock.Text = ex.Message;
@@ -712,12 +2570,56 @@ public partial class MainWindow : Window
                 "OEHS — Arşiv Hatası",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
+            return false;
+        }
+    }
+
+    private void ClearArchivedEditorFields(ArchiveCorrectionSection section)
+    {
+        switch (section)
+        {
+            case ArchiveCorrectionSection.Contract:
+                _editingContractTender = null;
+                ClearContractFormOnly();
+                ClearContractValidationVisuals();
+                ContractStatusTextBlock.Text = "Arşiv sözleşmesi güncellendi; giriş alanları temizlendi.";
+                break;
+
+            case ArchiveCorrectionSection.Contractor:
+                _editingContractorKey = null;
+                ContractorNameTextBox.Clear();
+                ContractorTaxTextBox.Clear();
+                ContractorAddressTextBox.Clear();
+                SetContractorPhoneText(string.Empty);
+                ContractorEmailTextBox.Clear();
+                ContractorBankTextBox.Clear();
+                ContractorContactTextBox.Clear();
+                ContractorStatusTextBlock.Text = "Arşiv yüklenicisi güncellendi; giriş alanları temizlendi.";
+                break;
+
+            case ArchiveCorrectionSection.Route:
+                _editingRoute = null;
+                RouteNumberTextBox.Clear();
+                RouteNameTextBox.Clear();
+                RouteTransportWorkDaysTextBox.Clear();
+                RouteGuideDailyPriceTextBox.Clear();
+                ClearRouteValidationVisuals();
+                RouteStatusTextBlock.Text = "Arşiv hattı güncellendi; giriş alanları temizlendi.";
+                break;
+
+            case ArchiveCorrectionSection.ProgressPayment:
+                _editingHistoryId = null;
+                ClearProgressEntryFields();
+                CalculationStatusTextBlock.Text = "Arşiv hakedişi güncellendi; giriş alanları temizlendi.";
+                break;
         }
     }
 
     private void SaveArchivedContractorCorrection()
     {
         var archive = _editingArchiveSnapshot!;
+        if (!ValidateContractorPhone()) return;
+
         var name = ContractorNameTextBox.Text.Trim();
         var tax = OehsIdentityService.NormalizeIdentity(ContractorTaxTextBox.Text);
 
@@ -731,10 +2633,12 @@ public partial class MainWindow : Window
             name,
             tax,
             ContractorAddressTextBox.Text.Trim(),
-            ContractorPhoneTextBox.Text.Trim(),
+            NormalizePhoneNumber(ContractorPhoneTextBox.Text),
             ContractorEmailTextBox.Text.Trim(),
             ContractorBankTextBox.Text.Trim(),
-            ContractorContactTextBox.Text.Trim());
+            ContractorContactTextBox.Text.Trim(),
+            archive.Contract.ProgramType,
+            ContractorVatExemptCheckBox.IsChecked == true);
 
         var updatedContract = archive.Contract with
         {
@@ -781,18 +2685,19 @@ public partial class MainWindow : Window
 
         var errors = new List<Control>();
         if (string.IsNullOrWhiteSpace(TenderNumberTextBox.Text)) errors.Add(TenderNumberTextBox);
-        if (string.IsNullOrWhiteSpace(ContractNumberTextBox.Text)) errors.Add(ContractNumberTextBox);
-        if (string.IsNullOrWhiteSpace(WorkNameTextBox.Text)) errors.Add(WorkNameTextBox);
         if (!TryParseDecimal(ContractAmountTextBox.Text, out var contractAmount) || contractAmount < 0) errors.Add(ContractAmountTextBox);
         if (!int.TryParse(ContractWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var contractWorkDays) || contractWorkDays < 0) errors.Add(ContractWorkDaysTextBox);
         if (!TryParseDecimal(ContractTransportDailyPriceTextBox.Text, out var transportDailyPrice) || transportDailyPrice < 0) errors.Add(ContractTransportDailyPriceTextBox);
 
-        var startDate = StartDatePicker.SelectedDate.HasValue
+        DateOnly? startDate = StartDatePicker.SelectedDate.HasValue
             ? DateOnly.FromDateTime(StartDatePicker.SelectedDate.Value)
-            : archive.Contract.StartDate;
-        var endDate = EndDatePicker.SelectedDate.HasValue
+            : null;
+        DateOnly? endDate = EndDatePicker.SelectedDate.HasValue
             ? DateOnly.FromDateTime(EndDatePicker.SelectedDate.Value)
-            : archive.Contract.EndDate;
+            : null;
+
+        if (!startDate.HasValue) errors.Add(StartDatePicker);
+        if (!endDate.HasValue) errors.Add(EndDatePicker);
 
         if (endDate < startDate)
         {
@@ -808,7 +2713,7 @@ public partial class MainWindow : Window
         if (archive.ProgressPayment.PeriodDate is DateOnly currentPaymentPeriod)
             archivePaymentPeriods.Add(currentPaymentPeriod);
 
-        if (archivePaymentPeriods.Any(paymentPeriod =>
+        if (startDate.HasValue && endDate.HasValue && archivePaymentPeriods.Any(paymentPeriod =>
                 paymentPeriod < startDate || paymentPeriod > endDate))
         {
             errors.Add(StartDatePicker);
@@ -825,29 +2730,39 @@ public partial class MainWindow : Window
         var updatedContract = archive.Contract with
         {
             TenderNumber = TenderNumberTextBox.Text.Trim(),
-            ContractNumber = ContractNumberTextBox.Text.Trim(),
-            WorkName = WorkNameTextBox.Text.Trim(),
+            ContractNumber = archive.Contract.ContractNumber,
+            // WorkName is a derived display; retain the archived legacy fallback.
             ContractAmount = contractAmount,
-            StartDate = startDate,
-            EndDate = endDate,
-            VatExempt = VatExemptCheckBox.IsChecked == true,
+            StartDate = startDate!.Value,
+            EndDate = endDate!.Value,
+            VatExempt = archive.Contract.VatExempt,
             TenderDate = TenderDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(TenderDatePicker.SelectedDate.Value) : archive.Contract.TenderDate,
             ContractDate = ContractDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(ContractDatePicker.SelectedDate.Value) : archive.Contract.ContractDate,
             ContractWorkDays = contractWorkDays,
-            TransportDailyPrice = transportDailyPrice
+            TransportDailyPrice = transportDailyPrice,
+            // An archive correction edits the archived contract; it must not change
+            // the education program based on a possibly blank/global UI selector.
+            ProgramType = archive.Contract.ProgramType
         };
 
+        var hasGuide = HasGuideStaff(updatedContract.ProgramType);
         var input = archive.ProgressPayment.Input with
         {
             ContractAmount = updatedContract.ContractAmount,
-            IsVatExempt = updatedContract.VatExempt,
-            DailyPrice = updatedContract.TransportDailyPrice
+            IsVatExempt = archive.ProgressPayment.Input.IsVatExempt,
+            DailyPrice = updatedContract.TransportDailyPrice,
+            GuideWorkDays = hasGuide ? archive.ProgressPayment.Input.GuideWorkDays : 0,
+            GuideDailyPrice = hasGuide ? archive.ProgressPayment.Input.GuideDailyPrice : 0m,
+            GuideDiscountAmount = hasGuide ? archive.ProgressPayment.Input.GuideDiscountAmount : 0m,
+            GuidePriceDifference = hasGuide ? archive.ProgressPayment.Input.GuidePriceDifference : 0m,
+            MinimumWageSupport = archive.ProgressPayment.Input.MinimumWageSupport,
+            ProgramType = updatedContract.ProgramType
         };
 
         var payment = archive.ProgressPayment with
         {
             Input = input,
-            Calculation = ProgressPaymentCalculator.Calculate(input),
+            Calculation = ProgressPaymentCalculator.Calculate(input, _calculationConstants),
             WorkName = updatedContract.WorkName,
             TenderNumber = updatedContract.TenderNumber,
             ContractNumber = updatedContract.ContractNumber,
@@ -860,23 +2775,33 @@ public partial class MainWindow : Window
         var route = archive.Route with
         {
             TenderNumber = updatedContract.TenderNumber,
-            DailyPrice = updatedContract.TransportDailyPrice
+            ContractNumber = updatedContract.ContractNumber,
+            DailyPrice = updatedContract.TransportDailyPrice,
+            GuideDailyPrice = hasGuide ? archive.Route.GuideDailyPrice : 0m,
+            ProgramType = updatedContract.ProgramType
         };
 
         var updatedPreviousPayments = archive.PreviousPayments
             .Select(previous =>
             {
+                var previousHasGuide = HasGuideStaff(updatedContract.ProgramType);
                 var previousInput = previous.Input with
                 {
                     ContractAmount = updatedContract.ContractAmount,
-                    IsVatExempt = updatedContract.VatExempt,
-                    DailyPrice = updatedContract.TransportDailyPrice
+                    IsVatExempt = archive.ProgressPayment.Input.IsVatExempt,
+                    DailyPrice = updatedContract.TransportDailyPrice,
+                    GuideWorkDays = previousHasGuide ? previous.Input.GuideWorkDays : 0,
+                    GuideDailyPrice = previousHasGuide ? previous.Input.GuideDailyPrice : 0m,
+                    GuideDiscountAmount = previousHasGuide ? previous.Input.GuideDiscountAmount : 0m,
+                    GuidePriceDifference = previousHasGuide ? previous.Input.GuidePriceDifference : 0m,
+                    MinimumWageSupport = previous.Input.MinimumWageSupport,
+                    ProgramType = updatedContract.ProgramType
                 };
 
                 return previous with
                 {
                     Input = previousInput,
-                    Calculation = ProgressPaymentCalculator.Calculate(previousInput),
+                    Calculation = ProgressPaymentCalculator.Calculate(previousInput, _calculationConstants),
                     WorkName = updatedContract.WorkName,
                     TenderNumber = updatedContract.TenderNumber,
                     ContractNumber = updatedContract.ContractNumber,
@@ -911,9 +2836,13 @@ public partial class MainWindow : Window
         var errors = new List<Control>();
         if (string.IsNullOrWhiteSpace(routeNumber)) errors.Add(RouteNumberTextBox);
         if (string.IsNullOrWhiteSpace(routeName)) errors.Add(RouteNameTextBox);
-        if (!int.TryParse(RouteTransportWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var transportWorkDays) || transportWorkDays < 0) errors.Add(RouteTransportWorkDaysTextBox);
-        if (!int.TryParse(RouteGuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var guideWorkDays) || guideWorkDays < 0) errors.Add(RouteGuideWorkDaysTextBox);
-        if (!TryParseDecimal(RouteGuideDailyPriceTextBox.Text, out var guideDailyPrice) || guideDailyPrice < 0) errors.Add(RouteGuideDailyPriceTextBox);
+        if (!TryParseWorkDays(RouteTransportWorkDaysTextBox.Text, out var transportWorkDays) || transportWorkDays < 0) errors.Add(RouteTransportWorkDaysTextBox);
+        var hasGuide = HasGuideStaff(archive.Contract.ProgramType);
+        var guideDailyPrice = 0m;
+        if (hasGuide)
+        {
+            if (!TryParseDecimal(RouteGuideDailyPriceTextBox.Text, out guideDailyPrice) || guideDailyPrice < 0) errors.Add(RouteGuideDailyPriceTextBox);
+        }
 
         if (errors.Count > 0)
         {
@@ -926,24 +2855,27 @@ public partial class MainWindow : Window
         {
             RouteNumber = routeNumber,
             Name = routeName,
-            DailyPrice = archive.Contract.TransportDailyPrice,
+            DailyPrice = archive.Route.DailyPrice,
             TransportWorkDays = transportWorkDays,
-            GuideWorkDays = guideWorkDays,
-            GuideDailyPrice = guideDailyPrice
+            GuideDailyPrice = hasGuide ? guideDailyPrice : 0m,
+            ProgramType = archive.Contract.ProgramType
         };
 
         var input = archive.ProgressPayment.Input with
         {
             WorkDays = transportWorkDays,
-            DailyPrice = archive.Contract.TransportDailyPrice,
-            GuideWorkDays = guideWorkDays,
-            GuideDailyPrice = guideDailyPrice
+            DailyPrice = archive.Route.DailyPrice,
+            GuideDailyPrice = hasGuide ? guideDailyPrice : 0m,
+            GuideDiscountAmount = hasGuide ? archive.ProgressPayment.Input.GuideDiscountAmount : 0m,
+            GuidePriceDifference = hasGuide ? archive.ProgressPayment.Input.GuidePriceDifference : 0m,
+            MinimumWageSupport = archive.ProgressPayment.Input.MinimumWageSupport,
+            ProgramType = archive.Contract.ProgramType
         };
 
         var payment = archive.ProgressPayment with
         {
             Input = input,
-            Calculation = ProgressPaymentCalculator.Calculate(input),
+            Calculation = ProgressPaymentCalculator.Calculate(input, _calculationConstants),
             RouteNumber = routeNumber,
             RouteName = routeName
         };
@@ -982,6 +2914,8 @@ public partial class MainWindow : Window
             return;
         }
 
+        if (!ValidateContractorPhone()) return;
+
         var name = ContractorNameTextBox.Text.Trim();
         var tax = OehsIdentityService.NormalizeIdentity(ContractorTaxTextBox.Text);
         if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(tax))
@@ -990,16 +2924,25 @@ public partial class MainWindow : Window
             return;
         }
 
-        var normalizedEditingKey = OehsIdentityService.NormalizeIdentity(_editingContractorKey ?? string.Empty);
+        var editingContractor = FindContractorByKey(_editingContractorKey);
+        if (editingContractor is null &&
+            !TryGetSelectedTransportationProgramType(out _))
+        {
+            ContractorStatusTextBlock.Text = "Önce TAŞIMA PROGRAMI alanından Özel Eğitim veya Temel / Ortaöğretim programını seçin. Firma kaydedilmedi.";
+            return;
+        }
+
+        var contractorProgramType = editingContractor?.ProgramType ??
+            (TryGetSelectedTransportationProgramType(out var selectedContractorProgram)
+                ? selectedContractorProgram
+                : throw new InvalidOperationException("Yeni firma için taşıma programı seçilmelidir."));
         var duplicate = _contractors.FirstOrDefault(x =>
+            x.ProgramType == contractorProgramType &&
             string.Equals(
                 OehsIdentityService.NormalizeIdentity(x.TaxOrIdentityNumber),
                 tax,
                 StringComparison.Ordinal) &&
-            !string.Equals(
-                OehsIdentityService.NormalizeIdentity(x.TaxOrIdentityNumber),
-                normalizedEditingKey,
-                StringComparison.Ordinal));
+            !string.Equals(BuildContractorKey(x), _editingContractorKey ?? string.Empty, StringComparison.Ordinal));
 
         if (duplicate is not null)
         {
@@ -1011,10 +2954,23 @@ public partial class MainWindow : Window
             name,
             tax,
             ContractorAddressTextBox.Text.Trim(),
-            ContractorPhoneTextBox.Text.Trim(),
+            NormalizePhoneNumber(ContractorPhoneTextBox.Text),
             ContractorEmailTextBox.Text.Trim(),
             ContractorBankTextBox.Text.Trim(),
-            ContractorContactTextBox.Text.Trim());
+            ContractorContactTextBox.Text.Trim(),
+            contractorProgramType,
+            ContractorVatExemptCheckBox.IsChecked == true);
+
+        if (!ConfirmLiveHistoryCorrection("Yüklenici bilgileri"))
+            return;
+
+        var contractsBeforeSave = _contracts.ToArray();
+        var contractorsBeforeSave = _contractors.ToArray();
+        var routesBeforeSave = _routes.ToArray();
+        var hybridDraftsBeforeSave = SavedHybridPaymentDrafts.ToArray();
+        var hybridKeysBeforeSave = _multiRouteDraftCache.ToArray();
+        var historyBeforeSave = _progressHistory.ToArray();
+        var editingContractorKeyBeforeSave = _editingContractorKey;
 
         if (_editingContractorKey is null)
         {
@@ -1022,12 +2978,7 @@ public partial class MainWindow : Window
         }
         else
         {
-            var editingIdentity = OehsIdentityService.NormalizeIdentity(_editingContractorKey ?? string.Empty);
-            var existing = _contractors.FirstOrDefault(x =>
-                string.Equals(
-                    OehsIdentityService.NormalizeIdentity(x.TaxOrIdentityNumber),
-                    editingIdentity,
-                    StringComparison.Ordinal));
+            var existing = FindContractorByKey(_editingContractorKey);
 
             if (existing is null)
                 _contractors.Add(updated);
@@ -1047,13 +2998,60 @@ public partial class MainWindow : Window
             }
         }
 
+        if (!SavePersistedData())
+        {
+            RestoreHybridDraftIdentitySnapshot(hybridDraftsBeforeSave,hybridKeysBeforeSave,routesBeforeSave);
+            RestoreLiveDataCollections(
+                contractsBeforeSave, contractorsBeforeSave, routesBeforeSave, historyBeforeSave);
+            _editingContractorKey = editingContractorKeyBeforeSave;
+            RefreshViewsAfterPersistenceRollback();
+            SetContractorEditorMode(!string.IsNullOrWhiteSpace(editingContractorKeyBeforeSave));
+            ContractorStatusTextBlock.Text =
+                "Firma kaydı diske yazılamadı. Bellekteki değişiklik geri alındı; form bilgileri yeniden deneyebilmeniz için korundu.";
+            return;
+        }
+
         _editingContractorKey = null;
         UpdateContractorSummary();
-        SavePersistedData();
         UpdateContractSelectors();
         UpdateHomeSummaryView();
+        if (_historyCorrectionSection == HistoryCorrectionSection.Contractor)
+            RefreshViewsAfterHistoryCorrection();
+
         ClearContractorButton_Click(sender, e);
-        ContractorStatusTextBlock.Text = $"Firma kaydedildi: {name}.";
+        ContractorStatusTextBlock.Text = $"Firma ve KDV istisnası kaydedildi: {name}.";
+    }
+
+    private bool IsVatExemptForCurrentFirm(ContractDraftData? contract)
+    {
+        if (_editingArchiveSnapshot is not null)
+            return _editingArchiveSnapshot.ProgressPayment.Input.IsVatExempt;
+
+        if (ProgressContractorComboBox.SelectedItem is ContractorDraft selectedFirm)
+            return selectedFirm.VatExempt;
+
+        return contract?.VatExempt == true;
+    }
+
+    private bool HasLegacyContractVatExemption(string taxOrIdentityNumber, TransportationProgramType programType)
+    {
+        var normalizedIdentity = OehsIdentityService.NormalizeIdentity(taxOrIdentityNumber);
+        return _contracts.Any(contract =>
+            contract.VatExempt && contract.ProgramType == programType &&
+            string.Equals(
+                OehsIdentityService.NormalizeIdentity(contract.ContractorTaxOrIdentityNumber),
+                normalizedIdentity,
+                StringComparison.Ordinal));
+    }
+
+    private void ContractorVatExemptCheckBox_Changed(object sender, RoutedEventArgs e)
+    {
+        if (!IsInitialized || _suppressSelectionEvents || IsArchiveEditing)
+            return;
+
+        var selectedState = ContractorVatExemptCheckBox.IsChecked == true ? "İSTİSNA VAR" : "İSTİSNA YOK";
+        ContractorStatusTextBlock.Text =
+            $"KDV istisnası firma kartında {selectedState} olarak seçildi; kalıcı olması için FİRMA KAYDET düğmesine basın.";
     }
 
     private void EditContractorButton_Click(object sender, RoutedEventArgs e)
@@ -1062,23 +3060,24 @@ public partial class MainWindow : Window
         if (sender is not Button { Tag: ContractorDraft contractor })
             return;
 
-        _editingContractorKey = contractor.TaxOrIdentityNumber;
+        _editingContractorKey = BuildContractorKey(contractor);
         SetContractorEditorMode(true);
         ContractorNameTextBox.Text = contractor.Name;
         ContractorTaxTextBox.Text = contractor.TaxOrIdentityNumber;
         ContractorAddressTextBox.Text = contractor.Address;
-        ContractorPhoneTextBox.Text = contractor.Phone;
+        SetContractorPhoneText(contractor.Phone);
         ContractorEmailTextBox.Text = contractor.Email;
         ContractorBankTextBox.Text = contractor.BankAccountNumber;
         ContractorContactTextBox.Text = contractor.ContactPerson;
-        ContractorStatusTextBlock.Text = $"Düzenleme modu: {contractor.Name}. DÜZENLE ile kaydedin.";
+        ContractorVatExemptCheckBox.IsChecked = contractor.VatExempt;
+        ContractorStatusTextBlock.Text = $"Düzenleme modu: {contractor.Name}. KDV istisnası firma kartına bağlıdır; DÜZENLE ile kaydedin.";
     }
 
     private void CancelContractorEditButton_Click(object sender, RoutedEventArgs e)
     {
         var archiveCorrection = IsArchiveCorrectionFor(ArchiveCorrectionSection.Contractor);
         var original = !archiveCorrection && !string.IsNullOrWhiteSpace(_editingContractorKey)
-            ? FindContractor(_editingContractorKey)
+            ? FindContractorByKey(_editingContractorKey)
             : null;
 
         ClearArchiveCorrectionState();
@@ -1089,7 +3088,7 @@ public partial class MainWindow : Window
             ContractorNameTextBox.Clear();
             ContractorTaxTextBox.Clear();
             ContractorAddressTextBox.Clear();
-            ContractorPhoneTextBox.Clear();
+            SetContractorPhoneText(string.Empty);
             ContractorEmailTextBox.Clear();
             ContractorBankTextBox.Clear();
             ContractorContactTextBox.Clear();
@@ -1102,10 +3101,11 @@ public partial class MainWindow : Window
             ContractorNameTextBox.Text = original.Name;
             ContractorTaxTextBox.Text = original.TaxOrIdentityNumber;
             ContractorAddressTextBox.Text = original.Address;
-            ContractorPhoneTextBox.Text = original.Phone;
+            SetContractorPhoneText(original.Phone);
             ContractorEmailTextBox.Text = original.Email;
             ContractorBankTextBox.Text = original.BankAccountNumber;
             ContractorContactTextBox.Text = original.ContactPerson;
+            ContractorVatExemptCheckBox.IsChecked = original.VatExempt;
         }
 
         ContractorStatusTextBlock.Text = "Firma düzenlemesi iptal edildi; kayıt değiştirilmedi.";
@@ -1117,21 +3117,15 @@ public partial class MainWindow : Window
             return;
 
         var normalizedContractorIdentity = OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber);
-        var usedByContract = _contracts.Any(x =>
-            string.Equals(
-                OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
-                normalizedContractorIdentity,
-                StringComparison.Ordinal));
-        var usedByRoute = _routes.Any(x =>
-            string.Equals(
-                OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
-                normalizedContractorIdentity,
-                StringComparison.Ordinal));
-        var usedByHistory = _progressHistory.Any(x =>
-            string.Equals(
-                OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
-                normalizedContractorIdentity,
-                StringComparison.Ordinal));
+        var usedByContract = _contracts.Any(x => x.ProgramType == contractor.ProgramType && string.Equals(
+            OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
+            normalizedContractorIdentity, StringComparison.Ordinal));
+        var usedByRoute = _routes.Any(x => x.ProgramType == contractor.ProgramType && string.Equals(
+            OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
+            normalizedContractorIdentity, StringComparison.Ordinal));
+        var usedByHistory = _progressHistory.Any(x => x.Input.ProgramType == contractor.ProgramType && string.Equals(
+            OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
+            normalizedContractorIdentity, StringComparison.Ordinal));
 
         if (usedByContract || usedByRoute || usedByHistory)
         {
@@ -1141,15 +3135,23 @@ public partial class MainWindow : Window
 
         var result = MessageBox.Show(
             $"'{contractor.Name}' firması silinsin mi? Bu işlem geri alınamaz.",
-            "Yüklenici Firmayı Sil",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
-
+            "Yüklenici Firmayı Sil", MessageBoxButton.YesNo, MessageBoxImage.Warning);
         if (result != MessageBoxResult.Yes)
             return;
 
-        _contractors.Remove(contractor);
-        SavePersistedData();
+        var index = _contractors.IndexOf(contractor);
+        if (index < 0) return;
+        _contractors.RemoveAt(index);
+
+        if (!SavePersistedData())
+        {
+            _contractors.Insert(index, contractor);
+            RefreshViewsAfterPersistenceRollback();
+            ContractorStatusTextBlock.Text =
+                "Firma silinemedi: disk kaydı başarısız oldu; firma tekrar listeye alındı.";
+            return;
+        }
+
         UpdateContractorSummary();
         UpdateContractSelectors();
         UpdateHomeSummaryView();
@@ -1163,16 +3165,33 @@ public partial class MainWindow : Window
         ContractorNameTextBox.Clear();
         ContractorTaxTextBox.Clear();
         ContractorAddressTextBox.Clear();
-        ContractorPhoneTextBox.Clear();
+        SetContractorPhoneText(string.Empty);
         ContractorEmailTextBox.Clear();
         ContractorBankTextBox.Clear();
         ContractorContactTextBox.Clear();
+        ContractorVatExemptCheckBox.IsChecked = false;
+        SetContractorEditorMode(false);
         ContractorStatusTextBlock.Text = "Yeni firma kaydı için alanlar temizlendi.";
     }
 
     private void UpdateContractorSummary()
     {
-        ContractorCountTextBlock.Text = _contractors.Count.ToString(CultureInfo.CurrentCulture);
+        var programType = GetSelectedTransportationProgramType();
+        ContractorCountTextBlock.Text = _contractors.Count(x => x.ProgramType == programType)
+            .ToString(CultureInfo.CurrentCulture);
+    }
+
+    private void TransportProgramTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!IsInitialized || _suppressSelectionEvents || IsArchiveEditing)
+            return;
+
+        UpdateContractSelectors();
+        UpdateRouteListView();
+        UpdateContractSummaryView();
+        UpdateHomeSummaryView();
+        UpdateContractorSummary();
+        UpdateRouteSummary();
     }
 
     private void UpdateReferencesForContractorEdit(ContractorDraft oldContractor, ContractorDraft updated)
@@ -1184,7 +3203,9 @@ public partial class MainWindow : Window
             oldContractor.Phone,
             oldContractor.Email,
             oldContractor.BankAccountNumber,
-            oldContractor.ContactPerson);
+            oldContractor.ContactPerson,
+            oldContractor.ProgramType,
+            oldContractor.VatExempt);
 
         var newCore = new Contractor(
             updated.Name,
@@ -1193,7 +3214,9 @@ public partial class MainWindow : Window
             updated.Phone,
             updated.Email,
             updated.BankAccountNumber,
-            updated.ContactPerson);
+            updated.ContactPerson,
+            updated.ProgramType,
+            updated.VatExempt);
 
         // Önce tüm türetilmiş hakedişler doğrulanır; hata halinde hiçbir kaynak
         // koleksiyonu değiştirilmez.
@@ -1205,6 +3228,7 @@ public partial class MainWindow : Window
         var normalizedOld = OehsIdentityService.NormalizeIdentity(oldContractor.TaxOrIdentityNumber);
         var routeUpdates = _routes
             .Select((route, index) => (route, index))
+            .Where(x => x.route.ProgramType == oldContractor.ProgramType)
             .Where(x => string.Equals(
                 OehsIdentityService.NormalizeIdentity(x.route.ContractorTaxOrIdentityNumber),
                 normalizedOld,
@@ -1217,12 +3241,16 @@ public partial class MainWindow : Window
             .ToArray();
 
         foreach (var item in routeUpdates)
+        {
+            RekeyHybridDrafts(_routes[item.index],item.route);
             _routes[item.index] = item.route;
+        }
 
         for (var index = 0; index < _contracts.Count; index++)
         {
             var contract = _contracts[index];
-            if (string.Equals(
+            if (contract.ProgramType == oldContractor.ProgramType &&
+                string.Equals(
                     OehsIdentityService.NormalizeIdentity(contract.ContractorTaxOrIdentityNumber),
                     normalizedOld,
                     StringComparison.Ordinal))
@@ -1243,87 +3271,22 @@ public partial class MainWindow : Window
 
     private void HomeTenderListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (_suppressSelectionEvents)
-            return;
-
-        if (HomeTenderListBox.SelectedItem is ContractDraftData contract)
-        {
-            ApplyContractToForm(contract);
-            UpdateHomeTenderSummary(contract);
-            var latest = _progressHistory
-                .Where(x => string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase))
-                .OrderByDescending(x => x.PeriodDate ?? DateOnly.MinValue)
-                .ThenByDescending(x => x.CreatedAt)
-                .FirstOrDefault();
-
-            HomeWorkNameTextBlock.Text = contract.WorkName;
-            HomeContractorTextBlock.Text = "Hat üzerinden seçilir";
-            HomeProgressTextBlock.Text = latest?.ProgressPaymentNumber.HasValue == true
-                ? $"Hakediş No {latest.ProgressPaymentNumber.Value}"
-                : latest is null ? "Henüz hakediş yok" : "Son hesaplama";
-            HomePeriodTextBlock.Text = latest?.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "—";
-            HomeNetPayableTextBlock.Text = FormatMoney(_progressHistory
-                .Where(x => string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase))
-                .Sum(x => x.Calculation.NetPayable));
-            UpdateHomeSummaryView();
-        }
+        if (!_suppressSelectionEvents) UpdateHomeSummaryView();
     }
 
     private void UpdateHomeSummaryView()
     {
-        var contract = HomeTenderListBox.SelectedItem as ContractDraftData
-                       ?? _contracts.FirstOrDefault(x => string.Equals(x.TenderNumber, TenderNumberTextBox.Text.Trim(), StringComparison.OrdinalIgnoreCase))
-                       ?? _contracts.FirstOrDefault();
-
-        UpdateHomeTenderSummary(contract);
-
-        var tender = contract?.TenderNumber;
-        var history = string.IsNullOrWhiteSpace(tender)
-            ? _progressHistory.ToList()
-            : _progressHistory.Where(x => string.Equals(x.TenderNumber, tender, StringComparison.OrdinalIgnoreCase)).ToList();
-
-        HomeContractStatusTextBlock.Text = contract is null ? "İhale seçilmedi" : "KAYITLI";
-        HomeRouteCountTextBlock.Text = contract is null
-            ? "0"
-            : _routes.Count(x => string.Equals(x.TenderNumber, tender, StringComparison.OrdinalIgnoreCase)).ToString(CultureInfo.CurrentCulture);
-
-        HomeWorkNameTextBlock.Text = contract?.WorkName ?? "—";
-        HomeContractorTextBlock.Text = contract is null ? "—" : "Hat üzerinden seçilir";
-        HomeNetPayableTextBlock.Text = FormatMoney(history.Sum(x => x.Calculation.NetPayable));
-
-        var latest = history
-            .OrderByDescending(x => x.PeriodDate ?? DateOnly.MinValue)
-            .ThenByDescending(x => x.CreatedAt)
-            .FirstOrDefault();
-
-        HomeProgressTextBlock.Text = latest?.ProgressPaymentNumber.HasValue == true
-            ? $"Hakediş No {latest.ProgressPaymentNumber.Value}"
-            : latest is null ? "Henüz hakediş yok" : "Son hesaplama";
-        HomePeriodTextBlock.Text = latest?.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "—";
-        HomeGrossTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.GrossAmount);
-        HomeDeductionsTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.TotalDeductions);
-        HomeLatestNetTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.NetPayable);
-        HomeVatWithholdingTextBlock.Text = latest is null
-            ? "0,00 / 0,00 ₺"
-            : $"{FormatMoney(latest.Calculation.Vat)} / {FormatMoney(latest.Calculation.Withholding)}";
-
-        HomeTransportServiceTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.ServiceAmount);
-        HomeTransportPriceDifferenceTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.PriceDifferenceExcludingVat);
-        HomeTransportNetTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.TransportNetAmount);
-        HomeGuideServiceTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.GuideServiceAmount);
-        HomeGuideNetTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.GuideNetAmount);
-        HomeTotalAmountTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.TotalAmount);
-        HomeVatTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.Vat);
-        HomeWithholdingTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.Withholding);
-        HomeInvoiceTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.InvoiceAmountAfterWithholding);
-        HomeGuaranteeTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.AdditionalGuarantee);
-        HomeStampTaxTextBlock.Text = latest is null ? FormatMoney(0) : FormatMoney(latest.Calculation.StampTax);
+        UpdateHomeTenderSummary(HomeTenderListBox.SelectedItem as ContractDraftData);
+        RefreshHomeOperations();
     }
 
     private void UpdateContractSummaryView()
     {
-        var contract = _contracts.FirstOrDefault(x => string.Equals(x.TenderNumber, TenderNumberTextBox.Text.Trim(), StringComparison.OrdinalIgnoreCase));
-        var hasContract = contract is not null || !string.IsNullOrWhiteSpace(WorkNameTextBox.Text);
+        var lookupTender = _editingContractTender ?? TenderNumberTextBox.Text.Trim();
+        var lookupContractNumber = _editingContractNumber ?? ContractNumberTextBox.Text.Trim();
+        var contract = FindContract(lookupTender, lookupContractNumber, _editingContractProgramType ?? GetSelectedTransportationProgramType());
+        var hasContract = contract is not null;
+
         ContractStatusSummaryTextBlock.Text = hasContract ? "KAYITLI" : "TASLAK";
         ContractAmountSummaryTextBlock.Text =
             TryParseDecimal(ContractAmountTextBox.Text, out var amount) ? FormatMoney(amount) : FormatMoney(0);
@@ -1335,10 +3298,9 @@ public partial class MainWindow : Window
         ContractSummaryTenderTextBlock.Text = string.IsNullOrWhiteSpace(TenderNumberTextBox.Text)
             ? "Bekleniyor" : TenderNumberTextBox.Text.Trim();
 
-        ContractSummaryContractTextBlock.Text = string.IsNullOrWhiteSpace(ContractNumberTextBox.Text)
-            ? "Bekleniyor"
-            : ContractNumberTextBox.Text.Trim() +
-              (ContractDatePicker.SelectedDate.HasValue ? $" • {ContractDatePicker.SelectedDate.Value:dd.MM.yyyy}" : "");
+        ContractSummaryContractTextBlock.Text = GetSelectedTransportationProgramType() == TransportationProgramType.BasicOrSecondary
+            ? "Temel/Ortaöğretim Taşıma"
+            : "Özel Eğitim Taşıma";
 
         ContractSummaryAmountTextBlock.Text = TryParseDecimal(ContractAmountTextBox.Text, out var summaryAmount)
             ? FormatMoney(summaryAmount) : FormatMoney(0);
@@ -1349,8 +3311,9 @@ public partial class MainWindow : Window
             ? FormatMoney(transportPrice) : FormatMoney(0);
 
         ContractSummaryWorkDaysTextBlock.Text = $"{workDaysText} gün • {transportPriceText}/gün";
+        var routeCount = contract is null ? 0 : _routes.Count(x => IsRouteForContract(x, contract));
         ContractSummaryVatTextBlock.Text =
-            $"{(VatExemptCheckBox.IsChecked == true ? "KDV İstisnası" : "KDV Uygulanır")} • {_routes.Count(x => string.Equals(x.TenderNumber, TenderNumberTextBox.Text.Trim(), StringComparison.OrdinalIgnoreCase))} hat";
+            $"{(ContractorVatExemptCheckBox.IsChecked == true ? "KDV İstisnası" : "KDV Uygulanır")} • {routeCount} hat";
     }
 
     private void HomeTenderListBox_RefreshSelection()
@@ -1392,47 +3355,36 @@ public partial class MainWindow : Window
 
     private void ProgressTenderListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (_suppressSelectionEvents)
+        if (_suppressSelectionEvents || IsArchiveEditing)
             return;
 
-        if (ProgressTenderListBox.SelectedItem is ContractDraftData contract)
-        {
-            ApplyContractToForm(contract);
-            UpdateProgressContractorAndRoutes(contract);
-        }
+        _lastCalculatedHistoryId = null;
+        ClearProgressEntryFields(clearTenderSelection: false);
+        UpdateProgressContractorAndRoutes(
+            ProgressTenderListBox.SelectedItem as ContractDraftData,
+            preserveSelection: false);
     }
 
     private void AddRouteButton_Click(object sender, RoutedEventArgs e)
     {
-        // Arşiv düzeltme kilidi aktifken herhangi bir nedenle bölüm bayrağı değişse bile
-        // canlı HAT EKLE akışına kesinlikle düşülmez.
         if (IsArchiveEditing)
         {
             if (IsArchiveCorrectionFor(ArchiveCorrectionSection.Route))
-            {
                 SaveArchivedRouteCorrection();
-            }
             else
-            {
                 ShowAlreadyRegistered("Arşiv düzeltmesi devam ediyor. Önce ilgili düzenleme panelindeki DÜZENLEME İPTAL işlemini tamamlayın.");
-            }
             return;
         }
 
         ClearRouteValidationVisuals();
-
         var contract = RouteTenderListBox.SelectedItem as ContractDraftData;
         var contractor = RouteContractorListBox.SelectedItem as ContractorDraft;
-
         var routeNumber = RouteNumberTextBox.Text.Trim();
         var routeName = RouteNameTextBox.Text.Trim();
         var errors = new List<string>();
 
-        if (contract is null)
-            errors.Add("İhale / Dosya No seçimi");
-        if (contractor is null)
-            errors.Add("Yüklenici firma seçimi");
-
+        if (contract is null) errors.Add("İhale / Sözleşme seçimi");
+        if (contractor is null) errors.Add("Yüklenici firma seçimi");
         if (string.IsNullOrWhiteSpace(routeNumber))
         {
             errors.Add("Hat No");
@@ -1443,24 +3395,21 @@ public partial class MainWindow : Window
             errors.Add("Hat Adı");
             MarkInvalid(RouteNameTextBox);
         }
-        if (!int.TryParse(RouteTransportWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var transportWorkDays) ||
-            transportWorkDays < 0)
+        if (!TryParseWorkDays(RouteTransportWorkDaysTextBox.Text, out var transportWorkDays) || transportWorkDays < 0)
         {
-            errors.Add("Taşıma İş Günü");
+            errors.Add("Döneme Esas Taşıma Hakediş Gün Sayısı (Döneme Esas THGS)");
             MarkInvalid(RouteTransportWorkDaysTextBox);
         }
-        if (!int.TryParse(RouteGuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var guideWorkDays) ||
-            guideWorkDays < 0)
+        var hasGuide = HasGuideStaff(contract?.ProgramType ?? TransportationProgramType.SpecialEducation);
+        var guideDailyPrice = 0m;
+        if (hasGuide)
         {
-            errors.Add("Rehber Yıllık İş Günü");
-            MarkInvalid(RouteGuideWorkDaysTextBox);
+            if (!TryParseDecimal(RouteGuideDailyPriceTextBox.Text, out guideDailyPrice) || guideDailyPrice < 0)
+            {
+                errors.Add("Rehber Personel Günlük Fiyat");
+                MarkInvalid(RouteGuideDailyPriceTextBox);
+            }
         }
-        if (!TryParseDecimal(RouteGuideDailyPriceTextBox.Text, out var guideDailyPrice) || guideDailyPrice < 0)
-        {
-            errors.Add("Rehber Personel Günlük Fiyat");
-            MarkInvalid(RouteGuideDailyPriceTextBox);
-        }
-
         if (errors.Count > 0)
         {
             ShowRouteValidation("Lütfen kırmızı işaretli alanları tamamlayın: " + string.Join(", ", errors) + ".");
@@ -1470,28 +3419,72 @@ public partial class MainWindow : Window
         var proposed = new RouteDraft(
             routeNumber,
             routeName,
-            contract!.TransportDailyPrice,
-            guideWorkDays,
-            guideDailyPrice,
+            _editingRoute?.DailyPrice ?? contract!.TransportDailyPrice,
+            hasGuide ? guideDailyPrice : 0m,
             transportWorkDays,
-            contract.TenderNumber,
+            contract!.TenderNumber,
             OehsIdentityService.NormalizeIdentity(contractor!.TaxOrIdentityNumber),
-            contractor.Name);
+            contractor.Name,
+            contract.ContractNumber,
+            contract.ProgramType);
 
         var duplicate = _routes.FirstOrDefault(x =>
+            x.ProgramType == proposed.ProgramType &&
             string.Equals(x.TenderNumber, proposed.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(x.ContractNumber, proposed.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
             string.Equals(
                 OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
                 OehsIdentityService.NormalizeIdentity(proposed.ContractorTaxOrIdentityNumber),
                 StringComparison.Ordinal) &&
             string.Equals(x.RouteNumber, proposed.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
             !ReferenceEquals(x, _editingRoute));
-
         if (duplicate is not null)
         {
-            ShowAlreadyRegistered($"Bu hat zaten kayıtlı: {proposed.TenderNumber} / {proposed.RouteNumber}.");
+            ShowAlreadyRegistered($"Bu hat zaten kayıtlı: İKN {proposed.TenderNumber} / Hat {proposed.RouteNumber}.");
             return;
         }
+
+        var proposedRouteData = new RouteData(
+            proposed.RouteNumber,
+            proposed.Name,
+            proposed.DailyPrice,
+            proposed.GuideDailyPrice,
+            proposed.TransportWorkDays,
+            proposed.TenderNumber,
+            proposed.ContractorTaxOrIdentityNumber,
+            proposed.ContractNumber, proposed.ProgramType);
+        var existingRouteData = _routes
+            .Where(x => !ReferenceEquals(x, _editingRoute))
+            .Select(x => new RouteData(
+                x.RouteNumber,
+                x.Name,
+                x.DailyPrice,
+                x.GuideDailyPrice,
+                x.TransportWorkDays,
+                x.TenderNumber,
+                x.ContractorTaxOrIdentityNumber,
+                x.ContractNumber, x.ProgramType))
+            .ToArray();
+        var ownerConflict = RouteAssignmentValidationService.FindOwnerConflict(
+            existingRouteData,
+            proposedRouteData);
+        if (ownerConflict is not null)
+        {
+            var existingOwner = FindContractor(ownerConflict.ContractorTaxOrIdentityNumber, ownerConflict.ProgramType)?.Name;
+            var ownerLabel = string.IsNullOrWhiteSpace(existingOwner)
+                ? "başka bir yüklenici"
+                : $"'{existingOwner}'";
+            ShowRouteValidation(
+                $"Aynı İKN ve Hat No farklı yüklenicilere atanamaz. İKN: {proposed.TenderNumber}, " +
+                $"Hat No: {proposed.RouteNumber}; mevcut yüklenici: {ownerLabel}.");
+            return;
+        }
+
+        var routesBeforeSave = _routes.ToArray();
+        var historyBeforeSave = _progressHistory.ToArray();
+        var editingRouteBeforeSave = _editingRoute;
+        var routeDraftsBeforeSave = SavedHybridPaymentDrafts.ToArray();
+        var hybridRouteKeysBeforeSave = _multiRouteDraftCache.ToArray();
 
         if (_editingRoute is null)
         {
@@ -1506,6 +3499,13 @@ public partial class MainWindow : Window
                 try
                 {
                     var propagated = BuildRoutePropagation(old, proposed);
+                    var proposedTargetPayment = _historyCorrectionTargetId is Guid targetId
+                        ? propagated.FirstOrDefault(x => IsOperationPayment(x, targetId))
+                        : null;
+                    if (!ConfirmLiveHistoryCorrection("Hat bilgileri", proposedTargetPayment))
+                        return;
+
+                    RekeyHybridDrafts(old,proposed);
                     _routes[index] = proposed;
                     _progressHistory.Clear();
                     foreach (var item in propagated)
@@ -1520,13 +3520,29 @@ public partial class MainWindow : Window
             _editingRoute = null;
         }
 
-        SavePersistedData();
+        if (!SavePersistedData())
+        {
+            _routes.Clear();
+            foreach (var item in routesBeforeSave) _routes.Add(item);
+            _progressHistory.Clear();
+            foreach (var item in historyBeforeSave) _progressHistory.Add(item);
+            RestoreHybridDraftIdentitySnapshot(routeDraftsBeforeSave,hybridRouteKeysBeforeSave,routesBeforeSave);
+            _editingRoute = editingRouteBeforeSave;
+            RefreshViewsAfterPersistenceRollback();
+            SetRouteEditorMode(editingRouteBeforeSave is not null);
+            RouteStatusTextBlock.Text =
+                "Hat kaydı diske yazılamadı. Bellekteki değişiklik geri alındı; form bilgileri korundu.";
+            return;
+        }
+
         UpdateRouteSummary();
         UpdateRouteListView();
-        UpdateProgressContractorAndRoutes(contract);
+        UpdateProgressContractorAndRoutes(ProgressTenderListBox.SelectedItem as ContractDraftData, preserveSelection: false);
         UpdateOutputRoutesForContract(contract);
         UpdateContractSummaryView();
         UpdateHomeSummaryView();
+        if (_historyCorrectionSection == HistoryCorrectionSection.Route)
+            RefreshViewsAfterHistoryCorrection();
         ClearRouteButton_Click(sender, e);
         RouteStatusTextBlock.Text = $"Hat kaydedildi: {routeNumber} — {routeName}.";
     }
@@ -1534,28 +3550,17 @@ public partial class MainWindow : Window
     private IReadOnlyList<ProgressPaymentHistoryData> BuildRoutePropagation(RouteDraft oldRoute, RouteDraft updatedRoute)
     {
         var oldData = new RouteData(
-            oldRoute.RouteNumber,
-            oldRoute.Name,
-            oldRoute.DailyPrice,
-            oldRoute.GuideWorkDays,
-            oldRoute.GuideDailyPrice,
-            oldRoute.TransportWorkDays,
-            oldRoute.TenderNumber,
-            oldRoute.ContractorTaxOrIdentityNumber);
-
+            oldRoute.RouteNumber, oldRoute.Name, oldRoute.DailyPrice,
+            oldRoute.GuideDailyPrice, oldRoute.TransportWorkDays,
+            oldRoute.TenderNumber, oldRoute.ContractorTaxOrIdentityNumber, oldRoute.ContractNumber, oldRoute.ProgramType);
         var newData = new RouteData(
-            updatedRoute.RouteNumber,
-            updatedRoute.Name,
-            updatedRoute.DailyPrice,
-            updatedRoute.GuideWorkDays,
-            updatedRoute.GuideDailyPrice,
-            updatedRoute.TransportWorkDays,
-            updatedRoute.TenderNumber,
-            updatedRoute.ContractorTaxOrIdentityNumber);
+            updatedRoute.RouteNumber, updatedRoute.Name, updatedRoute.DailyPrice,
+            updatedRoute.GuideDailyPrice, updatedRoute.TransportWorkDays,
+            updatedRoute.TenderNumber, updatedRoute.ContractorTaxOrIdentityNumber, updatedRoute.ContractNumber, updatedRoute.ProgramType);
 
-        var contractor = FindContractor(updatedRoute.ContractorTaxOrIdentityNumber);
+        var contractor = FindContractor(updatedRoute.ContractorTaxOrIdentityNumber, updatedRoute.ProgramType);
         var contractorSnapshot = contractor is null
-            ? new Contractor(updatedRoute.ContractorName, updatedRoute.ContractorTaxOrIdentityNumber)
+            ? new Contractor(updatedRoute.ContractorName, updatedRoute.ContractorTaxOrIdentityNumber, ProgramType: updatedRoute.ProgramType)
             : new Contractor(
                 contractor.Name,
                 contractor.TaxOrIdentityNumber,
@@ -1563,13 +3568,12 @@ public partial class MainWindow : Window
                 contractor.Phone,
                 contractor.Email,
                 contractor.BankAccountNumber,
-                contractor.ContactPerson);
+                contractor.ContactPerson,
+                contractor.ProgramType,
+                contractor.VatExempt);
 
         return ProgressPaymentPropagationService.RecalculateForRouteChange(
-            _progressHistory.ToArray(),
-            oldData,
-            newData,
-            contractorSnapshot);
+            _progressHistory.ToArray(), oldData, newData, contractorSnapshot, _calculationConstants);
     }
 
     private void ShowRouteValidation(string message)
@@ -1587,7 +3591,6 @@ public partial class MainWindow : Window
             RouteNumberTextBox,
             RouteNameTextBox,
             RouteTransportWorkDaysTextBox,
-            RouteGuideWorkDaysTextBox,
             RouteGuideDailyPriceTextBox
         })
             ClearInvalid(control);
@@ -1598,16 +3601,17 @@ public partial class MainWindow : Window
 
     private void RemoveRouteButton_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not System.Windows.Controls.Button { Tag: RouteDraft route })
+        if (sender is not Button { Tag: RouteDraft route })
             return;
 
         var historyCount = _progressHistory.Count(x =>
             string.Equals(x.TenderNumber, route.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(x.ContractNumber, route.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
             string.Equals(x.RouteNumber, route.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
             string.Equals(
-                        OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
-                        OehsIdentityService.NormalizeIdentity(route.ContractorTaxOrIdentityNumber),
-                        StringComparison.Ordinal));
+                OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
+                OehsIdentityService.NormalizeIdentity(route.ContractorTaxOrIdentityNumber),
+                StringComparison.Ordinal));
 
         if (historyCount > 0)
         {
@@ -1617,15 +3621,21 @@ public partial class MainWindow : Window
 
         var result = MessageBox.Show(
             $"'{route.RouteNumber} — {route.Name}' hattı silinsin mi? Bu işlem geri alınamaz.",
-            "Hat Kaydını Sil",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
+            "Hat Kaydını Sil", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+        if (result != MessageBoxResult.Yes) return;
 
-        if (result != MessageBoxResult.Yes)
+        var index = _routes.IndexOf(route);
+        if (index < 0) return;
+        _routes.RemoveAt(index);
+
+        if (!SavePersistedData())
+        {
+            _routes.Insert(index, route);
+            RefreshViewsAfterPersistenceRollback();
+            RouteStatusTextBlock.Text = $"Hat silinemedi: {route.RouteNumber}; disk kaydı başarısız, hat geri alındı.";
             return;
+        }
 
-        _routes.Remove(route);
-        SavePersistedData();
         UpdateRouteSummary();
         UpdateRouteListView();
         UpdateHomeSummaryView();
@@ -1640,9 +3650,8 @@ public partial class MainWindow : Window
 
         _editingRoute = route;
         SetRouteEditorMode(true);
-
-        var contract = _contracts.FirstOrDefault(x => string.Equals(x.TenderNumber, route.TenderNumber, StringComparison.OrdinalIgnoreCase));
-        var contractor = FindContractor(route.ContractorTaxOrIdentityNumber);
+        var contract = FindContract(route.TenderNumber, route.ContractNumber, route.ProgramType);
+        var contractor = FindContractor(route.ContractorTaxOrIdentityNumber, route.ProgramType);
 
         _suppressSelectionEvents = true;
         try
@@ -1659,16 +3668,14 @@ public partial class MainWindow : Window
         RouteNumberTextBox.Text = route.RouteNumber;
         RouteNameTextBox.Text = route.Name;
         RouteTransportWorkDaysTextBox.Text = route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
-        RouteGuideWorkDaysTextBox.Text = route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
-        RouteGuideDailyPriceTextBox.Text = route.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
-        RouteStatusTextBlock.Text = $"Düzenleme modu: {route.TenderNumber} / {route.RouteNumber}. DÜZENLE ile kaydedin.";
+        RouteGuideDailyPriceTextBox.Text = FormatCalculationInput(route.GuideDailyPrice);
+        RouteStatusTextBlock.Text = $"Düzenleme modu: İKN {route.TenderNumber} / Hat {route.RouteNumber}. DÜZENLE ile kaydedin.";
     }
 
     private void CancelRouteEditButton_Click(object sender, RoutedEventArgs e)
     {
         var archiveCorrection = IsArchiveCorrectionFor(ArchiveCorrectionSection.Route);
         var original = !archiveCorrection ? _editingRoute : null;
-
         ClearArchiveCorrectionState();
 
         if (archiveCorrection)
@@ -1677,7 +3684,6 @@ public partial class MainWindow : Window
             RouteNumberTextBox.Clear();
             RouteNameTextBox.Clear();
             RouteTransportWorkDaysTextBox.Text = "0";
-            RouteGuideWorkDaysTextBox.Text = "0";
             RouteGuideDailyPriceTextBox.Text = "0";
             ClearRouteValidationVisuals();
             NavigationButton_Click(NavArchives, new RoutedEventArgs(Button.ClickEvent, NavArchives));
@@ -1687,26 +3693,22 @@ public partial class MainWindow : Window
         _editingRoute = null;
         if (original is not null)
         {
-            RouteTenderListBox.SelectedItem = _contracts.FirstOrDefault(x =>
-                string.Equals(x.TenderNumber, original.TenderNumber, StringComparison.OrdinalIgnoreCase));
-            var contractor = FindContractor(original.ContractorTaxOrIdentityNumber);
+            RouteTenderListBox.SelectedItem = FindContract(original.TenderNumber, original.ContractNumber, original.ProgramType);
+            var contractor = FindContractor(original.ContractorTaxOrIdentityNumber, original.ProgramType);
             RouteContractorListBox.ItemsSource = contractor is null ? Array.Empty<ContractorDraft>() : new[] { contractor };
             RouteContractorListBox.SelectedItem = contractor;
             RouteNumberTextBox.Text = original.RouteNumber;
             RouteNameTextBox.Text = original.Name;
             RouteTransportWorkDaysTextBox.Text = original.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
-            RouteGuideWorkDaysTextBox.Text = original.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
-            RouteGuideDailyPriceTextBox.Text = original.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+            RouteGuideDailyPriceTextBox.Text = FormatCalculationInput(original.GuideDailyPrice);
         }
         else
         {
             RouteNumberTextBox.Clear();
             RouteNameTextBox.Clear();
             RouteTransportWorkDaysTextBox.Text = "0";
-            RouteGuideWorkDaysTextBox.Text = "0";
             RouteGuideDailyPriceTextBox.Text = "0";
         }
-
         SetRouteEditorMode(false);
         ClearRouteValidationVisuals();
         RouteStatusTextBlock.Text = "Hat düzenlemesi iptal edildi; kayıt değiştirilmedi.";
@@ -1719,10 +3721,15 @@ public partial class MainWindow : Window
         RouteNumberTextBox.IsReadOnly = false;
         RouteNumberTextBox.Clear();
         RouteNameTextBox.Clear();
-        RouteTransportWorkDaysTextBox.Text = "0";
-        RouteGuideWorkDaysTextBox.Text = "0";
-        RouteGuideDailyPriceTextBox.Text = "0";
+        RouteTransportWorkDaysTextBox.Clear();
+        RouteGuideDailyPriceTextBox.Clear();
+
+        // Keep the chosen tender/contractor filters so the saved route remains
+        // visible in the right-hand list; only the entry fields are reset.
+        UpdateRouteListView();
+        UpdateRouteSummary();
         ClearRouteValidationVisuals();
+        SetRouteEditorMode(false);
     }
 
     private void UpdateRouteSummary()
@@ -1730,10 +3737,7 @@ public partial class MainWindow : Window
         var contract = RouteTenderListBox.SelectedItem as ContractDraftData;
         var count = contract is null
             ? 0
-            : _routes.Count(x => string.Equals(
-                x.TenderNumber,
-                contract.TenderNumber,
-                StringComparison.OrdinalIgnoreCase));
+            : _routes.Count(x => IsRouteForContract(x, contract));
 
         RouteCountTextBlock.Text = count.ToString(CultureInfo.CurrentCulture);
     }
@@ -1745,21 +3749,26 @@ public partial class MainWindow : Window
             return;
 
         _editingContractTender = contract.TenderNumber;
+        _editingContractNumber = contract.ContractNumber;
+        _editingContractProgramType = contract.ProgramType;
         ApplyContractToForm(contract);
+        UpdateContractSelectors();
         SetContractEditorMode(true);
         NavigationButton_Click(NavContract, new RoutedEventArgs(Button.ClickEvent, NavContract));
-        ContractStatusTextBlock.Text = $"Düzenleme modu: {contract.TenderNumber}. Değiştirip DÜZENLE'e basın.";
+        ContractStatusTextBlock.Text = $"Düzenleme modu: İKN {contract.TenderNumber}. Değiştirip DÜZENLE'e basın.";
     }
 
     private void CancelContractEditButton_Click(object sender, RoutedEventArgs e)
     {
         var archiveCorrection = IsArchiveCorrectionFor(ArchiveCorrectionSection.Contract);
         var original = !archiveCorrection && !string.IsNullOrWhiteSpace(_editingContractTender)
-            ? _contracts.FirstOrDefault(x => string.Equals(x.TenderNumber, _editingContractTender, StringComparison.OrdinalIgnoreCase))
+            ? FindContract(_editingContractTender, _editingContractNumber, _editingContractProgramType)
             : null;
 
         ClearArchiveCorrectionState();
         _editingContractTender = null;
+        _editingContractNumber = null;
+        _editingContractProgramType = null;
 
         if (archiveCorrection)
         {
@@ -1778,29 +3787,48 @@ public partial class MainWindow : Window
         if (sender is not Button { Tag: ContractDraftData contract })
             return;
 
-        var routeCount = _routes.Count(x => string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase));
-        var historyCount = _progressHistory.Count(x => string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase));
+        var routeCount = _routes.Count(x => IsRouteForContract(x, contract));
+        var historyCount = _progressHistory.Count(x => IsHistoryForContract(x, contract));
 
-        if (routeCount > 0 || historyCount > 0)
+        // Do not orphan legacy data that couldn't be assigned safely during migration.
+        // If a tender has multiple contract parts and a legacy row lacks ContractNumber,
+        // the UI cannot determine which part owns it, so deletion must be blocked.
+        var ambiguousRouteCount = _routes.Count(x =>
+            string.IsNullOrWhiteSpace(x.ContractNumber) &&
+            string.Equals(x.TenderNumber.Trim(), contract.TenderNumber.Trim(), StringComparison.OrdinalIgnoreCase));
+        var ambiguousHistoryCount = _progressHistory.Count(x =>
+            string.IsNullOrWhiteSpace(x.ContractNumber) &&
+            string.Equals(x.TenderNumber?.Trim(), contract.TenderNumber.Trim(), StringComparison.OrdinalIgnoreCase));
+
+        if (routeCount > 0 || historyCount > 0 || ambiguousRouteCount > 0 || ambiguousHistoryCount > 0)
         {
+            var ambiguous = ambiguousRouteCount + ambiguousHistoryCount;
+            var ambiguityNote = ambiguous > 0
+                ? $" Ayrıca {ambiguous} eski hat/hakediş kaydının sözleşme bağı belirsiz; önce bu kayıtların bağı netleştirilmelidir."
+                : string.Empty;
             MessageBox.Show(
-                $"'{contract.TenderNumber}' ihalesi {routeCount} hat ve {historyCount} hakediş kaydıyla ilişkili. Önce ilişkili kayıtları düzeltin; ihale silinmedi.",
-                "OEHS",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                $"İKN '{contract.TenderNumber}' / '{contract.WorkName}' kaydı {routeCount} bağlı hat ve {historyCount} bağlı hakedişle ilişkili. Önce ilişkili kayıtları düzeltin; kayıt silinmedi.{ambiguityNote}",
+                "OEHS", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
         var result = MessageBox.Show(
-            $"'{contract.TenderNumber}' kaydı silinsin mi?",
-            "İhale Kaydını Sil",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
+            $"İKN '{contract.TenderNumber}' / '{contract.WorkName}' kaydı silinsin mi?",
+            "Sözleşme Kaydını Sil", MessageBoxButton.YesNo, MessageBoxImage.Warning);
         if (result != MessageBoxResult.Yes)
             return;
 
-        _contracts.Remove(contract);
-        SavePersistedData();
+        var index = _contracts.IndexOf(contract);
+        if (index < 0) return;
+        _contracts.RemoveAt(index);
+        if (!SavePersistedData())
+        {
+            _contracts.Insert(index, contract);
+            RefreshViewsAfterPersistenceRollback();
+            ContractStatusTextBlock.Text =
+                "Sözleşme silinemedi: disk kaydı başarısız oldu; sözleşme tekrar listeye alındı.";
+            return;
+        }
         UpdateContractSelectors();
         UpdateHomeSummaryView();
         UpdateContractSummaryView();
@@ -1823,21 +3851,21 @@ public partial class MainWindow : Window
 
         ClearContractValidationVisuals();
 
+        // A new contract must be explicitly assigned to a transport program.
+        // Do not let the legacy fallback in GetSelectedTransportationProgramType()
+        // silently classify an unselected program as Special Education.
+        if (_editingContractTender is null &&
+            !TryGetSelectedTransportationProgramType(out _))
+        {
+            ShowContractValidation("Önce TAŞIMA PROGRAMI alanından Özel Eğitim veya Temel / Ortaöğretim programını seçin.");
+            return;
+        }
+
         var errors = new List<string>();
         if (string.IsNullOrWhiteSpace(TenderNumberTextBox.Text))
         {
             errors.Add("İhale / Dosya No");
             MarkInvalid(TenderNumberTextBox);
-        }
-        if (string.IsNullOrWhiteSpace(ContractNumberTextBox.Text))
-        {
-            errors.Add("Sözleşme No");
-            MarkInvalid(ContractNumberTextBox);
-        }
-        if (string.IsNullOrWhiteSpace(WorkNameTextBox.Text))
-        {
-            errors.Add("İşin Adı");
-            MarkInvalid(WorkNameTextBox);
         }
         if (!TryParseDecimal(ContractAmountTextBox.Text, out var contractAmount) || contractAmount < 0)
         {
@@ -1854,8 +3882,19 @@ public partial class MainWindow : Window
             errors.Add("Taşıma Günlük Fiyatı");
             MarkInvalid(ContractTransportDailyPriceTextBox);
         }
-        if (StartDatePicker.SelectedDate.HasValue && EndDatePicker.SelectedDate.HasValue &&
-            EndDatePicker.SelectedDate.Value.Date < StartDatePicker.SelectedDate.Value.Date)
+        var startDate = StartDatePicker.SelectedDate;
+        var endDate = EndDatePicker.SelectedDate;
+        if (!startDate.HasValue)
+        {
+            errors.Add("Başlangıç Tarihi");
+            MarkInvalid(StartDatePicker);
+        }
+        if (!endDate.HasValue)
+        {
+            errors.Add("Bitiş Tarihi");
+            MarkInvalid(EndDatePicker);
+        }
+        if (startDate.HasValue && endDate.HasValue && endDate.Value.Date < startDate.Value.Date)
         {
             errors.Add("Başlangıç / Bitiş Tarihi");
             MarkInvalid(StartDatePicker);
@@ -1869,149 +3908,170 @@ public partial class MainWindow : Window
         }
 
         var sourceTenderForEdit = _editingContractTender ?? TenderNumberTextBox.Text.Trim();
-        var existingContractForLegacy = _contracts.FirstOrDefault(x =>
-            string.Equals(x.TenderNumber, sourceTenderForEdit, StringComparison.OrdinalIgnoreCase));
-        var proposedContract = new ContractDraftData(
-            TenderNumberTextBox.Text.Trim(),
-            ContractNumberTextBox.Text.Trim(),
-            WorkNameTextBox.Text.Trim(),
-            existingContractForLegacy?.ContractorName ?? string.Empty,
-            contractAmount,
-            DateOnly.FromDateTime(StartDatePicker.SelectedDate ?? DateTime.Today),
-            DateOnly.FromDateTime(EndDatePicker.SelectedDate ?? DateTime.Today),
-            VatExemptCheckBox.IsChecked == true,
-            TenderDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(TenderDatePicker.SelectedDate.Value) : null,
-            ContractDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(ContractDatePicker.SelectedDate.Value) : null,
-            existingContractForLegacy?.ContractorTaxOrIdentityNumber ?? string.Empty,
-            existingContractForLegacy?.BankAccountNumber ?? string.Empty,
-            contractWorkDays,
-            transportDailyPrice);
+        var sourceContractNumberForEdit = _editingContractNumber ?? string.Empty;
+        var oldContract = _editingContractTender is null
+            ? null
+            : FindContract(sourceTenderForEdit, sourceContractNumberForEdit, _editingContractProgramType ?? GetSelectedTransportationProgramType());
 
-        var affectedExistingPaymentPeriods = _progressHistory
-            .Where(x => string.Equals(
-                x.TenderNumber,
-                sourceTenderForEdit,
-                StringComparison.OrdinalIgnoreCase))
-            .Where(x => x.PeriodDate.HasValue)
-            .Select(x => x.PeriodDate!.Value)
-            .ToArray();
-
-        if (affectedExistingPaymentPeriods.Any(period =>
-                period < proposedContract.StartDate || period > proposedContract.EndDate))
+        if (_editingContractTender is not null && oldContract is null)
         {
-            ShowContractValidation(
-                "Sözleşme tarih aralığı mevcut hakediş dönemlerini kapsamalıdır. " +
-                "Mevcut hakedişlerden en az birinin dönemi yeni başlangıç/bitiş tarihleri dışında kalıyor.");
-            MarkInvalid(StartDatePicker);
-            MarkInvalid(EndDatePicker);
+            ShowAlreadyRegistered("Düzenlenen sözleşme artık bulunamıyor. Değişiklik uygulanmadı.");
             return;
         }
 
-        var existingByTender = _contracts.FirstOrDefault(x =>
-            string.Equals(x.TenderNumber, proposedContract.TenderNumber, StringComparison.OrdinalIgnoreCase));
+        var internalContractNumber = oldContract?.ContractNumber ?? "INTERNAL-" + Guid.NewGuid().ToString("N");
+        ContractNumberTextBox.Text = internalContractNumber;
 
-        if (_editingContractTender is null)
+        var proposedContract = new ContractDraftData(
+            TenderNumberTextBox.Text.Trim(),
+            internalContractNumber,
+            // Derived titles belong to presentation/output, not stored contracts.
+            oldContract?.WorkName ?? string.Empty,
+            // A new contract/part must not silently inherit a sibling contract's contractor.
+            // Contractor identity is associated with the route and is entered/selected there.
+            oldContract?.ContractorName ?? string.Empty,
+            contractAmount,
+            DateOnly.FromDateTime(startDate!.Value),
+            DateOnly.FromDateTime(endDate!.Value),
+            oldContract?.VatExempt ?? false,
+            TenderDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(TenderDatePicker.SelectedDate.Value) : null,
+            ContractDatePicker.SelectedDate.HasValue ? DateOnly.FromDateTime(ContractDatePicker.SelectedDate.Value) : null,
+            oldContract?.ContractorTaxOrIdentityNumber ?? string.Empty,
+            oldContract?.BankAccountNumber ?? string.Empty,
+            contractWorkDays,
+            transportDailyPrice,
+            oldContract?.ProgramType ??
+                (TryGetSelectedTransportationProgramType(out var selectedProgramType)
+                    ? selectedProgramType
+                    : throw new InvalidOperationException("Yeni sözleşme için taşıma programı seçilmelidir.")));
+
+        var duplicateTarget = _contracts.FirstOrDefault(x =>
+            string.Equals(
+                OehsIdentityService.NormalizeIdentity(x.TenderNumber),
+                OehsIdentityService.NormalizeIdentity(proposedContract.TenderNumber),
+                StringComparison.Ordinal) &&
+            !ReferenceEquals(x, oldContract));
+
+        if (duplicateTarget is not null && !ReferenceEquals(duplicateTarget, oldContract))
         {
-            if (existingByTender is not null)
-            {
-                ShowAlreadyRegistered($"İhale / Dosya No {proposedContract.TenderNumber} zaten kayıtlı. Mükerrer kayıt oluşturulmadı.");
-                return;
-            }
+            ShowAlreadyRegistered(
+                $"İKN '{proposedContract.TenderNumber}' zaten kayıtlı. Aynı ihale için yeni kayıt açmayın; farklı yüklenicileri Hatlar bölümünde bu İKN'ye bağlayın.");
+            return;
+        }
 
+        var contractsBeforeSave = _contracts.ToArray();
+        var routesBeforeSave = _routes.ToArray();
+        var hybridDraftsBeforeSave = SavedHybridPaymentDrafts.ToArray();
+        var hybridKeysBeforeSave = _multiRouteDraftCache.ToArray();
+        var historyBeforeSave = _progressHistory.ToArray();
+        var editingContractTenderBeforeSave = _editingContractTender;
+        var editingContractNumberBeforeSave = _editingContractNumber;
+
+        if (oldContract is null)
+        {
             _contracts.Add(proposedContract);
         }
         else
         {
-            if (existingByTender is not null &&
-                !string.Equals(existingByTender.TenderNumber, _editingContractTender, StringComparison.OrdinalIgnoreCase))
+            var affectedPaymentPeriods = _progressHistory
+                .Where(x => IsHistoryForContract(x, oldContract))
+                .Where(x => x.PeriodDate.HasValue)
+                .Select(x => x.PeriodDate!.Value)
+                .ToArray();
+
+            if (affectedPaymentPeriods.Any(period =>
+                    period < proposedContract.StartDate || period > proposedContract.EndDate))
             {
-                ShowAlreadyRegistered($"İhale / Dosya No {proposedContract.TenderNumber} zaten kayıtlı. Mükerrer kayıt oluşturulmadı.");
+                ShowContractValidation(
+                    "Sözleşme tarih aralığı bu sözleşmeye bağlı mevcut hakediş dönemlerini kapsamalıdır. " +
+                    "Dönem aralığı dışına çıkan en az bir hakediş var.");
+                MarkInvalid(StartDatePicker);
+                MarkInvalid(EndDatePicker);
                 return;
             }
 
-            var oldTender = _editingContractTender;
-            var oldContract = _contracts.FirstOrDefault(x =>
-                string.Equals(x.TenderNumber, oldTender, StringComparison.OrdinalIgnoreCase));
+            var routeData = _routes.Select(x => new RouteData(
+                x.RouteNumber,
+                x.Name,
+                x.DailyPrice,
+                x.GuideDailyPrice,
+                x.TransportWorkDays,
+                x.TenderNumber,
+                x.ContractorTaxOrIdentityNumber,
+                x.ContractNumber, x.ProgramType)).ToArray();
 
-            if (oldContract is null)
+            var proposedHistories = ProgressPaymentPropagationService.RecalculateForContractChange(
+                _progressHistory.ToArray(), routeData, oldContract, proposedContract, _calculationConstants);
+            var proposedTargetPayment = _historyCorrectionTargetId is Guid targetId
+                ? proposedHistories.FirstOrDefault(x => IsOperationPayment(x, targetId))
+                : null;
+            if (!ConfirmLiveHistoryCorrection("Sözleşme bilgileri", proposedTargetPayment))
+                return;
+
+            var propagatedRoutes = TenderRoutePropagationService.UpdateContractIdentity(
+                routeData, oldContract, proposedContract);
+            var affectedRouteIndices = _routes
+                .Select((route, routeIndex) => (route, routeIndex))
+                .Where(x => IsRouteForContract(x.route, oldContract))
+                .ToArray();
+
+            var oldIndex = _contracts.IndexOf(oldContract);
+            if (oldIndex < 0)
             {
-                _contracts.Add(proposedContract);
+                ShowAlreadyRegistered("Düzenlenen sözleşme listede bulunamadı. Değişiklik uygulanmadı.");
+                return;
             }
-            else
+
+            _contracts[oldIndex] = proposedContract;
+            foreach (var entry in affectedRouteIndices)
             {
-                var index = _contracts.IndexOf(oldContract);
-
-                try
+                var updatedRoute = propagatedRoutes[entry.routeIndex];
+                var nextRoute = entry.route with
                 {
-                    var proposedHistories = ProgressPaymentPropagationService.RecalculateForContractChange(
-                        _progressHistory.ToArray(),
-                        _routes.Select(x => new RouteData(
-                            x.RouteNumber,
-                            x.Name,
-                            x.DailyPrice,
-                            x.GuideWorkDays,
-                            x.GuideDailyPrice,
-                            x.TransportWorkDays,
-                            x.TenderNumber,
-                            x.ContractorTaxOrIdentityNumber)).ToArray(),
-                        oldContract,
-                        proposedContract);
-
-                    var routeData = _routes.Select(x => new RouteData(
-                        x.RouteNumber,
-                        x.Name,
-                        x.DailyPrice,
-                        x.GuideWorkDays,
-                        x.GuideDailyPrice,
-                        x.TransportWorkDays,
-                        x.TenderNumber,
-                        x.ContractorTaxOrIdentityNumber)).ToArray();
-
-                    var propagatedRoutes = TenderRoutePropagationService.UpdateTenderNumber(
-                        routeData,
-                        oldTender,
-                        proposedContract.TenderNumber);
-
-                    var affectedRouteIndices = _routes
-                        .Select((route, routeIndex) => (route, routeIndex))
-                        .Where(x => string.Equals(x.route.TenderNumber, oldTender, StringComparison.OrdinalIgnoreCase))
-                        .ToArray();
-
-                    _contracts[index] = proposedContract;
-
-                    for (var routeIndex = 0; routeIndex < affectedRouteIndices.Length; routeIndex++)
-                    {
-                        var updatedRoute = propagatedRoutes[affectedRouteIndices[routeIndex].routeIndex];
-                        var oldRoute = affectedRouteIndices[routeIndex].route;
-                        _routes[affectedRouteIndices[routeIndex].routeIndex] = oldRoute with
-                        {
-                            TenderNumber = updatedRoute.TenderNumber,
-                            DailyPrice = proposedContract.TransportDailyPrice
-                        };
-                    }
-
-                    _progressHistory.Clear();
-                    foreach (var item in proposedHistories)
-                        _progressHistory.Add(item);
-                }
-                catch (ProgressPaymentPropagationException ex)
-                {
-                    ContractStatusTextBlock.Text = $"İhale kaydedilmedi: {ex.Message}";
-                    return;
-                }
+                    TenderNumber = updatedRoute.TenderNumber,
+                    ContractNumber = updatedRoute.ContractNumber,
+                    DailyPrice = oldContract.TransportDailyPrice != proposedContract.TransportDailyPrice
+                        ? proposedContract.TransportDailyPrice : entry.route.DailyPrice,
+                    GuideDailyPrice = updatedRoute.GuideDailyPrice,
+                    ProgramType = updatedRoute.ProgramType
+                };
+                RekeyHybridDrafts(entry.route,nextRoute);
+                _routes[entry.routeIndex] = nextRoute;
             }
+
+            _progressHistory.Clear();
+            foreach (var item in proposedHistories)
+                _progressHistory.Add(item);
+        }
+
+        if (!SavePersistedData())
+        {
+            RestoreHybridDraftIdentitySnapshot(hybridDraftsBeforeSave,hybridKeysBeforeSave,routesBeforeSave);
+            RestoreLiveDataCollections(
+                contractsBeforeSave, _contractors.ToArray(), routesBeforeSave, historyBeforeSave);
+            _editingContractTender = editingContractTenderBeforeSave;
+            _editingContractNumber = editingContractNumberBeforeSave;
+            SetContractEditorMode(!string.IsNullOrWhiteSpace(editingContractTenderBeforeSave));
+            RefreshViewsAfterPersistenceRollback();
+            ContractStatusTextBlock.Text =
+                "Sözleşme kaydı diske yazılamadı. Bellekteki değişiklik geri alındı; form bilgileri korundu.";
+            return;
         }
 
         _editingContractTender = null;
+        _editingContractNumber = null;
+        _editingContractProgramType = null;
         SetContractEditorMode(false);
-        ApplyContractToForm(proposedContract);
-        SavePersistedData();
         UpdateContractSelectors();
         UpdateRouteListView();
         UpdateRouteSummary();
         UpdateContractSummaryView();
         UpdateHomeSummaryView();
         UpdateAcceptanceView();
+        if (_historyCorrectionSection == HistoryCorrectionSection.Contract)
+            RefreshViewsAfterHistoryCorrection();
+        ClearContractFormOnly();
+        ClearContractValidationVisuals();
 
         ContractStatusTextBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(36, 104, 216));
         ContractStatusTextBlock.Text = $"İhale kaydedildi: {proposedContract.TenderNumber}.";
@@ -2022,13 +4082,24 @@ public partial class MainWindow : Window
         try
         {
             var data = _dataStore.Load();
+            _savedHybridPaymentDrafts = (data.HybridPaymentDrafts ?? Array.Empty<HybridPaymentDraftData>()).ToList();
+            var loadedConstants = data.CalculationConstants ?? ProgressPaymentCalculationConstants.Defaults;
+            if (!loadedConstants.TryValidate(out var constantsError))
+            {
+                throw new OehsApplicationDataStoreException(
+                    "Kaydedilmiş hesaplama sabitleri geçersiz. Güvenlik nedeniyle kayıt ve hesaplama durduruldu: " + constantsError,
+                    new InvalidDataException(constantsError));
+            }
+
+            _calculationConstants = loadedConstants;
+            _calculationConstantsHistory =
+                (data.CalculationConstantsHistory ?? Array.Empty<ProgressPaymentCalculationConstantsChange>()).ToList();
 
             _contracts.Clear();
             var persistedContracts = data.Contracts ?? Array.Empty<ContractDraftData>();
             if (persistedContracts.Count > 0)
             {
-                foreach (var contract in persistedContracts)
-                    _contracts.Add(contract);
+                foreach (var contract in persistedContracts) _contracts.Add(contract);
             }
             else if (data.Contract is not null)
             {
@@ -2038,69 +4109,99 @@ public partial class MainWindow : Window
             _contractors.Clear();
             foreach (var contractor in data.Contractors ?? Array.Empty<Contractor>())
             {
+                // The program-scoped store performs legacy migration once, then
+                // returns each contractor in exactly one program partition.
                 _contractors.Add(new ContractorDraft(
                     contractor.Name,
                     OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber),
-                    contractor.Address,
-                    contractor.Phone,
-                    contractor.Email,
-                    contractor.BankAccountNumber,
-                    contractor.ContactPerson));
+                    contractor.Address, contractor.Phone, contractor.Email,
+                    contractor.BankAccountNumber, contractor.ContactPerson, contractor.ProgramType,
+                    contractor.VatExempt ?? HasLegacyContractVatExemption(contractor.TaxOrIdentityNumber, contractor.ProgramType)));
             }
 
             _routes.Clear();
             foreach (var route in data.Routes ?? Array.Empty<RouteData>())
             {
-                var tender = route.TenderNumber;
-                if (string.IsNullOrWhiteSpace(tender))
-                    tender = _contracts.FirstOrDefault()?.TenderNumber ?? string.Empty;
+                var tender = string.IsNullOrWhiteSpace(route.TenderNumber)
+                    ? _contracts.FirstOrDefault()?.TenderNumber ?? string.Empty
+                    : route.TenderNumber;
+                var tenderContracts = _contracts.Where(x =>
+                    x.ProgramType == route.ProgramType &&
+                    string.Equals(x.TenderNumber, tender, StringComparison.OrdinalIgnoreCase)).ToArray();
 
                 var contractorTax = OehsIdentityService.NormalizeIdentity(route.ContractorTaxOrIdentityNumber);
-                if (string.IsNullOrWhiteSpace(contractorTax))
+                var routeContract = !string.IsNullOrWhiteSpace(route.ContractNumber)
+                    ? FindContract(tender, route.ContractNumber, route.ProgramType)
+                    : tenderContracts.Where(x => x.ProgramType == route.ProgramType).ToArray() is var programContracts && programContracts.Length == 1
+                        ? programContracts[0]
+                        : null;
+
+                if (routeContract is null && string.IsNullOrWhiteSpace(route.ContractNumber) && !string.IsNullOrWhiteSpace(contractorTax))
                 {
-                    contractorTax = _contracts
-                        .FirstOrDefault(x => string.Equals(x.TenderNumber, tender, StringComparison.OrdinalIgnoreCase))
-                        ?.ContractorTaxOrIdentityNumber ?? string.Empty;
+                    var contractorMatches = tenderContracts.Where(x =>
+                        string.Equals(
+                            OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
+                            contractorTax,
+                            StringComparison.Ordinal)).ToArray();
+                    if (contractorMatches.Length == 1)
+                        routeContract = contractorMatches[0];
                 }
 
-                var contractorName = FindContractor(contractorTax)?.Name
-                                     ?? _contracts.FirstOrDefault(x => string.Equals(x.TenderNumber, tender, StringComparison.OrdinalIgnoreCase))?.ContractorName
-                                     ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(contractorTax))
+                    contractorTax = OehsIdentityService.NormalizeIdentity(routeContract?.ContractorTaxOrIdentityNumber ?? string.Empty);
+
+                var contractorName = FindContractor(contractorTax, routeContract?.ProgramType ?? route.ProgramType)?.Name ?? routeContract?.ContractorName ?? string.Empty;
+                var contractNumber = !string.IsNullOrWhiteSpace(route.ContractNumber)
+                    ? route.ContractNumber
+                    : routeContract?.ContractNumber ?? string.Empty;
 
                 _routes.Add(new RouteDraft(
-                    route.RouteNumber,
-                    route.Name,
-                    route.DailyPrice,
-                    route.GuideWorkDays,
-                    route.GuideDailyPrice,
-                    route.TransportWorkDays,
-                    tender,
-                    contractorTax,
-                    contractorName));
+                    route.RouteNumber, route.Name, route.DailyPrice,
+                    route.GuideDailyPrice, route.TransportWorkDays,
+                    tender, contractorTax, contractorName, contractNumber,
+                    routeContract?.ProgramType ?? route.ProgramType));
             }
 
             _progressHistory.Clear();
             foreach (var history in data.ProgressPayments ?? Array.Empty<ProgressPaymentHistoryData>())
             {
-                var contract = _contracts.FirstOrDefault(x =>
-                    string.Equals(x.TenderNumber, history.TenderNumber, StringComparison.OrdinalIgnoreCase));
+                var contract = FindContract(history.TenderNumber, history.ContractNumber, history.Input.ProgramType);
+                if (contract is null && string.IsNullOrWhiteSpace(history.ContractNumber))
+                {
+                    var tenderContracts = _contracts.Where(x =>
+                        string.Equals(x.TenderNumber, history.TenderNumber, StringComparison.OrdinalIgnoreCase)).ToArray();
+                    if (tenderContracts.Length == 1)
+                        contract = tenderContracts[0];
+                    else if (!string.IsNullOrWhiteSpace(history.ContractorTaxOrIdentityNumber))
+                    {
+                        var identity = OehsIdentityService.NormalizeIdentity(history.ContractorTaxOrIdentityNumber);
+                        var contractorMatches = tenderContracts.Where(x =>
+                            string.Equals(OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber), identity, StringComparison.Ordinal))
+                            .ToArray();
+                        if (contractorMatches.Length == 1)
+                            contract = contractorMatches[0];
+                    }
+                }
+
                 var contractorTax = OehsIdentityService.NormalizeIdentity(
                     history.ContractorTaxOrIdentityNumber ?? contract?.ContractorTaxOrIdentityNumber ?? string.Empty);
-                var contractor = FindContractor(contractorTax);
+                var contractor = FindContractor(contractorTax, history.Input.ProgramType);
+                var contractNumber = !string.IsNullOrWhiteSpace(history.ContractNumber)
+                    ? history.ContractNumber
+                    : contract?.ContractNumber ?? string.Empty;
 
                 _progressHistory.Add(history with
                 {
-                    ContractorTaxOrIdentityNumber = string.IsNullOrWhiteSpace(contractorTax) ? history.ContractorTaxOrIdentityNumber : contractorTax,
+                    ContractNumber = contractNumber,
+                    ContractorTaxOrIdentityNumber = string.IsNullOrWhiteSpace(contractorTax)
+                        ? history.ContractorTaxOrIdentityNumber
+                        : contractorTax,
                     ContractorName = contractor?.Name ?? history.ContractorName ?? contract?.ContractorName,
                     BankAccountNumber = contractor?.BankAccountNumber ?? history.BankAccountNumber ?? contract?.BankAccountNumber
                 });
             }
 
-            if (_contracts.Count > 0)
-                ApplyContractToForm(_contracts[0]);
-            else
-                ClearContractFormOnly();
-
+            ClearContractFormOnly();
             _dataLoadFailed = false;
             SetHeaderSaveStatus("Veri yüklendi", isError: false);
             UpdateContractSelectors();
@@ -2119,10 +4220,7 @@ public partial class MainWindow : Window
 
             MessageBox.Show(
                 $"{ex.Message}\n\nOEHS güvenlik nedeniyle mevcut bozuk/veri dosyasının üzerine yazmayacak.",
-                "OEHS — Veri Güvenliği",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
-
+                "OEHS — Veri Güvenliği", MessageBoxButton.OK, MessageBoxImage.Error);
             UpdateContractSelectors();
             UpdateRouteListView();
             UpdateContractSummaryView();
@@ -2147,55 +4245,93 @@ public partial class MainWindow : Window
         HeaderSaveStatusDot.Fill = new System.Windows.Media.SolidColorBrush(indicator);
     }
 
-    private void SavePersistedData()
+    private bool SavePersistedData(bool showErrorDialog = true)
     {
         if (_dataLoadFailed)
         {
             SetHeaderSaveStatus("Kaydetme durduruldu", isError: true);
-            MessageBox.Show(
+            if (showErrorDialog) MessageBox.Show(
                 "OEHS veri dosyası güvenli olarak yüklenemedi. Veri kaybını önlemek için kaydetme durduruldu.",
-                "OEHS — Kaydetme Durduruldu",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
-            return;
+                "OEHS — Kaydetme Durduruldu", MessageBoxButton.OK, MessageBoxImage.Error);
+            return false;
         }
 
+        var savedDraftsBeforeSave = SavedHybridPaymentDrafts.ToArray();
+        ReconcileSavedHybridSources();
         var activeContract = GetSelectedContract() ?? _contracts.FirstOrDefault();
-
         var data = new OehsApplicationData(
             activeContract,
             _routes.Select(x => new RouteData(
-                x.RouteNumber, x.Name, x.DailyPrice, x.GuideWorkDays, x.GuideDailyPrice,
-                x.TransportWorkDays, x.TenderNumber, x.ContractorTaxOrIdentityNumber)).ToArray(),
+                x.RouteNumber, x.Name, x.DailyPrice, x.GuideDailyPrice,
+                x.TransportWorkDays, x.TenderNumber, x.ContractorTaxOrIdentityNumber, x.ContractNumber, x.ProgramType)).ToArray(),
             _contractors.Select(x => new Contractor(
                 x.Name, x.TaxOrIdentityNumber, x.Address, x.Phone, x.Email,
-                x.BankAccountNumber, x.ContactPerson)).ToArray(),
+                x.BankAccountNumber, x.ContactPerson, x.ProgramType, x.VatExempt)).ToArray(),
             _progressHistory.ToArray(),
-            _contracts.ToArray());
+            _contracts.ToArray(),
+            _calculationConstants,
+            _calculationConstantsHistory.ToArray(),
+            SavedHybridPaymentDrafts.ToArray());
 
         try
         {
             _dataStore.Save(data);
             SetHeaderSaveStatus("Kaydedildi", isError: false);
+            return true;
         }
-        catch (OehsApplicationDataStoreException ex)
+        catch (Exception ex) when (ex is OehsApplicationDataStoreException or IOException or UnauthorizedAccessException)
         {
+            _savedHybridPaymentDrafts = savedDraftsBeforeSave.ToList();
             SetHeaderSaveStatus("Kaydetme hatası", isError: true);
-            MessageBox.Show(
+            if (showErrorDialog) MessageBox.Show(
                 $"{ex.Message}\n\nMevcut veri dosyası korunmuştur. OEHS değişikliklerinizi kaydetmedi.",
-                "OEHS — Veri Kaydetme Hatası",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+                "OEHS — Veri Kaydetme Hatası", MessageBoxButton.OK, MessageBoxImage.Error);
+            return false;
         }
+    }
+
+    private void RestoreLiveDataCollections(
+        IReadOnlyList<ContractDraftData> contracts,
+        IReadOnlyList<ContractorDraft> contractors,
+        IReadOnlyList<RouteDraft> routes,
+        IReadOnlyList<ProgressPaymentHistoryData> history)
+    {
+        _contracts.Clear();
+        foreach (var item in contracts) _contracts.Add(item);
+
+        _contractors.Clear();
+        foreach (var item in contractors) _contractors.Add(item);
+
+        _routes.Clear();
+        foreach (var item in routes) _routes.Add(item);
+
+        _progressHistory.Clear();
+        foreach (var item in history) _progressHistory.Add(item);
+    }
+
+    private void RefreshViewsAfterPersistenceRollback()
+    {
+        UpdateContractSelectors();
+        UpdateContractorSummary();
+        UpdateRouteSummary();
+        UpdateRouteListView();
+        UpdateContractSummaryView();
+        UpdateHistoryView();
+        UpdateSummaryView();
+        UpdateReportView();
+        UpdateHomeSummaryView();
+        UpdateAcceptanceView();
     }
 
     private void ClearContractButton_Click(object sender, RoutedEventArgs e)
     {
         ClearArchiveCorrectionState();
         _editingContractTender = null;
+        _editingContractNumber = null;
+        _editingContractProgramType = null;
         ClearContractFormOnly();
         UpdateContractSummaryView();
-        ContractStatusTextBlock.Text = "Yeni ihale/dosya kaydı için alanlar temizlendi.";
+        ContractStatusTextBlock.Text = "Yeni ihale/sözleşme kaydı için alanlar temizlendi.";
     }
 
     private static string OehsDesktopRoot => OehsOutputPathService.DesktopRoot;
@@ -2213,10 +4349,13 @@ public partial class MainWindow : Window
     private static string BuildArchiveKey(ProgressPaymentHistoryData item)
     {
         var tender = SafeFileName(string.IsNullOrWhiteSpace(item.TenderNumber) ? "Ihale" : item.TenderNumber);
+        var contractor = OehsFileNameService.BuildContractorFilePart(
+            item.ContractorName,
+            item.ContractorTaxOrIdentityNumber);
         var route = SafeFileName(string.IsNullOrWhiteSpace(item.RouteNumber) ? "Hat" : item.RouteNumber);
         var progress = item.ProgressPaymentNumber?.ToString(CultureInfo.InvariantCulture) ?? "Yeni";
         var period = item.PeriodDate?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "Donemsiz";
-        return $"{tender}_{route}_Hakedis-{progress}_{period}_{item.Id:N}";
+        return $"{tender}_Yuklenici-{contractor}_{route}_Hakedis-{progress}_{period}_{item.Id:N}";
     }
 
     private static string SaveRouteDocumentsArchiveMetadata(
@@ -2230,7 +4369,14 @@ public partial class MainWindow : Window
 
         var tender = latest.TenderNumber ?? string.Empty;
         var route = latest.RouteNumber ?? string.Empty;
-        var documentFolder = OehsOutputPathService.BuildPdfDirectory(tender, route);
+        var documentFolder = OehsOutputPathService.BuildPdfDirectoryForContractor(
+            tender,
+            latest.ContractorName ?? string.Empty,
+            latest.ContractorTaxOrIdentityNumber ?? string.Empty,
+            route,
+            latest.Input.ProgramType,
+            latest.BatchRouteNumbers,
+            latest.PeriodDate);
         Directory.CreateDirectory(documentFolder);
 
         var fileNames = pdfPaths.Select(Path.GetFileName).ToArray();
@@ -2395,7 +4541,7 @@ public partial class MainWindow : Window
 
     private void RecalculateHistoryItem(int index, ProgressPaymentInput input, ProgressPaymentHistoryData metadataSource)
     {
-        var result = ProgressPaymentCalculator.Calculate(input);
+        var result = ProgressPaymentCalculator.Calculate(input, _calculationConstants);
         _progressHistory[index] = metadataSource with
         {
             Input = input,
@@ -2411,13 +4557,14 @@ public partial class MainWindow : Window
                 x.RouteNumber,
                 x.Name,
                 x.DailyPrice,
-                x.GuideWorkDays,
                 x.GuideDailyPrice,
                 x.TransportWorkDays,
                 x.TenderNumber,
-                x.ContractorTaxOrIdentityNumber)).ToArray(),
+                x.ContractorTaxOrIdentityNumber,
+                x.ContractNumber, x.ProgramType)).ToArray(),
             oldContract,
-            updatedContract);
+            updatedContract,
+            _calculationConstants);
 
         _progressHistory.Clear();
         foreach (var item in propagated)
@@ -2431,6 +4578,265 @@ public partial class MainWindow : Window
 
         foreach (var item in propagated)
             _progressHistory.Add(item);
+    }
+
+    private void SaveMultiRouteProgressPayment(
+        ContractDraftData contract,
+        IReadOnlyList<RouteDraft> routes,
+        IReadOnlyList<MultiRoutePaymentDraftRow> entries,
+        DateOnly? periodDate)
+    {
+        if (routes.Count == 0)
+            return;
+
+        if (!periodDate.HasValue)
+        {
+            var message = "Çoklu hat hesabı için sözleşme ayı seçilmelidir.";
+            ProgressValidationBanner.Visibility = Visibility.Visible;
+            ProgressValidationMessageTextBlock.Text = message;
+            CalculationStatusTextBlock.Text = message;
+            ProgressCalculationSummaryTextBlock.Text = "KONTROL GEREKLİ";
+            return;
+        }
+
+        if (!TryCommitHybridGrid()) return;
+
+        if (entries.Count != routes.Count)
+        {
+            ShowMultiRouteValidation("Seçili hatların her biri için ayrı hesap satırı oluşturulamadı. Hat seçimlerini yenileyip tekrar deneyin.");
+            return;
+        }
+
+        var selectedPeriod = ProgressPaymentMonthService.FindForPeriod(
+            ProgressPaymentMonthService.BuildOptions(contract.StartDate, contract.EndDate),
+            periodDate.Value);
+        if (selectedPeriod is null)
+        {
+            ShowMultiRouteValidation("Seçilen ay sözleşme tarih aralığında değil; hakediş kaydı oluşturulmadı.");
+            return;
+        }
+
+        var contractors = _contractors.Select(x => new Contractor(
+            x.Name, x.TaxOrIdentityNumber, x.Address, x.Phone, x.Email,
+            x.BankAccountNumber, x.ContactPerson, x.ProgramType, x.VatExempt)).ToArray();
+        var data = new OehsApplicationData(
+            contract,
+            _routes.Select(x => new RouteData(
+                x.RouteNumber, x.Name, x.DailyPrice, x.GuideDailyPrice,
+                x.TransportWorkDays, x.TenderNumber, x.ContractorTaxOrIdentityNumber,
+                x.ContractNumber, x.ProgramType)).ToArray(),
+            contractors,
+            _progressHistory.ToArray(),
+            _contracts.ToArray());
+
+        var createdAt = DateTime.Now;
+        var batchId = Guid.NewGuid();
+        var sortedRouteNumbers = routes
+            .Select(x => x.RouteNumber.Trim())
+            .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        // A tender can contain routes belonging to different firms. The displayed
+        // batch name must describe the selected routes' actual contractor, not the
+        // tender's optional/default contractor label.
+        var contractorNameForBatch = routes
+            .Select(route => FindContractor(route.ContractorTaxOrIdentityNumber, route.ProgramType)?.Name)
+            .FirstOrDefault(name => !string.IsNullOrWhiteSpace(name))
+            ?? routes.Select(route => route.ContractorName)
+                .FirstOrDefault(name => !string.IsNullOrWhiteSpace(name))
+            ?? contract.ContractorName
+            ?? "Yüklenici";
+        var batchDisplayName = MonthlyProgressPaymentIdentityService.BuildDisplayName(
+            contract.ProgramType,
+            contract.TenderNumber,
+            contract.ContractNumber,
+            contractorNameForBatch,
+            sortedRouteNumbers,
+            periodDate.Value);
+        var batchRouteNumbers = string.Join("+", sortedRouteNumbers);
+        var entriesByKey = entries.ToDictionary(x => x.RouteKey, StringComparer.Ordinal);
+        var batch = new List<ProgressPaymentHistoryData>();
+        var errors = new List<string>();
+        var hasGuide = HasGuideStaff(contract.ProgramType);
+
+        foreach (var route in routes)
+        {
+            if (route.ProgramType != contract.ProgramType || !IsRouteForContract(route, contract))
+            {
+                errors.Add($"Hat {route.RouteNumber}: seçilen sözleşmenin programına bağlı değil.");
+                continue;
+            }
+
+            var routeKey = OehsIdentityService.BuildRouteKey(
+                route.TenderNumber,
+                route.RouteNumber,
+                route.ContractorTaxOrIdentityNumber,
+                route.ContractNumber,
+                route.ProgramType);
+            if (!entriesByKey.TryGetValue(routeKey, out var row))
+            {
+                errors.Add($"Hat {route.RouteNumber}: hat bazlı giriş satırı bulunamadı.");
+                continue;
+            }
+
+            if (row.WorkDays < 0 || row.DailyPrice < 0m || row.DiscountAmount < 0m ||
+                row.TaxDebt < 0m || row.SocialSecurityDebt < 0m ||
+                row.MinimumWageSupport < 0m || row.InspectionPenalty < 0m ||
+                (hasGuide && (row.GuideWorkDays < 0 || row.GuideDailyPrice < 0m || row.GuideDiscountAmount < 0m)))
+            {
+                errors.Add($"Hat {route.RouteNumber}: gün, günlük fiyat, iskonto ve kesinti alanları negatif olamaz. Fiyat farkı işaretli olabilir.");
+                continue;
+            }
+
+            var calendarCapacityError = ProgressPaymentMonthService.GetCalendarCapacityError(
+                selectedPeriod, row.WorkDays, hasGuide ? row.GuideWorkDays : 0m);
+            if (calendarCapacityError is not null)
+            {
+                errors.Add($"Hat {route.RouteNumber}: {calendarCapacityError}");
+                continue;
+            }
+
+            var identity = OehsIdentityService.NormalizeIdentity(route.ContractorTaxOrIdentityNumber);
+            var contractor = FindContractor(identity, route.ProgramType);
+            var input = new ProgressPaymentInput(
+                row.WorkDays,
+                row.DailyPrice,
+                row.DiscountAmount,
+                row.PriceDifference,
+                contract.ContractAmount,
+                contractor?.VatExempt ?? contract.VatExempt,
+                row.TaxDebt,
+                row.SocialSecurityDebt,
+                row.MinimumWageSupport,
+                row.InspectionPenalty,
+                hasGuide ? row.GuideWorkDays : 0,
+                hasGuide ? row.GuideDailyPrice : 0m,
+                hasGuide ? row.GuideDiscountAmount : 0m,
+                hasGuide ? row.GuidePriceDifference : 0m,
+                contract.ProgramType);
+
+            var calculation = ProgressPaymentCalculator.Calculate(input, _calculationConstants);
+            var routeProgressNumber = MonthlyProgressPaymentIdentityService.SuggestNextRouteNumber(
+                _progressHistory,
+                contract.TenderNumber,
+                contract.ContractNumber,
+                identity,
+                route.RouteNumber,
+                contract.ProgramType,
+                periodDate.Value);
+            var item = new ProgressPaymentHistoryData(
+                Guid.NewGuid(), createdAt, input, calculation,
+                routeProgressNumber, periodDate,
+                route.RouteNumber, route.Name,
+                contract.WorkName, contractor?.Name ?? route.ContractorName,
+                contract.TenderNumber, contract.ContractNumber,
+                contract.TenderDate, contract.ContractDate,
+                contract.StartDate, contract.EndDate,
+                contractor?.BankAccountNumber ?? string.Empty,
+                identity,
+                BatchId: batchId,
+                BatchDisplayName: batchDisplayName,
+                BatchRouteNumbers: batchRouteNumbers);
+
+            var validationErrors = ProgressPaymentValidationService.ValidateCreation(
+                data, contract,
+                new RouteData(
+                    route.RouteNumber, route.Name, route.DailyPrice,
+                    route.GuideDailyPrice, route.TransportWorkDays,
+                    route.TenderNumber, identity, route.ContractNumber, route.ProgramType),
+                item, editingExisting: false);
+            errors.AddRange(validationErrors.Select(error => $"Hat {route.RouteNumber}: {error}"));
+            batch.Add(item);
+        }
+
+        if (errors.Count > 0 || batch.Count != routes.Count)
+        {
+            ShowMultiRouteValidation(string.Join(Environment.NewLine, errors.Distinct()));
+            return;
+        }
+
+        foreach (var item in batch)
+            _progressHistory.Add(item);
+        if (!SavePersistedData())
+        {
+            foreach (var item in batch)
+                _progressHistory.Remove(item);
+            UpdateHistoryView();
+            UpdateSummaryView();
+            UpdateReportView();
+            UpdateHomeSummaryView();
+            UpdateAcceptanceView();
+            CalculationStatusTextBlock.Text = "Çoklu hat kaydı diske yazılamadı; tüm yeni hat kayıtları geri alındı.";
+            ProgressCalculationSummaryTextBlock.Text = "KAYIT BAŞARISIZ";
+            return;
+        }
+
+        var total = batch.Select(x => x.Calculation).ToArray();
+        decimal Sum(Func<ProgressPaymentCalculation, decimal> selector) =>
+            total.Sum(selector);
+        var deductions = new DeductionBreakdown(
+            Sum(x => x.Deductions.Withholding),
+            Sum(x => x.Deductions.StampTax),
+            Sum(x => x.Deductions.TaxDebt),
+            Sum(x => x.Deductions.InspectionPenalty),
+            Sum(x => x.Deductions.SocialSecurityDebt),
+            Sum(x => x.Deductions.MinimumWageSupport),
+            Sum(x => x.Deductions.AdditionalGuarantee));
+
+        ServiceAmountResultTextBlock.Text = FormatMoney(Sum(x => x.ServiceAmount));
+        GuideServiceAmountResultTextBlock.Text = FormatMoney(Sum(x => x.GuideServiceAmount));
+        TransportPriceDifferenceResultTextBlock.Text = FormatMoney(Sum(x => x.PriceDifferenceExcludingVat));
+        GuidePriceDifferenceResultTextBlock.Text = FormatMoney(Sum(x => x.GuidePriceDifferenceExcludingVat));
+        CombinedPriceDifferenceResultTextBlock.Text = FormatMoney(Sum(x => x.CombinedPriceDifferenceExcludingVat));
+        TotalAmountResultTextBlock.Text = FormatMoney(Sum(x => x.TotalAmount));
+        VatResultTextBlock.Text = FormatMoney(Sum(x => x.Vat));
+        DeductionsResultTextBlock.Text = FormatMoney(Sum(x => x.TotalDeductions));
+        GrossResultTextBlock.Text = FormatMoney(Sum(x => x.GrossAmount));
+        NetResultTextBlock.Text = FormatMoney(Sum(x => x.NetPayable));
+        NetControlResultTextBlock.Text = FormatMoney(Sum(x => x.NetPayable));
+        WithholdingResultTextBlock.Text = FormatMoney(deductions.Withholding);
+        StampTaxResultTextBlock.Text = FormatMoney(deductions.StampTax);
+        TaxDebtResultTextBlock.Text = FormatMoney(deductions.TaxDebt);
+        SocialSecurityDebtResultTextBlock.Text = FormatMoney(deductions.SocialSecurityDebt);
+        MinimumWageSupportResultTextBlock.Text = FormatMoney(deductions.MinimumWageSupport);
+        InspectionPenaltyResultTextBlock.Text = FormatMoney(deductions.InspectionPenalty);
+        AdditionalGuaranteeResultTextBlock.Text = FormatMoney(deductions.AdditionalGuarantee);
+        ManualAdditionalGuaranteeTextBox.Text = FormatMoney(deductions.AdditionalGuarantee);
+        ProgressWorkDaysSummaryTextBlock.Text = batch.Sum(x => x.Input.WorkDays).ToString(CultureInfo.CurrentCulture);
+        ProgressWorkDaysCardTextBlock.Text = ProgressWorkDaysSummaryTextBlock.Text + " gün";
+        ProgressNetSummaryTextBlock.Text = FormatMoney(Sum(x => x.NetPayable));
+        ProgressCalculationSummaryTextBlock.Text = "TAMAM";
+
+        ResetNewProgressDraftAfterCalculation(batch[^1]);
+        UpdateHistoryView();
+        UpdateSummaryView();
+        UpdateReportView();
+        UpdateHomeSummaryView();
+        UpdateAcceptanceView();
+        UpdateArchiveView();
+
+        var routeLabels = string.Join(", ", routes.Select(x => x.RouteNumber));
+        var aggregateMessage = $"{batchDisplayName} hesaplandı. {routes.Count} hat ({routeLabels}) için her satır ayrı hesaplandı ve kaydedildi. Birleşik net tutar: {FormatMoney(Sum(x => x.NetPayable))}.";
+        ProgressValidationBanner.Visibility = Visibility.Collapsed;
+        ProgressValidationMessageTextBlock.Text = aggregateMessage;
+        CalculationStatusTextBlock.Foreground =
+            new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(36, 104, 216));
+        CalculationStatusTextBlock.FontWeight = FontWeights.SemiBold;
+        CalculationStatusTextBlock.Text = aggregateMessage;
+        ArchiveCurrentProgressButton.Visibility = Visibility.Visible;
+        CorrectCurrentProgressButton.Visibility = Visibility.Visible;
+    }
+
+    private void ShowMultiRouteValidation(string message)
+    {
+        ProgressValidationBanner.Visibility = Visibility.Visible;
+        ProgressValidationMessageTextBlock.Text = message;
+        ProgressCalculationSummaryTextBlock.Text = "KONTROL GEREKLİ";
+        CalculationStatusTextBlock.Foreground =
+            new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(198, 40, 40));
+        CalculationStatusTextBlock.FontWeight = FontWeights.Bold;
+        CalculationStatusTextBlock.Text = message;
+        ArchiveCurrentProgressButton.Visibility = Visibility.Collapsed;
+        CorrectCurrentProgressButton.Visibility = Visibility.Collapsed;
     }
 
     private void CalculateProgressButton_Click(object sender, RoutedEventArgs e)
@@ -2447,33 +4853,72 @@ public partial class MainWindow : Window
         ProgressValidationBanner.Visibility = Visibility.Collapsed;
         ProgressValidationMessageTextBlock.Text = string.Empty;
 
+        var selectedContract = IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment)
+            ? _editingArchiveSnapshot!.Contract
+            : ProgressTenderListBox.SelectedItem as ContractDraftData;
+        if (selectedContract is null)
+        {
+            ShowAlreadyRegistered("Önce İhale Kayıt Numarası (İKN) seçin.");
+            return;
+        }
+        if (!IsArchiveEditing && !_editingHistoryId.HasValue)
+        {
+            if (ProgressRouteComboBox.SelectedItems.Count == 0)
+            {
+                ShowMultiRouteValidation("Önce hakediş oluşturulacak en az bir hat seçin.");
+                return;
+            }
+            TryCalculateHybridSelection(selectedContract);
+            return;
+        }
+        var hasGuide = HasGuideStaff(selectedContract.ProgramType);
+
         var invalidFields = new List<(Control Control, string Name)>();
 
-        if (!int.TryParse(WorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var workDays) || workDays < 0)
-            invalidFields.Add((WorkDaysTextBox, "Taşıma İş Günü"));
+        if (!TryParseWorkDays(WorkDaysTextBox.Text, out var workDays) || workDays < 0)
+            invalidFields.Add((WorkDaysTextBox, "Döneme Esas Taşıma Hakediş Gün Sayısı (Döneme Esas THGS)"));
 
-        if (!int.TryParse(GuideWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var guideWorkDays) || guideWorkDays < 0)
-            invalidFields.Add((GuideWorkDaysTextBox, "Rehber İş Günü"));
+        decimal guideWorkDays = 0m;
+        var guideDailyPrice = 0m;
+        var guideDiscount = 0m;
+        var guidePriceDifference = 0m;
+        var minimumWageSupport = 0m;
+        if (hasGuide)
+        {
+            if (!TryParseWorkDays(GuideWorkDaysTextBox.Text, out guideWorkDays) || guideWorkDays < 0)
+                invalidFields.Add((GuideWorkDaysTextBox, "Rehber İş Günü (bu ay)"));
+            if (!TryParseDecimal(GuideDailyPriceTextBox.Text, out guideDailyPrice) || guideDailyPrice < 0)
+                invalidFields.Add((GuideDailyPriceTextBox, "Rehber Personel Günlük Fiyat"));
+            if (!TryParseDecimalOrZero(GuideDiscountTextBox.Text, out guideDiscount) || guideDiscount < 0)
+                invalidFields.Add((GuideDiscountTextBox, "Rehber İskonto"));
+            if (!TryParseDecimalOrZero(GuidePriceDifferenceTextBox.Text, out guidePriceDifference))
+                invalidFields.Add((GuidePriceDifferenceTextBox, "Rehber Fiyat Farkı"));
+        }
+
+        // Asgari ücret desteği her iki kaynak Excel'de de kesinti alanıdır.
+        // Temel/Ortaöğretim'de tutar yalnızca kullanıcı onay kutusunu açtıysa alınır.
+        if (!TryParseDecimalOrZero(MinimumWageSupportTextBox.Text, out minimumWageSupport) ||
+            minimumWageSupport < 0)
+        {
+            invalidFields.Add((MinimumWageSupportTextBox, "Asgari Ücret Desteği"));
+        }
+        if (selectedContract.ProgramType == TransportationProgramType.BasicOrSecondary &&
+            MinimumWageSupportEnabledCheckBox.IsChecked != true)
+        {
+            minimumWageSupport = 0m;
+        }
 
         if (!TryParseDecimal(DailyPriceTextBox.Text, out var dailyPrice) || dailyPrice < 0)
-            invalidFields.Add((DailyPriceTextBox, "Taşıma Günlük Fiyat"));
-        if (!TryParseDecimal(GuideDailyPriceTextBox.Text, out var guideDailyPrice) || guideDailyPrice < 0)
-            invalidFields.Add((GuideDailyPriceTextBox, "Rehber Günlük Fiyat"));
-        if (!TryParseDecimal(DiscountTextBox.Text, out var discount) || discount < 0)
+            invalidFields.Add((DailyPriceTextBox, "Taşıma Günlük Fiyatı"));
+        if (!TryParseDecimalOrZero(DiscountTextBox.Text, out var discount) || discount < 0)
             invalidFields.Add((DiscountTextBox, "Taşıma İskonto"));
-        if (!TryParseDecimal(GuideDiscountTextBox.Text, out var guideDiscount) || guideDiscount < 0)
-            invalidFields.Add((GuideDiscountTextBox, "Rehber İskonto"));
-        if (!TryParseDecimal(PriceDifferenceTextBox.Text, out var priceDifference))
+        if (!TryParseDecimalOrZero(PriceDifferenceTextBox.Text, out var priceDifference))
             invalidFields.Add((PriceDifferenceTextBox, "Taşıma Fiyat Farkı"));
-        if (!TryParseDecimal(GuidePriceDifferenceTextBox.Text, out var guidePriceDifference))
-            invalidFields.Add((GuidePriceDifferenceTextBox, "Rehber Fiyat Farkı"));
-        if (!TryParseDecimal(TaxDebtTextBox.Text, out var taxDebt) || taxDebt < 0)
+        if (!TryParseDecimalOrZero(TaxDebtTextBox.Text, out var taxDebt) || taxDebt < 0)
             invalidFields.Add((TaxDebtTextBox, "Vergi Borcu"));
-        if (!TryParseDecimal(SocialSecurityDebtTextBox.Text, out var socialSecurityDebt) || socialSecurityDebt < 0)
+        if (!TryParseDecimalOrZero(SocialSecurityDebtTextBox.Text, out var socialSecurityDebt) || socialSecurityDebt < 0)
             invalidFields.Add((SocialSecurityDebtTextBox, "SGK Borcu"));
-        if (!TryParseDecimal(MinimumWageSupportTextBox.Text, out var minimumWageSupport) || minimumWageSupport < 0)
-            invalidFields.Add((MinimumWageSupportTextBox, "Asgari Ücret Desteği"));
-        if (!TryParseDecimal(InspectionPenaltyTextBox.Text, out var inspectionPenalty) || inspectionPenalty < 0)
+        if (!TryParseDecimalOrZero(InspectionPenaltyTextBox.Text, out var inspectionPenalty) || inspectionPenalty < 0)
             invalidFields.Add((InspectionPenaltyTextBox, "Denetim Cezası"));
 
         if (invalidFields.Count > 0)
@@ -2492,15 +4937,6 @@ public partial class MainWindow : Window
             return;
         }
 
-        var selectedContract = IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment)
-            ? _editingArchiveSnapshot!.Contract
-            : ProgressTenderListBox.SelectedItem as ContractDraftData;
-        if (selectedContract is null)
-        {
-            ShowAlreadyRegistered("Önce İhale / Dosya No seçin.");
-            return;
-        }
-
         try
         {
             RouteDraft? selectedRoute;
@@ -2511,16 +4947,17 @@ public partial class MainWindow : Window
                     archivedRoute.RouteNumber,
                     archivedRoute.Name,
                     archivedRoute.DailyPrice,
-                    archivedRoute.GuideWorkDays,
                     archivedRoute.GuideDailyPrice,
                     archivedRoute.TransportWorkDays,
                     archivedRoute.TenderNumber,
                     archivedRoute.ContractorTaxOrIdentityNumber,
-                    _editingArchiveSnapshot.Contractor.Name);
+                    _editingArchiveSnapshot.Contractor.Name,
+                    archivedRoute.ContractNumber,
+                    _editingArchiveSnapshot.Contract.ProgramType);
             }
             else
             {
-                RequireSelectedRoute();
+                // New calculations require an explicit route choice; never silently use the first route.
                 selectedRoute = ProgressRouteComboBox.SelectedItem as RouteDraft;
             }
 
@@ -2536,7 +4973,9 @@ public partial class MainWindow : Window
                 discount,
                 priceDifference,
                 selectedContract.ContractAmount,
-                selectedContract.VatExempt,
+                _editingArchiveSnapshot?.ProgressPayment.Input.IsVatExempt
+                    ?? FindContractor(selectedRoute.ContractorTaxOrIdentityNumber, selectedRoute.ProgramType)?.VatExempt
+                    ?? selectedContract.VatExempt,
                 taxDebt,
                 socialSecurityDebt,
                 minimumWageSupport,
@@ -2544,7 +4983,8 @@ public partial class MainWindow : Window
                 guideWorkDays,
                 guideDailyPrice,
                 guideDiscount,
-                guidePriceDifference);
+                guidePriceDifference,
+                selectedContract.ProgramType);
 
             int? progressNumber = null;
             if (int.TryParse(
@@ -2557,9 +4997,41 @@ public partial class MainWindow : Window
                 progressNumber = parsedProgressNumber;
             }
 
-            var periodDate = ProgressPeriodDatePicker.SelectedDate is DateTime selectedPeriodDate
-                ? DateOnly.FromDateTime(selectedPeriodDate)
-                : (DateOnly?)null;
+            var periodDate = (ProgressPeriodMonthComboBox.SelectedItem as ProgressPaymentMonthOption)?.PeriodDate;
+
+            var selectedRoutes = ProgressRouteComboBox.SelectedItems.OfType<RouteDraft>().ToArray();
+            if (!IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment) &&
+                !_editingHistoryId.HasValue &&
+                selectedRoutes.Length > 1)
+            {
+                MultiRoutePaymentGrid.CommitEdit(DataGridEditingUnit.Cell, true);
+                MultiRoutePaymentGrid.CommitEdit(DataGridEditingUnit.Row, true);
+                // Commit grid edits, refresh the cache, then cross an explicit
+                // selected-route boundary before any calculation or PDF generation.
+                foreach (var visibleRow in _multiRoutePaymentRows)
+                    _multiRouteDraftCache[visibleRow.RouteKey] = visibleRow;
+
+                try
+                {
+                    var selectedRouteKeys = selectedRoutes.Select(route =>
+                        OehsIdentityService.BuildRouteKey(
+                            route.TenderNumber,
+                            route.RouteNumber,
+                            route.ContractorTaxOrIdentityNumber,
+                            route.ContractNumber,
+                            route.ProgramType));
+                    var selectedEntries = SelectedRouteDrafts.SelectExact(
+                        selectedRouteKeys, _multiRouteDraftCache);
+                    SaveMultiRouteProgressPayment(
+                        selectedContract, selectedRoutes, selectedEntries, periodDate);
+                }
+                catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
+                {
+                    ShowMultiRouteValidation(
+                        $"Seçili hat taslakları doğrulanamadı; hakediş üretilmedi. {ex.Message}");
+                }
+                return;
+            }
 
             if (IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment))
             {
@@ -2568,12 +5040,12 @@ public partial class MainWindow : Window
 
                 if (!periodDate.HasValue)
                 {
-                    invalidFields.Add((ProgressPeriodDatePicker, "Dönem Tarihi"));
+                    invalidFields.Add((ProgressPeriodMonthComboBox, "Dönem Tarihi"));
                 }
                 else if (periodDate.Value < _editingArchiveSnapshot!.Contract.StartDate ||
                          periodDate.Value > _editingArchiveSnapshot.Contract.EndDate)
                 {
-                    invalidFields.Add((ProgressPeriodDatePicker, "Dönem Tarihi"));
+                    invalidFields.Add((ProgressPeriodMonthComboBox, "Dönem Tarihi"));
                 }
             }
 
@@ -2610,16 +5082,41 @@ public partial class MainWindow : Window
             }
             else
             {
-                var liveContractor = FindContractor(normalizedContractorIdentity);
+                var liveContractor = FindContractor(normalizedContractorIdentity, selectedContract.ProgramType);
                 contractorName = liveContractor?.Name ?? selectedRoute.ContractorName;
                 contractorBankAccount = liveContractor?.BankAccountNumber ?? string.Empty;
             }
+
+            var existingPaymentForMetadata = _editingHistoryId.HasValue
+                ? _progressHistory.FirstOrDefault(x => IsOperationPayment(x, _editingHistoryId.Value))
+                : null;
+            var metadataSource = IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment)
+                ? _editingArchiveSnapshot!.ProgressPayment
+                : existingPaymentForMetadata;
+            var selectedRouteNumbersForMetadata = ProgressRouteComboBox.SelectedItems
+                .OfType<RouteDraft>()
+                .Select(x => x.RouteNumber.Trim())
+                .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            if (selectedRouteNumbersForMetadata.Length == 0)
+                selectedRouteNumbersForMetadata = new[] { selectedRoute.RouteNumber.Trim() };
+            var batchIdForMetadata = metadataSource?.BatchId ?? metadataSource?.Id ?? Guid.NewGuid();
+            var batchRouteNumbersForMetadata = metadataSource?.BatchRouteNumbers
+                ?? string.Join("+", selectedRouteNumbersForMetadata);
+            var batchDisplayNameForMetadata = metadataSource?.BatchDisplayName
+                ?? MonthlyProgressPaymentIdentityService.BuildDisplayName(
+                    selectedContract.ProgramType,
+                    selectedContract.TenderNumber,
+                    selectedContract.ContractNumber,
+                    contractorName,
+                    selectedRouteNumbersForMetadata,
+                    periodDate ?? DateOnly.FromDateTime(DateTime.Today));
 
             // Ön kontrol, hesaplama motorundan önce çalışır.
             var historyItem = new ProgressPaymentHistoryData(
                 _editingHistoryId ?? Guid.NewGuid(),
                 _editingHistoryId.HasValue
-                    ? _progressHistory.First(x => x.Id == _editingHistoryId.Value).CreatedAt
+                    ? _progressHistory.First(x => IsOperationPayment(x, _editingHistoryId.Value)).CreatedAt
                     : DateTime.Now,
                 input,
                 new ProgressPaymentCalculation(
@@ -2638,7 +5135,10 @@ public partial class MainWindow : Window
                 selectedContract.StartDate,
                 selectedContract.EndDate,
                 contractorBankAccount,
-                normalizedContractorIdentity);
+                normalizedContractorIdentity,
+                BatchId: batchIdForMetadata,
+                BatchDisplayName: batchDisplayNameForMetadata,
+                BatchRouteNumbers: batchRouteNumbersForMetadata);
 
             var dataForValidation = new OehsApplicationData(
                 selectedContract,
@@ -2646,11 +5146,11 @@ public partial class MainWindow : Window
                     x.RouteNumber,
                     x.Name,
                     x.DailyPrice,
-                    x.GuideWorkDays,
                     x.GuideDailyPrice,
                     x.TransportWorkDays,
                     x.TenderNumber,
-                    x.ContractorTaxOrIdentityNumber)).ToArray(),
+                    x.ContractorTaxOrIdentityNumber,
+                    x.ContractNumber, x.ProgramType)).ToArray(),
                 _contractors.Select(x => new Contractor(
                     x.Name,
                     OehsIdentityService.NormalizeIdentity(x.TaxOrIdentityNumber),
@@ -2658,7 +5158,9 @@ public partial class MainWindow : Window
                     x.Phone,
                     x.Email,
                     x.BankAccountNumber,
-                    x.ContactPerson)).ToArray(),
+                    x.ContactPerson,
+                    x.ProgramType,
+                    x.VatExempt)).ToArray(),
                 _progressHistory.ToArray(),
                 _contracts.ToArray());
 
@@ -2671,11 +5173,11 @@ public partial class MainWindow : Window
                         selectedRoute.RouteNumber,
                         selectedRoute.Name,
                         selectedRoute.DailyPrice,
-                        selectedRoute.GuideWorkDays,
                         selectedRoute.GuideDailyPrice,
                         selectedRoute.TransportWorkDays,
                         selectedRoute.TenderNumber,
-                        normalizedContractorIdentity),
+                        normalizedContractorIdentity,
+                        selectedContract.ContractNumber, selectedRoute.ProgramType),
                     historyItem,
                     _editingHistoryId.HasValue);
 
@@ -2702,7 +5204,7 @@ public partial class MainWindow : Window
             CalculationStatusTextBlock.FontWeight = FontWeights.SemiBold;
             CalculationStatusTextBlock.Text = ProgressValidationMessageTextBlock.Text;
 
-            var result = ProgressPaymentCalculator.Calculate(input);
+            var result = ProgressPaymentCalculator.Calculate(input, _calculationConstants);
 
             historyItem = historyItem with { Calculation = result };
 
@@ -2724,7 +5226,10 @@ public partial class MainWindow : Window
             MinimumWageSupportResultTextBlock.Text = FormatMoney(result.Deductions.MinimumWageSupport);
             InspectionPenaltyResultTextBlock.Text = FormatMoney(result.Deductions.InspectionPenalty);
             AdditionalGuaranteeResultTextBlock.Text = FormatMoney(result.AdditionalGuarantee);
+            ManualAdditionalGuaranteeTextBox.Text = FormatMoney(result.AdditionalGuarantee);
             ProgressWorkDaysSummaryTextBlock.Text = workDays.ToString(CultureInfo.CurrentCulture);
+            ProgressWorkDaysCardTextBlock.Text = ProgressWorkDaysSummaryTextBlock.Text + " gün";
+        ProgressWorkDaysCardTextBlock.Text = workDays.ToString(CultureInfo.CurrentCulture) + " gün";
             ProgressNetSummaryTextBlock.Text = FormatMoney(result.NetPayable);
             ProgressCalculationSummaryTextBlock.Text = "TAMAM";
 
@@ -2748,17 +5253,31 @@ public partial class MainWindow : Window
                         PdfFileName = BuildArchivePdfFileName(updatedPayment)
                     },
                     "Hakediş girdileri");
-
-                ProgressCalculationSummaryTextBlock.Text = "ARŞİV GÜNCELLENDİ";
-                ArchiveCurrentProgressButton.Visibility = Visibility.Collapsed;
-                CorrectCurrentProgressButton.Visibility = Visibility.Collapsed;
                 return;
             }
 
-            if (_editingHistoryId.HasValue)
+            if (_editingHistoryId.HasValue &&
+                !ConfirmLiveHistoryCorrection("Hakediş girdileri", historyItem))
             {
-                var editIndex = _progressHistory.IndexOf(
-                    _progressHistory.First(x => x.Id == _editingHistoryId.Value));
+                SetProgressEditorMode(true);
+                return;
+            }
+
+            var editingHistoryId = _editingHistoryId;
+            var editIndex = -1;
+            ProgressPaymentHistoryData? previousHistoryItem = null;
+
+            if (editingHistoryId.HasValue)
+            {
+                var existingHistoryForEdit = _progressHistory.FirstOrDefault(x => IsOperationPayment(x, editingHistoryId.Value));
+                editIndex = existingHistoryForEdit is null ? -1 : _progressHistory.IndexOf(existingHistoryForEdit);
+                if (editIndex < 0)
+                {
+                    ShowAlreadyRegistered("Düzenlenecek hakediş kaydı artık bulunamıyor; değişiklik kaydedilmedi.");
+                    return;
+                }
+
+                previousHistoryItem = _progressHistory[editIndex];
                 _progressHistory[editIndex] = historyItem;
                 _editingHistoryId = null;
             }
@@ -2767,14 +5286,47 @@ public partial class MainWindow : Window
                 _progressHistory.Add(historyItem);
             }
 
+            if (!SavePersistedData())
+            {
+                if (editingHistoryId.HasValue && editIndex >= 0 && previousHistoryItem is not null)
+                {
+                    _progressHistory[editIndex] = previousHistoryItem;
+                    _editingHistoryId = editingHistoryId;
+                    SetProgressEditorMode(true);
+                }
+                else
+                {
+                    var failedNewItem = _progressHistory.FirstOrDefault(x => x.Id == historyItem.Id);
+                    if (failedNewItem is not null)
+                        _progressHistory.Remove(failedNewItem);
+                    SetProgressEditorMode(false);
+                }
+
+                UpdateHistoryView();
+                UpdateSummaryView();
+                UpdateReportView();
+                UpdateHomeSummaryView();
+                UpdateAcceptanceView();
+                CalculationStatusTextBlock.Text =
+                    "Veri diske kaydedilemedi. Bellekteki değişiklik geri alındı; başarıyla kaydedilmiş sayılmıyor.";
+                ProgressCalculationSummaryTextBlock.Text = "KAYIT BAŞARISIZ";
+                return;
+            }
+
             SetProgressEditorMode(false);
-            SavePersistedData();
             _lastCalculatedHistoryId = historyItem.Id;
             UpdateHistoryView();
             UpdateSummaryView();
             UpdateReportView();
             UpdateHomeSummaryView();
             UpdateAcceptanceView();
+            if (_historyCorrectionSection == HistoryCorrectionSection.ProgressPayment)
+                RefreshViewsAfterHistoryCorrection();
+
+            if (!editingHistoryId.HasValue)
+            {
+                ResetNewProgressDraftAfterCalculation(historyItem);
+            }
 
             CalculationStatusTextBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(36, 104, 216));
             CalculationStatusTextBlock.FontWeight = FontWeights.SemiBold;
@@ -2792,6 +5344,344 @@ public partial class MainWindow : Window
         }
     }
 
+    private void TemporaryCalculationTraceButton_Click(object sender, RoutedEventArgs e)
+    {
+        NavigationButton_Click(new System.Windows.Controls.Button { Tag = "Trace" }, new RoutedEventArgs());
+    }
+
+    private void ConfigureLiveCalculationTrace()
+    {
+        foreach (var textBox in new TextBox[]
+        {
+            WorkDaysTextBox, DailyPriceTextBox, GuideWorkDaysTextBox, GuideDailyPriceTextBox,
+            DiscountTextBox, GuideDiscountTextBox, PriceDifferenceTextBox, GuidePriceDifferenceTextBox,
+            TaxDebtTextBox, SocialSecurityDebtTextBox, MinimumWageSupportTextBox, InspectionPenaltyTextBox,
+            ContractAmountTextBox, ProgressNumberTextBox
+        })
+            textBox.TextChanged += (_, _) => RefreshCalculationTraceLive();
+
+        ProgressTenderListBox.SelectionChanged += (_, _) => RefreshCalculationTraceLive();
+        ProgressRouteComboBox.SelectionChanged += (_, _) => RefreshCalculationTraceLive();
+        ProgressPeriodMonthComboBox.SelectionChanged += (_, _) => RefreshCalculationTraceLive();
+        ContractorVatExemptCheckBox.Checked += (_, _) => RefreshCalculationTraceLive();
+        ContractorVatExemptCheckBox.Unchecked += (_, _) => RefreshCalculationTraceLive();
+        MinimumWageSupportEnabledCheckBox.Checked += (_, _) => RefreshCalculationTraceLive();
+        MinimumWageSupportEnabledCheckBox.Unchecked += (_, _) => RefreshCalculationTraceLive();
+        MultiRoutePaymentGrid.CellEditEnding += (_, _) =>
+            Dispatcher.BeginInvoke(new Action(RefreshCalculationTraceLive));
+        MultiRoutePaymentGrid.RowEditEnding += (_, _) =>
+            Dispatcher.BeginInvoke(new Action(RefreshCalculationTraceLive));
+
+        RefreshCalculationTraceLive();
+    }
+
+    private void RefreshCalculationTraceLive()
+    {
+        if (CalculationTraceLiveTextBox is null)
+            return;
+
+        if (!IsArchiveEditing && !_editingHistoryId.HasValue && _multiRoutePaymentRows.Count > 0 &&
+            MultiRouteEntryBorder.Visibility == Visibility.Visible)
+        {
+            RefreshHybridCalculationTrace();
+            return;
+        }
+
+        var culture = CultureInfo.CurrentCulture;
+        string N(decimal value) => value.ToString("N4", culture);
+        string M(decimal value) => value.ToString("N2", culture);
+        string Raw(TextBox box) => string.IsNullOrWhiteSpace(box.Text) ? "(boş)" : box.Text.Trim();
+        var issues = new List<string>();
+
+        var selectedContract = IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment) &&
+                               _editingArchiveSnapshot is not null
+            ? _editingArchiveSnapshot.Contract
+            : ProgressTenderListBox.SelectedItem as ContractDraftData;
+        var selectedProgram = selectedContract?.ProgramType;
+        var hasGuide = selectedContract is not null && HasGuideStaff(selectedContract.ProgramType);
+        var selectedRouteName = (ProgressRouteComboBox.SelectedItem as RouteDraft)?.Name ?? "Seçilmedi";
+
+        if (selectedContract is null)
+            issues.Add("Önce ihale/program seçin.");
+
+        if (!TryParseWorkDays(WorkDaysTextBox.Text, out var g) || g < 0m)
+        {
+            g = 0m;
+            issues.Add("Taşıma iş günü eksik veya geçersiz.");
+        }
+
+        if (!TryParseDecimal(DailyPriceTextBox.Text, out var h) || h < 0m)
+        {
+            h = 0m;
+            issues.Add("Taşıma günlük fiyatı eksik veya geçersiz.");
+        }
+
+        if (!TryParseDecimalOrZero(PriceDifferenceTextBox.Text, out var i))
+        {
+            i = 0m;
+            issues.Add("Taşıma fiyat farkı geçersiz.");
+        }
+
+        if (!TryParseDecimalOrZero(DiscountTextBox.Text, out var j) || j < 0m)
+        {
+            j = 0m;
+            issues.Add("Taşıma iskontosu geçersiz.");
+        }
+
+        decimal p = 0m, q = 0m, r = 0m, s = 0m;
+        if (hasGuide)
+        {
+            if (!TryParseWorkDays(GuideWorkDaysTextBox.Text, out p) || p < 0m)
+            {
+                p = 0m;
+                issues.Add("Rehber iş günü eksik veya geçersiz.");
+            }
+            if (!TryParseDecimal(GuideDailyPriceTextBox.Text, out q) || q < 0m)
+            {
+                q = 0m;
+                issues.Add("Rehber günlük fiyatı eksik veya geçersiz.");
+            }
+            if (!TryParseDecimalOrZero(GuidePriceDifferenceTextBox.Text, out r))
+            {
+                r = 0m;
+                issues.Add("Rehber fiyat farkı geçersiz.");
+            }
+            if (!TryParseDecimalOrZero(GuideDiscountTextBox.Text, out s) || s < 0m)
+            {
+                s = 0m;
+                issues.Add("Rehber iskontosu geçersiz.");
+            }
+        }
+
+        decimal taxDebt = 0m, socialSecurityDebt = 0m, minimumWageSupport = 0m, inspectionPenalty = 0m;
+        if (!TryParseDecimalOrZero(TaxDebtTextBox.Text, out taxDebt) || taxDebt < 0m)
+        {
+            taxDebt = 0m;
+            issues.Add("Vergi borcu geçersiz.");
+        }
+        if (!TryParseDecimalOrZero(SocialSecurityDebtTextBox.Text, out socialSecurityDebt) || socialSecurityDebt < 0m)
+        {
+            socialSecurityDebt = 0m;
+            issues.Add("SGK borcu geçersiz.");
+        }
+        if (!TryParseDecimalOrZero(MinimumWageSupportTextBox.Text, out minimumWageSupport) || minimumWageSupport < 0m)
+        {
+            minimumWageSupport = 0m;
+            issues.Add("Asgari ücret desteği geçersiz.");
+        }
+        if (!TryParseDecimalOrZero(InspectionPenaltyTextBox.Text, out inspectionPenalty) || inspectionPenalty < 0m)
+        {
+            inspectionPenalty = 0m;
+            issues.Add("Denetim cezası geçersiz.");
+        }
+
+        if (selectedProgram == TransportationProgramType.BasicOrSecondary &&
+            MinimumWageSupportEnabledCheckBox.IsChecked != true)
+            minimumWageSupport = 0m;
+
+        var transportService = g * h;
+        var transportNet = transportService + i - j;
+        var guideService = p * q;
+        var guideNet = guideService + r - s;
+        var guaranteeRate = _calculationConstants.AdditionalGuaranteeRate;
+        var specialGuarantee = i * guaranteeRate + r * guaranteeRate;
+        var guaranteeDisplay = selectedProgram == TransportationProgramType.BasicOrSecondary
+            ? "I × " + (guaranteeRate * 100m).ToString("0.##", culture) + "% = " + M(i * guaranteeRate) + " TL"
+            : selectedProgram == TransportationProgramType.SpecialEducation
+                ? "(I × " + (guaranteeRate * 100m).ToString("0.##", culture) + "%) + (R × "
+                  + (guaranteeRate * 100m).ToString("0.##", culture) + "%) = "
+                  + M(specialGuarantee) + " TL"
+                : "Program seçilince hesaplanır.";
+
+        var lines = new List<string>
+        {
+            "OEHS — GEÇİCİ HESAP TUTUCU / CANLI HESAPLAMA İZİ",
+            "Son güncelleme: " + DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss", culture),
+            "Program: " + (selectedProgram?.ToString() ?? "Seçilmedi"),
+            "İhale: " + (selectedContract?.TenderNumber ?? "Seçilmedi"),
+            "Hat: " + selectedRouteName,
+            "Dönem: " + ((ProgressPeriodMonthComboBox.SelectedItem as ProgressPaymentMonthOption)?.PeriodDate.ToString("MMMM yyyy", culture) ?? "Seçilmedi"),
+            "KDV muafiyeti: " + (IsVatExemptForCurrentFirm(selectedContract) ? "Evet" : "Hayır"),
+            "Girdi durumu: " + (issues.Count == 0 ? "Ön hesaplamaya uygun" : "HESAPLAMA BEKLEMEDE — eski sonuç gösterilmiyor"),
+            ""
+        };
+
+        lines.AddRange(new[]
+        {
+            "1) GİRDİLER (ham metin korunur)",
+            "G — Taşıma iş günü: " + Raw(WorkDaysTextBox),
+            "H — Taşıma günlük fiyat: " + Raw(DailyPriceTextBox) + " TL",
+            "I — Taşıma fiyat farkı: " + Raw(PriceDifferenceTextBox) + " TL",
+            "J — Taşıma iskontosu: " + Raw(DiscountTextBox) + " TL",
+            "P — Rehber iş günü: " + (hasGuide ? Raw(GuideWorkDaysTextBox) : "Bu programda kullanılmıyor"),
+            "Q — Rehber günlük fiyat: " + (hasGuide ? Raw(GuideDailyPriceTextBox) + " TL" : "Bu programda kullanılmıyor"),
+            "R — Rehber fiyat farkı: " + (hasGuide ? Raw(GuidePriceDifferenceTextBox) + " TL" : "Bu programda kullanılmıyor"),
+            "S — Rehber iskontosu: " + (hasGuide ? Raw(GuideDiscountTextBox) + " TL" : "Bu programda kullanılmıyor"),
+            "Vergi borcu: " + Raw(TaxDebtTextBox) + " TL",
+            "SGK borcu: " + Raw(SocialSecurityDebtTextBox) + " TL",
+            "Asgari ücret desteği (etkin): " + M(minimumWageSupport) + " TL",
+            "Denetim cezası: " + Raw(InspectionPenaltyTextBox) + " TL",
+            "Sözleşme bedeli: " + (selectedContract is null ? Raw(ContractAmountTextBox) : M(selectedContract.ContractAmount)) + " TL",
+            "Ek kesin teminat: " + guaranteeDisplay,
+            "",
+            "2) EXCEL KAYNAK EŞLEŞMESİ (sayfa, hücre, sütun başlığı ve birebir formül)",
+            selectedProgram == TransportationProgramType.BasicOrSecondary
+                ? "Kaynak: Hesaplama Bilgileri!T4 | Başlık: Ek Kesin Teminat | Excel formülü: =I4*6/100 | OEHS: I (Taşıma fiyat farkı) × %6"
+                : selectedProgram == TransportationProgramType.SpecialEducation
+                    ? "Kaynak: Hesaplama!AC4 | Başlık: Ek Kesin Teminat | Excel formülü: =(I4*6/100)+(R4*6/100) | OEHS: (I taşıma fiyat farkı × %6) + (R rehber fiyat farkı × %6)"
+                    : "Kaynak hücre/formül eşlemesi için önce program seçin.",
+            selectedProgram == TransportationProgramType.SpecialEducation
+                ? "Ek kaynak: Hesaplama!K4 | Excel formülü: =(G4*H4)+I4-J4"
+                : selectedProgram == TransportationProgramType.BasicOrSecondary
+                    ? "Temel Eğitim taşıma neti için hücre/formül eşlemesi kaynak çalışma kitabıyla birebir doğrulanmayı bekliyor; doğrulanmamış K4 eşlemesi gösterilmez."
+                    : "Taşıma net tutarı kaynak hücresi: program seçimi bekleniyor.",
+            selectedProgram == TransportationProgramType.SpecialEducation
+                ? "Ek kaynak: Hesaplama!T4 | Başlık: Rehber net tutarı | Excel formülü: =(P4*Q4)+R4-S4"
+                : "Rehber satırı bu programda kaynak formülüne göre kullanılmaz.",
+            selectedProgram == TransportationProgramType.BasicOrSecondary
+                ? "Ek kaynak: Hesaplama Bilgileri!U4 | Başlık: Damga Vergisi | Excel formülü: =K4*9.48/1000 (rapor sayfasındaki farklı matrah davranışıyla karıştırmayın)"
+                : selectedProgram == TransportationProgramType.SpecialEducation
+                    ? "Ek kaynak: Hesaplama!AD4 | Başlık: Damga Vergisi | Excel formülü: =(K4*9.48/1000)+(T4*9.48/1000)"
+                    : "Damga vergisi kaynak hücresi: program seçimi bekleniyor.",
+            "Not: Kaynak başlıkları/formülleri XLSM statik incelemesinden alınmıştır; Excel masaüstü/VBA yeniden hesaplaması yerine geçmez.",
+            "",
+            "3) OEHS CANLI FORMÜL VE ARA DEĞERLER",
+            "K — Taşıma neti = G × H + I − J = " + (issues.Count == 0
+                ? N(g) + " × " + M(h) + " + " + M(i) + " − " + M(j) + " = " + M(transportNet) + " TL"
+                : "Hesap bekliyor (eksik/geçersiz giriş)"),
+            hasGuide
+                ? "T — Rehber neti = P × Q + R − S = " + (issues.Count == 0
+                    ? N(p) + " × " + M(q) + " + " + M(r) + " − " + M(s) + " = " + M(guideNet) + " TL"
+                    : "Hesap bekliyor (eksik/geçersiz giriş)")
+                : selectedProgram == TransportationProgramType.BasicOrSecondary
+                    ? "T — Rehber neti = Bu programda rehber kalemi yok; 0,00 TL"
+                    : "T — Rehber neti = Program seçimi bekleniyor",
+            "AC — Ek kesin teminat = " + (issues.Count == 0 ? guaranteeDisplay : "Hesap bekliyor (eksik/geçersiz giriş)"),
+            "AD — Damga vergisi matrahı: " + (selectedProgram == TransportationProgramType.BasicOrSecondary
+                ? "Kaynak Excel U sütunu formülü; kaynak hücreler esas alınır"
+                : "K × damga vergisi oranı + T × damga vergisi oranı"),
+            ""
+        });
+
+        if (issues.Count > 0)
+        {
+            lines.Add("4) EKSİK / GEÇERSİZ GİRDİLER");
+            lines.AddRange(issues.Select(x => "• " + x));
+            lines.Add("");
+            lines.Add("Vergi, tevkifat, damga vergisi, toplam kesinti ve net ödeme için sonuç üretilmedi. Eksik alanlar tamamlandığında bu iz kendiliğinden yenilenir.");
+        }
+        else if (selectedContract is not null)
+        {
+            try
+            {
+                var input = new ProgressPaymentInput(
+                    g, h, j, i, selectedContract.ContractAmount, IsVatExemptForCurrentFirm(selectedContract),
+                    taxDebt, socialSecurityDebt, minimumWageSupport, inspectionPenalty,
+                    p, q, s, r, selectedContract.ProgramType);
+                var result = ProgressPaymentCalculator.Calculate(input, _calculationConstants);
+                var constants = result.AppliedConstants ?? _calculationConstants;
+                var vatLabel = IsVatExemptForCurrentFirm(selectedContract) ? "KDV muaf" : "KDV dahil";
+                var effectiveTransportVat = constants.TransportVatRate;
+                var effectiveGuideVat = constants.GuideVatRate;
+                var effectiveTransportWithholding = constants.TransportWithholdingShare;
+                var effectiveGuideWithholding = constants.GuideWithholdingShare;
+
+                lines.AddRange(new[]
+                {
+                    "Taşıma hizmet tutarı = G × H = " + M(result.ServiceAmount) + " TL",
+                    "Taşıma fiyat farkı neti = I − J = " + M(result.PriceDifferenceExcludingVat) + " TL",
+                    "K — Taşıma neti = hizmet tutarı + fiyat farkı neti = " + M(result.TransportNetAmount) + " TL",
+                    "Taşıma KDV (L) = IF(KDV muaf, 0, K × " + (effectiveTransportVat * 100m).ToString("0.##", culture) + "%) = " + M(result.TransportVat) + " TL",
+                    "Taşıma tevkifat (M) = IF(KDV muaf, 0, L × " + (effectiveTransportWithholding * 100m).ToString("0.##", culture) + "%) = " + M(result.TransportWithholding) + " TL",
+                    "Taşıma fatura ara toplamı (N) = K + M = " + M(result.TransportNetAmount + result.TransportWithholding) + " TL",
+                    "Taşıma brüt (O) = K + L = " + M(result.TransportGrossAmount) + " TL",
+                    "Rehber hizmet tutarı = P × Q = " + M(result.GuideServiceAmount) + " TL",
+                    "Rehber fiyat farkı neti = R − S = " + M(result.GuidePriceDifferenceExcludingVat) + " TL",
+                    "T — Rehber neti = hizmet tutarı + fiyat farkı neti = " + M(result.GuideNetAmount) + " TL",
+                    "Rehber KDV (U) = IF(KDV muaf, 0, T × " + (effectiveGuideVat * 100m).ToString("0.##", culture) + "%) = " + M(result.GuideVat) + " TL",
+                    "Rehber tevkifat (V) = IF(KDV muaf, 0, U × " + (effectiveGuideWithholding * 100m).ToString("0.##", culture) + "%) = " + M(result.GuideWithholding) + " TL",
+                    "Rehber fatura ara toplamı (W) = T + V = " + M(result.GuideNetAmount + result.GuideWithholding) + " TL",
+                    "Rehber brüt (X) = T + U = " + M(result.GuideGrossAmount) + " TL",
+                    "Toplam iş tutarı = K + T = " + M(result.TotalAmount) + " TL",
+                    "Toplam KDV = L + U = " + M(result.Vat) + " TL",
+                    "Toplam tevkifat = M + V = " + M(result.Withholding) + " TL",
+                    "Fatura ara toplamı = N + W = " + M(result.InvoiceAmountAfterWithholding) + " TL",
+                    "AD — Damga vergisi = " + (selectedProgram == TransportationProgramType.BasicOrSecondary
+                        ? "Kaynak Excel formülü = " + M(result.StampTax) + " TL"
+                        : "(K × oran) + (T × oran) = " + M(result.StampTax) + " TL"),
+                    "AE — Toplam kesintiler = tevkifat + vergi borcu + denetim cezası + SGK + asgari ücret desteği + AC + AD = " + M(result.TotalDeductions) + " TL",
+                    "AF — Brüt toplam = O + X = " + M(result.GrossAmount) + " TL",
+                    "AG — NET ÖDEME = AF − AE = " + M(result.GrossAmount) + " − " + M(result.TotalDeductions) + " = " + M(result.NetPayable) + " TL",
+                    "",
+                    "4) AYRINTILI KESİNTİ DÖKÜMÜ",
+                    "Taşıma tevkifatı: " + M(result.TransportWithholding) + " TL",
+                    "Rehber tevkifatı: " + M(result.GuideWithholding) + " TL",
+                    "Vergi borcu: " + M(result.Deductions.TaxDebt) + " TL",
+                    "Denetim cezası: " + M(result.Deductions.InspectionPenalty) + " TL",
+                    "SGK borcu: " + M(result.Deductions.SocialSecurityDebt) + " TL",
+                    "Asgari ücret desteği: " + M(result.Deductions.MinimumWageSupport) + " TL",
+                    "Ek kesin teminat: " + M(result.Deductions.AdditionalGuarantee) + " TL",
+                    "Damga vergisi: " + M(result.Deductions.StampTax) + " TL",
+                    "KDV durumu: " + vatLabel,
+                    "",
+                    "Not: Tüm değerler aynı hesaplayıcıdan anlık üretilir; Excel/VBA masaüstü ve dört PDF ile birebir kabul testi ayrıca yapılmalıdır."
+                });
+            }
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+            {
+                lines.Add("HESAPLAMA HATASI: " + ex.Message);
+                lines.Add("Bu durumda sonuçlar geçerli kabul edilmez.");
+            }
+        }
+
+        if (_multiRoutePaymentRows.Count > 0 && selectedContract is not null)
+        {
+            lines.Add("");
+            lines.Add("5) ÇOKLU HAT — HER SATIRIN CANLI HESABI");
+            foreach (var row in _multiRoutePaymentRows)
+            {
+                try
+                {
+                    var rowInput = new ProgressPaymentInput(
+                        row.WorkDays, row.DailyPrice, row.DiscountAmount, row.PriceDifference,
+                        selectedContract.ContractAmount, IsVatExemptForCurrentFirm(selectedContract),
+                        row.TaxDebt, row.SocialSecurityDebt,
+                        selectedProgram == TransportationProgramType.BasicOrSecondary && !row.MinimumWageSupportEnabled
+                            ? 0m : row.MinimumWageSupport,
+                        row.InspectionPenalty,
+                        hasGuide ? row.GuideWorkDays : 0m,
+                        hasGuide ? row.GuideDailyPrice : 0m,
+                        hasGuide ? row.GuideDiscountAmount : 0m,
+                        hasGuide ? row.GuidePriceDifference : 0m,
+                        selectedContract.ProgramType);
+                    var rowResult = ProgressPaymentCalculator.Calculate(rowInput, _calculationConstants);
+                    lines.Add("Hat " + row.RouteNumber + " — " + row.RouteName);
+                    lines.Add("  K = G×H+I−J = " + M(rowResult.TransportNetAmount) + " TL");
+                    lines.Add("  L — Taşıma KDV = " + M(rowResult.TransportVat) + " TL");
+                    lines.Add("  M — Taşıma tevkifat = " + M(rowResult.TransportWithholding) + " TL");
+                    lines.Add("  N — Taşıma fatura ara toplamı = " + M(rowResult.TransportNetAmount + rowResult.TransportWithholding) + " TL");
+                    lines.Add("  O — Taşıma brüt = " + M(rowResult.TransportGrossAmount) + " TL");
+                    lines.Add("  T = P×Q+R−S = " + M(rowResult.GuideNetAmount) + " TL");
+                    lines.Add("  U — Rehber KDV = " + M(rowResult.GuideVat) + " TL");
+                    lines.Add("  V — Rehber tevkifat = " + M(rowResult.GuideWithholding) + " TL");
+                    lines.Add("  W — Rehber fatura ara toplamı = " + M(rowResult.GuideNetAmount + rowResult.GuideWithholding) + " TL");
+                    lines.Add("  X — Rehber brüt = " + M(rowResult.GuideGrossAmount) + " TL");
+                    lines.Add("  AC — Ek kesin teminat = " + M(rowResult.AdditionalGuarantee) + " TL");
+                    lines.Add("  AD — Damga vergisi = " + M(rowResult.StampTax) + " TL");
+                    lines.Add("  AE — Toplam kesinti = " + M(rowResult.TotalDeductions) + " TL");
+                    lines.Add("  AF — Brüt = " + M(rowResult.GrossAmount) + " TL");
+                    lines.Add("  AG — Net ödeme = " + M(rowResult.NetPayable) + " TL");
+                }
+                catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+                {
+                    lines.Add("Hat " + row.RouteNumber + " — " + row.RouteName + ": HESAP HATASI — " + ex.Message);
+                }
+            }
+        }
+
+        CalculationTraceLiveTextBox.Text = string.Join(Environment.NewLine, lines);
+    }
+
     private ProgressPaymentHistoryData? GetLastCalculatedProgress()
     {
         if (_lastCalculatedHistoryId is Guid id)
@@ -2802,7 +5692,9 @@ public partial class MainWindow : Window
 
     private void ArchiveCurrentProgressButton_Click(object sender, RoutedEventArgs e)
     {
-        if (IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment) && _editingArchiveSnapshot is not null && !string.IsNullOrWhiteSpace(_editingArchiveSourcePath))
+        if (IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment) &&
+            _editingArchiveSnapshot is not null &&
+            !string.IsNullOrWhiteSpace(_editingArchiveSourcePath))
         {
             SaveArchiveCorrectionSnapshot(_editingArchiveSnapshot, "Arşiv");
             return;
@@ -2811,72 +5703,144 @@ public partial class MainWindow : Window
         var item = GetLastCalculatedProgress();
         if (item is null)
         {
-            MessageBox.Show("Arşivlenecek tamamlanmış bir hakediş bulunamadı. Önce HAKEDİŞİ HESAPLA düğmesine basın.", "OEHS",
+            MessageBox.Show("Arşivlenecek tamamlanmış bir hakediş bulunamadı. Önce HAKEDİŞ HESAPLA/KAYDET düğmesine basın.", "OEHS",
                 MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
-        var contract = _contracts.FirstOrDefault(x =>
-            string.Equals(x.TenderNumber, item.TenderNumber, StringComparison.OrdinalIgnoreCase));
-        var route = _routes.FirstOrDefault(x =>
-            string.Equals(
-                OehsIdentityService.BuildRouteKey(x.TenderNumber, x.RouteNumber, x.ContractorTaxOrIdentityNumber),
-                OehsIdentityService.BuildRouteKey(item.TenderNumber ?? string.Empty, item.RouteNumber ?? string.Empty, item.ContractorTaxOrIdentityNumber ?? string.Empty),
-                StringComparison.Ordinal));
+        // Multi-route calculations share an exact CreatedAt, contract, period and
+        // payment number. Archive every route snapshot in one click, independently.
+        var batch = _progressHistory
+            .Where(x => item.BatchId.HasValue
+                ? x.BatchId == item.BatchId
+                : x.CreatedAt == item.CreatedAt &&
+                  string.Equals(x.TenderNumber, item.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+                  string.Equals(x.ContractNumber, item.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
+                  x.ProgressPaymentNumber == item.ProgressPaymentNumber &&
+                  x.PeriodDate == item.PeriodDate &&
+                  x.Input.ProgramType == item.Input.ProgramType)
+            .OrderBy(x => x.RouteNumber, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (batch.Length == 0)
+            batch = new[] { item };
 
-        var contractor = route is null ? FindContractor(item.ContractorTaxOrIdentityNumber ?? string.Empty) : FindContractor(route.ContractorTaxOrIdentityNumber);
-        if (contract is null || route is null || contractor is null)
+        var archiveResult = ProgressPaymentArchiveBatchService.Execute(
+            batch,
+            payment =>
+            {
+                if (TryArchiveProgressItem(payment, out var path, out _))
+                    return (Success: true, Path: (string?)path, Error: (string?)null);
+
+                return (Success: false, Path: (string?)null,
+                    Error: $"Hat {payment.RouteNumber}: arşiv kaydı oluşturulamadı.");
+            },
+            path => File.Delete(path));
+
+        if (!archiveResult.Success)
         {
-            MessageBox.Show("Arşiv için ihale, hat ve yüklenici snapshot'ı çözümlenemedi. Kaydı kontrol edin.", "OEHS",
-                MessageBoxButton.OK, MessageBoxImage.Warning);
+            ArchiveStatusTextBlock.Text = archiveResult.RollbackFailures.Count == 0
+                ? "ARŞİV İŞLEMİ GERİ ALINDI"
+                : "KISMİ ARŞİV HATASI";
+
+            if (archiveResult.RollbackFailures.Count > 0)
+            {
+                var rollbackDetails = string.Join(Environment.NewLine, archiveResult.RollbackFailures);
+                var rollbackMessage = "Çoklu hat arşivleme tamamlanamadı. Bazı yeni dosyalar geri alınamadı; lütfen arşiv klasörünü kontrol edin."
+                    + Environment.NewLine + rollbackDetails;
+                CalculationStatusTextBlock.Text = rollbackMessage;
+                MessageBox.Show(rollbackMessage, "OEHS — Arşiv Geri Alma Uyarısı",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            else
+            {
+                CalculationStatusTextBlock.Text =
+                    "Çoklu hat arşivleme tamamlanamadı. Bu işlemde oluşturulan önceki arşiv dosyaları geri alındı.";
+            }
+
+            UpdateArchiveView();
             return;
         }
 
+        var archivedPaths = archiveResult.WrittenPaths.ToList();
+
+        _lastCalculatedHistoryId = null;
+        UpdateArchiveView();
+        NavigationButton_Click(NavArchives, new RoutedEventArgs(Button.ClickEvent, NavArchives));
+
+        var routeSummary = string.Join(", ", batch.Select(x => x.RouteNumber).Where(x => !string.IsNullOrWhiteSpace(x)));
+        var batchTitle = item.BatchDisplayName ?? $"Hakediş No {item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"}";
+        var message = batch.Length == 1
+            ? $"{batchTitle} arşive eklendi.\n\n{Path.GetFileName(archivedPaths[0])}"
+            : $"{batch.Length} hatlık aylık kayıt arşivlendi.\n{batchTitle}\nHatlar: {routeSummary}\n\nHer hat için ayrı arşiv ve dört PDF belgesi oluşturuldu; hat bazlı hakediş numaraları korunmuştur.";
+        ArchiveStatusTextBlock.Text = "ARŞİV OLUŞTURULDU";
+        ClearProgressEntryFields();
+        SetProgressEditorMode(false);
+        CalculationStatusTextBlock.Text = message;
+        MessageBox.Show(message, "OEHS — Arşiv Bilgisi", MessageBoxButton.OK, MessageBoxImage.Information);
+        _editingArchiveSourcePath = null;
+    }
+
+    private bool TryArchiveProgressItem(
+        ProgressPaymentHistoryData item,
+        out string archivePath,
+        out int revision)
+    {
+        archivePath = string.Empty;
+        revision = 0;
+
+        var contract = FindContract(item.TenderNumber, item.ContractNumber, item.Input.ProgramType);
+        var route = _routes.FirstOrDefault(x =>
+            string.Equals(
+                OehsIdentityService.BuildRouteKey(
+                    x.TenderNumber, x.RouteNumber, x.ContractorTaxOrIdentityNumber, x.ContractNumber, x.ProgramType),
+                OehsIdentityService.BuildRouteKey(
+                    item.TenderNumber ?? string.Empty, item.RouteNumber ?? string.Empty,
+                    item.ContractorTaxOrIdentityNumber ?? string.Empty, item.ContractNumber ?? string.Empty,
+                    item.Input.ProgramType),
+                StringComparison.Ordinal));
+
+        var contractor = route is null
+            ? FindContractor(item.ContractorTaxOrIdentityNumber ?? string.Empty, item.Input.ProgramType)
+            : FindContractor(route.ContractorTaxOrIdentityNumber, route.ProgramType);
+        if (contract is null || route is null || contractor is null)
+        {
+            MessageBox.Show($"Hat {item.RouteNumber}: arşiv için ihale, hat ve yüklenici snapshot'ı çözümlenemedi. Kaydı kontrol edin.",
+                "OEHS", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return false;
+        }
+
         var routeData = new RouteData(
-            route.RouteNumber,
-            route.Name,
-            route.DailyPrice,
-            route.GuideWorkDays,
-            route.GuideDailyPrice,
-            route.TransportWorkDays,
-            route.TenderNumber,
-            route.ContractorTaxOrIdentityNumber);
+            route.RouteNumber, route.Name, route.DailyPrice, route.GuideDailyPrice, route.TransportWorkDays, route.TenderNumber,
+            route.ContractorTaxOrIdentityNumber, route.ContractNumber, route.ProgramType);
 
         var prior = _progressHistory
+            .Where(x => x.Input.ProgramType == item.Input.ProgramType)
             .Where(x => string.Equals(
                 OehsIdentityService.BuildRouteKey(
-                    x.TenderNumber ?? string.Empty,
-                    x.RouteNumber ?? string.Empty,
-                    x.ContractorTaxOrIdentityNumber ?? string.Empty),
-                OehsIdentityService.BuildRouteKey(route.TenderNumber, route.RouteNumber, route.ContractorTaxOrIdentityNumber),
+                    x.TenderNumber ?? string.Empty, x.RouteNumber ?? string.Empty,
+                    x.ContractorTaxOrIdentityNumber ?? string.Empty, x.ContractNumber ?? string.Empty,
+                    x.Input.ProgramType),
+                OehsIdentityService.BuildRouteKey(
+                    route.TenderNumber, route.RouteNumber, route.ContractorTaxOrIdentityNumber,
+                    route.ContractNumber, route.ProgramType),
                 StringComparison.Ordinal))
-            .Where(x => !x.Id.Equals(item.Id))
+            .Where(x => x.Id != item.Id)
             .Where(x => x.PeriodDate.HasValue && (!item.PeriodDate.HasValue || x.PeriodDate.Value < item.PeriodDate.Value))
             .OrderBy(x => x.PeriodDate)
             .ThenBy(x => x.CreatedAt)
             .ToArray();
 
         var archive = new ProgressPaymentArchive(
-            "1.0",
-            1,
-            DateTime.UtcNow,
-            "ActiveRecord",
-            contract,
+            "1.0", 1, DateTime.UtcNow, "ActiveRecord", contract,
             new Contractor(
                 contractor.Name,
                 OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber),
-                contractor.Address,
-                contractor.Phone,
-                contractor.Email,
-                contractor.BankAccountNumber,
-                contractor.ContactPerson),
-            routeData,
-            item,
-            prior,
+                contractor.Address, contractor.Phone, contractor.Email,
+                contractor.BankAccountNumber, contractor.ContactPerson, contractor.ProgramType, contractor.VatExempt),
+            routeData, item, prior,
             OehsFileNameService.BuildProgressPdfFileName(
-                item.TenderNumber ?? string.Empty,
-                route.RouteNumber,
-                item.ProgressPaymentNumber ?? 1,
+                item.TenderNumber ?? string.Empty, item.ContractNumber ?? string.Empty,
+                route.RouteNumber, item.ProgressPaymentNumber ?? 1,
                 item.PeriodDate ?? DateOnly.FromDateTime(DateTime.Today)),
             new[]
             {
@@ -2888,33 +5852,17 @@ public partial class MainWindow : Window
 
         try
         {
-            var path = _archiveStore.Save(archive);
-            var revision = ExtractArchiveRevision(path);
-            var wasCorrection = !string.IsNullOrWhiteSpace(_editingArchiveSourcePath);
-
-            ArchiveStatusTextBlock.Text = "ARŞİV OLUŞTURULDU";
-            CalculationStatusTextBlock.Text =
-                wasCorrection
-                    ? $"Düzeltme başarıyla arşive eklendi: v{revision:00}."
-                    : $"Hakediş arşivlendi: v{revision:00}.";
-
-            UpdateArchiveView();
-            NavigationButton_Click(NavArchives, new RoutedEventArgs(Button.ClickEvent, NavArchives));
-
-            MessageBox.Show(
-                wasCorrection
-                    ? $"Hakediş No {item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"} başarıyla düzeltilerek arşive v{revision:00} olarak eklendi.\n\nÖnceki revision korunmuştur.\n{Path.GetFileName(path)}"
-                    : $"Hakediş No {item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"} arşive v{revision:00} olarak eklendi.\n\n{Path.GetFileName(path)}",
-                "OEHS — Arşiv Bilgisi",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
-
-            _editingArchiveSourcePath = null;
+            archivePath = _archiveStore.Save(archive);
+            revision = ExtractArchiveRevision(archivePath);
+            return true;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ProgressPaymentArchiveException)
         {
             ArchiveStatusTextBlock.Text = "ARŞİV HATASI";
-            CalculationStatusTextBlock.Text = ex.Message;
+            CalculationStatusTextBlock.Text = $"Hat {item.RouteNumber}: {ex.Message}";
+            MessageBox.Show(CalculationStatusTextBlock.Text, "OEHS — Arşiv Hatası",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+            return false;
         }
     }
 
@@ -2927,7 +5875,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        EditProgressWithTarget(item);
+        BeginHistoryOrArchiveCorrection(item);
     }
 
     private void EditProgressWithTarget(ProgressPaymentHistoryData item)
@@ -2964,7 +5912,7 @@ public partial class MainWindow : Window
     {
         _archiveRows.Clear();
 
-        foreach (var row in ArchiveDisplayService.BuildRows(_archiveStore))
+        foreach (var row in FilterArchives())
         {
             _archiveRows.Add(new ArchiveRow(
                 row.FullPath,
@@ -3020,17 +5968,22 @@ public partial class MainWindow : Window
 
         try
         {
+            var contractsBeforeRestore = _contracts.ToArray();
+            var contractorsBeforeRestore = _contractors.ToArray();
+            var routesBeforeRestore = _routes.ToArray();
+            var historyBeforeRestore = _progressHistory.ToArray();
+
             var currentData = new OehsApplicationData(
                 _contracts.FirstOrDefault(),
                 _routes.Select(x => new RouteData(
                     x.RouteNumber,
                     x.Name,
                     x.DailyPrice,
-                    x.GuideWorkDays,
                     x.GuideDailyPrice,
                     x.TransportWorkDays,
                     x.TenderNumber,
-                    x.ContractorTaxOrIdentityNumber)).ToArray(),
+                    x.ContractorTaxOrIdentityNumber,
+                    x.ContractNumber, x.ProgramType)).ToArray(),
                 _contractors.Select(x => new Contractor(
                     x.Name,
                     OehsIdentityService.NormalizeIdentity(x.TaxOrIdentityNumber),
@@ -3038,7 +5991,9 @@ public partial class MainWindow : Window
                     x.Phone,
                     x.Email,
                     x.BankAccountNumber,
-                    x.ContactPerson)).ToArray(),
+                    x.ContactPerson,
+                    x.ProgramType,
+                    x.VatExempt)).ToArray(),
                 _progressHistory.ToArray(),
                 _contracts.ToArray());
 
@@ -3057,32 +6012,48 @@ public partial class MainWindow : Window
                     contractor.Phone,
                     contractor.Email,
                     contractor.BankAccountNumber,
-                    contractor.ContactPerson));
+                    contractor.ContactPerson,
+                    contractor.ProgramType,
+                    contractor.VatExempt ?? HasLegacyContractVatExemption(contractor.TaxOrIdentityNumber, contractor.ProgramType)));
 
             _routes.Clear();
             foreach (var route in restored.Data.Routes ?? Array.Empty<RouteData>())
             {
-                var contractor = FindContractor(route.ContractorTaxOrIdentityNumber);
+                var contractor = FindContractor(route.ContractorTaxOrIdentityNumber, route.ProgramType);
                 _routes.Add(new RouteDraft(
                     route.RouteNumber,
                     route.Name,
                     route.DailyPrice,
-                    route.GuideWorkDays,
                     route.GuideDailyPrice,
                     route.TransportWorkDays,
                     route.TenderNumber,
                     OehsIdentityService.NormalizeIdentity(route.ContractorTaxOrIdentityNumber),
-                    contractor?.Name ?? archive.Contractor.Name));
+                    contractor?.Name ?? archive.Contractor.Name,
+                    route.ContractNumber,
+                    archive.Contract.ProgramType));
             }
 
             _progressHistory.Clear();
             foreach (var item in restored.Data.ProgressPayments ?? Array.Empty<ProgressPaymentHistoryData>())
                 _progressHistory.Add(item);
 
-            SavePersistedData();
+            if (!SavePersistedData())
+            {
+                RestoreLiveDataCollections(
+                    contractsBeforeRestore,
+                    contractorsBeforeRestore,
+                    routesBeforeRestore,
+                    historyBeforeRestore);
+                RefreshViewsAfterPersistenceRollback();
+                MessageBox.Show(
+                    "Arşiv dosyası okundu ancak aktif OEHS verisi diske kaydedilemedi. Birleştirme geri alındı; mevcut aktif kayıtlar korundu.",
+                    "OEHS — Arşiv Geri Yükleme Tamamlanamadı",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
 
-            var liveContract = _contracts.FirstOrDefault(x =>
-                string.Equals(x.TenderNumber, archive.Contract.TenderNumber, StringComparison.OrdinalIgnoreCase))
+            var liveContract = FindContract(archive.Contract.TenderNumber, archive.Contract.ContractNumber, archive.Contract.ProgramType)
                 ?? archive.Contract;
 
             var liveRoute = _routes.FirstOrDefault(x =>
@@ -3090,24 +6061,30 @@ public partial class MainWindow : Window
                     OehsIdentityService.BuildRouteKey(
                         x.TenderNumber,
                         x.RouteNumber,
-                        x.ContractorTaxOrIdentityNumber),
+                        x.ContractorTaxOrIdentityNumber,
+                        x.ContractNumber,
+                        x.ProgramType),
                     OehsIdentityService.BuildRouteKey(
                         archive.Route.TenderNumber,
                         archive.Route.RouteNumber,
-                        archive.Route.ContractorTaxOrIdentityNumber),
+                        archive.Route.ContractorTaxOrIdentityNumber,
+                        archive.Route.ContractNumber,
+                        archive.Route.ProgramType),
                     StringComparison.Ordinal))
                 ?? new RouteDraft(
                     archive.Route.RouteNumber,
                     archive.Route.Name,
                     archive.Route.DailyPrice,
-                    archive.Route.GuideWorkDays,
                     archive.Route.GuideDailyPrice,
                     archive.Route.TransportWorkDays,
                     archive.Route.TenderNumber,
                     OehsIdentityService.NormalizeIdentity(archive.Route.ContractorTaxOrIdentityNumber),
-                    archive.Contractor.Name);
+                    archive.Contractor.Name,
+                    archive.Route.ContractNumber,
+                    archive.Contract.ProgramType);
 
-            var existing = _progressHistory.FirstOrDefault(x => x.Id == archive.ProgressPayment.Id);
+            _historyOperationProgram = archive.ProgressPayment.Input.ProgramType;
+            var existing = _progressHistory.FirstOrDefault(x => x.Id == archive.ProgressPayment.Id && x.Input.ProgramType == archive.ProgressPayment.Input.ProgramType);
             _editingHistoryId = existing?.Id;
             _lastCalculatedHistoryId = archive.ProgressPayment.Id;
 
@@ -3128,19 +6105,20 @@ public partial class MainWindow : Window
             // Arşiv bir snapshot olduğundan hesabın otomatik alanları canlı kaydın
             // güncel değerlerinden değil, arşivlenen hat snapshot'ından yüklenir.
             WorkDaysTextBox.Text = archive.Route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
-            DailyPriceTextBox.Text = archive.Route.DailyPrice.ToString("N2", CultureInfo.CurrentCulture);
-            GuideWorkDaysTextBox.Text = archive.Route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
-            GuideDailyPriceTextBox.Text = archive.Route.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
-            DiscountTextBox.Text = input.DiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
-            GuideDiscountTextBox.Text = input.GuideDiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
-            PriceDifferenceTextBox.Text = input.PriceDifference.ToString("N2", CultureInfo.CurrentCulture);
-            GuidePriceDifferenceTextBox.Text = input.GuidePriceDifference.ToString("N2", CultureInfo.CurrentCulture);
-            TaxDebtTextBox.Text = input.TaxDebt.ToString("N2", CultureInfo.CurrentCulture);
-            SocialSecurityDebtTextBox.Text = input.SocialSecurityDebt.ToString("N2", CultureInfo.CurrentCulture);
-            MinimumWageSupportTextBox.Text = input.MinimumWageSupport.ToString("N2", CultureInfo.CurrentCulture);
-            InspectionPenaltyTextBox.Text = input.InspectionPenalty.ToString("N2", CultureInfo.CurrentCulture);
+            DailyPriceTextBox.Text = FormatCalculationInput(archive.Route.DailyPrice);
+            GuideWorkDaysTextBox.Text = archive.ProgressPayment.Input.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
+            GuideDailyPriceTextBox.Text = FormatCalculationInput(archive.Route.GuideDailyPrice);
+            DiscountTextBox.Text = FormatCalculationInput(input.DiscountAmount);
+            GuideDiscountTextBox.Text = FormatCalculationInput(input.GuideDiscountAmount);
+            PriceDifferenceTextBox.Text = FormatCalculationInput(input.PriceDifference);
+            GuidePriceDifferenceTextBox.Text = FormatCalculationInput(input.GuidePriceDifference);
+            TaxDebtTextBox.Text = FormatCalculationInput(input.TaxDebt);
+            SocialSecurityDebtTextBox.Text = FormatCalculationInput(input.SocialSecurityDebt);
+            MinimumWageSupportTextBox.Text = FormatCalculationInput(input.MinimumWageSupport);
+            RestoreMinimumWageSupportInputState(input.ProgramType, input.MinimumWageSupport);
+            InspectionPenaltyTextBox.Text = FormatCalculationInput(input.InspectionPenalty);
             ProgressNumberTextBox.Text = archive.ProgressPayment.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
-            ProgressPeriodDatePicker.SelectedDate = archive.ProgressPayment.PeriodDate?.ToDateTime(TimeOnly.MinValue);
+            SelectProgressPeriod(archive.ProgressPayment.PeriodDate);
 
             UpdateContractSelectors();
             UpdateHistoryView();
@@ -3171,6 +6149,7 @@ public partial class MainWindow : Window
         try
         {
             var archive = ProgressPaymentArchiveStore.Load(row.FullPath);
+            ClearLiveHistoryCorrectionContext();
             _editingArchiveSourcePath = row.FullPath;
             _editingArchiveSnapshot = archive;
             _archiveCorrectionSection = ArchiveCorrectionSection.None;
@@ -3203,16 +6182,19 @@ public partial class MainWindow : Window
     {
         _historyRows.Clear();
 
-        var orderedHistory = ProgressPaymentReportService.OrderByPaymentPeriod(_progressHistory);
+        var orderedHistory = FilterHistory();
 
         for (var index = 0; index < orderedHistory.Count; index++)
         {
             var item = orderedHistory[index];
-            var displayNumber = item.ProgressPaymentNumber.HasValue
-                ? $"Hakediş No {item.ProgressPaymentNumber.Value} • İhale/Dosya: {item.TenderNumber ?? "-"} • Hat: {item.RouteNumber ?? "-"}"
-                : $"Hesaplama {index + 1} • İhale/Dosya: {item.TenderNumber ?? "-"} • Hat: {item.RouteNumber ?? "-"}";
+            var batchTitle = item.BatchDisplayName;
+            var displayNumber = !string.IsNullOrWhiteSpace(batchTitle)
+                ? $"{batchTitle} • Hat {item.RouteNumber ?? "-"} • Hakediş No {item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"}"
+                : item.ProgressPaymentNumber.HasValue
+                    ? $"Hakediş No {item.ProgressPaymentNumber.Value} • İhale/Dosya: {item.TenderNumber ?? "-"} • Hat: {item.RouteNumber ?? "-"}"
+                    : $"Hesaplama {index + 1} • İhale/Dosya: {item.TenderNumber ?? "-"} • Hat: {item.RouteNumber ?? "-"}";
             var periodText = item.PeriodDate.HasValue
-                ? $"Dönem: {item.PeriodDate.Value:dd.MM.yyyy} • Yüklenici: {item.ContractorName ?? "-"} • Kayıt: {item.CreatedAt:dd.MM.yyyy HH:mm}"
+                ? $"Dönem: {CultureInfo.GetCultureInfo("tr-TR").TextInfo.ToTitleCase(item.PeriodDate.Value.ToString("MMMM yyyy", CultureInfo.GetCultureInfo("tr-TR")))} • Yüklenici: {item.ContractorName ?? "-"} • Kayıt: {item.CreatedAt:dd.MM.yyyy HH:mm}"
                 : $"Yüklenici: {item.ContractorName ?? "-"} • Kayıt: {item.CreatedAt:dd.MM.yyyy HH:mm}";
 
             _historyRows.Add(new HistoryRow(
@@ -3220,11 +6202,11 @@ public partial class MainWindow : Window
                 displayNumber,
                 periodText,
                 FormatMoney(item.Calculation.TotalAmount),
-                FormatMoney(item.Calculation.NetPayable)));
+                FormatMoney(item.Calculation.NetPayable), item.Input.ProgramType));
         }
 
-        HistoryCountTextBlock.Text = _progressHistory.Count.ToString(CultureInfo.CurrentCulture);
-        HistoryNetTotalTextBlock.Text = FormatMoney(_progressHistory.Sum(x => x.Calculation.NetPayable));
+        HistoryCountTextBlock.Text = orderedHistory.Count.ToString(CultureInfo.CurrentCulture);
+        HistoryNetTotalTextBlock.Text = FormatMoney(orderedHistory.Sum(x => x.Calculation.NetPayable));
         HistoryStatusTextBlock.Text = _progressHistory.Count == 0 ? "HAZIR" : "GÜNCEL";
         HistoryEmptyStateBorder.Visibility = _progressHistory.Count == 0
             ? Visibility.Visible
@@ -3234,14 +6216,19 @@ public partial class MainWindow : Window
     private ProgressPaymentHistoryData? GetHistoryItemFromRow(object? tag)
     {
         return tag is HistoryRow row
-            ? _progressHistory.FirstOrDefault(x => x.Id == row.Id)
+            ? _progressHistory.FirstOrDefault(x => x.Id == row.Id && x.Input.ProgramType == row.ProgramType)
             : null;
     }
 
     private static string GetHistoryArchiveFolder(ProgressPaymentHistoryData item) =>
-        OehsOutputPathService.BuildPdfDirectory(
+        OehsOutputPathService.BuildPdfDirectoryForContractor(
             item.TenderNumber ?? string.Empty,
-            item.RouteNumber ?? string.Empty);
+            item.ContractorName ?? string.Empty,
+            item.ContractorTaxOrIdentityNumber ?? string.Empty,
+            item.RouteNumber ?? string.Empty,
+            item.Input.ProgramType,
+            item.BatchRouteNumbers,
+            item.PeriodDate);
 
     private void OpenHistoryFolderButton_Click(object sender, RoutedEventArgs e)
     {
@@ -3258,28 +6245,70 @@ public partial class MainWindow : Window
         });
     }
 
-    private void EditCurrentProgressButton_Click(object sender, RoutedEventArgs e)
-    {
-        ClearArchiveCorrectionState();
-        var latest = GetSelectedProgressLatestPayment();
-        if (latest is null)
-        {
-            MessageBox.Show("Seçilen ihale/hat için düzenlenecek kayıt bulunamadı.", "OEHS", MessageBoxButton.OK, MessageBoxImage.Information);
-            return;
-        }
-
-        BeginProgressHistoryEdit(latest);
-    }
-
     private void EditHistoryButton_Click(object sender, RoutedEventArgs e)
     {
         ClearArchiveCorrectionState();
         if (sender is Button { Tag: HistoryRow row })
         {
-            var item = _progressHistory.FirstOrDefault(x => x.Id == row.Id);
+            var item = GetHistoryItemFromRow(row);
             if (item is not null)
-                EditProgressWithTarget(item);
+                BeginHistoryOrArchiveCorrection(item);
         }
+    }
+
+    private void BeginHistoryOrArchiveCorrection(ProgressPaymentHistoryData item)
+    {
+        _historyOperationProgram = item.Input.ProgramType;
+        ClearLiveHistoryCorrectionContext();
+        ArchiveRow? matchingArchiveRow = null;
+        var matchingRevision = 0;
+
+        try
+        {
+            foreach (var file in _archiveStore.List())
+            {
+                ProgressPaymentArchive archive;
+                try
+                {
+                    archive = ProgressPaymentArchiveStore.Load(file.FullName);
+                }
+                catch (ProgressPaymentArchiveException)
+                {
+                    // Invalid archives remain visible in the archive panel, but cannot be edited as a snapshot.
+                    continue;
+                }
+
+                if (archive.ProgressPayment.Id != item.Id || archive.ProgressPayment.Input.ProgramType != item.Input.ProgramType || archive.Revision <= matchingRevision)
+                    continue;
+
+                matchingRevision = archive.Revision;
+                var payment = archive.ProgressPayment;
+                matchingArchiveRow = new ArchiveRow(
+                    file.FullName,
+                    $"İhale/Dosya: {payment.TenderNumber ?? "-"} • Hat {payment.RouteNumber ?? "-"} • Hakediş {payment.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"}",
+                    $"Dönem: {payment.PeriodDate?.ToString("dd.MM.yyyy", CultureInfo.CurrentCulture) ?? "-"} • Yüklenici: {archive.Contractor.Name}",
+                    FormatMoney(payment.Calculation.NetPayable),
+                    $"v{archive.Revision:00}");
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ProgressPaymentArchiveException)
+        {
+            MessageBox.Show(
+                $"Hakedişin arşiv kaydı aranamadı; herhangi bir kayıt değiştirilmedi.\n\n{ex.Message}",
+                "OEHS — Arşiv Arama Hatası",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
+        }
+
+        if (matchingArchiveRow is not null)
+        {
+            BeginCorrectionFromArchive(matchingArchiveRow);
+            return;
+        }
+
+        // If this history row has never been archived, keep the regular live-record editing flow.
+        EditProgressWithTarget(item);
     }
 
     private ProgressCorrectionTarget? AskHistoryEditTarget(ProgressPaymentHistoryData item)
@@ -3351,6 +6380,7 @@ public partial class MainWindow : Window
     {
         if (IsArchiveEditing)
         {
+            _suppressArchiveDirtyTracking = true;
             _archiveCorrectionSection = ArchiveCorrectionSection.Contract;
             var archivedContract = _editingArchiveSnapshot!.Contract;
             _editingContractTender = null;
@@ -3360,11 +6390,11 @@ public partial class MainWindow : Window
             SetContractEditorMode(true);
             ContractStatusTextBlock.Text =
                 "ARŞİV DÜZELTME MODU: İhale bilgilerini güncelleyin. DÜZENLE mevcut arşiv revision'ını aynı kayıt üzerinde güncelleyecektir.";
+            _suppressArchiveDirtyTracking = false;
             return;
         }
 
-        var contract = _contracts.FirstOrDefault(x =>
-            string.Equals(x.TenderNumber, item.TenderNumber, StringComparison.OrdinalIgnoreCase));
+        var contract = FindContract(item.TenderNumber, item.ContractNumber, item.Input.ProgramType);
         if (contract is null)
         {
             ShowAlreadyRegistered("Bu hakedişin bağlı olduğu ihale kaydı bulunamadı.");
@@ -3376,19 +6406,21 @@ public partial class MainWindow : Window
         SetContractEditorMode(true);
         NavigationButton_Click(NavContract, new RoutedEventArgs(Button.ClickEvent, NavContract));
         ContractStatusTextBlock.Text = "Hakedişten gelen düzenleme: yalnızca İhale Bilgileri alanlarını düzeltin ve DÜZENLE'e basın.";
+        SetLiveHistoryCorrectionContext(item.Id, HistoryCorrectionSection.Contract);
     }
 
     private void BeginContractorHistoryEdit(ProgressPaymentHistoryData item)
     {
         if (IsArchiveEditing)
         {
+            _suppressArchiveDirtyTracking = true;
             _archiveCorrectionSection = ArchiveCorrectionSection.Contractor;
             var archivedContractor = _editingArchiveSnapshot!.Contractor;
             _editingContractorKey = null;
             ContractorNameTextBox.Text = archivedContractor.Name;
             ContractorTaxTextBox.Text = archivedContractor.TaxOrIdentityNumber;
             ContractorAddressTextBox.Text = archivedContractor.Address;
-            ContractorPhoneTextBox.Text = archivedContractor.Phone;
+            SetContractorPhoneText(archivedContractor.Phone);
             ContractorEmailTextBox.Text = archivedContractor.Email;
             ContractorBankTextBox.Text = archivedContractor.BankAccountNumber;
             ContractorContactTextBox.Text = archivedContractor.ContactPerson;
@@ -3397,10 +6429,11 @@ public partial class MainWindow : Window
             SetContractorEditorMode(true);
             ContractorStatusTextBlock.Text =
                 "ARŞİV DÜZELTME MODU: firma bilgilerini güncelleyin. DÜZENLE mevcut arşiv revision'ını aynı kayıt üzerinde güncelleyecektir.";
+            _suppressArchiveDirtyTracking = false;
             return;
         }
 
-        var contractor = FindContractor(item.ContractorTaxOrIdentityNumber ?? string.Empty);
+        var contractor = FindContractor(item.ContractorTaxOrIdentityNumber ?? string.Empty, item.Input.ProgramType);
 
         if (contractor is null)
         {
@@ -3413,18 +6446,20 @@ public partial class MainWindow : Window
         ContractorNameTextBox.Text = contractor.Name;
         ContractorTaxTextBox.Text = contractor.TaxOrIdentityNumber;
         ContractorAddressTextBox.Text = contractor.Address;
-        ContractorPhoneTextBox.Text = contractor.Phone;
+        SetContractorPhoneText(contractor.Phone);
         ContractorEmailTextBox.Text = contractor.Email;
         ContractorBankTextBox.Text = contractor.BankAccountNumber;
         ContractorContactTextBox.Text = contractor.ContactPerson;
         NavigationButton_Click(NavContractors, new RoutedEventArgs(Button.ClickEvent, NavContractors));
         ContractorStatusTextBlock.Text = "Hakedişten gelen düzenleme: Firma bilgilerini değiştirin ve DÜZENLE'e basın.";
+        SetLiveHistoryCorrectionContext(item.Id, HistoryCorrectionSection.Contractor);
     }
 
     private void BeginRouteHistoryEdit(ProgressPaymentHistoryData item)
     {
         if (IsArchiveEditing)
         {
+            _suppressArchiveDirtyTracking = true;
             _archiveCorrectionSection = ArchiveCorrectionSection.Route;
             var archive = _editingArchiveSnapshot!;
             RouteTenderListBox.SelectedItem = null;
@@ -3434,8 +6469,7 @@ public partial class MainWindow : Window
             RouteNumberTextBox.Text = archive.Route.RouteNumber;
             RouteNameTextBox.Text = archive.Route.Name;
             RouteTransportWorkDaysTextBox.Text = archive.Route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
-            RouteGuideWorkDaysTextBox.Text = archive.Route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
-            RouteGuideDailyPriceTextBox.Text = archive.Route.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+            RouteGuideDailyPriceTextBox.Text = FormatCalculationInput(archive.Route.GuideDailyPrice);
             RouteNumberTextBox.IsReadOnly = false;
             RouteSelectedTenderTextBlock.Text = $"Arşiv ihale: {archive.Route.TenderNumber}";
             RouteSelectedContractorTextBlock.Text = $"Arşiv yüklenici: {archive.Contractor.Name}";
@@ -3447,20 +6481,25 @@ public partial class MainWindow : Window
             SetRouteEditorMode(true, archiveCorrection: true);
             RouteStatusTextBlock.Text =
                 "ARŞİV DÜZELTME MODU: Hat No dahil ilgili alanları değiştirebilirsiniz. DÜZENLE seçili arşiv dosyasını aynı revision numarasıyla günceller; yeni hat oluşturmaz.";
+            _suppressArchiveDirtyTracking = false;
             return;
         }
 
         var historyRouteKey = OehsIdentityService.BuildRouteKey(
             item.TenderNumber ?? string.Empty,
             item.RouteNumber ?? string.Empty,
-            item.ContractorTaxOrIdentityNumber ?? string.Empty);
+            item.ContractorTaxOrIdentityNumber ?? string.Empty,
+            item.ContractNumber ?? string.Empty,
+            item.Input.ProgramType);
 
         var route = _routes.FirstOrDefault(x =>
             string.Equals(
                 OehsIdentityService.BuildRouteKey(
                     x.TenderNumber,
                     x.RouteNumber,
-                    x.ContractorTaxOrIdentityNumber),
+                    x.ContractorTaxOrIdentityNumber,
+                    x.ContractNumber,
+                    x.ProgramType),
                 historyRouteKey,
                 StringComparison.Ordinal));
 
@@ -3472,9 +6511,8 @@ public partial class MainWindow : Window
 
         _editingRoute = route;
 
-        var contract = _contracts.FirstOrDefault(x =>
-            string.Equals(x.TenderNumber, route.TenderNumber, StringComparison.OrdinalIgnoreCase));
-        var contractor = FindContractor(route.ContractorTaxOrIdentityNumber);
+        var contract = FindContract(route.TenderNumber, route.ContractNumber, route.ProgramType);
+        var contractor = FindContractor(route.ContractorTaxOrIdentityNumber, route.ProgramType);
 
         _suppressSelectionEvents = true;
         try
@@ -3494,93 +6532,117 @@ public partial class MainWindow : Window
         RouteNumberTextBox.IsReadOnly = false;
         RouteNameTextBox.Text = route.Name;
         RouteTransportWorkDaysTextBox.Text = route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
-        RouteGuideWorkDaysTextBox.Text = route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
-        RouteGuideDailyPriceTextBox.Text = route.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+        RouteGuideDailyPriceTextBox.Text = FormatCalculationInput(route.GuideDailyPrice);
         SetRouteEditorMode(true);
         NavigationButton_Click(NavLines, new RoutedEventArgs(Button.ClickEvent, NavLines));
         RouteStatusTextBlock.Text = "Hakedişten gelen düzenleme: Hat bilgilerini değiştirin ve DÜZENLE'e basın.";
+        SetLiveHistoryCorrectionContext(item.Id, HistoryCorrectionSection.Route);
     }
 
     private void BeginProgressHistoryEdit(ProgressPaymentHistoryData item)
     {
         if (IsArchiveEditing)
         {
+            _suppressArchiveDirtyTracking = true;
             _archiveCorrectionSection = ArchiveCorrectionSection.ProgressPayment;
-            var payment = _editingArchiveSnapshot!.ProgressPayment;
+            var archive = _editingArchiveSnapshot!;
+            var payment = archive.ProgressPayment;
             _editingHistoryId = null;
+            LoadArchiveProgressEditorContext(ArchiveProgressEditorContext.Create(archive));
+            ProgressContractorTextBlock.Text = archive.Contractor.Name;
+            ProgressRouteRelationTextBlock.Text =
+                $"Arşiv ihale: {payment.TenderNumber} • Yüklenici: {archive.Contractor.Name} • Hat: {payment.RouteNumber} — {payment.RouteName}";
             WorkDaysTextBox.Text = payment.Input.WorkDays.ToString(CultureInfo.CurrentCulture);
-            DailyPriceTextBox.Text = payment.Input.DailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+            DailyPriceTextBox.Text = FormatCalculationInput(payment.Input.DailyPrice);
             GuideWorkDaysTextBox.Text = payment.Input.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
-            GuideDailyPriceTextBox.Text = payment.Input.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
-            DiscountTextBox.Text = payment.Input.DiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
-            GuideDiscountTextBox.Text = payment.Input.GuideDiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
-            PriceDifferenceTextBox.Text = payment.Input.PriceDifference.ToString("N2", CultureInfo.CurrentCulture);
-            GuidePriceDifferenceTextBox.Text = payment.Input.GuidePriceDifference.ToString("N2", CultureInfo.CurrentCulture);
-            TaxDebtTextBox.Text = payment.Input.TaxDebt.ToString("N2", CultureInfo.CurrentCulture);
-            SocialSecurityDebtTextBox.Text = payment.Input.SocialSecurityDebt.ToString("N2", CultureInfo.CurrentCulture);
-            MinimumWageSupportTextBox.Text = payment.Input.MinimumWageSupport.ToString("N2", CultureInfo.CurrentCulture);
-            InspectionPenaltyTextBox.Text = payment.Input.InspectionPenalty.ToString("N2", CultureInfo.CurrentCulture);
+            GuideDailyPriceTextBox.Text = FormatCalculationInput(payment.Input.GuideDailyPrice);
+            DiscountTextBox.Text = FormatCalculationInput(payment.Input.DiscountAmount);
+            GuideDiscountTextBox.Text = FormatCalculationInput(payment.Input.GuideDiscountAmount);
+            PriceDifferenceTextBox.Text = FormatCalculationInput(payment.Input.PriceDifference);
+            GuidePriceDifferenceTextBox.Text = FormatCalculationInput(payment.Input.GuidePriceDifference);
+            TaxDebtTextBox.Text = FormatCalculationInput(payment.Input.TaxDebt);
+            SocialSecurityDebtTextBox.Text = FormatCalculationInput(payment.Input.SocialSecurityDebt);
+            MinimumWageSupportTextBox.Text = FormatCalculationInput(payment.Input.MinimumWageSupport);
+            RestoreMinimumWageSupportInputState(payment.Input.ProgramType, payment.Input.MinimumWageSupport);
+            InspectionPenaltyTextBox.Text = FormatCalculationInput(payment.Input.InspectionPenalty);
             ProgressNumberTextBox.Text = payment.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
-            ProgressPeriodDatePicker.SelectedDate = payment.PeriodDate?.ToDateTime(TimeOnly.MinValue);
+            SelectProgressPeriod(payment.PeriodDate);
 
             NavigationButton_Click(NavProgress, new RoutedEventArgs(Button.ClickEvent, NavProgress));
             // Panel geçişinden sonra editör modunu son kez uygula.
             SetProgressEditorMode(true, archiveCorrection: true);
             CalculationStatusTextBlock.Text =
                 "ARŞİV DÜZELTME MODU: Hakediş girdilerini güncelleyin. DÜZENLE mevcut arşiv revision'ını aynı kayıt üzerinde güncelleyecektir.";
+            _suppressArchiveDirtyTracking = false;
             return;
         }
 
-        var contract = _contracts.FirstOrDefault(x =>
-            string.Equals(x.TenderNumber, item.TenderNumber, StringComparison.OrdinalIgnoreCase));
+        var contract = FindContract(item.TenderNumber, item.ContractNumber, item.Input.ProgramType);
         if (contract is not null)
         {
             _suppressSelectionEvents = true;
-            ProgressTenderListBox.SelectedItem = contract;
-            _suppressSelectionEvents = false;
+            try
+            {
+                ProgressTenderListBox.SelectedItem = contract;
+                ProgressContractorComboBox.ItemsSource = _contractors
+                    .Where(x => x.ProgramType == item.Input.ProgramType).ToArray();
+                ProgressContractorComboBox.SelectedItem = FindContractor(
+                    item.ContractorTaxOrIdentityNumber ?? string.Empty, item.Input.ProgramType);
+            }
+            finally
+            {
+                _suppressSelectionEvents = false;
+            }
             UpdateProgressContractorAndRoutes(contract);
         }
 
         _editingHistoryId = item.Id;
+        _historyOperationProgram = item.Input.ProgramType;
         var historyRouteKey = OehsIdentityService.BuildRouteKey(
             item.TenderNumber ?? string.Empty,
             item.RouteNumber ?? string.Empty,
-            item.ContractorTaxOrIdentityNumber ?? string.Empty);
+            item.ContractorTaxOrIdentityNumber ?? string.Empty,
+            item.ContractNumber ?? string.Empty,
+            item.Input.ProgramType);
 
         ProgressRouteComboBox.SelectedItem = _routes.FirstOrDefault(x =>
             string.Equals(
                 OehsIdentityService.BuildRouteKey(
                     x.TenderNumber,
                     x.RouteNumber,
-                    x.ContractorTaxOrIdentityNumber),
+                    x.ContractorTaxOrIdentityNumber,
+                    x.ContractNumber,
+                    x.ProgramType),
                 historyRouteKey,
                 StringComparison.Ordinal));
 
         WorkDaysTextBox.Text = item.Input.WorkDays.ToString(CultureInfo.CurrentCulture);
-        DailyPriceTextBox.Text = item.Input.DailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+        DailyPriceTextBox.Text = FormatCalculationInput(item.Input.DailyPrice);
         GuideWorkDaysTextBox.Text = item.Input.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
-        GuideDailyPriceTextBox.Text = item.Input.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
-        DiscountTextBox.Text = item.Input.DiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
-        GuideDiscountTextBox.Text = item.Input.GuideDiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
-        PriceDifferenceTextBox.Text = item.Input.PriceDifference.ToString("N2", CultureInfo.CurrentCulture);
-        GuidePriceDifferenceTextBox.Text = item.Input.GuidePriceDifference.ToString("N2", CultureInfo.CurrentCulture);
-        TaxDebtTextBox.Text = item.Input.TaxDebt.ToString("N2", CultureInfo.CurrentCulture);
-        SocialSecurityDebtTextBox.Text = item.Input.SocialSecurityDebt.ToString("N2", CultureInfo.CurrentCulture);
-        MinimumWageSupportTextBox.Text = item.Input.MinimumWageSupport.ToString("N2", CultureInfo.CurrentCulture);
-        InspectionPenaltyTextBox.Text = item.Input.InspectionPenalty.ToString("N2", CultureInfo.CurrentCulture);
+        GuideDailyPriceTextBox.Text = FormatCalculationInput(item.Input.GuideDailyPrice);
+        DiscountTextBox.Text = FormatCalculationInput(item.Input.DiscountAmount);
+        GuideDiscountTextBox.Text = FormatCalculationInput(item.Input.GuideDiscountAmount);
+        PriceDifferenceTextBox.Text = FormatCalculationInput(item.Input.PriceDifference);
+        GuidePriceDifferenceTextBox.Text = FormatCalculationInput(item.Input.GuidePriceDifference);
+        TaxDebtTextBox.Text = FormatCalculationInput(item.Input.TaxDebt);
+        SocialSecurityDebtTextBox.Text = FormatCalculationInput(item.Input.SocialSecurityDebt);
+        MinimumWageSupportTextBox.Text = FormatCalculationInput(item.Input.MinimumWageSupport);
+        RestoreMinimumWageSupportInputState(item.Input.ProgramType, item.Input.MinimumWageSupport);
+        InspectionPenaltyTextBox.Text = FormatCalculationInput(item.Input.InspectionPenalty);
         ProgressNumberTextBox.Text = item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
-        ProgressPeriodDatePicker.SelectedDate = item.PeriodDate?.ToDateTime(TimeOnly.MinValue);
+        SelectProgressPeriod(item.PeriodDate);
 
         SetProgressEditorMode(true);
         NavigationButton_Click(NavProgress, new RoutedEventArgs(Button.ClickEvent, NavProgress));
         CalculationStatusTextBlock.Text = "Düzenleme modu: hakediş girdilerini değiştirin ve DÜZENLE'e basın.";
+        SetLiveHistoryCorrectionContext(item.Id, HistoryCorrectionSection.ProgressPayment);
     }
 
     private void CancelProgressEditButton_Click(object sender, RoutedEventArgs e)
     {
         var archiveCorrection = IsArchiveCorrectionFor(ArchiveCorrectionSection.ProgressPayment);
         var original = !archiveCorrection && _editingHistoryId is Guid id
-            ? _progressHistory.FirstOrDefault(x => x.Id == id)
+            ? _progressHistory.FirstOrDefault(x => IsOperationPayment(x, id))
             : null;
 
         ClearArchiveCorrectionState();
@@ -3596,19 +6658,20 @@ public partial class MainWindow : Window
         if (original is not null)
         {
             WorkDaysTextBox.Text = original.Input.WorkDays.ToString(CultureInfo.CurrentCulture);
-            DailyPriceTextBox.Text = original.Input.DailyPrice.ToString("N2", CultureInfo.CurrentCulture);
+            DailyPriceTextBox.Text = FormatCalculationInput(original.Input.DailyPrice);
             GuideWorkDaysTextBox.Text = original.Input.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
-            GuideDailyPriceTextBox.Text = original.Input.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
-            DiscountTextBox.Text = original.Input.DiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
-            GuideDiscountTextBox.Text = original.Input.GuideDiscountAmount.ToString("N2", CultureInfo.CurrentCulture);
-            PriceDifferenceTextBox.Text = original.Input.PriceDifference.ToString("N2", CultureInfo.CurrentCulture);
-            GuidePriceDifferenceTextBox.Text = original.Input.GuidePriceDifference.ToString("N2", CultureInfo.CurrentCulture);
-            TaxDebtTextBox.Text = original.Input.TaxDebt.ToString("N2", CultureInfo.CurrentCulture);
-            SocialSecurityDebtTextBox.Text = original.Input.SocialSecurityDebt.ToString("N2", CultureInfo.CurrentCulture);
-            MinimumWageSupportTextBox.Text = original.Input.MinimumWageSupport.ToString("N2", CultureInfo.CurrentCulture);
-            InspectionPenaltyTextBox.Text = original.Input.InspectionPenalty.ToString("N2", CultureInfo.CurrentCulture);
+            GuideDailyPriceTextBox.Text = FormatCalculationInput(original.Input.GuideDailyPrice);
+            DiscountTextBox.Text = FormatCalculationInput(original.Input.DiscountAmount);
+            GuideDiscountTextBox.Text = FormatCalculationInput(original.Input.GuideDiscountAmount);
+            PriceDifferenceTextBox.Text = FormatCalculationInput(original.Input.PriceDifference);
+            GuidePriceDifferenceTextBox.Text = FormatCalculationInput(original.Input.GuidePriceDifference);
+            TaxDebtTextBox.Text = FormatCalculationInput(original.Input.TaxDebt);
+            SocialSecurityDebtTextBox.Text = FormatCalculationInput(original.Input.SocialSecurityDebt);
+            MinimumWageSupportTextBox.Text = FormatCalculationInput(original.Input.MinimumWageSupport);
+            RestoreMinimumWageSupportInputState(original.Input.ProgramType, original.Input.MinimumWageSupport);
+            InspectionPenaltyTextBox.Text = FormatCalculationInput(original.Input.InspectionPenalty);
             ProgressNumberTextBox.Text = original.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
-            ProgressPeriodDatePicker.SelectedDate = original.PeriodDate?.ToDateTime(TimeOnly.MinValue);
+            SelectProgressPeriod(original.PeriodDate);
         }
 
         SetProgressEditorMode(false);
@@ -3617,31 +6680,35 @@ public partial class MainWindow : Window
 
     private void DeleteHistoryButton_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not Button { Tag: HistoryRow row })
-            return;
-
-        var item = _progressHistory.FirstOrDefault(x => x.Id == row.Id);
-        if (item is null)
-            return;
+        if (sender is not Button { Tag: HistoryRow row }) return;
+        var item = GetHistoryItemFromRow(row);
+        if (item is null) return;
 
         var title = item.ProgressPaymentNumber.HasValue
             ? $"Hakediş No {item.ProgressPaymentNumber.Value}"
             : "Hakediş Hesaplama";
-
         var result = MessageBox.Show(
             $"{title} kaydı silinsin mi? Bu işlem geri alınamaz.",
-            "Hakediş Kaydını Sil",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning);
+            "Hakediş Kaydını Sil", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+        if (result != MessageBoxResult.Yes) return;
 
-        if (result != MessageBoxResult.Yes)
+        var index = _progressHistory.IndexOf(item);
+        var previousEditingHistoryId = _editingHistoryId;
+        if (index < 0) return;
+
+        _progressHistory.RemoveAt(index);
+        if (_editingHistoryId == item.Id) _editingHistoryId = null;
+
+        if (!SavePersistedData())
+        {
+            _progressHistory.Insert(index, item);
+            _editingHistoryId = previousEditingHistoryId;
+            RefreshViewsAfterPersistenceRollback();
+            CalculationStatusTextBlock.Text =
+                "Hakediş silinmedi: disk kaydı başarısız oldu; kayıt tekrar listeye alındı.";
             return;
+        }
 
-        _progressHistory.Remove(item);
-        if (_editingHistoryId == item.Id)
-            _editingHistoryId = null;
-
-        SavePersistedData();
         UpdateHistoryView();
         UpdateSummaryView();
         UpdateReportView();
@@ -3662,12 +6729,14 @@ public partial class MainWindow : Window
 
         foreach (var item in ordered)
         {
-            var title = item.ProgressPaymentNumber.HasValue
-                ? $"Hakediş No {item.ProgressPaymentNumber.Value}"
-                : "Hakediş Hesaplama";
+            var title = !string.IsNullOrWhiteSpace(item.BatchDisplayName)
+                ? $"{item.BatchDisplayName} • Hat {item.RouteNumber ?? "-"} • Hakediş No {item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"}"
+                : item.ProgressPaymentNumber.HasValue
+                    ? $"Hakediş No {item.ProgressPaymentNumber.Value}"
+                    : "Hakediş Hesaplama";
 
             var period = item.PeriodDate.HasValue
-                ? $"Dönem: {item.PeriodDate.Value:dd.MM.yyyy}"
+                ? $"Dönem: {CultureInfo.GetCultureInfo("tr-TR").TextInfo.ToTitleCase(item.PeriodDate.Value.ToString("MMMM yyyy", CultureInfo.GetCultureInfo("tr-TR")))}"
                 : $"Kayıt: {item.CreatedAt:dd.MM.yyyy HH:mm}";
 
             _summaryRows.Add(new SummaryRow(
@@ -3705,11 +6774,14 @@ public partial class MainWindow : Window
         _reportRows.Clear();
 
         var selectedRoute = ReportRouteComboBox.SelectedItem as RouteDraft;
+        ServiceReportSheetNameTextBlock.Text = OfficialTemplateProfile.For(
+            selectedRoute?.ProgramType ?? GetSelectedTransportationProgramType()).ServiceReportSheetName;
         var routePayments = selectedRoute is null
             ? _progressHistory.ToArray()
             : _progressHistory
                 .Where(x =>
                     string.Equals(x.TenderNumber, selectedRoute.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(x.ContractNumber, selectedRoute.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
                     string.Equals(x.RouteNumber, selectedRoute.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
                     string.Equals(
                         OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
@@ -3721,12 +6793,14 @@ public partial class MainWindow : Window
                      .OrderByDescending(x => x.PeriodDate ?? DateOnly.MinValue)
                      .ThenByDescending(x => x.CreatedAt))
         {
-            var title = item.ProgressPaymentNumber.HasValue
-                ? $"Hakediş No {item.ProgressPaymentNumber.Value}"
-                : "Hakediş Hesaplama";
+            var title = !string.IsNullOrWhiteSpace(item.BatchDisplayName)
+                ? $"{item.BatchDisplayName} • Hat {item.RouteNumber ?? "-"} • Hakediş No {item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"}"
+                : item.ProgressPaymentNumber.HasValue
+                    ? $"Hakediş No {item.ProgressPaymentNumber.Value}"
+                    : "Hakediş Hesaplama";
 
             var period = item.PeriodDate.HasValue
-                ? $"Dönem: {item.PeriodDate.Value:dd.MM.yyyy}"
+                ? $"Dönem: {CultureInfo.GetCultureInfo("tr-TR").TextInfo.ToTitleCase(item.PeriodDate.Value.ToString("MMMM yyyy", CultureInfo.GetCultureInfo("tr-TR")))}"
                 : $"Kayıt: {item.CreatedAt:dd.MM.yyyy HH:mm}";
 
             _reportRows.Add(new ReportRow(
@@ -3740,22 +6814,27 @@ public partial class MainWindow : Window
         ReportGrossTextBlock.Text = FormatMoney(routePayments.Sum(x => x.Calculation.GrossAmount));
         ReportNetTextBlock.Text = FormatMoney(routePayments.Sum(x => x.Calculation.NetPayable));
 
+        var latest = routePayments
+            .OrderByDescending(x => x.PeriodDate ?? DateOnly.MinValue)
+            .ThenByDescending(x => x.CreatedAt)
+            .FirstOrDefault();
+
         if (selectedRoute is null)
         {
             ReportPdfTargetTextBlock.Text = "PDF hedefi: önce bir hat seçin.";
         }
         else
         {
-            var targetFolder = OehsOutputPathService.BuildPdfDirectory(
+            var targetFolder = OehsOutputPathService.BuildPdfDirectoryForContractor(
                 selectedRoute.TenderNumber,
-                selectedRoute.RouteNumber);
+                selectedRoute.ContractorName,
+                selectedRoute.ContractorTaxOrIdentityNumber,
+                selectedRoute.RouteNumber,
+                selectedRoute.ProgramType,
+                latest?.BatchRouteNumbers,
+                latest?.PeriodDate);
             ReportPdfTargetTextBlock.Text = $"PDF hedefi: {targetFolder}";
         }
-
-        var latest = routePayments
-            .OrderByDescending(x => x.PeriodDate ?? DateOnly.MinValue)
-            .ThenByDescending(x => x.CreatedAt)
-            .FirstOrDefault();
 
         if (latest is null)
         {
@@ -3790,18 +6869,177 @@ public partial class MainWindow : Window
 
     private void ProgressRouteComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (!IsInitialized)
+        if (!IsInitialized || _suppressSelectionEvents)
             return;
 
+        // Keep every selected route's own monthly draft when the selection changes.
+        UpdateMultiRouteDraftRows();
         UpdateProgressRouteDefaults();
+    }
+
+    private void UpdateMultiRouteDraftRows()
+    {
+        if (!IsInitialized) return;
+        UpdateHybridRouteDraftRows();
+    }
+
+    private void UpdateHybridRouteDraftRows()
+    {
+        if (!TryCommitHybridGrid()) return;
+        var selectedRoutes = ProgressRouteComboBox.SelectedItems.OfType<RouteDraft>().ToArray();
+        var showMultiRouteGrid = selectedRoutes.Length > 0 &&
+                                 !_editingHistoryId.HasValue &&
+                                 !IsArchiveEditing;
+        if (!showMultiRouteGrid)
+        {
+            foreach (var row in _multiRoutePaymentRows)
+                _multiRouteDraftCache[row.RouteKey] = row;
+            _multiRoutePaymentRows.Clear();
+            MultiRouteEntryBorder.Visibility = Visibility.Collapsed;
+            RefreshHybridUpdateButton();
+            SetGlobalMonetaryFieldsVisible(true);
+            return;
+        }
+
+        // Cache all drafts for this unsaved payment form, not just currently
+        // selected routes. The grid/output path below still uses selected routes only.
+        foreach (var visibleRow in _multiRoutePaymentRows)
+            _multiRouteDraftCache[visibleRow.RouteKey] = visibleRow;
+        var existingRows = _multiRouteDraftCache;
+        var nextRows = new List<MultiRoutePaymentDraftRow>();
+        foreach (var route in selectedRoutes.OrderBy(x => x.RouteNumber, StringComparer.OrdinalIgnoreCase))
+        {
+            var routeKey = OehsIdentityService.BuildRouteKey(
+                route.TenderNumber,
+                route.RouteNumber,
+                route.ContractorTaxOrIdentityNumber,
+                route.ContractNumber,
+                route.ProgramType);
+            if (existingRows.TryGetValue(routeKey, out var existing))
+            {
+                ConfigureHybridRow(existing, route);
+                nextRows.Add(existing);
+                continue;
+            }
+
+            var hasGuide = HasGuideStaff(route.ProgramType);
+            var row = new MultiRoutePaymentDraftRow
+            {
+                RouteKey = routeKey,
+                RouteNumber = route.RouteNumber,
+                RouteName = route.Name,
+                MinimumWageSupportEnabled =
+                    route.ProgramType != TransportationProgramType.BasicOrSecondary,
+                // Seed a new period draft from the route's Döneme Esas THGS.
+                // Cached per-route edits above remain authoritative.
+                WorkDays = route.TransportWorkDays,
+                DailyPrice = route.DailyPrice,
+                GuideWorkDays = 0,
+                GuideDailyPrice = hasGuide ? route.GuideDailyPrice : 0m
+            };
+
+            RestoreSavedHybridInput(row);
+            ConfigureHybridRow(row, route);
+            row.AcceptChanges();
+            _multiRouteDraftCache[routeKey] = row;
+            nextRows.Add(row);
+        }
+
+        _multiRoutePaymentRows.Clear();
+        foreach (var row in nextRows)
+            _multiRoutePaymentRows.Add(row);
+
+        MultiRouteEntryBorder.Visibility = Visibility.Visible;
+        SetGlobalMonetaryFieldsVisible(false);
+        ApplyHybridColumnView();
+        RefreshHybridTotals();
+        RefreshHybridUpdateButton();
+        SyncHybridSelectedRowFields();
+    }
+
+    private void SetGlobalMonetaryFieldsVisible(bool visible)
+    {
+        var visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+        var selectedProgram = (ProgressTenderListBox.SelectedItem as ContractDraftData)?.ProgramType;
+        var showGuide = visible && selectedProgram.HasValue && HasGuideStaff(selectedProgram.Value);
+        SinglePaymentFieldsGrid.Visibility = visible && (_editingHistoryId.HasValue || IsArchiveEditing)
+            ? Visibility.Visible : Visibility.Collapsed;
+        WorkDaysLabel.Visibility = visibility;
+        WorkDaysTextBox.Visibility = visibility;
+        DailyPriceLabel.Visibility = visibility;
+        DailyPriceTextBox.Visibility = visibility;
+        ProgressGuideWorkDaysLabel.Visibility = showGuide ? Visibility.Visible : Visibility.Collapsed;
+        GuideWorkDaysTextBox.Visibility = showGuide ? Visibility.Visible : Visibility.Collapsed;
+        ProgressGuideDailyPriceLabel.Visibility = showGuide ? Visibility.Visible : Visibility.Collapsed;
+        GuideDailyPriceTextBox.Visibility = showGuide ? Visibility.Visible : Visibility.Collapsed;
+        DiscountLabel.Visibility = visibility;
+        DiscountTextBox.Visibility = visibility;
+        PriceDifferenceLabel.Visibility = visibility;
+        PriceDifferenceTextBox.Visibility = visibility;
+        GuideDiscountLabel.Visibility = showGuide ? Visibility.Visible : Visibility.Collapsed;
+        GuideDiscountTextBox.Visibility = showGuide ? Visibility.Visible : Visibility.Collapsed;
+        GuidePriceDifferenceLabel.Visibility = showGuide ? Visibility.Visible : Visibility.Collapsed;
+        GuidePriceDifferenceTextBox.Visibility = showGuide ? Visibility.Visible : Visibility.Collapsed;
+        TaxDebtLabel.Visibility = visibility;
+        TaxDebtTextBox.Visibility = visibility;
+        SocialSecurityDebtLabel.Visibility = visibility;
+        SocialSecurityDebtTextBox.Visibility = visibility;
+        MinimumWageSupportLabel.Visibility = visibility;
+        MinimumWageSupportTextBox.Visibility = visibility;
+        MinimumWageSupportEnabledCheckBox.Visibility =
+            visible && selectedProgram == TransportationProgramType.BasicOrSecondary
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
+        var supportToggleColumn = MultiRoutePaymentGrid.Columns.FirstOrDefault(column =>
+            string.Equals(column.Header?.ToString(), "Asgari Ücret Desteği Kullan", StringComparison.Ordinal));
+        if (supportToggleColumn is not null)
+        {
+            supportToggleColumn.Visibility =
+                !visible && selectedProgram == TransportationProgramType.BasicOrSecondary
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+        }
+
+        InspectionPenaltyLabel.Visibility = visibility;
+        InspectionPenaltyTextBox.Visibility = visibility;
     }
 
     private void UpdateProgressRouteDefaults()
     {
-        if (ProgressRouteComboBox.SelectedItem is not RouteDraft route)
+        var selectedProgram = (ProgressTenderListBox.SelectedItem as ContractDraftData)?.ProgramType
+            ?? TransportationProgramType.SpecialEducation;
+        ManualAdditionalGuaranteeTextBox.IsEnabled = true;
+        ManualAdditionalGuaranteeTextBox.Text = FormatMoney(0m);
+        ManualAdditionalGuaranteeLabel.Text = "Ek Kesin Teminat (Hesaplanan)";
+        GuaranteeRuleHintTextBlock.Text = selectedProgram == TransportationProgramType.BasicOrSecondary
+            ? "Temel/Ortaöğretim: kaynak Excel formülü = I × %6"
+            : "Özel Eğitim: kaynak Excel formülü = (I × %6) + (R × %6)";
+        var selectedRoutes = ProgressRouteComboBox.SelectedItems.OfType<RouteDraft>().ToArray();
+        if (selectedRoutes.Length > 1)
+        {
+            var contract = ProgressTenderListBox.SelectedItem as ContractDraftData;
+            var contractorNames = selectedRoutes
+                .Select(x => x.ContractorName)
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            ProgressContractorTextBlock.Text = contractorNames.Length == 1
+                ? contractorNames[0]
+                : contract?.ContractorName ?? "Yükleniciler";
+            ProgressRouteRelationTextBlock.Text =
+                $"İKN: {contract?.TenderNumber ?? selectedRoutes[0].TenderNumber} • {selectedRoutes.Length} hat seçildi: " +
+                string.Join(", ", selectedRoutes.Select(x => x.RouteNumber).OrderBy(x => x, StringComparer.OrdinalIgnoreCase));
+            UpdateAutomaticProgressNumber();
+            return;
+        }
+
+        if (selectedRoutes.Length == 0 || ProgressRouteComboBox.SelectedItem is not RouteDraft route)
         {
             ProgressContractorTextBlock.Text = "Seçilmedi";
             ProgressRouteRelationTextBlock.Text = "Hat seçiniz.";
+            _lastProgressDefaultsRouteKey = null;
+            ProgressNumberTextBox.Clear();
             return;
         }
 
@@ -3810,26 +7048,33 @@ public partial class MainWindow : Window
             : route.ContractorName;
         ProgressRouteRelationTextBlock.Text = $"İhale: {route.TenderNumber} • Yüklenici: {route.ContractorName} • Hat: {route.RouteNumber} — {route.Name}";
 
-        RouteTransportWorkDaysTextBox.Text = route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
-        DailyPriceTextBox.Text = route.DailyPrice.ToString("N2", CultureInfo.CurrentCulture);
-        GuideDailyPriceTextBox.Text = route.GuideDailyPrice.ToString("N2", CultureInfo.CurrentCulture);
-
-        WorkDaysTextBox.Text = route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
-
-        // Rehber iş günü de seçilen hattın varsayılanı olmalı.
-        // Aksi halde bir hattan diğerine geçerken önceki hattın rehber günü kalabilir.
-        GuideWorkDaysTextBox.Text = route.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
-
-        if (!_editingHistoryId.HasValue)
+        var routeKey = OehsIdentityService.BuildRouteKey(
+            route.TenderNumber, route.RouteNumber, route.ContractorTaxOrIdentityNumber,
+            route.ContractNumber, route.ProgramType);
+        var routeChanged = !string.Equals(_lastProgressDefaultsRouteKey, routeKey, StringComparison.Ordinal);
+        if (routeChanged && !_editingHistoryId.HasValue && !IsArchiveEditing)
         {
-            var suggested = ProgressPaymentValidationService.SuggestNextProgressPaymentNumber(
-                _progressHistory,
-                route.TenderNumber,
-                route.RouteNumber,
-                route.ContractorTaxOrIdentityNumber);
-
-            ProgressNumberTextBox.Text = suggested.ToString(CultureInfo.CurrentCulture);
+            // A route change must never carry the previous route's monthly
+            // discounts/debts/price differences into a new route.
+            DiscountTextBox.Text = "0";
+            PriceDifferenceTextBox.Text = "0";
+            GuideDiscountTextBox.Text = "0";
+            GuidePriceDifferenceTextBox.Text = "0";
+            TaxDebtTextBox.Text = "0";
+            SocialSecurityDebtTextBox.Text = "0";
+            MinimumWageSupportTextBox.Text = "0";
+            InspectionPenaltyTextBox.Text = "0";
         }
+
+        DailyPriceTextBox.Text = FormatCalculationInput(route.DailyPrice);
+        GuideDailyPriceTextBox.Text = FormatCalculationInput(
+            HasGuideStaff(route.ProgramType) ? route.GuideDailyPrice : 0m);
+
+        SyncHybridSelectedRowFields();
+        _lastProgressDefaultsRouteKey = routeKey;
+
+        if (!_editingHistoryId.HasValue && !IsArchiveEditing)
+            UpdateAutomaticProgressNumber();
     }
 
     private void OutputTenderListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -3846,16 +7091,18 @@ public partial class MainWindow : Window
     {
         var routes = contract is null
             ? Array.Empty<RouteDraft>()
-            : _routes.Where(x =>
-                string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase))
-              .ToArray();
+            : _routes.Where(x => IsRouteForContract(x, contract)).ToArray();
 
         var previous = ReportRouteComboBox.SelectedItem as RouteDraft;
         ReportRouteComboBox.ItemsSource = routes;
         if (previous is not null)
             ReportRouteComboBox.SelectedItem = routes.FirstOrDefault(x =>
-                x.RouteNumber == previous.RouteNumber &&
-                string.Equals(x.ContractorTaxOrIdentityNumber, previous.ContractorTaxOrIdentityNumber, StringComparison.OrdinalIgnoreCase));
+                string.Equals(x.RouteNumber, previous.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(x.ContractNumber, previous.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(
+                    OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
+                    OehsIdentityService.NormalizeIdentity(previous.ContractorTaxOrIdentityNumber),
+                    StringComparison.Ordinal));
         if (ReportRouteComboBox.SelectedItem is null && routes.Length > 0)
             ReportRouteComboBox.SelectedIndex = 0;
     }
@@ -3884,6 +7131,8 @@ public partial class MainWindow : Window
         return _progressHistory
             .Where(x =>
                 string.Equals(x.TenderNumber, contract.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(x.ContractNumber, contract.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
+                x.Input.ProgramType == route.ProgramType &&
                 string.Equals(x.RouteNumber, route.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(
                         OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
@@ -3902,6 +7151,8 @@ public partial class MainWindow : Window
         if (route is not null)
             query = query.Where(x =>
                 string.Equals(x.TenderNumber, route.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(x.ContractNumber, route.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
+                x.Input.ProgramType == route.ProgramType &&
                 string.Equals(x.RouteNumber, route.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(
                         OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
@@ -3922,6 +7173,8 @@ public partial class MainWindow : Window
         if (route is not null)
             query = query.Where(x =>
                 string.Equals(x.TenderNumber, route.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(x.ContractNumber, route.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
+                x.Input.ProgramType == route.ProgramType &&
                 string.Equals(x.RouteNumber, route.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(
                         OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
@@ -3933,8 +7186,8 @@ public partial class MainWindow : Window
 
     private void RequireSelectedRoute()
     {
-        if (ProgressRouteComboBox.SelectedItem is null && _routes.Count > 0)
-            ProgressRouteComboBox.SelectedIndex = 0;
+        // This helper is for document/output navigation only. Hakediş calculation
+        // must leave the route unselected until the user explicitly picks one.
         if (ReportRouteComboBox.SelectedItem is null && _routes.Count > 0)
             ReportRouteComboBox.SelectedIndex = 0;
     }
@@ -4390,44 +7643,77 @@ public partial class MainWindow : Window
 
     private OehsOfficialDocumentContext? BuildSelectedOfficialDocumentContext()
     {
-        if (!EnsureRouteForOutput())
+        if (_homeOutputPayment is null && !EnsureRouteForOutput()) return null;
+        var latest = _homeOutputPayment ?? GetSelectedRouteLatestPayment();
+        if (latest is null || !EnsurePaymentPreflight(latest)) return null;
+        return BuildOfficialDocumentContextForPayment(latest);
+    }
+
+    private OehsOfficialDocumentContext? BuildOfficialDocumentContextForPayment(ProgressPaymentHistoryData latest)
+    {
+        ArgumentNullException.ThrowIfNull(latest);
+
+        var routeKey = OehsIdentityService.BuildRouteKey(
+            latest.TenderNumber ?? string.Empty,
+            latest.RouteNumber ?? string.Empty,
+            latest.ContractorTaxOrIdentityNumber ?? string.Empty,
+            latest.ContractNumber ?? string.Empty,
+            latest.Input.ProgramType);
+        var route = _routes.FirstOrDefault(candidate => string.Equals(
+            OehsIdentityService.BuildRouteKey(
+                candidate.TenderNumber,
+                candidate.RouteNumber,
+                candidate.ContractorTaxOrIdentityNumber,
+                candidate.ContractNumber,
+                candidate.ProgramType),
+            routeKey,
+            StringComparison.Ordinal));
+        if (route is null)
             return null;
 
-        if (ReportRouteComboBox.SelectedItem is not RouteDraft route)
-            return null;
+        var payments = _progressHistory
+            .Where(x => string.Equals(
+                OehsIdentityService.BuildRouteKey(
+                    x.TenderNumber ?? string.Empty,
+                    x.RouteNumber ?? string.Empty,
+                    x.ContractorTaxOrIdentityNumber ?? string.Empty,
+                    x.ContractNumber ?? string.Empty,
+                    x.Input.ProgramType),
+                routeKey,
+                StringComparison.Ordinal))
+            .OrderBy(x => x.PeriodDate ?? DateOnly.MinValue)
+            .ThenBy(x => x.CreatedAt)
+            .ToList();
+        if (!payments.Any(x => x.Id == latest.Id))
+            payments.Add(latest);
+        payments = ProgressPaymentReportService.OrderByPaymentPeriod(payments).ToList();
 
-        var latest = GetSelectedRouteLatestPayment();
-        if (latest is null)
-            return null;
-
-        var payments = GetSelectedRoutePayments();
         var reportTotals = ProgressPaymentReportService.Calculate(latest, payments);
         var reportNetPayable = ProgressPaymentReportService.CalculateReportNetPayable(latest, reportTotals);
         var previousDeduction = ProgressPaymentIcmalService.FindPreviousDeduction(payments, latest);
+        var signatories = OehsOfficialDocumentSettingsStore.Load();
 
-        var contract = _contracts.FirstOrDefault(x =>
-            string.Equals(x.TenderNumber, latest.TenderNumber ?? route.TenderNumber, StringComparison.OrdinalIgnoreCase));
+        var contract = FindContract(
+            latest.TenderNumber ?? route.TenderNumber,
+            latest.ContractNumber ?? route.ContractNumber,
+            latest.Input.ProgramType);
 
-        DateOnly? contractStartDate = latest.ContractStartDate ?? contract?.StartDate;
-        DateOnly? contractEndDate = latest.ContractEndDate ?? contract?.EndDate;
-        DateOnly? tenderDate = latest.TenderDate ?? contract?.TenderDate;
-        DateOnly? contractDate = latest.ContractDate ?? contract?.ContractDate;
-
-        if (!contractStartDate.HasValue && StartDatePicker.SelectedDate is DateTime selectedStart)
-            contractStartDate = DateOnly.FromDateTime(selectedStart);
-        if (!contractEndDate.HasValue && EndDatePicker.SelectedDate is DateTime selectedEnd)
-            contractEndDate = DateOnly.FromDateTime(selectedEnd);
+        var contractStartDate = latest.ContractStartDate ?? contract?.StartDate;
+        var contractEndDate = latest.ContractEndDate ?? contract?.EndDate;
+        var tenderDate = latest.TenderDate ?? contract?.TenderDate;
+        var contractDate = latest.ContractDate ?? contract?.ContractDate;
 
         // Do not label a calendar-day subtraction as contract workdays.
         // If the authoritative workday count is absent, official forms show "-".
         var duration = contract?.ContractWorkDays ?? 0;
-
         var contractorName = string.IsNullOrWhiteSpace(latest.ContractorName)
-            ? (string.IsNullOrWhiteSpace(CurrentContractorName) ? "-" : CurrentContractorName.Trim())
+            ? (string.IsNullOrWhiteSpace(contract?.ContractorName) ? "-" : contract.ContractorName.Trim())
             : latest.ContractorName.Trim();
 
         return new OehsOfficialDocumentContext(
-            WorkName: string.IsNullOrWhiteSpace(latest.WorkName) ? route.Name : latest.WorkName.Trim(),
+            WorkName: OfficialTemplateProfile.DeriveWorkName(
+                string.IsNullOrWhiteSpace(latest.RouteName) ? route.Name : latest.RouteName,
+                string.IsNullOrWhiteSpace(latest.WorkName) ? contract?.WorkName : latest.WorkName),
             TenderNumber: latest.TenderNumber ?? route.TenderNumber,
             RouteNumber: latest.RouteNumber ?? route.RouteNumber,
             ContractorName: contractorName,
@@ -4441,11 +7727,19 @@ public partial class MainWindow : Window
             PeriodDate: latest.PeriodDate,
             ProgressPaymentNumber: latest.ProgressPaymentNumber,
             Calculation: latest.Calculation,
-            Payments: ProgressPaymentReportService.OrderByPaymentPeriod(payments),
+            Payments: payments,
             ReportTotals: reportTotals,
             ReportNetPayable: reportNetPayable,
             PreviousDeduction: previousDeduction,
-            GeneratedDate: DateOnly.FromDateTime(DateTime.Today));
+            GeneratedDate: DateOnly.FromDateTime(DateTime.Today),
+            PreparerName: signatories.PreparerName,
+            PreparerRole: signatories.PreparerRole,
+            ControllerName: signatories.ControllerName,
+            ControllerRole: signatories.ControllerRole,
+            ApproverName: signatories.ApproverName,
+            ApproverRole: signatories.ApproverRole,
+            ProgramType: latest.Input.ProgramType,
+            RouteName: string.IsNullOrWhiteSpace(latest.RouteName) ? route.Name : latest.RouteName.Trim());
     }
 
     private FixedDocument? BuildSelectedRouteOutputDocument()
@@ -4525,7 +7819,7 @@ public partial class MainWindow : Window
         if (context is null)
             return;
 
-        var latest = GetSelectedRouteLatestPayment();
+        var latest = _homeOutputPayment ?? GetSelectedRouteLatestPayment();
         if (latest is null)
             return;
 
@@ -4533,16 +7827,25 @@ public partial class MainWindow : Window
         var preserveStagingFolderForRecovery = false;
         try
         {
-            var targetFolder = OehsOutputPathService.BuildPdfDirectory(
+            var targetFolder = OehsOutputPathService.BuildPdfDirectoryForContractor(
                 latest.TenderNumber ?? string.Empty,
-                latest.RouteNumber ?? string.Empty);
+                latest.ContractorName ?? string.Empty,
+                latest.ContractorTaxOrIdentityNumber ?? string.Empty,
+                latest.RouteNumber ?? string.Empty,
+                latest.Input.ProgramType,
+                latest.BatchRouteNumbers,
+                latest.PeriodDate);
 
             var baseTargetPath = latest.ProgressPaymentNumber.HasValue && latest.PeriodDate.HasValue
-                ? OehsOutputPathService.BuildPdfFilePath(
+                ? OehsOutputPathService.BuildContractorPdfFilePath(
                     latest.TenderNumber ?? string.Empty,
+                    latest.ContractorName ?? string.Empty,
+                    latest.ContractorTaxOrIdentityNumber ?? string.Empty,
                     latest.RouteNumber ?? string.Empty,
                     latest.ProgressPaymentNumber.Value,
-                    latest.PeriodDate.Value)
+                    latest.PeriodDate.Value,
+                    latest.Input.ProgramType,
+                    latest.BatchRouteNumbers)
                 : Path.Combine(targetFolder, "OEHS_Hakedis.pdf");
 
             var baseName = Path.GetFileNameWithoutExtension(baseTargetPath);
@@ -4641,6 +7944,8 @@ public partial class MainWindow : Window
             try
             {
                 SaveRouteDocumentsArchiveMetadata(latest, targetPaths);
+                OutputEvidenceStore.Save(OehsRuntimePaths.DesktopRoot, latest.Id, BuildOutputFingerprint(context), targetPaths, latest.Input.ProgramType);
+                RefreshHomeOperations();
             }
             catch (Exception ex)
             {
@@ -4718,6 +8023,13 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
 
     private void Window_StateChanged(object? sender, EventArgs e) => UpdateMaximizeRestoreButton();
 
+    private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        var navigationWidth = WindowLayoutMetrics.GetNavigationWidth(e.NewSize.Width);
+        NavigationColumn.Width = new GridLength(navigationWidth);
+        HeaderNavigationColumn.Width = new GridLength(navigationWidth);
+    }
+
     private void ConfigureZeroValueInputs()
     {
         foreach (var textBox in new[]
@@ -4735,12 +8047,10 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
             DiscountTextBox,
             PriceDifferenceTextBox,
             RouteTransportWorkDaysTextBox,
-            RouteGuideWorkDaysTextBox,
             RouteGuideDailyPriceTextBox
         })
         {
             textBox.GotFocus += ZeroValueTextBox_GotFocus;
-            textBox.LostFocus += ZeroValueTextBox_LostFocus;
         }
     }
 
@@ -4753,10 +8063,81 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         }
     }
 
-    private static void ZeroValueTextBox_LostFocus(object sender, RoutedEventArgs e)
+    private void ResetNewProgressDraftAfterCalculation(ProgressPaymentHistoryData lastCalculated)
     {
-        if (sender is TextBox textBox && string.IsNullOrWhiteSpace(textBox.Text))
-            textBox.Text = "0";
+        ClearProgressEntryFields();
+        // Completed-record actions belong to the persisted payment, not the next draft's selectors.
+        _lastCalculatedHistoryId = lastCalculated.Id;
+        SetProgressEditorMode(false);
+    }
+
+    private void ClearProgressEntryFields(bool clearTenderSelection = true)
+    {
+        foreach (var textBox in new[]
+        {
+            WorkDaysTextBox, DailyPriceTextBox, GuideWorkDaysTextBox, GuideDailyPriceTextBox,
+            DiscountTextBox, GuideDiscountTextBox, PriceDifferenceTextBox, GuidePriceDifferenceTextBox,
+            TaxDebtTextBox, SocialSecurityDebtTextBox, MinimumWageSupportTextBox, InspectionPenaltyTextBox
+        })
+        {
+            textBox.Clear();
+        }
+
+        ProgressNumberTextBox.Clear();
+        _lastSelectedPaymentMonthKey = null;
+        _multiRoutePaymentRows.Clear();
+        _multiRouteDraftCache.Clear();
+        MultiRouteEntryBorder.Visibility = Visibility.Collapsed;
+        SetGlobalMonetaryFieldsVisible(true);
+        _lastProgressDefaultsRouteKey = null;
+        _suppressSelectionEvents = true;
+        try
+        {
+            ProgressPeriodMonthComboBox.SelectedItem = null;
+            if (clearTenderSelection)
+            {
+                ProgressTenderListBox.SelectedItem = null;
+                ProgressContractorComboBox.ItemsSource = Array.Empty<ContractorDraft>();
+                ProgressContractorComboBox.SelectedItem = null;
+                ProgressPeriodMonthComboBox.ItemsSource = Array.Empty<ProgressPaymentMonthOption>();
+                ProgressRouteComboBox.ItemsSource = Array.Empty<RouteDraft>();
+                ProgressContractorTextBlock.Text = "Seçilmedi";
+                ProgressRouteRelationTextBlock.Text = "İhale ve hat seçiniz.";
+            }
+
+            ProgressRouteComboBox.SelectedItems.Clear();
+        }
+        finally
+        {
+            _suppressSelectionEvents = false;
+        }
+
+        ClearProgressValidationVisuals();
+        ProgressValidationBanner.Visibility = Visibility.Collapsed;
+        ProgressValidationMessageTextBlock.Text = string.Empty;
+        ServiceAmountResultTextBlock.Text = FormatMoney(0m);
+        GuideServiceAmountResultTextBlock.Text = FormatMoney(0m);
+        TransportPriceDifferenceResultTextBlock.Text = FormatMoney(0m);
+        GuidePriceDifferenceResultTextBlock.Text = FormatMoney(0m);
+        CombinedPriceDifferenceResultTextBlock.Text = FormatMoney(0m);
+        TotalAmountResultTextBlock.Text = FormatMoney(0m);
+        VatResultTextBlock.Text = FormatMoney(0m);
+        DeductionsResultTextBlock.Text = FormatMoney(0m);
+        GrossResultTextBlock.Text = FormatMoney(0m);
+        NetResultTextBlock.Text = FormatMoney(0m);
+        NetControlResultTextBlock.Text = FormatMoney(0m);
+        WithholdingResultTextBlock.Text = FormatMoney(0m);
+        StampTaxResultTextBlock.Text = FormatMoney(0m);
+        TaxDebtResultTextBlock.Text = FormatMoney(0m);
+        SocialSecurityDebtResultTextBlock.Text = FormatMoney(0m);
+        MinimumWageSupportResultTextBlock.Text = FormatMoney(0m);
+        InspectionPenaltyResultTextBlock.Text = FormatMoney(0m);
+        AdditionalGuaranteeResultTextBlock.Text = FormatMoney(0m);
+        ManualAdditionalGuaranteeTextBox.Text = FormatMoney(0m);
+        ProgressWorkDaysSummaryTextBlock.Text = "0";
+        ProgressWorkDaysCardTextBlock.Text = "0 gün";
+        ProgressNetSummaryTextBlock.Text = FormatMoney(0m);
+        ProgressCalculationSummaryTextBlock.Text = "HAZIR";
     }
 
     private void ClearProgressValidationVisuals()
@@ -4781,7 +8162,7 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         {
             TenderNumberTextBox,
             ContractNumberTextBox,
-            WorkNameTextBox,
+
             ContractAmountTextBox,
             ContractWorkDaysTextBox
         })
@@ -4797,6 +8178,29 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
     {
         if (sender is Control control)
             ClearInvalid(control);
+    }
+
+    private void ContractTransportDailyPriceTextBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (TryParseDecimal(ContractTransportDailyPriceTextBox.Text, out var price) && price >= 0)
+            ClearInvalid(ContractTransportDailyPriceTextBox);
+    }
+
+    private static string NormalizePhoneNumber(string? value)
+    {
+        var digits = new string((value ?? string.Empty).Where(char.IsDigit).ToArray());
+        if (digits.Length == 0 || digits.All(digit => digit == '0'))
+            return string.Empty;
+
+        // Accept Turkish international prefixes as well as the domestic format.
+        if (digits.StartsWith("0090", StringComparison.Ordinal) && digits.Length >= 14)
+            digits = digits[4..];
+        else if (digits.StartsWith("90", StringComparison.Ordinal) && digits.Length >= 12)
+            digits = digits[2..];
+
+        // Stored/document values use one domestic prefix; the editor omits it.
+        digits = digits.TrimStart('0');
+        return digits.Length == 0 ? string.Empty : "0" + digits;
     }
 
     private void ContractValidationDateChanged(object? sender, SelectionChangedEventArgs e)
@@ -4827,9 +8231,10 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         {
             TenderNumberTextBox,
             ContractNumberTextBox,
-            WorkNameTextBox,
+
             ContractAmountTextBox,
             ContractWorkDaysTextBox,
+            ContractTransportDailyPriceTextBox,
             StartDatePicker,
             EndDatePicker
         })
@@ -4855,10 +8260,15 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
                decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out value);
     }
 
+    // Editor text is parsed back into calculation inputs, so preserve every decimal digit.
+    // Use the parser's culture (including tr-TR) without currency rounding or grouping.
+    private static string FormatCalculationInput(decimal value) =>
+        value.ToString(CultureInfo.CurrentCulture);
+
     private static decimal RoundMoney(decimal value) =>
         decimal.Round(value, 2, MidpointRounding.AwayFromZero);
 
-    private static string FormatMoney(decimal value) => $"{RoundMoney(value):N2} ₺";
+    private static string FormatMoney(decimal value) => RoundMoney(value).ToString("N2", CultureInfo.GetCultureInfo("tr-TR")) + " ₺";
     private static string BuildPdfPrintTitle(RouteDraft route, ProgressPaymentHistoryData latest)
     {
         if (!latest.ProgressPaymentNumber.HasValue || !latest.PeriodDate.HasValue)
@@ -4867,6 +8277,7 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         return Path.GetFileNameWithoutExtension(
             OehsFileNameService.BuildProgressPdfFileName(
                 latest.TenderNumber ?? string.Empty,
+                latest.ContractNumber ?? string.Empty,
                 route.RouteNumber,
                 latest.ProgressPaymentNumber.Value,
                 latest.PeriodDate.Value));
@@ -4877,22 +8288,23 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         string RouteNumber,
         string Name,
         decimal DailyPrice,
-        int GuideWorkDays = 0,
         decimal GuideDailyPrice = 0m,
-        int TransportWorkDays = 0,
+        decimal TransportWorkDays = 0,
         string TenderNumber = "",
         string ContractorTaxOrIdentityNumber = "",
-        string ContractorName = "")
+        string ContractorName = "",
+        string ContractNumber = "",
+        TransportationProgramType ProgramType = TransportationProgramType.SpecialEducation)
     {
-        public string TransportWorkDaysText => $"Taşıma İş Günü: {TransportWorkDays}";
+        public string TransportWorkDaysText => $"Döneme Esas THGS: {TransportWorkDays}";
         public decimal TransportAnnualPrice => TransportWorkDays * DailyPrice;
-        public string TransportAnnualPriceText => $"Taşıma Yıllık: {TransportAnnualPrice:N2} ₺";
+        public string TransportAnnualPriceText => $"Döneme Esas Taşıma: {TransportAnnualPrice:N2} ₺";
         public string DailyPriceText => $"Taşıma Günlük: {DailyPrice:N2} ₺";
         public string GuideDailyPriceText => $"Rehber: {GuideDailyPrice:N2} ₺";
-        public string TransportSummaryText => $"Taşıma: {TransportWorkDays} gün × {DailyPrice:N2} ₺";
-        public string GuideSummaryText => $"Rehber: {GuideWorkDays} gün × {GuideDailyPrice:N2} ₺";
-        public string ServiceSummaryText => $"Taşıma {TransportWorkDays} gün • Rehber {GuideWorkDays} gün";
-        public string RelationshipText => $"İhale/Dosya: {TenderNumber} • Yüklenici: {ContractorName}";
+        public string TransportSummaryText => $"Döneme Esas THGS: {TransportWorkDays} gün × {DailyPrice:N2} ₺";
+        public string GuideSummaryText => $"Rehber Personel Günlük Fiyat: {GuideDailyPrice:N2} ₺";
+        public string ServiceSummaryText => $"Taşıma {TransportWorkDays} gün • Rehber günlük {GuideDailyPrice:N2} ₺";
+        public string RelationshipText => $"İKN: {TenderNumber} • Yüklenici: {ContractorName}";
         public string DisplayText => string.IsNullOrWhiteSpace(ContractorName)
             ? $"Hat {RouteNumber} — {Name}"
             : $"Hat {RouteNumber} — {Name} • {ContractorName}";
@@ -4905,7 +8317,12 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         string Phone = "",
         string Email = "",
         string BankAccountNumber = "",
-        string ContactPerson = "");
+        string ContactPerson = "",
+        TransportationProgramType ProgramType = TransportationProgramType.SpecialEducation,
+        bool VatExempt = false)
+    {
+        public string VatExemptText => VatExempt ? "KDV İstisnası: VAR" : "KDV İstisnası: YOK";
+    }
 
     private sealed record ArchiveRow(
         string FullPath,
@@ -4919,7 +8336,8 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         string DisplayTitle,
         string CreatedAtText,
         string TotalAmountText,
-        string NetPayableText);
+        string NetPayableText,
+        TransportationProgramType ProgramType);
 
     private sealed record SummaryRow(
         string Title,
