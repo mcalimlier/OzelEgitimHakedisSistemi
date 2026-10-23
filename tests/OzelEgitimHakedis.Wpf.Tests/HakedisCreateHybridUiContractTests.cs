@@ -118,6 +118,163 @@ public sealed class HakedisCreateHybridUiContractTests
         });
     }
 
+    [Theory]
+    [InlineData("disk")]
+    [InlineData("discount")]
+    public void HybridSourceUpdate_ShouldRejectFailureWithoutMutatingSources(string failure)
+    {
+        RunOnSta(() =>
+        {
+            var temp=Directory.CreateTempSubdirectory("oehs-update-failure-");
+            try
+            {
+                var root=Path.Combine(temp.FullName,"data");
+                if(failure=="disk") File.WriteAllText(root,"not a directory");
+                var window=CreateHybridUpdateHarness(root);
+                var original=Collection(window,"_routes")[0];
+                var row=Assert.Single(Field<System.Collections.ObjectModel.ObservableCollection<MainWindow.MultiRoutePaymentDraftRow>>(window,"_multiRoutePaymentRows"));
+                row.GuideDailyPrice=300m;
+                if(failure=="discount") row.DiscountAmount=-1m;
+                Assert.False((bool)Invoke(window,"ApplyHybridRouteChanges",true)!);
+                Assert.Same(original,Collection(window,"_routes")[0]);
+                Assert.True(Field<Button>(window,"UpdateHybridRoutesButton").IsEnabled);
+                Assert.Equal(300m,row.GuideDailyPrice);
+                Assert.Empty(Field<System.Collections.Generic.List<HybridPaymentDraftData>>(window,"_savedHybridPaymentDrafts"));
+            }
+            finally {temp.Delete(true);}
+        });
+    }
+
+    [Fact]
+    public void HybridDraft_ShouldLoadOnFirstMonthSelectionAfterRouteSelection()
+    {
+        RunOnSta(() =>
+        {
+            var window=CreateHybridUpdateHarness("unused-test-root");
+            var rows=Field<System.Collections.ObjectModel.ObservableCollection<MainWindow.MultiRoutePaymentDraftRow>>(window,"_multiRoutePaymentRows");
+            var key=Assert.Single(rows).RouteKey;
+            var input=new ProgressPaymentInput(19m,1234m,0,0,100000,false,27m,0,0,GuideWorkDays:17m,GuideDailyPrice:200m);
+            SetField(window,"_savedHybridPaymentDrafts",new System.Collections.Generic.List<HybridPaymentDraftData>{new(key,new DateOnly(2026,10,1),input)});
+            var months=Field<ComboBox>(window,"ProgressPeriodMonthComboBox");
+            months.SelectedIndex=-1;
+            rows.Clear();Field<RouteDraftCache<MainWindow.MultiRoutePaymentDraftRow>>(window,"_multiRouteDraftCache").Clear();
+            Invoke(window,"UpdateHybridRouteDraftRows");
+            months.SelectedIndex=0;
+            // WPF harness bypasses initialization; exercise the transition body directly.
+            Invoke(window,"RestoreHybridInputsForSelectedPeriod");
+            var loaded=Assert.Single(rows);
+            Assert.Equal(17m,loaded.GuideWorkDays);
+            Assert.Equal(27m,loaded.TaxDebt);
+            Assert.False(Field<Button>(window,"UpdateHybridRoutesButton").IsEnabled);
+        });
+    }
+
+    [Fact]
+    public void HybridSourceRefresh_ShouldAdoptCleanSourceFieldsWithoutLosingMonthlyEdits()
+    {
+        RunOnSta(() =>
+        {
+            var window=CreateHybridUpdateHarness("unused-test-root");
+            var row=Assert.Single(Field<System.Collections.ObjectModel.ObservableCollection<MainWindow.MultiRoutePaymentDraftRow>>(window,"_multiRoutePaymentRows"));
+            row.TaxDebt=27m;row.GuideWorkDays=17m;
+            var updated=CreateRoute("01","Yeni kaynak","12345678901",dailyPrice:1600m,guidePrice:300m);
+            Collection(window,"_routes")[0]=updated;
+            var selector=Field<ListBox>(window,"ProgressRouteComboBox");
+            selector.Items.Clear();selector.Items.Add(updated);selector.SelectedItems.Add(updated);
+            Invoke(window,"UpdateHybridRouteDraftRows");
+            Assert.Equal(1600m,row.DailyPrice);
+            Assert.Equal(300m,row.GuideDailyPrice);
+            Assert.Equal("Yeni kaynak",row.RouteName);
+            Assert.Equal(27m,row.TaxDebt);
+            Assert.Equal(17m,row.GuideWorkDays);
+            Assert.True(Field<Button>(window,"UpdateHybridRoutesButton").IsEnabled);
+        });
+    }
+
+    [Fact]
+    public void ContractMetadataEdit_ShouldPreserveARoutesOwnDailyPrice()
+    {
+        RunOnSta(() =>
+        {
+            var temp=Directory.CreateTempSubdirectory("oehs-contract-price-");
+            try
+            {
+                var window=CreateHybridUpdateHarness(Path.Combine(temp.FullName,"data"));
+                var contract=(ContractDraftData)Collection(window,"_contracts")[0]!;
+                Collection(window,"_routes")[0]=CreateRoute("01","Merkez","12345678901",dailyPrice:1600m);
+                SetField(window,"_editingContractTender",contract.TenderNumber);
+                SetField(window,"_editingContractNumber",contract.ContractNumber);
+                SetField(window,"_editingContractProgramType",contract.ProgramType);
+                Field<TextBox>(window,"TenderNumberTextBox").Text=contract.TenderNumber;
+                Field<TextBox>(window,"ContractAmountTextBox").Text=(contract.ContractAmount+1).ToString(CultureInfo.InvariantCulture);
+                Field<TextBox>(window,"ContractWorkDaysTextBox").Text=contract.ContractWorkDays.ToString(CultureInfo.InvariantCulture);
+                Field<TextBox>(window,"ContractTransportDailyPriceTextBox").Text=contract.TransportDailyPrice.ToString(CultureInfo.InvariantCulture);
+                Field<DatePicker>(window,"StartDatePicker").SelectedDate=contract.StartDate.ToDateTime(TimeOnly.MinValue);
+                Field<DatePicker>(window,"EndDatePicker").SelectedDate=contract.EndDate.ToDateTime(TimeOnly.MinValue);
+                Invoke(window,"SaveContractButton_Click",window,new RoutedEventArgs());
+                var saved=new OehsProgramScopedApplicationDataStore(Path.Combine(temp.FullName,"data")).Load();
+                Assert.Equal(1600m,Assert.Single(saved.Routes).DailyPrice);
+            }
+            finally {temp.Delete(true);}
+        });
+    }
+
+    [Fact]
+    public void HybridSavedDraft_ShouldFollowSubsequentSourcePriceChangesOnReload()
+    {
+        RunOnSta(() =>
+        {
+            var temp=Directory.CreateTempSubdirectory("oehs-source-reload-");
+            try
+            {
+                var root=Path.Combine(temp.FullName,"data");
+                var window=CreateHybridUpdateHarness(root);
+                var row=Assert.Single(Field<System.Collections.ObjectModel.ObservableCollection<MainWindow.MultiRoutePaymentDraftRow>>(window,"_multiRoutePaymentRows"));
+                row.GuideDailyPrice=200m;row.GuideWorkDays=17m;row.TaxDebt=27m;
+                Assert.True((bool)Invoke(window,"ApplyHybridRouteChanges",true)!);
+                Collection(window,"_routes")[0]=CreateRoute("01","Merkez","12345678901",guidePrice:300m);
+                Assert.True((bool)Invoke(window,"SavePersistedData",false)!);
+                var data=new OehsProgramScopedApplicationDataStore(root).Load();
+                var saved=Assert.Single(data.HybridPaymentDrafts!);
+                Assert.Equal(300m,saved.Input.GuideDailyPrice);
+                Assert.Equal(17m,saved.Input.GuideWorkDays);
+                Assert.Equal(27m,saved.Input.TaxDebt);
+                var reopened=CreateHybridUpdateHarness(root);
+                var updated=CreateRoute("01","Merkez","12345678901",guidePrice:300m);
+                Collection(reopened,"_routes")[0]=updated;
+                var selector=Field<ListBox>(reopened,"ProgressRouteComboBox");
+                selector.Items.Clear();selector.Items.Add(updated);selector.SelectedItems.Add(updated);
+                SetField(reopened,"_savedHybridPaymentDrafts",data.HybridPaymentDrafts!.ToList());
+                Field<System.Collections.ObjectModel.ObservableCollection<MainWindow.MultiRoutePaymentDraftRow>>(reopened,"_multiRoutePaymentRows").Clear();
+                Field<RouteDraftCache<MainWindow.MultiRoutePaymentDraftRow>>(reopened,"_multiRouteDraftCache").Clear();
+                Invoke(reopened,"UpdateHybridRouteDraftRows");
+                var restored=Assert.Single(Field<System.Collections.ObjectModel.ObservableCollection<MainWindow.MultiRoutePaymentDraftRow>>(reopened,"_multiRoutePaymentRows"));
+                Assert.Equal(300m,restored.GuideDailyPrice);
+                Assert.Equal(17m,restored.GuideWorkDays);
+                Assert.Equal(27m,restored.TaxDebt);
+            }
+            finally {temp.Delete(true);}
+        });
+    }
+
+    private static MainWindow CreateHybridUpdateHarness(string root)
+    {
+        var window=CreateEditorHarness();
+        SetField(window,"_dataStore",new OehsProgramScopedApplicationDataStore(root));
+        SetField(window,"_calculationConstantsHistory",new System.Collections.Generic.List<ProgressPaymentCalculationConstantsChange>());
+        var contract=ArchiveProgressEditorContextTests.CreateArchive().Contract;
+        Collection(window,"_contracts").Add(contract);
+        Collection(window,"_contractors").Add(CreateFirm("Test firma","12345678901"));
+        var tender=Field<ComboBox>(window,"ProgressTenderListBox");tender.Items.Add(contract);tender.SelectedItem=contract;
+        var route=CreateRoute("01","Merkez","12345678901");
+        Collection(window,"_routes").Add(route);
+        var selector=Field<ListBox>(window,"ProgressRouteComboBox");selector.Items.Add(route);selector.SelectedItems.Add(route);
+        var month=new ProgressPaymentMonthOption(new DateOnly(2026,10,1),new DateOnly(2026,10,31));
+        var months=Field<ComboBox>(window,"ProgressPeriodMonthComboBox");months.Items.Add(month);months.SelectedItem=month;
+        Invoke(window,"UpdateHybridRouteDraftRows");
+        return window;
+    }
+
     [Fact]
     public void GoldFinance_ShouldKeepEightCardsWithVectorSymbolsAndGoldNetCard()
     {
@@ -1363,9 +1520,9 @@ public sealed class HakedisCreateHybridUiContractTests
 
     private static object CreateRoute(string number, string name, string identity,
         TransportationProgramType program = TransportationProgramType.SpecialEducation, string tender = "IHALE-01",
-        decimal transportDays = 20m) =>
+        decimal transportDays = 20m, decimal dailyPrice = 1000m, decimal guidePrice = 0m) =>
         Activator.CreateInstance(typeof(MainWindow).GetNestedType("RouteDraft", BindingFlags.NonPublic)!,
-            number, name, 1_000m, 0m, transportDays, tender, identity, "Same name", "SOZ-01",
+            number, name, dailyPrice, guidePrice, transportDays, tender, identity, "Same name", "SOZ-01",
             program)!;
 
     private static T Field<T>(MainWindow window, string name) =>

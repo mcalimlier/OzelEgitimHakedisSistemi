@@ -3418,7 +3418,7 @@ public partial class MainWindow : Window
             _editingRoute?.DailyPrice ?? contract!.TransportDailyPrice,
             hasGuide ? guideDailyPrice : 0m,
             transportWorkDays,
-            contract.TenderNumber,
+            contract!.TenderNumber,
             OehsIdentityService.NormalizeIdentity(contractor!.TaxOrIdentityNumber),
             contractor.Name,
             contract.ContractNumber,
