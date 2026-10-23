@@ -425,6 +425,102 @@ public sealed class HakedisCreateHybridUiContractTests
     }
 
     [Fact]
+    public void ContractorPhonePaste_ShouldRejectOverlongClipboardInsteadOfTruncating()
+    {
+        RunOnSta(()=>
+        {
+            var window=CreateEditorHarness();var box=Field<TextBox>(window,"ContractorPhoneTextBox");
+            box.MaxLength=10;
+            box.TextChanged+=(sender,e)=>Invoke(window,"ContractorPhoneTextBox_TextChanged",sender,e);
+            var paste=typeof(MainWindow).GetMethod("ContractorPhoneTextBox_Pasting",BindingFlags.NonPublic|BindingFlags.Instance);
+            if(paste is not null) DataObject.AddPastingHandler(box,(sender,e)=>paste.Invoke(window,new object[]{sender,e}));
+            var host=new Window{Content=box,Width=300,Height=100,ShowInTaskbar=false};
+            try
+            {
+                host.Show();box.Focus();
+                Clipboard.SetText("53212345678");box.Paste();
+                Assert.Equal("",box.Text);
+                Clipboard.SetText("05321234567");box.Paste();Assert.Equal("",box.Text);
+                Clipboard.SetText("5321234567");box.Paste();Assert.Equal("5321234567",box.Text);
+            }
+            finally {host.Close();Clipboard.Clear();}
+        });
+    }
+
+    [Fact]
+    public void ContractorComparison_ShouldIgnorePrefixPresentationOnlyChanges()
+    {
+        RunOnSta(()=>
+        {
+            var window=CreateEditorHarness();var firm=ArchiveProgressEditorContextTests.CreateArchive().Contractor;
+            var differences=Assert.IsAssignableFrom<System.Collections.Generic.IEnumerable<PaymentDifference>>(
+                Invoke(window,"CompareContractorFields",firm with {Phone="+90 532 123 45 67"},firm with {Phone="05321234567"}));
+            Assert.Empty(differences);
+            var source=File.ReadAllText(LoadProjectFile("src","OzelEgitimHakedis.Wpf","MainWindow.xaml.cs"));
+            Assert.Contains("CompareContractorFields(originalArchive.Contractor, updatedArchive.Contractor)",MethodBody(source,"SaveArchiveCorrectionSnapshot"),StringComparison.Ordinal);
+        });
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void RecordPeriods_ShouldKeepLegacyAndDeletedContractRecordsAccessible(bool archive)
+    {
+        RunOnSta(()=>
+        {
+            var directory=Directory.CreateTempSubdirectory("oehs-legacy-period-");
+            try
+            {
+                var window=CreateEditorHarness();var store=new ProgressPaymentArchiveStore(directory.FullName);
+                SetField(window,"_archiveStore",store);
+                var sample=ArchiveProgressEditorContextTests.CreateArchive();
+                var contract=sample.Contract with {StartDate=new DateOnly(2026,12,10),EndDate=new DateOnly(2026,10,14)};
+                var payment=sample.ProgressPayment with {PeriodDate=new DateOnly(2026,10,18),ContractStartDate=contract.StartDate,ContractEndDate=contract.EndDate};
+                if(archive) store.Save(sample with {Contract=contract,ProgressPayment=payment});
+                else Collection(window,"_progressHistory").Add(payment);
+                var program=Field<ComboBox>(window,"HomeProgramComboBox");program.Items.Add(new ComboBoxItem{Tag="SpecialEducation"});program.SelectedIndex=0;
+                Invoke(window,"UpdateRecordPeriodOptions",archive);
+                var box=Field<ComboBox>(window,archive?"ArchiveMonthFilter":"HistoryMonthFilter");
+                var option=Assert.Single(box.Items.Cast<ProgressPaymentMonthOption>());
+                Assert.Equal(2026,option.StartDate.Year);Assert.Equal(10,option.StartDate.Month);
+                box.SelectedItem=option;
+                Field<TextBox>(window,archive?"ArchiveTenderFilter":"HistoryTenderFilter").Text="OTHER";
+                Invoke(window,"UpdateRecordPeriodOptions",archive);
+                Assert.Empty(box.Items.Cast<object>());Assert.Null(box.SelectedItem);
+            }
+            finally {directory.Delete(true);}
+        });
+    }
+
+    [Fact]
+    public void ContractorPhoneSave_ShouldRejectPartialAndPersistSingleDomesticPrefix()
+    {
+        RunOnSta(()=>
+        {
+            var directory=Directory.CreateTempSubdirectory("oehs-phone-save-");
+            try
+            {
+                var root=Path.Combine(directory.FullName,"data");var window=CreateHybridUpdateHarness(root);
+                var program=Field<ComboBox>(window,"TransportProgramTypeComboBox");
+                program.Items.Add(new ComboBoxItem{Tag="SpecialEducation"});program.SelectedIndex=0;
+                Field<TextBox>(window,"ContractorNameTextBox").Text="Telefon test firması";
+                Field<TextBox>(window,"ContractorTaxTextBox").Text="99999999990";
+                Field<TextBox>(window,"ContractorPhoneTextBox").Text="532";
+                Invoke(window,"SaveContractorButton_Click",window,new RoutedEventArgs());
+                Assert.Single(Collection(window,"_contractors").Cast<object>());
+                Assert.Contains("10 hane",Field<TextBlock>(window,"ContractorStatusTextBlock").Text,StringComparison.Ordinal);
+                Field<TextBox>(window,"ContractorPhoneTextBox").Text="5321234567";
+                Invoke(window,"SaveContractorButton_Click",window,new RoutedEventArgs());
+                var saved=new OehsProgramScopedApplicationDataStore(root).Load();
+                var firm=Assert.Single(saved.Contractors!.Where(f=>f.TaxOrIdentityNumber=="99999999990"));
+                Assert.Equal("05321234567",firm.Phone);
+                Assert.Equal("",Field<TextBox>(window,"ContractorPhoneTextBox").Text);
+            }
+            finally {directory.Delete(true);}
+        });
+    }
+
+    [Fact]
     public void HybridCaptions_ShouldExactlyMatchTheirSourceFields()
     {
         var document=LoadMainWindowXaml();
