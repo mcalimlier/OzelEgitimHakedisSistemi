@@ -68,7 +68,9 @@ Bu oturumun ayrıntılı JSON/CSV, tam test kayıtları, hizalanmış panel rend
 
 Kalıcı sayısal kanıt: [Gerçek uygulama karşılaştırması JSON](evidence/2026-10-25-native-payment-comparison.json), [satır karşılaştırması CSV](evidence/2026-10-25-native-payment-comparison.csv). Excel'in 20 toplu sonucu da test fixture'ında saklanır: `excel-source-totals-2026-10-25.json`.
 
-## Kaç çekirdek var? Yayın kabul ilerlemesi
+> Güncel ek kabul: [VBA / PDF / gerçek DPI raporu](YAYIN_KABUL_VBA_PDF_DPI_2026-10-25.md). Aşağıdaki %68 tablosu 3409b41 aşamasının tarihsel durumudur.
+
+## Kaç çekirdek var? Önceki yayın kabul ilerlemesi
 
 Tek fiziksel `OzelEgitimHakedis.Core` kütüphanesi vardır. Projenin önceki kabul panosunda tanımlanan **beş işlevsel çekirdek** aşağıda izlenir. Her çekirdekte beş somut kabul kapısı vardır; yüzde = kapanan kapı / 5. Eşit ağırlıklı bu yayın kabul ölçümü, kod miktarı veya otomatik test geçme oranı değildir.
 
