@@ -1,0 +1,142 @@
+[
+  {
+    "Program": "BasicOrSecondary",
+    "Field": "TransportNetAmount",
+    "ExcelRange": "Hesaplama Bilgileri!K4:K8",
+    "ExcelSum": 675017.8844,
+    "ExcelMoney": 675017.88
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "Field": "TransportVat",
+    "ExcelRange": "Hesaplama Bilgileri!L4:L8",
+    "ExcelSum": 67501.78844,
+    "ExcelMoney": 67501.79
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "Field": "TransportWithholding",
+    "ExcelRange": "Hesaplama Bilgileri!M4:M8",
+    "ExcelSum": 33750.89422,
+    "ExcelMoney": 33750.89
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "Field": "GrossAmount",
+    "ExcelRange": "Hesaplama Bilgileri!O4:O8",
+    "ExcelSum": 742519.67284,
+    "ExcelMoney": 742519.67
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "Field": "AdditionalGuarantee",
+    "ExcelRange": "Hesaplama Bilgileri!T4:T8",
+    "ExcelSum": 2210.2050000000004,
+    "ExcelMoney": 2210.21
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "Field": "StampTax",
+    "ExcelRange": "Hesaplama Bilgileri!U4:U8",
+    "ExcelSum": 6399.169544112,
+    "ExcelMoney": 6399.17
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "Field": "TotalDeductions",
+    "ExcelRange": "Hesaplama Bilgileri!V4:V8",
+    "ExcelSum": 42360.26876411201,
+    "ExcelMoney": 42360.27
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "Field": "NetPayable",
+    "ExcelRange": "Hesaplama Bilgileri!W4:W8",
+    "ExcelSum": 700159.4040758881,
+    "ExcelMoney": 700159.4
+  },
+  {
+    "Program": "SpecialEducation",
+    "Field": "AdditionalGuarantee",
+    "ExcelRange": "Hesaplama!AC4:AC6",
+    "ExcelSum": 1755.6,
+    "ExcelMoney": 1755.6
+  },
+  {
+    "Program": "SpecialEducation",
+    "Field": "StampTax",
+    "ExcelRange": "Hesaplama!AD4:AD6",
+    "ExcelSum": 2082.8489988,
+    "ExcelMoney": 2082.85
+  },
+  {
+    "Program": "SpecialEducation",
+    "Field": "TotalDeductions",
+    "ExcelRange": "Hesaplama!AE4:AE6",
+    "ExcelSum": 90704.03479880001,
+    "ExcelMoney": 90704.03
+  },
+  {
+    "Program": "SpecialEducation",
+    "Field": "GrossAmount",
+    "ExcelRange": "Hesaplama!AF4:AF6",
+    "ExcelSum": 252090.972,
+    "ExcelMoney": 252090.97
+  },
+  {
+    "Program": "SpecialEducation",
+    "Field": "NetPayable",
+    "ExcelRange": "Hesaplama!AG4:AG6",
+    "ExcelSum": 161386.93720120002,
+    "ExcelMoney": 161386.94
+  },
+  {
+    "Program": "SpecialEducation",
+    "Field": "TransportNetAmount",
+    "ExcelRange": "Hesaplama!K4:K6",
+    "ExcelSum": 115608.0,
+    "ExcelMoney": 115608.0
+  },
+  {
+    "Program": "SpecialEducation",
+    "Field": "TransportVat",
+    "ExcelRange": "Hesaplama!L4:L6",
+    "ExcelSum": 11560.8,
+    "ExcelMoney": 11560.8
+  },
+  {
+    "Program": "SpecialEducation",
+    "Field": "TransportWithholding",
+    "ExcelRange": "Hesaplama!M4:M6",
+    "ExcelSum": 5780.4,
+    "ExcelMoney": 5780.4
+  },
+  {
+    "Program": "SpecialEducation",
+    "Field": "GuideNetAmount",
+    "ExcelRange": "Hesaplama!T4:T6",
+    "ExcelSum": 104101.81000000001,
+    "ExcelMoney": 104101.81
+  },
+  {
+    "Program": "SpecialEducation",
+    "Field": "GuideVat",
+    "ExcelRange": "Hesaplama!U4:U6",
+    "ExcelSum": 20820.362000000005,
+    "ExcelMoney": 20820.36
+  },
+  {
+    "Program": "SpecialEducation",
+    "Field": "GuideWithholding",
+    "ExcelRange": "Hesaplama!V4:V6",
+    "ExcelSum": 18738.325800000002,
+    "ExcelMoney": 18738.33
+  },
+  {
+    "Program": "SpecialEducation",
+    "Field": "GuideGrossAmount",
+    "ExcelRange": "Hesaplama!X4:X6",
+    "ExcelSum": 124922.172,
+    "ExcelMoney": 124922.17
+  }
+]

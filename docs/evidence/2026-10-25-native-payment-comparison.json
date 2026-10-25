@@ -1,0 +1,1020 @@
+{
+  "Date": "2026-10-25",
+  "Source": "Real isolated WPF application, actual Calculate/Save button through keyboard automation",
+  "Cases": 8,
+  "FinancialFields": 76,
+  "AggregateFields": 20,
+  "Failed": 0,
+  "Totals": {
+    "SpecialEducation": {
+      "Routes": 3,
+      "NetUnrounded": "161386.93720120",
+      "NetMoney": "161386.94"
+    },
+    "BasicOrSecondary": {
+      "Routes": 5,
+      "NetUnrounded": "700159.4040758880",
+      "NetMoney": "700159.40"
+    }
+  },
+  "Results": [
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 4,
+      "Field": "AdditionalGuarantee",
+      "Excel": "661.8",
+      "ApplicationSaved": "661.800",
+      "Delta": "0.000",
+      "ExcelMoney": "661.8",
+      "SavedMoney": "661.80",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 4,
+      "Field": "StampTax",
+      "Excel": "736.2857196000001",
+      "ApplicationSaved": "736.28571960",
+      "Delta": "-1E-13",
+      "ExcelMoney": "736.29",
+      "SavedMoney": "736.29",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 4,
+      "Field": "TotalDeductions",
+      "Excel": "27328.784319600003",
+      "ApplicationSaved": "27328.78431960",
+      "Delta": "-3E-12",
+      "ExcelMoney": "27328.78",
+      "SavedMoney": "27328.78",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 4,
+      "Field": "GrossAmount",
+      "Excel": "88837.724",
+      "ApplicationSaved": "88837.72400",
+      "Delta": "0.00000",
+      "ExcelMoney": "88837.72",
+      "SavedMoney": "88837.72",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 4,
+      "Field": "NetPayable",
+      "Excel": "61508.9396804",
+      "ApplicationSaved": "61508.93968040",
+      "Delta": "0E-8",
+      "ExcelMoney": "61508.94",
+      "SavedMoney": "61508.94",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 4,
+      "Field": "TransportNetAmount",
+      "Excel": "43630.0",
+      "ApplicationSaved": "43630.00",
+      "Delta": "0.00",
+      "ExcelMoney": "43630.0",
+      "SavedMoney": "43630.00",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 4,
+      "Field": "TransportVat",
+      "Excel": "4363.0",
+      "ApplicationSaved": "4363.0000",
+      "Delta": "0.0000",
+      "ExcelMoney": "4363.0",
+      "SavedMoney": "4363.00",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 4,
+      "Field": "TransportWithholding",
+      "Excel": "2181.5",
+      "ApplicationSaved": "2181.500000",
+      "Delta": "0.000000",
+      "ExcelMoney": "2181.5",
+      "SavedMoney": "2181.50",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 4,
+      "Field": "GuideNetAmount",
+      "Excel": "34037.270000000004",
+      "ApplicationSaved": "34037.270",
+      "Delta": "-4E-12",
+      "ExcelMoney": "34037.27",
+      "SavedMoney": "34037.27",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 4,
+      "Field": "GuideVat",
+      "Excel": "6807.4540000000015",
+      "ApplicationSaved": "6807.45400",
+      "Delta": "-1.5E-12",
+      "ExcelMoney": "6807.45",
+      "SavedMoney": "6807.45",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 4,
+      "Field": "GuideWithholding",
+      "Excel": "6126.708600000001",
+      "ApplicationSaved": "6126.7086000",
+      "Delta": "-1E-12",
+      "ExcelMoney": "6126.71",
+      "SavedMoney": "6126.71",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 4,
+      "Field": "GuideGrossAmount",
+      "Excel": "40844.724",
+      "ApplicationSaved": "40844.72400",
+      "Delta": "0.00000",
+      "ExcelMoney": "40844.72",
+      "SavedMoney": "40844.72",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 5,
+      "Field": "AdditionalGuarantee",
+      "Excel": "513.0",
+      "ApplicationSaved": "513.000",
+      "Delta": "0.000",
+      "ExcelMoney": "513.0",
+      "SavedMoney": "513.00",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 5,
+      "Field": "StampTax",
+      "Excel": "647.5908396000001",
+      "ApplicationSaved": "647.59083960",
+      "Delta": "-1E-13",
+      "ExcelMoney": "647.59",
+      "SavedMoney": "647.59",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 5,
+      "Field": "TotalDeductions",
+      "Excel": "28045.249439600004",
+      "ApplicationSaved": "28045.24943960",
+      "Delta": "-4E-12",
+      "ExcelMoney": "28045.25",
+      "SavedMoney": "28045.25",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 5,
+      "Field": "GrossAmount",
+      "Excel": "78538.12400000001",
+      "ApplicationSaved": "78538.12400",
+      "Delta": "-1E-11",
+      "ExcelMoney": "78538.12",
+      "SavedMoney": "78538.12",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 5,
+      "Field": "NetPayable",
+      "Excel": "50492.87456040001",
+      "ApplicationSaved": "50492.87456040",
+      "Delta": "-1E-11",
+      "ExcelMoney": "50492.87",
+      "SavedMoney": "50492.87",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 5,
+      "Field": "TransportNetAmount",
+      "Excel": "34354.0",
+      "ApplicationSaved": "34354.00",
+      "Delta": "0.00",
+      "ExcelMoney": "34354.0",
+      "SavedMoney": "34354.00",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 5,
+      "Field": "TransportVat",
+      "Excel": "3435.4",
+      "ApplicationSaved": "3435.4000",
+      "Delta": "0.0000",
+      "ExcelMoney": "3435.4",
+      "SavedMoney": "3435.40",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 5,
+      "Field": "TransportWithholding",
+      "Excel": "1717.7",
+      "ApplicationSaved": "1717.700000",
+      "Delta": "0.000000",
+      "ExcelMoney": "1717.7",
+      "SavedMoney": "1717.70",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 5,
+      "Field": "GuideNetAmount",
+      "Excel": "33957.270000000004",
+      "ApplicationSaved": "33957.270",
+      "Delta": "-4E-12",
+      "ExcelMoney": "33957.27",
+      "SavedMoney": "33957.27",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 5,
+      "Field": "GuideVat",
+      "Excel": "6791.4540000000015",
+      "ApplicationSaved": "6791.45400",
+      "Delta": "-1.5E-12",
+      "ExcelMoney": "6791.45",
+      "SavedMoney": "6791.45",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 5,
+      "Field": "GuideWithholding",
+      "Excel": "6112.308600000001",
+      "ApplicationSaved": "6112.3086000",
+      "Delta": "-1E-12",
+      "ExcelMoney": "6112.31",
+      "SavedMoney": "6112.31",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 5,
+      "Field": "GuideGrossAmount",
+      "Excel": "40748.724",
+      "ApplicationSaved": "40748.72400",
+      "Delta": "0.00000",
+      "ExcelMoney": "40748.72",
+      "SavedMoney": "40748.72",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 6,
+      "Field": "AdditionalGuarantee",
+      "Excel": "580.8",
+      "ApplicationSaved": "580.800",
+      "Delta": "0.000",
+      "ExcelMoney": "580.8",
+      "SavedMoney": "580.80",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 6,
+      "Field": "StampTax",
+      "Excel": "698.9724396000001",
+      "ApplicationSaved": "698.97243960",
+      "Delta": "-1E-13",
+      "ExcelMoney": "698.97",
+      "SavedMoney": "698.97",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 6,
+      "Field": "TotalDeductions",
+      "Excel": "35330.00103960001",
+      "ApplicationSaved": "35330.00103960",
+      "Delta": "-1E-11",
+      "ExcelMoney": "35330.0",
+      "SavedMoney": "35330.00",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 6,
+      "Field": "GrossAmount",
+      "Excel": "84715.12400000001",
+      "ApplicationSaved": "84715.12400",
+      "Delta": "-1E-11",
+      "ExcelMoney": "84715.12",
+      "SavedMoney": "84715.12",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 6,
+      "Field": "NetPayable",
+      "Excel": "49385.122960400004",
+      "ApplicationSaved": "49385.12296040",
+      "Delta": "-4E-12",
+      "ExcelMoney": "49385.12",
+      "SavedMoney": "49385.12",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 6,
+      "Field": "TransportNetAmount",
+      "Excel": "37624.0",
+      "ApplicationSaved": "37624.00",
+      "Delta": "0.00",
+      "ExcelMoney": "37624.0",
+      "SavedMoney": "37624.00",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 6,
+      "Field": "TransportVat",
+      "Excel": "3762.4",
+      "ApplicationSaved": "3762.4000",
+      "Delta": "0.0000",
+      "ExcelMoney": "3762.4",
+      "SavedMoney": "3762.40",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 6,
+      "Field": "TransportWithholding",
+      "Excel": "1881.2",
+      "ApplicationSaved": "1881.200000",
+      "Delta": "0.000000",
+      "ExcelMoney": "1881.2",
+      "SavedMoney": "1881.20",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 6,
+      "Field": "GuideNetAmount",
+      "Excel": "36107.270000000004",
+      "ApplicationSaved": "36107.270",
+      "Delta": "-4E-12",
+      "ExcelMoney": "36107.27",
+      "SavedMoney": "36107.27",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 6,
+      "Field": "GuideVat",
+      "Excel": "7221.4540000000015",
+      "ApplicationSaved": "7221.45400",
+      "Delta": "-1.5E-12",
+      "ExcelMoney": "7221.45",
+      "SavedMoney": "7221.45",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 6,
+      "Field": "GuideWithholding",
+      "Excel": "6499.308600000001",
+      "ApplicationSaved": "6499.3086000",
+      "Delta": "-1E-12",
+      "ExcelMoney": "6499.31",
+      "SavedMoney": "6499.31",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "ExcelRow": 6,
+      "Field": "GuideGrossAmount",
+      "Excel": "43328.724",
+      "ApplicationSaved": "43328.72400",
+      "Delta": "0.00000",
+      "ExcelMoney": "43328.72",
+      "SavedMoney": "43328.72",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 4,
+      "Field": "TransportNetAmount",
+      "Excel": "319991.9228",
+      "ApplicationSaved": "319991.92280",
+      "Delta": "0.00000",
+      "ExcelMoney": "319991.92",
+      "SavedMoney": "319991.92",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 4,
+      "Field": "TransportVat",
+      "Excel": "31999.192280000003",
+      "ApplicationSaved": "31999.1922800",
+      "Delta": "-3E-12",
+      "ExcelMoney": "31999.19",
+      "SavedMoney": "31999.19",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 4,
+      "Field": "TransportWithholding",
+      "Excel": "15999.596140000001",
+      "ApplicationSaved": "15999.596140000",
+      "Delta": "-1E-12",
+      "ExcelMoney": "15999.6",
+      "SavedMoney": "15999.60",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 4,
+      "Field": "GrossAmount",
+      "Excel": "351991.11508",
+      "ApplicationSaved": "351991.1150800",
+      "Delta": "0E-7",
+      "ExcelMoney": "351991.12",
+      "SavedMoney": "351991.12",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 4,
+      "Field": "AdditionalGuarantee",
+      "Excel": "441.921",
+      "ApplicationSaved": "441.9210",
+      "Delta": "0.0000",
+      "ExcelMoney": "441.92",
+      "SavedMoney": "441.92",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 4,
+      "Field": "StampTax",
+      "Excel": "3033.523428144",
+      "ApplicationSaved": "3033.5234281440",
+      "Delta": "0E-10",
+      "ExcelMoney": "3033.52",
+      "SavedMoney": "3033.52",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 4,
+      "Field": "TotalDeductions",
+      "Excel": "19475.040568144002",
+      "ApplicationSaved": "19475.0405681440",
+      "Delta": "-2E-12",
+      "ExcelMoney": "19475.04",
+      "SavedMoney": "19475.04",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 4,
+      "Field": "NetPayable",
+      "Excel": "332516.074511856",
+      "ApplicationSaved": "332516.0745118560",
+      "Delta": "0E-10",
+      "ExcelMoney": "332516.07",
+      "SavedMoney": "332516.07",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 5,
+      "Field": "TransportNetAmount",
+      "Excel": "112086.35",
+      "ApplicationSaved": "112086.35",
+      "Delta": "0.00",
+      "ExcelMoney": "112086.35",
+      "SavedMoney": "112086.35",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 5,
+      "Field": "TransportVat",
+      "Excel": "11208.635",
+      "ApplicationSaved": "11208.6350",
+      "Delta": "0.0000",
+      "ExcelMoney": "11208.64",
+      "SavedMoney": "11208.64",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 5,
+      "Field": "TransportWithholding",
+      "Excel": "5604.3175",
+      "ApplicationSaved": "5604.317500",
+      "Delta": "0.000000",
+      "ExcelMoney": "5604.32",
+      "SavedMoney": "5604.32",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 5,
+      "Field": "GrossAmount",
+      "Excel": "123294.985",
+      "ApplicationSaved": "123294.9850",
+      "Delta": "0.0000",
+      "ExcelMoney": "123294.99",
+      "SavedMoney": "123294.99",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 5,
+      "Field": "AdditionalGuarantee",
+      "Excel": "441.98100000000005",
+      "ApplicationSaved": "441.9810",
+      "Delta": "-5E-14",
+      "ExcelMoney": "441.98",
+      "SavedMoney": "441.98",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 5,
+      "Field": "StampTax",
+      "Excel": "1062.578598",
+      "ApplicationSaved": "1062.5785980",
+      "Delta": "0E-7",
+      "ExcelMoney": "1062.58",
+      "SavedMoney": "1062.58",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 5,
+      "Field": "TotalDeductions",
+      "Excel": "7108.877098",
+      "ApplicationSaved": "7108.8770980",
+      "Delta": "0E-7",
+      "ExcelMoney": "7108.88",
+      "SavedMoney": "7108.88",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 5,
+      "Field": "NetPayable",
+      "Excel": "116186.107902",
+      "ApplicationSaved": "116186.1079020",
+      "Delta": "0E-7",
+      "ExcelMoney": "116186.11",
+      "SavedMoney": "116186.11",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 6,
+      "Field": "TransportNetAmount",
+      "Excel": "105527.35",
+      "ApplicationSaved": "105527.35",
+      "Delta": "0.00",
+      "ExcelMoney": "105527.35",
+      "SavedMoney": "105527.35",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 6,
+      "Field": "TransportVat",
+      "Excel": "10552.735",
+      "ApplicationSaved": "10552.7350",
+      "Delta": "0.0000",
+      "ExcelMoney": "10552.74",
+      "SavedMoney": "10552.74",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 6,
+      "Field": "TransportWithholding",
+      "Excel": "5276.3675",
+      "ApplicationSaved": "5276.367500",
+      "Delta": "0.000000",
+      "ExcelMoney": "5276.37",
+      "SavedMoney": "5276.37",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 6,
+      "Field": "GrossAmount",
+      "Excel": "116080.085",
+      "ApplicationSaved": "116080.0850",
+      "Delta": "0.0000",
+      "ExcelMoney": "116080.09",
+      "SavedMoney": "116080.09",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 6,
+      "Field": "AdditionalGuarantee",
+      "Excel": "442.04100000000005",
+      "ApplicationSaved": "442.0410",
+      "Delta": "-5E-14",
+      "ExcelMoney": "442.04",
+      "SavedMoney": "442.04",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 6,
+      "Field": "StampTax",
+      "Excel": "1000.3992780000001",
+      "ApplicationSaved": "1000.3992780",
+      "Delta": "-1E-13",
+      "ExcelMoney": "1000.4",
+      "SavedMoney": "1000.40",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 6,
+      "Field": "TotalDeductions",
+      "Excel": "6718.807778",
+      "ApplicationSaved": "6718.8077780",
+      "Delta": "0E-7",
+      "ExcelMoney": "6718.81",
+      "SavedMoney": "6718.81",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 6,
+      "Field": "NetPayable",
+      "Excel": "109361.277222",
+      "ApplicationSaved": "109361.2772220",
+      "Delta": "0E-7",
+      "ExcelMoney": "109361.28",
+      "SavedMoney": "109361.28",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 7,
+      "Field": "TransportNetAmount",
+      "Excel": "85082.9116",
+      "ApplicationSaved": "85082.91160",
+      "Delta": "0.00000",
+      "ExcelMoney": "85082.91",
+      "SavedMoney": "85082.91",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 7,
+      "Field": "TransportVat",
+      "Excel": "8508.29116",
+      "ApplicationSaved": "8508.2911600",
+      "Delta": "0E-7",
+      "ExcelMoney": "8508.29",
+      "SavedMoney": "8508.29",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 7,
+      "Field": "TransportWithholding",
+      "Excel": "4254.14558",
+      "ApplicationSaved": "4254.145580000",
+      "Delta": "0E-9",
+      "ExcelMoney": "4254.15",
+      "SavedMoney": "4254.15",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 7,
+      "Field": "GrossAmount",
+      "Excel": "93591.20276000001",
+      "ApplicationSaved": "93591.2027600",
+      "Delta": "-1E-11",
+      "ExcelMoney": "93591.2",
+      "SavedMoney": "93591.20",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 7,
+      "Field": "AdditionalGuarantee",
+      "Excel": "442.10100000000006",
+      "ApplicationSaved": "442.1010",
+      "Delta": "-6E-14",
+      "ExcelMoney": "442.1",
+      "SavedMoney": "442.10",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 7,
+      "Field": "StampTax",
+      "Excel": "806.5860019680001",
+      "ApplicationSaved": "806.5860019680",
+      "Delta": "-1E-13",
+      "ExcelMoney": "806.59",
+      "SavedMoney": "806.59",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 7,
+      "Field": "TotalDeductions",
+      "Excel": "5502.832581968",
+      "ApplicationSaved": "5502.8325819680",
+      "Delta": "0E-10",
+      "ExcelMoney": "5502.83",
+      "SavedMoney": "5502.83",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 7,
+      "Field": "NetPayable",
+      "Excel": "88088.37017803201",
+      "ApplicationSaved": "88088.3701780320",
+      "Delta": "-1E-11",
+      "ExcelMoney": "88088.37",
+      "SavedMoney": "88088.37",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 8,
+      "Field": "TransportNetAmount",
+      "Excel": "52329.35",
+      "ApplicationSaved": "52329.35",
+      "Delta": "0.00",
+      "ExcelMoney": "52329.35",
+      "SavedMoney": "52329.35",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 8,
+      "Field": "TransportVat",
+      "Excel": "5232.935",
+      "ApplicationSaved": "5232.9350",
+      "Delta": "0.0000",
+      "ExcelMoney": "5232.94",
+      "SavedMoney": "5232.94",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 8,
+      "Field": "TransportWithholding",
+      "Excel": "2616.4675",
+      "ApplicationSaved": "2616.467500",
+      "Delta": "0.000000",
+      "ExcelMoney": "2616.47",
+      "SavedMoney": "2616.47",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 8,
+      "Field": "GrossAmount",
+      "Excel": "57562.284999999996",
+      "ApplicationSaved": "57562.2850",
+      "Delta": "4E-12",
+      "ExcelMoney": "57562.29",
+      "SavedMoney": "57562.29",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 8,
+      "Field": "AdditionalGuarantee",
+      "Excel": "442.16100000000006",
+      "ApplicationSaved": "442.1610",
+      "Delta": "-6E-14",
+      "ExcelMoney": "442.16",
+      "SavedMoney": "442.16",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 8,
+      "Field": "StampTax",
+      "Excel": "496.082238",
+      "ApplicationSaved": "496.0822380",
+      "Delta": "0E-7",
+      "ExcelMoney": "496.08",
+      "SavedMoney": "496.08",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 8,
+      "Field": "TotalDeductions",
+      "Excel": "3554.710738",
+      "ApplicationSaved": "3554.7107380",
+      "Delta": "0E-7",
+      "ExcelMoney": "3554.71",
+      "SavedMoney": "3554.71",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "ExcelRow": 8,
+      "Field": "NetPayable",
+      "Excel": "54007.574261999995",
+      "ApplicationSaved": "54007.5742620",
+      "Delta": "5E-12",
+      "ExcelMoney": "54007.57",
+      "SavedMoney": "54007.57",
+      "Pass": true
+    }
+  ],
+  "AggregateResults": [
+    {
+      "Program": "SpecialEducation",
+      "Field": "AdditionalGuarantee",
+      "ExcelSum": "1755.6",
+      "SavedSum": "1755.600",
+      "ExcelMoney": "1755.6",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "Field": "StampTax",
+      "ExcelSum": "2082.8489988",
+      "SavedSum": "2082.84899880",
+      "ExcelMoney": "2082.85",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "Field": "TotalDeductions",
+      "ExcelSum": "90704.03479880001",
+      "SavedSum": "90704.03479880",
+      "ExcelMoney": "90704.03",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "Field": "GrossAmount",
+      "ExcelSum": "252090.972",
+      "SavedSum": "252090.97200",
+      "ExcelMoney": "252090.97",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "Field": "NetPayable",
+      "ExcelSum": "161386.93720120002",
+      "SavedSum": "161386.93720120",
+      "ExcelMoney": "161386.94",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "Field": "TransportNetAmount",
+      "ExcelSum": "115608.0",
+      "SavedSum": "115608.00",
+      "ExcelMoney": "115608.0",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "Field": "TransportVat",
+      "ExcelSum": "11560.8",
+      "SavedSum": "11560.8000",
+      "ExcelMoney": "11560.8",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "Field": "TransportWithholding",
+      "ExcelSum": "5780.4",
+      "SavedSum": "5780.400000",
+      "ExcelMoney": "5780.4",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "Field": "GuideNetAmount",
+      "ExcelSum": "104101.81000000001",
+      "SavedSum": "104101.810",
+      "ExcelMoney": "104101.81",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "Field": "GuideVat",
+      "ExcelSum": "20820.362000000005",
+      "SavedSum": "20820.36200",
+      "ExcelMoney": "20820.36",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "Field": "GuideWithholding",
+      "ExcelSum": "18738.325800000002",
+      "SavedSum": "18738.3258000",
+      "ExcelMoney": "18738.33",
+      "Pass": true
+    },
+    {
+      "Program": "SpecialEducation",
+      "Field": "GuideGrossAmount",
+      "ExcelSum": "124922.172",
+      "SavedSum": "124922.17200",
+      "ExcelMoney": "124922.17",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "Field": "TransportNetAmount",
+      "ExcelSum": "675017.8844",
+      "SavedSum": "675017.88440",
+      "ExcelMoney": "675017.88",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "Field": "TransportVat",
+      "ExcelSum": "67501.78844",
+      "SavedSum": "67501.7884400",
+      "ExcelMoney": "67501.79",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "Field": "TransportWithholding",
+      "ExcelSum": "33750.89422",
+      "SavedSum": "33750.894220000",
+      "ExcelMoney": "33750.89",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "Field": "GrossAmount",
+      "ExcelSum": "742519.67284",
+      "SavedSum": "742519.6728400",
+      "ExcelMoney": "742519.67",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "Field": "AdditionalGuarantee",
+      "ExcelSum": "2210.2050000000004",
+      "SavedSum": "2210.2050",
+      "ExcelMoney": "2210.21",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "Field": "StampTax",
+      "ExcelSum": "6399.169544112",
+      "SavedSum": "6399.1695441120",
+      "ExcelMoney": "6399.17",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "Field": "TotalDeductions",
+      "ExcelSum": "42360.26876411201",
+      "SavedSum": "42360.2687641120",
+      "ExcelMoney": "42360.27",
+      "Pass": true
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "Field": "NetPayable",
+      "ExcelSum": "700159.4040758881",
+      "SavedSum": "700159.4040758880",
+      "ExcelMoney": "700159.4",
+      "Pass": true
+    }
+  ]
+}

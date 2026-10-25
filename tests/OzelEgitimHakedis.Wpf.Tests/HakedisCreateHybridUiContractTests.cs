@@ -21,7 +21,7 @@ using Xunit;
 
 namespace OzelEgitimHakedis.Wpf.Tests;
 
-public sealed class HakedisCreateHybridUiContractTests
+public sealed partial class HakedisCreateHybridUiContractTests
 {
     private static readonly XNamespace XamlNamespace =
         "http://schemas.microsoft.com/winfx/2006/xaml";
