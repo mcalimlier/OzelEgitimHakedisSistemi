@@ -1,11 +1,14 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Globalization;
 using OzelEgitimHakedis.Core.Services;
 
 namespace OzelEgitimHakedis.Wpf;
 
 public partial class MainWindow
 {
+    private static readonly CultureInfo PanelSearchCulture = CultureInfo.GetCultureInfo("tr-TR");
+    private static readonly StringComparer PanelNameComparer = StringComparer.Create(PanelSearchCulture, ignoreCase: true);
     private void ContractorSearch_TextChanged(object sender, TextChangedEventArgs e)
     {
         if (IsInitialized && !_suppressSelectionEvents) RefreshContractorList();
@@ -18,11 +21,11 @@ public partial class MainWindow
         var search = ContractorSearchTextBox.Text.Trim();
         var normalizedSearch = OehsIdentityService.NormalizeIdentity(search);
         var shown = scope.Where(firm => search.Length == 0 ||
-            firm.Name.Contains(search, StringComparison.CurrentCultureIgnoreCase) ||
+            PanelSearchCulture.CompareInfo.IndexOf(firm.Name, search, CompareOptions.IgnoreCase) >= 0 ||
             normalizedSearch.Length > 0 && (
                 OehsIdentityService.NormalizeIdentity(firm.TaxOrIdentityNumber).Contains(normalizedSearch, StringComparison.Ordinal) ||
                 OehsIdentityService.NormalizeIdentity(firm.BankAccountNumber).Contains(normalizedSearch, StringComparison.Ordinal)))
-            .OrderBy(firm => firm.Name, StringComparer.CurrentCultureIgnoreCase).ToArray();
+            .OrderBy(firm => firm.Name, PanelNameComparer).ToArray();
         ContractorsListBox.ItemsSource = shown;
         ContractorCountTextBlock.Text = $"{shown.Length} / {scope.Length} firma";
         ContractorListEmptyBorder.Visibility = shown.Length == 0 ? Visibility.Visible : Visibility.Collapsed;

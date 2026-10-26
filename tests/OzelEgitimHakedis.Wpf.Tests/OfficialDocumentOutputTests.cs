@@ -453,6 +453,9 @@ public sealed class OfficialDocumentOutputTests
             {
                 EditorField<TextBox>(window, "RouteGuideDailyPriceTextBox").Text = "1";
                 InvokeEditor(window, "CancelRouteEditButton_Click", window, new RoutedEventArgs());
+                Assert.Empty(EditorField<TextBox>(window, "RouteGuideDailyPriceTextBox").Text);
+                // Cancellation clears the draft; reopening must retain the saved precision.
+                InvokeEditor(window, "EditRouteButton_Click", new Button { Tag = route }, new RoutedEventArgs());
             }
             Assert.Equal(100.1234m, decimal.Parse(EditorField<TextBox>(window, "RouteGuideDailyPriceTextBox").Text, CultureInfo.CurrentCulture));
         });

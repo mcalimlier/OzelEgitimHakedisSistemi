@@ -941,161 +941,80 @@
 
                         <!-- Hatlar -->
                         <Grid x:Name="LinesPanel" Visibility="Collapsed">
-                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0">
-                            <StackPanel>
-                                    <TextBlock Text="HATLAR" Style="{StaticResource PageTitle}"/>
-                                    <TextBlock Text="İhale ve yüklenici seçimini yapın; ardından bu ilişkiye bağlı hizmet hatlarını tanımlayın." Style="{StaticResource PageSubtitle}"/>
-
-                                    <UniformGrid Columns="3" Margin="0,0,0,10">
-                                        <Border Style="{StaticResource MetricCard}" Margin="0,0,6.5,0">
-                                            <StackPanel>
-                                                <TextBlock Text="KAYITLI HAT" Foreground="White" FontWeight="Bold" FontSize="11.5"/>
-                                                <TextBlock x:Name="RouteCountTextBlock" Text="0" FontSize="16" FontWeight="Bold" Foreground="{StaticResource Blue600Brush}"/>
-                                                <TextBlock Text="Bu sözleşme için" Style="{StaticResource CardSubtitle}"/>
-                                            </StackPanel>
-                                        </Border>
-                                        <Border Style="{StaticResource PremiumPanel}" Margin="6.5,0,0,0" Padding="10">
-                                            <StackPanel>
-                                                <TextBlock Text="AKIŞ" Foreground="{StaticResource Gold500Brush}" FontSize="11" FontWeight="Bold"/>
-                                                <TextBlock Text="İhale → Yüklenici → Hat → Hakediş" Foreground="White" FontSize="11.5" FontWeight="SemiBold" Margin="0,6,0,0"/>
-                                                <TextBlock Text="Hatlar sonraki hakediş hesabında kullanılacak." Foreground="#C5D7E7" FontSize="11.5" Margin="0,4,0,0" TextWrapping="Wrap"/>
-                                            </StackPanel>
-                                        </Border>
-                                    </UniformGrid>
-
-                                    <Border x:Name="RouteSelectionCard" Panel.ZIndex="1000" Style="{StaticResource Card}" Padding="7.5" Margin="0,0,0,6">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-                                            <StackPanel Grid.Column="0" Margin="0,0,6.5,0">
-                                                <TextBlock Text="1. İHALE / DOSYA NO SEÇ" Style="{StaticResource CardTitle}"/>
-                                                <ComboBox x:Name="RouteTenderListBox"
-                                                          Height="34"
-                                                          Margin="0,6,0,0"
-                                                          SelectionChanged="RouteTenderListBox_SelectionChanged"
-                                                          Style="{StaticResource FieldComboBox}"
-                                                          ToolTip="İhale / dosya numarasını seçin">
-                                                    <ComboBox.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <StackPanel>
-                                                                <TextBlock Text="{Binding TenderNumber}" FontSize="11.5" FontWeight="SemiBold" TextWrapping="NoWrap"/>
-                                                                <TextBlock Text="{Binding TenderNumber, StringFormat='İKN: {0}'}" FontSize="10" Foreground="{StaticResource Text600Brush}"/>
-                                                            </StackPanel>
-                                                        </DataTemplate>
-                                                    </ComboBox.ItemTemplate>
-                                                </ComboBox>
-                                            </StackPanel>
-                                            <StackPanel Grid.Column="1" Margin="6.5,0,0,0">
-                                                <TextBlock Text="2. YÜKLENİCİ FİRMA SEÇ" Style="{StaticResource CardTitle}"/>
-                                                <ComboBox x:Name="RouteContractorListBox"
-                                                          Height="34"
-                                                          Margin="0,6,0,0"
-                                                          SelectionChanged="RouteContractorListBox_SelectionChanged"
-                                                          Style="{StaticResource FieldComboBox}"
-                                                          ToolTip="Yüklenici firmayı seçin">
-                                                    <ComboBox.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <TextBlock Text="{Binding Name}" FontSize="11.5" FontWeight="SemiBold" TextWrapping="NoWrap"/>
-                                                        </DataTemplate>
-                                                    </ComboBox.ItemTemplate>
-                                                </ComboBox>
-                                            </StackPanel>
-                                        </Grid>
-                                    </Border>
-
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="1.05*"/>
-                                            <ColumnDefinition Width="1.65*"/>
-                                        </Grid.ColumnDefinitions>
-
-                                        <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,8,0">
-                                            <StackPanel>
-                                                <TextBlock x:Name="RouteEditorTitleTextBlock" Text="YENİ HAT" Style="{StaticResource CardTitle}"/>
-                                                <TextBlock x:Name="RouteEditorSubtitleTextBlock" Text="Hat bilgilerini girin" Style="{StaticResource CardSubtitle}" Margin="0,0,0,6.5"/>
-                                                <TextBlock x:Name="RouteSelectedTenderTextBlock" Text="İhale: seçilmedi" Style="{StaticResource FieldLabel}" FontSize="11.5" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                                                <TextBlock x:Name="RouteSelectedContractorTextBlock" Text="Yüklenici: seçilmedi" Style="{StaticResource FieldLabel}" FontSize="11.5" Margin="0,0,0,8"/><TextBlock x:Name="RouteStatusTextBlock" Margin="0,0,0,6" Foreground="{StaticResource Blue600Brush}" TextWrapping="Wrap"/><Border x:Name="RouteValidationBanner" Visibility="Collapsed" Background="#FFF1F1" BorderBrush="#E53935" BorderThickness="1.5" CornerRadius="9" Padding="8,7" Margin="0,0,0,6"><StackPanel><TextBlock Text="EKSİK / HATALI HAT BİLGİSİ" Foreground="#C62828" FontSize="11.5" FontWeight="Bold"/><TextBlock x:Name="RouteValidationMessageTextBlock" Foreground="#8E1B1B" FontSize="11.5" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,3,0,0"/></StackPanel></Border>
-
-                                                <TextBlock Text="Hat No" Style="{StaticResource FieldLabel}"/>
-                                                <TextBox x:Name="RouteNumberTextBox" Style="{StaticResource FieldTextBox}" Margin="0,4,0,6"/>
-
-                                                <TextBlock x:Name="RouteNameLabel" Text="Hattın Adı" Style="{StaticResource FieldLabel}"/>
-                                                <TextBox x:Name="RouteNameTextBox" Style="{StaticResource FieldTextBox}" Margin="0,4,0,6"/>
-
-                                                <TextBlock Text="Taşıma Günlük Fiyatı" Style="{StaticResource FieldLabel}"/>
-                                                <TextBox x:Name="RouteDailyPriceTextBox" Style="{StaticResource FieldTextBox}" Margin="0,4,0,6"/>
-                                                <TextBlock Text="Sözleşme Bedeli" Style="{StaticResource FieldLabel}"/>
-                                                <TextBox x:Name="RouteContractAmountTextBox" Style="{StaticResource FieldTextBox}" Margin="0,4,0,6"/>
-                                                <TextBlock Text="Sözleşme Tarihi" Style="{StaticResource FieldLabel}"/>
-                                                <DatePicker x:Name="RouteContractDatePicker" Style="{StaticResource FieldDatePicker}" Margin="0,4,0,6"/>
-
-                                                <TextBlock Text="Döneme Esas Taşıma Hakediş Gün Sayısı (Döneme Esas THGS)" TextWrapping="Wrap" Style="{StaticResource FieldLabel}"/>
-                                                <TextBox x:Name="RouteTransportWorkDaysTextBox"
-                                                         ToolTip="Hakediş Oluştur tablosunda hat ilk seçildiğinde Taşıma Gün alanına aktarılır. Tablodaki dönemsel düzenlemeler korunur."
-                                                         Style="{StaticResource FieldTextBox}"
-                                                         Margin="0,4,0,6"/>
-
-
-                                                <TextBlock x:Name="RouteGuideDailyPriceLabel" Text="Rehber Personel Günlük Fiyat" Style="{StaticResource FieldLabel}"/>
-                                                <TextBox x:Name="RouteGuideDailyPriceTextBox" Style="{StaticResource FieldTextBox}" Margin="0,4,0,8"/>
-
-                                                <WrapPanel>
-                                                    <Button x:Name="AddRouteButton" Content="HAT EKLE" Click="AddRouteButton_Click" Style="{StaticResource ModernButton}" Width="140" Margin="0,0,8,6"/>
-                                                    <Button x:Name="CancelRouteEditButton" Content="DÜZENLEME İPTAL" Click="CancelRouteEditButton_Click" Style="{StaticResource SecondaryButton}" Width="160" Margin="0,0,8,6" Visibility="Collapsed"/>
-                                                    <Button x:Name="ClearRouteButton" Content="TEMİZLE" Click="ClearRouteButton_Click" Style="{StaticResource SecondaryButton}" Width="120" Margin="0,0,8,6"/>
-                                                </WrapPanel>
-                                            </StackPanel>
-                                        </Border>
-
-                                        <Border Grid.Column="1" Style="{StaticResource Card}" Margin="8,0,0,0">
-                                            <StackPanel>
-                                                <TextBlock Text="TANIMLI HATLAR" Style="{StaticResource CardTitle}"/>
-                                                <TextBlock Text="Kaydedilmiş ve bu oturumda oluşturulan hizmet hatları" Style="{StaticResource CardSubtitle}" Margin="0,0,0,8"/>
-                                                <ItemsControl x:Name="RoutesListBox">
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <Border Background="#FFFFFF" BorderBrush="#9AAAB8" BorderThickness="1.2" CornerRadius="8" Padding="7" Margin="0,3">
-                                                            <Grid Margin="0">
-                                                                <Grid.ColumnDefinitions>
-                                                                    <ColumnDefinition Width="62"/>
-                                                                    <ColumnDefinition Width="*"/>
-                                                                    <ColumnDefinition Width="230"/>
-                                                                    <ColumnDefinition Width="170" MinWidth="170"/>
-                                                                </Grid.ColumnDefinitions>
-                                                                <TextBlock Grid.Column="0" Text="{Binding RouteNumber}" Foreground="#000000" FontSize="13" FontWeight="Bold" VerticalAlignment="Center"/>
-                                                                <StackPanel Grid.Column="1" Margin="6.5,0">
-                                                                    <TextBlock Text="{Binding Name}" Foreground="#000000" FontSize="13" FontWeight="Bold" TextWrapping="Wrap"/>
-                                                                    <TextBlock Text="{Binding RelationshipText}" Foreground="#5C3B00" FontSize="12" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                                                                    <TextBlock Text="{Binding TransportSummaryText}" Foreground="#202B33" FontSize="12" TextWrapping="Wrap"/>
-                                                                    <TextBlock Text="{Binding GuideSummaryText}" Foreground="#202B33" FontSize="12" TextWrapping="Wrap"/>
-                                                                </StackPanel>
-                                                                <StackPanel Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                                                    <TextBlock Text="{Binding TransportAnnualPriceText}" Foreground="#000000" FontSize="12.5" FontWeight="Bold" HorizontalAlignment="Right"/>
-                                                                </StackPanel>
-                                                                <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                                                    <Button Content="DÜZENLE" Tag="{Binding}" Click="EditRouteButton_Click" Style="{StaticResource SecondaryButton}" Height="32" FontSize="11.5" Width="96" Margin="0,0,6,0"/>
-                                                                    <Button Content="SİL" Tag="{Binding}" Click="RemoveRouteButton_Click" Style="{StaticResource SecondaryButton}" Height="32" FontSize="11.5" Width="56"/>
-                                                                </StackPanel>
-                                                            </Grid>
-                                                            </Border>
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
-                                                <Border Style="{StaticResource StatusBanner}" Margin="0,8,0,0">
-                                                    <StackPanel>
-                                                        <TextBlock Text="BİLGİ" Foreground="{StaticResource Blue700Brush}" FontSize="11.5" FontWeight="Bold"/>
-                                                        <TextBlock Text="Hat kayıtları bu bilgisayarda yerel olarak saklanır ve uygulama yeniden açıldığında yüklenir."
-                                                                   Foreground="{StaticResource Text900Brush}" FontSize="11.5" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,3,0,0"/>
-                                                    </StackPanel>
-                                                </Border>
-                                            </StackPanel>
-                                        </Border>
-                                    </Grid>
-                                </StackPanel>
-
-                            </ScrollViewer>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0"><StackPanel>
+        <TextBlock Text="HATLAR" Style="{StaticResource PageTitle}"/>
+        <TextBlock Text="İhaleyi ve yükleniciyi seçin; hat bilgilerini tanımlayıp hakedişte kullanın." Style="{StaticResource PageSubtitle}"/>
+        <Border x:Name="RouteSelectionCard" Panel.ZIndex="1000" Style="{StaticResource Card}" Margin="0,0,0,10"><Grid>
+            <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+            <StackPanel Margin="0,0,10,0"><TextBlock Text="İhale (İKN) *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
+                <ComboBox x:Name="RouteTenderListBox" Height="42" SelectionChanged="RouteTenderListBox_SelectionChanged" Style="{StaticResource FieldComboBox}" TabIndex="0">
+                    <ComboBox.ItemTemplate><DataTemplate><StackPanel>
+                        <TextBlock Text="{Binding TenderNumber}" FontWeight="SemiBold"/>
+                        <TextBlock FontSize="10"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Text" Value="Özel Eğitim"/><Style.Triggers><DataTrigger Binding="{Binding ProgramType}" Value="BasicOrSecondary"><Setter Property="Text" Value="Temel / Ortaöğretim"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
+                    </StackPanel></DataTemplate></ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
+            <StackPanel Grid.Column="1"><TextBlock Text="Yüklenici firma *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
+                <ComboBox x:Name="RouteContractorListBox" Height="42" SelectionChanged="RouteContractorListBox_SelectionChanged" Style="{StaticResource FieldComboBox}" TabIndex="1" ToolTip="Firma seçimi listeyi süzer; yeni hat kaydı için zorunludur.">
+                    <ComboBox.ItemTemplate><DataTemplate><StackPanel ToolTip="{Binding Name}"><TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/><TextBlock Text="{Binding TaxOrIdentityNumber, StringFormat='TC / Vergi No: {0}'}" FontSize="10"/></StackPanel></DataTemplate></ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
+        </Grid></Border>
+        <Border Style="{StaticResource Card}"><StackPanel>
+            <TextBlock x:Name="RouteEditorTitleTextBlock" Text="YENİ HAT" Style="{StaticResource CardTitle}"/>
+            <TextBlock x:Name="RouteEditorSubtitleTextBlock" Text="Hat bilgilerini girin. * Zorunlu alan" Style="{StaticResource CardSubtitle}" Margin="0,4,0,8" TextWrapping="Wrap"/>
+            <TextBlock x:Name="RouteSelectedTenderTextBlock" Text="İhale: seçilmedi" Foreground="#C5D7E7" TextWrapping="Wrap"/>
+            <TextBlock x:Name="RouteSelectedContractorTextBlock" Text="Yüklenici: seçilmedi" Foreground="#C5D7E7" TextWrapping="Wrap" Margin="0,3,0,10"/>
+            <Border x:Name="RouteValidationBanner" Visibility="Collapsed" Background="#FFF1F1" BorderBrush="#E53935" BorderThickness="1.5" CornerRadius="9" Padding="9,8" Margin="0,0,0,10"><StackPanel>
+                <TextBlock Text="HAT BİLGİLERİNİ KONTROL EDİN" Foreground="#C62828" FontWeight="Bold"/><TextBlock x:Name="RouteValidationMessageTextBlock" Foreground="#8E1B1B" TextWrapping="Wrap" Margin="0,3,0,0"/>
+            </StackPanel></Border>
+            <Grid>
+                <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                <StackPanel Margin="0,0,10,12"><TextBlock Text="Hat no *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/><TextBox x:Name="RouteNumberTextBox" Height="34" Style="{StaticResource FieldTextBox}" TabIndex="2"/></StackPanel>
+                <StackPanel Grid.Column="1" Grid.ColumnSpan="2" Margin="0,0,0,12"><TextBlock x:Name="RouteNameLabel" Text="Hattın adı *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/><TextBox x:Name="RouteNameTextBox" Height="34" Style="{StaticResource FieldTextBox}" TabIndex="3"/></StackPanel>
+                <StackPanel Grid.Row="1" Margin="0,0,10,12"><TextBlock Text="Taşıma günlük fiyatı *" Height="34" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/><TextBox x:Name="RouteDailyPriceTextBox" Height="34" Style="{StaticResource FieldTextBox}" TabIndex="4"/></StackPanel>
+                <StackPanel x:Name="RouteWorkDaysField" Grid.Row="1" Grid.Column="1" Margin="0,0,10,12"><TextBlock Text="Döneme Esas Taşıma Hakediş Gün Sayısı (Döneme Esas THGS)" Height="34" TextWrapping="Wrap" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/><TextBox x:Name="RouteTransportWorkDaysTextBox" Height="34" Style="{StaticResource FieldTextBox}" TabIndex="5" ToolTip="Döneme Esas THGS. Hat ilk seçildiğinde hakediş satırına aktarılır; dönem tablosundaki düzenlemeler korunur."/></StackPanel>
+                <StackPanel x:Name="RouteGuideFieldPanel" Grid.Row="1" Grid.Column="2" Margin="0,0,0,12"><TextBlock x:Name="RouteGuideDailyPriceLabel" Text="Rehber Personel Günlük Fiyat" Height="34" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/><TextBox x:Name="RouteGuideDailyPriceTextBox" Height="34" Style="{StaticResource FieldTextBox}" TabIndex="6"/></StackPanel>
+                <StackPanel Grid.Row="2" Margin="0,0,10,0"><TextBlock Text="Sözleşme bedeli *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/><TextBox x:Name="RouteContractAmountTextBox" Height="34" Style="{StaticResource FieldTextBox}" TabIndex="7"/></StackPanel>
+                <StackPanel Grid.Row="2" Grid.Column="1" Margin="0,0,10,0"><TextBlock Text="Sözleşme tarihi *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/><DatePicker x:Name="RouteContractDatePicker" Height="34" Style="{StaticResource FieldDatePicker}" DateValidationError="RouteDate_InvalidInput" SelectedDateChanged="TenderDate_Changed" TabIndex="8"/></StackPanel>
+                <TextBlock Grid.Row="2" Grid.Column="2" Text="Günlük fiyatlarda 4 ondalık basamak kullanılabilir. Hakediş günlerini dönem tablosunda ayrıca özelleştirebilirsiniz." Style="{StaticResource CardSubtitle}" TextWrapping="Wrap" VerticalAlignment="Center"/>
+            </Grid>
+            <TextBlock x:Name="RouteStatusTextBlock" Foreground="#C5D7E7" TextWrapping="Wrap" Margin="0,10,0,0"/>
+            <WrapPanel Margin="0,12,0,0">
+                <Button x:Name="AddRouteButton" Content="HAT KAYDET" Click="AddRouteButton_Click" Style="{StaticResource ModernButton}" Height="36" MinWidth="165" Margin="0,0,8,6" TabIndex="9"/>
+                <Button x:Name="CancelRouteEditButton" Content="DÜZENLEMEYİ İPTAL ET" Click="CancelRouteEditButton_Click" Style="{StaticResource SecondaryButton}" Height="36" MinWidth="175" Margin="0,0,8,6" Visibility="Collapsed"/>
+                <Button x:Name="ClearRouteButton" Content="FORMU TEMİZLE" Click="ClearRouteButton_Click" Style="{StaticResource SecondaryButton}" Height="36" MinWidth="140" Margin="0,0,0,6"/>
+            </WrapPanel>
+        </StackPanel></Border>
+        <Border Style="{StaticResource Card}" Margin="0,10,0,0"><StackPanel>
+            <TextBlock Text="KAYITLI HATLAR" Style="{StaticResource CardTitle}"/>
+            <Grid Margin="0,8,0,8"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <StackPanel><TextBlock Text="Hat no, hat adı veya yüklenici ara" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/><TextBox x:Name="RouteSearchTextBox" Height="34" Style="{StaticResource FieldTextBox}" TextChanged="RouteSearch_TextChanged"/></StackPanel>
+                <TextBlock x:Name="RouteCountTextBlock" Grid.Column="1" Foreground="#C5D7E7" Margin="14,0,0,0" FontWeight="SemiBold" VerticalAlignment="Bottom"/>
+            </Grid>
+            <ItemsControl x:Name="RoutesListBox"><ItemsControl.ItemTemplate><DataTemplate>
+                <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,4"><Grid>
+                    <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                    <StackPanel Margin="0,0,14,0">
+                        <TextBlock Text="{Binding PanelTitleText}" Foreground="White" FontSize="14" FontWeight="Bold" TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding RelationshipText}" Foreground="#C5D7E7" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                        <TextBlock Text="{Binding PanelTransportText}" Foreground="#C5D7E7" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                        <TextBlock Text="{Binding PanelGuideText}" Foreground="#C5D7E7" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                        <TextBlock Text="{Binding PanelContractText}" Foreground="#F4C247" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <WrapPanel Grid.Column="1" VerticalAlignment="Center">
+                        <Button Content="DÜZENLE" Tag="{Binding}" Click="EditRouteButton_Click" Style="{StaticResource SecondaryButton}" Height="34" MinWidth="90" Margin="0,0,6,4"/>
+                        <Button Content="SİL" Tag="{Binding}" Click="RemoveRouteButton_Click" Style="{StaticResource SecondaryButton}" Height="34" MinWidth="55" Margin="0,0,0,4"/>
+                    </WrapPanel>
+                </Grid></Border>
+            </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+            <Border x:Name="RouteListEmptyBorder" Style="{StaticResource StatusBanner}" Margin="0,6,0,0"><TextBlock x:Name="RouteListEmptyTextBlock" Text="Hatları görmek ve eklemek için önce ihale seçin." Foreground="{StaticResource Text900Brush}" TextWrapping="Wrap"/></Border>
+        </StackPanel></Border>
+    </StackPanel></ScrollViewer>
 </Grid>
 
-                        <Grid x:Name="ContractorsPanel" Visibility="Collapsed">
+<Grid x:Name="ContractorsPanel" Visibility="Collapsed">
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0">
         <StackPanel>
             <TextBlock Text="YÜKLENİCİ FİRMALAR" Style="{StaticResource PageTitle}"/>

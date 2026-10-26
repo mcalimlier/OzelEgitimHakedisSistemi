@@ -125,11 +125,14 @@ public sealed partial class HakedisCreateHybridUiContractTests
         });
     }
 
-    [Fact]
-    public void ContractorSearch_FiltersNameIdentityBankAndProgramWithoutChangingDraft()
+    [Theory]
+    [InlineData("tr-TR")]
+    [InlineData("en-US")]
+    public void ContractorSearch_FiltersNameIdentityBankAndProgramWithoutChangingDraft(string culture)
     {
         RunOnSta(() =>
         {
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(culture);
             var window = CreateEditorHarness();
             var first = CreatePanelFirm("İzmir Taşıma", "12345678901", TransportationProgramType.SpecialEducation, "TR12 3456", false);
             var basic = CreatePanelFirm("Ankara Taşıma", "12345678901", TransportationProgramType.BasicOrSecondary, "TR98 7654", true);

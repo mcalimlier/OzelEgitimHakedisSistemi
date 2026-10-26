@@ -24,6 +24,9 @@ internal static class TurkishMoneyInput
     public static bool TryParseCalculationAmount(string? text, out decimal value)
         => TryParsePrecision(text, 4, out value);
 
+    public static bool TryParseWorkDays(string? text, out decimal value)
+        => TryParsePrecision(text, 20, out value);
+
     private static bool TryParsePrecision(string? text, int fractionalDigits, out decimal value)
     {
         value = 0m;

@@ -228,7 +228,7 @@ public partial class MainWindow : Window
 
     private void SetRouteEditorMode(bool editing, bool archiveCorrection = false)
     {
-        AddRouteButton.Content = editing ? "DÜZENLE" : "HAT EKLE";
+        AddRouteButton.Content = editing ? "DEĞİŞİKLİKLERİ KAYDET" : "HAT KAYDET";
         CancelRouteEditButton.Visibility = editing ? Visibility.Visible : Visibility.Collapsed;
         ClearRouteButton.IsEnabled = !editing;
         ClearRouteButton.Visibility = editing ? Visibility.Collapsed : Visibility.Visible;
@@ -1084,11 +1084,18 @@ public partial class MainWindow : Window
 
     private void UpdateRouteProgramTypeFields(ContractDraftData? contract)
     {
-        RouteNameLabel.Text = OfficialTemplateProfile.For(contract?.ProgramType ?? GetSelectedTransportationProgramType()).RouteNameLabel;
-        var visible = contract is not null && HasGuideStaff(contract.ProgramType);
+        ApplyRouteProgramFields(contract?.ProgramType);
+    }
+
+    private void ApplyRouteProgramFields(TransportationProgramType? program)
+    {
+        RouteNameLabel.Text = OfficialTemplateProfile.For(program ?? GetSelectedTransportationProgramType()).RouteNameLabel;
+        var visible = program.HasValue && HasGuideStaff(program.Value);
         var visibility = visible ? Visibility.Visible : Visibility.Collapsed;
         RouteGuideDailyPriceLabel.Visibility = visibility;
         RouteGuideDailyPriceTextBox.Visibility = visibility;
+        RouteGuideFieldPanel.Visibility = visibility;
+        Grid.SetColumnSpan(RouteWorkDaysField, visible ? 1 : 2);
 
         if (!visible)
         {
@@ -1208,7 +1215,7 @@ public partial class MainWindow : Window
         try
         {
             HomeTenderListBox.ItemsSource = _contracts.ToArray();
-            RouteTenderListBox.ItemsSource = scopedContracts;
+            RouteTenderListBox.ItemsSource = _contracts.ToArray();
             ProgressTenderListBox.ItemsSource = _contracts.ToArray();
             OutputTenderListBox.ItemsSource = _contracts.ToArray();
             RefreshTenderList();
@@ -1264,18 +1271,7 @@ public partial class MainWindow : Window
     private void UpdateRouteListView()
     {
         RefreshContractWorkNameDisplays();
-        var contract = RouteTenderListBox.SelectedItem as ContractDraftData;
-        var contractor = RouteContractorListBox.SelectedItem as ContractorDraft;
-
-        RoutesListBox.ItemsSource = _routes.Where(x =>
-            contract is not null &&
-            IsRouteForContract(x, contract) &&
-            contractor is not null &&
-            string.Equals(
-                OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
-                OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber),
-                StringComparison.Ordinal))
-            .ToArray();
+        RefreshRoutePanelList();
     }
 
     private void UpdateProgressPeriodOptions(ContractDraftData? contract, bool preserveSelection)
@@ -1798,7 +1794,7 @@ public partial class MainWindow : Window
                 DecimalDiffers(RouteDailyPriceTextBox, archive.Route.DailyPrice) ||
                 DecimalDiffers(RouteContractAmountTextBox, archive.Route.ContractAmount ?? archive.ProgressPayment.Input.ContractAmount) ||
                 DatePickerDiffers(RouteContractDatePicker, archive.Route.ContractDate ?? archive.ProgressPayment.ContractDate ?? archive.Contract.ContractDate) ||
-                DecimalWorkDaysDiffer(RouteTransportWorkDaysTextBox, archive.Route.TransportWorkDays) ||
+                RouteWorkDaysDiffer(RouteTransportWorkDaysTextBox, archive.Route.TransportWorkDays) ||
                 DecimalDiffers(RouteGuideDailyPriceTextBox, archive.Route.GuideDailyPrice),
 
             ArchiveCorrectionSection.ProgressPayment =>
@@ -1847,14 +1843,14 @@ public partial class MainWindow : Window
                 break;
 
             case ArchiveCorrectionSection.Route:
-                if (!TryParseWorkDays(RouteTransportWorkDaysTextBox.Text, out var transportWorkDays) || transportWorkDays < 0)
+                if (!TurkishMoneyInput.TryParseWorkDays(RouteTransportWorkDaysTextBox.Text, out var transportWorkDays) || transportWorkDays < 0)
                 {
                     message = "Döneme Esas THGS değerini sıfır veya daha büyük, en fazla 20 ondalık basamaklı bir sayı olarak girin.";
                     return false;
                 }
                 if (!TurkishMoneyInput.TryParseCalculationAmount(RouteDailyPriceTextBox.Text, out var routePrice) || routePrice < 0 ||
                     !TurkishMoneyInput.TryParseCents(RouteContractAmountTextBox.Text, out var routeAmount) || routeAmount < 0 ||
-                    !RouteContractDatePicker.SelectedDate.HasValue)
+                    !RouteContractDatePicker.SelectedDate.HasValue || !HasValidTenderDateText(RouteContractDatePicker))
                 {
                     message = "Hat fiyatı, sözleşme bedeli ve tarihini kontrol edin.";
                     return false;
@@ -2098,7 +2094,7 @@ public partial class MainWindow : Window
                 DecimalDiffers(RouteDailyPriceTextBox, route.DailyPrice) ||
                 DecimalDiffers(RouteContractAmountTextBox, route.ContractAmount ?? item.Input.ContractAmount) ||
                 DatePickerDiffers(RouteContractDatePicker, route.ContractDate ?? item.ContractDate) ||
-                DecimalWorkDaysDiffer(RouteTransportWorkDaysTextBox, route.TransportWorkDays) ||
+                RouteWorkDaysDiffer(RouteTransportWorkDaysTextBox, route.TransportWorkDays) ||
                 DecimalDiffers(RouteGuideDailyPriceTextBox, route.GuideDailyPrice),
 
             HistoryCorrectionSection.ProgressPayment =>
@@ -2163,14 +2159,14 @@ public partial class MainWindow : Window
                     message = "Hat No ve hat adı zorunludur.";
                     return false;
                 }
-                if (!TryParseWorkDays(RouteTransportWorkDaysTextBox.Text, out var transportWorkDays) || transportWorkDays < 0)
+                if (!TurkishMoneyInput.TryParseWorkDays(RouteTransportWorkDaysTextBox.Text, out var transportWorkDays) || transportWorkDays < 0)
                 {
                     message = "Döneme Esas THGS değerini sıfır veya daha büyük, en fazla 20 ondalık basamaklı bir sayı olarak girin.";
                     return false;
                 }
                 if (!TurkishMoneyInput.TryParseCalculationAmount(RouteDailyPriceTextBox.Text, out var routePrice) || routePrice < 0 ||
                     !TurkishMoneyInput.TryParseCents(RouteContractAmountTextBox.Text, out var routeAmount) || routeAmount < 0 ||
-                    !RouteContractDatePicker.SelectedDate.HasValue)
+                    !RouteContractDatePicker.SelectedDate.HasValue || !HasValidTenderDateText(RouteContractDatePicker))
                 {
                     message = "Hat fiyatı, sözleşme bedeli ve tarihini kontrol edin.";
                     return false;
@@ -2840,8 +2836,8 @@ public partial class MainWindow : Window
         if (string.IsNullOrWhiteSpace(routeName)) errors.Add(RouteNameTextBox);
         if (!TurkishMoneyInput.TryParseCalculationAmount(RouteDailyPriceTextBox.Text, out var routeDailyPrice) || routeDailyPrice < 0) errors.Add(RouteDailyPriceTextBox);
         if (!TurkishMoneyInput.TryParseCents(RouteContractAmountTextBox.Text, out var routeContractAmount) || routeContractAmount < 0) errors.Add(RouteContractAmountTextBox);
-        if (!RouteContractDatePicker.SelectedDate.HasValue) errors.Add(RouteContractDatePicker);
-        if (!TryParseWorkDays(RouteTransportWorkDaysTextBox.Text, out var transportWorkDays) || transportWorkDays < 0) errors.Add(RouteTransportWorkDaysTextBox);
+        if (!RouteContractDatePicker.SelectedDate.HasValue || !HasValidTenderDateText(RouteContractDatePicker)) errors.Add(RouteContractDatePicker);
+        if (!TurkishMoneyInput.TryParseWorkDays(RouteTransportWorkDaysTextBox.Text, out var transportWorkDays) || transportWorkDays < 0) errors.Add(RouteTransportWorkDaysTextBox);
         var hasGuide = HasGuideStaff(archive.Contract.ProgramType);
         var guideDailyPrice = 0m;
         if (hasGuide)
@@ -3382,6 +3378,21 @@ public partial class MainWindow : Window
 
         if (contract is null) errors.Add("İhale / Sözleşme seçimi");
         if (contractor is null) errors.Add("Yüklenici firma seçimi");
+        if (_editingRoute is not null && !_routes.Contains(_editingRoute))
+        {
+            ShowRouteValidation("Düzenlenen hat bulunamadı. Düzenlemeyi iptal edip yeni kayıt açın; işlem kaydedilmedi.");
+            return;
+        }
+        if (contract is not null && contractor is not null && contractor.ProgramType != contract.ProgramType)
+        {
+            errors.Add("İhale ile yüklenicinin taşıma programı aynı olmalıdır");
+            MarkInvalid(RouteContractorListBox);
+        }
+        if (_editingRoute is not null && contract is not null && _editingRoute.ProgramType != contract.ProgramType)
+        {
+            errors.Add("Kayıtlı hat farklı taşıma programına taşınamaz; diğer program için yeni hat açın");
+            MarkInvalid(RouteTenderListBox);
+        }
         if (string.IsNullOrWhiteSpace(routeNumber))
         {
             errors.Add("Hat No");
@@ -3402,12 +3413,12 @@ public partial class MainWindow : Window
             errors.Add("Sözleşme Bedeli");
             MarkInvalid(RouteContractAmountTextBox);
         }
-        if (!RouteContractDatePicker.SelectedDate.HasValue)
+        if (!RouteContractDatePicker.SelectedDate.HasValue || !HasValidTenderDateText(RouteContractDatePicker))
         {
             errors.Add("Sözleşme Tarihi");
             MarkInvalid(RouteContractDatePicker);
         }
-        if (!TryParseWorkDays(RouteTransportWorkDaysTextBox.Text, out var transportWorkDays) || transportWorkDays < 0)
+        if (!TurkishMoneyInput.TryParseWorkDays(RouteTransportWorkDaysTextBox.Text, out var transportWorkDays) || transportWorkDays < 0)
         {
             errors.Add("Döneme Esas Taşıma Hakediş Gün Sayısı (Döneme Esas THGS)");
             MarkInvalid(RouteTransportWorkDaysTextBox);
@@ -3454,7 +3465,8 @@ public partial class MainWindow : Window
             !ReferenceEquals(x, _editingRoute));
         if (duplicate is not null)
         {
-            ShowAlreadyRegistered($"Bu hat zaten kayıtlı: İKN {proposed.TenderNumber} / Hat {proposed.RouteNumber}.");
+            MarkInvalid(RouteNumberTextBox);
+            ShowRouteValidation($"Bu hat zaten kayıtlı: İKN {proposed.TenderNumber} / Hat {proposed.RouteNumber}. Listeden DÜZENLE düğmesini kullanın.");
             return;
         }
 
@@ -3594,12 +3606,13 @@ public partial class MainWindow : Window
     {
         RouteValidationMessageTextBlock.Text = message;
         RouteValidationBanner.Visibility = Visibility.Visible;
-        RouteStatusTextBlock.Text = "Hat kaydedilmedi. Kırmızı işaretli alanları kontrol edin.";
-        RouteStatusTextBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(198, 40, 40));
+        RouteStatusTextBlock.Text = "İşlem tamamlanamadı; yukarıdaki açıklamayı kontrol edin.";
+        RouteStatusTextBlock.Foreground = System.Windows.Media.Brushes.LightSteelBlue;
     }
 
     private void ClearRouteValidationVisuals()
     {
+        RouteStatusTextBlock.Foreground = System.Windows.Media.Brushes.LightSteelBlue;
         foreach (var control in new Control[]
         {
             RouteNumberTextBox,
@@ -3611,6 +3624,8 @@ public partial class MainWindow : Window
             RouteGuideDailyPriceTextBox
         })
             ClearInvalid(control);
+        ClearInvalid(RouteTenderListBox);
+        ClearInvalid(RouteContractorListBox);
 
         RouteValidationBanner.Visibility = Visibility.Collapsed;
         RouteValidationMessageTextBlock.Text = string.Empty;
@@ -3618,21 +3633,19 @@ public partial class MainWindow : Window
 
     private void RemoveRouteButton_Click(object sender, RoutedEventArgs e)
     {
+        if (IsArchiveEditing)
+        {
+            ShowRouteValidation("Arşiv düzeltmesi sürerken kayıtlı hat silinemez. Önce düzenlemeyi tamamlayın veya iptal edin.");
+            return;
+        }
         if (sender is not Button { Tag: RouteDraft route })
             return;
 
-        var historyCount = _progressHistory.Count(x =>
-            string.Equals(x.TenderNumber, route.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
-            string.Equals(x.ContractNumber, route.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
-            string.Equals(x.RouteNumber, route.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
-            string.Equals(
-                OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
-                OehsIdentityService.NormalizeIdentity(route.ContractorTaxOrIdentityNumber),
-                StringComparison.Ordinal));
+        var historyCount = CountRouteHistoryReferences(route);
 
         if (historyCount > 0)
         {
-            ShowAlreadyRegistered($"Bu hat için {historyCount} hakediş kaydı bulunduğu için hat silinmedi.");
+            ShowRouteValidation($"Bu hat için {historyCount} hakediş kaydı bulunduğu için hat silinmedi.");
             return;
         }
 
@@ -3641,29 +3654,52 @@ public partial class MainWindow : Window
             "Hat Kaydını Sil", MessageBoxButton.YesNo, MessageBoxImage.Warning);
         if (result != MessageBoxResult.Yes) return;
 
+        RemoveRouteAfterConfirmation(route);
+    }
+
+    private void RemoveRouteAfterConfirmation(RouteDraft route)
+    {
         var index = _routes.IndexOf(route);
         if (index < 0) return;
+        var routesBefore = _routes.ToArray();
+        var draftsBefore = SavedHybridPaymentDrafts.ToArray();
+        var cacheBefore = _multiRouteDraftCache.ToArray();
+        var wasEditing = ReferenceEquals(_editingRoute, route);
+        var key = HybridRouteKey(route);
         _routes.RemoveAt(index);
+        SavedHybridPaymentDrafts.RemoveAll(draft => draft.RouteKey == key);
+        _multiRouteDraftCache.Remove(key);
 
-        if (!SavePersistedData())
+        if (!SavePersistedData(showErrorDialog: false))
         {
             _routes.Insert(index, route);
+            RestoreHybridDraftIdentitySnapshot(draftsBefore, cacheBefore, routesBefore);
             RefreshViewsAfterPersistenceRollback();
-            RouteStatusTextBlock.Text = $"Hat silinemedi: {route.RouteNumber}; disk kaydı başarısız, hat geri alındı.";
+            ShowRouteValidation($"Hat silinemedi: {route.RouteNumber}; disk kaydı başarısız, hat ve taslakları geri alındı.");
             return;
         }
 
+        if (wasEditing) ClearRouteButton_Click(this, new RoutedEventArgs());
         UpdateRouteSummary();
         UpdateRouteListView();
+        UpdateProgressContractorAndRoutes(ProgressTenderListBox.SelectedItem as ContractDraftData);
+        UpdateOutputRoutesForContract(OutputTenderListBox.SelectedItem as ContractDraftData);
         UpdateHomeSummaryView();
         RouteStatusTextBlock.Text = $"Hat silindi: {route.RouteNumber}.";
     }
 
     private void EditRouteButton_Click(object sender, RoutedEventArgs e)
     {
-        ClearArchiveCorrectionState();
+        if (IsArchiveEditing)
+        {
+            ShowRouteValidation("Arşiv düzeltmesi sürüyor. Önce değişiklikleri kaydedin veya düzenlemeyi iptal edin.");
+            return;
+        }
         if (sender is not System.Windows.Controls.Button { Tag: RouteDraft route })
             return;
+        ClearArchiveCorrectionState();
+        ResetRouteDateValidation();
+        ClearRouteValidationVisuals();
 
         _editingRoute = route;
         SetRouteEditorMode(true);
@@ -3687,59 +3723,26 @@ public partial class MainWindow : Window
         RouteDailyPriceTextBox.Text = FormatCalculationInput(route.DailyPrice);
         RouteContractAmountTextBox.Text = FormatCalculationInput(route.ContractAmount ?? 0m);
         RouteContractDatePicker.SelectedDate = route.ContractDate?.ToDateTime(TimeOnly.MinValue);
-        RouteTransportWorkDaysTextBox.Text = route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
+        RouteTransportWorkDaysTextBox.Text = route.TransportWorkDays.ToString(CultureInfo.GetCultureInfo("tr-TR"));
         RouteGuideDailyPriceTextBox.Text = FormatCalculationInput(route.GuideDailyPrice);
+        ApplyRouteProgramFields(route.ProgramType);
+        RouteSelectedTenderTextBlock.Text = contract is null ? "İhale bulunamadı" : $"İKN: {contract.TenderNumber}";
+        RouteSelectedContractorTextBlock.Text = contractor is null ? "Yüklenici bulunamadı" : $"Yüklenici: {contractor.Name}";
         RouteStatusTextBlock.Text = $"Düzenleme modu: İKN {route.TenderNumber} / Hat {route.RouteNumber}. DÜZENLE ile kaydedin.";
     }
 
     private void CancelRouteEditButton_Click(object sender, RoutedEventArgs e)
     {
         var archiveCorrection = IsArchiveCorrectionFor(ArchiveCorrectionSection.Route);
-        var original = !archiveCorrection ? _editingRoute : null;
         ClearArchiveCorrectionState();
-
+        _editingRoute = null;
+        ClearRouteEditorFields();
+        SetRouteEditorMode(false);
         if (archiveCorrection)
         {
-            _editingRoute = null;
-            RouteNumberTextBox.Clear();
-            RouteNameTextBox.Clear();
-            RouteDailyPriceTextBox.Clear();
-            RouteContractAmountTextBox.Clear();
-            RouteContractDatePicker.SelectedDate = null;
-            RouteTransportWorkDaysTextBox.Text = "0";
-            RouteGuideDailyPriceTextBox.Text = "0";
-            ClearRouteValidationVisuals();
             NavigationButton_Click(NavArchives, new RoutedEventArgs(Button.ClickEvent, NavArchives));
             return;
         }
-
-        _editingRoute = null;
-        if (original is not null)
-        {
-            RouteTenderListBox.SelectedItem = FindContract(original.TenderNumber, original.ContractNumber, original.ProgramType);
-            var contractor = FindContractor(original.ContractorTaxOrIdentityNumber, original.ProgramType);
-            RouteContractorListBox.ItemsSource = contractor is null ? Array.Empty<ContractorDraft>() : new[] { contractor };
-            RouteContractorListBox.SelectedItem = contractor;
-            RouteNumberTextBox.Text = original.RouteNumber;
-            RouteNameTextBox.Text = original.Name;
-            RouteDailyPriceTextBox.Text = FormatCalculationInput(original.DailyPrice);
-            RouteContractAmountTextBox.Text = FormatCalculationInput(original.ContractAmount ?? 0m);
-            RouteContractDatePicker.SelectedDate = original.ContractDate?.ToDateTime(TimeOnly.MinValue);
-            RouteTransportWorkDaysTextBox.Text = original.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
-            RouteGuideDailyPriceTextBox.Text = FormatCalculationInput(original.GuideDailyPrice);
-        }
-        else
-        {
-            RouteNumberTextBox.Clear();
-            RouteNameTextBox.Clear();
-            RouteDailyPriceTextBox.Clear();
-            RouteContractAmountTextBox.Clear();
-            RouteContractDatePicker.SelectedDate = null;
-            RouteTransportWorkDaysTextBox.Text = "0";
-            RouteGuideDailyPriceTextBox.Text = "0";
-        }
-        SetRouteEditorMode(false);
-        ClearRouteValidationVisuals();
         RouteStatusTextBlock.Text = "Hat düzenlemesi iptal edildi; kayıt değiştirilmedi.";
     }
 
@@ -3748,30 +3751,17 @@ public partial class MainWindow : Window
         ClearArchiveCorrectionState();
         _editingRoute = null;
         RouteNumberTextBox.IsReadOnly = false;
-        RouteNumberTextBox.Clear();
-        RouteNameTextBox.Clear();
-        RouteDailyPriceTextBox.Clear();
-        RouteContractAmountTextBox.Clear();
-        RouteContractDatePicker.SelectedDate = null;
-        RouteTransportWorkDaysTextBox.Clear();
-        RouteGuideDailyPriceTextBox.Clear();
-
+        ClearRouteEditorFields();
         // Keep the chosen tender/contractor filters so the saved route remains
-        // visible in the right-hand list; only the entry fields are reset.
+        // visible in the saved-record list; only the entry fields are reset.
         UpdateRouteListView();
         UpdateRouteSummary();
-        ClearRouteValidationVisuals();
         SetRouteEditorMode(false);
     }
 
     private void UpdateRouteSummary()
     {
-        var contract = RouteTenderListBox.SelectedItem as ContractDraftData;
-        var count = contract is null
-            ? 0
-            : _routes.Count(x => IsRouteForContract(x, contract));
-
-        RouteCountTextBlock.Text = count.ToString(CultureInfo.CurrentCulture);
+        RefreshRoutePanelList();
     }
 
     private void EditContractButton_Click(object sender, RoutedEventArgs e)
@@ -6493,6 +6483,7 @@ public partial class MainWindow : Window
 
     private void BeginRouteHistoryEdit(ProgressPaymentHistoryData item)
     {
+        ResetRouteDateValidation();
         if (IsArchiveEditing)
         {
             _suppressArchiveDirtyTracking = true;
@@ -6507,8 +6498,9 @@ public partial class MainWindow : Window
             RouteDailyPriceTextBox.Text = FormatCalculationInput(archive.Route.DailyPrice);
             RouteContractAmountTextBox.Text = FormatCalculationInput(archive.Route.ContractAmount ?? archive.ProgressPayment.Input.ContractAmount);
             RouteContractDatePicker.SelectedDate = (archive.Route.ContractDate ?? archive.ProgressPayment.ContractDate ?? archive.Contract.ContractDate)?.ToDateTime(TimeOnly.MinValue);
-            RouteTransportWorkDaysTextBox.Text = archive.Route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
+            RouteTransportWorkDaysTextBox.Text = archive.Route.TransportWorkDays.ToString(CultureInfo.GetCultureInfo("tr-TR"));
             RouteGuideDailyPriceTextBox.Text = FormatCalculationInput(archive.Route.GuideDailyPrice);
+            ApplyRouteProgramFields(archive.Contract.ProgramType);
             RouteNumberTextBox.IsReadOnly = false;
             RouteSelectedTenderTextBlock.Text = $"Arşiv ihale: {archive.Route.TenderNumber}";
             RouteSelectedContractorTextBlock.Text = $"Arşiv yüklenici: {archive.Contractor.Name}";
@@ -6519,7 +6511,7 @@ public partial class MainWindow : Window
             // veya seçim olayları DÜZENLE / DÜZENLEME İPTAL durumunu bozamaz.
             SetRouteEditorMode(true, archiveCorrection: true);
             RouteStatusTextBlock.Text =
-                "ARŞİV DÜZELTME MODU: Hat No dahil ilgili alanları değiştirebilirsiniz. DÜZENLE seçili arşiv dosyasını aynı revision numarasıyla günceller; yeni hat oluşturmaz.";
+                "ARŞİV DÜZELTME MODU: Hat No dahil ilgili alanları değiştirebilirsiniz. Değişiklikleri kaydettiğinizde yeni arşiv revizyonu oluşturulur; yeni hat oluşturulmaz.";
             _suppressArchiveDirtyTracking = false;
             return;
         }
@@ -6573,9 +6565,10 @@ public partial class MainWindow : Window
         RouteDailyPriceTextBox.Text = FormatCalculationInput(route.DailyPrice);
         RouteContractAmountTextBox.Text = FormatCalculationInput(route.ContractAmount ?? item.Input.ContractAmount);
         RouteContractDatePicker.SelectedDate = (route.ContractDate ?? item.ContractDate)?.ToDateTime(TimeOnly.MinValue);
-        RouteTransportWorkDaysTextBox.Text = route.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
+        RouteTransportWorkDaysTextBox.Text = route.TransportWorkDays.ToString(CultureInfo.GetCultureInfo("tr-TR"));
         RouteGuideDailyPriceTextBox.Text = FormatCalculationInput(route.GuideDailyPrice);
         SetRouteEditorMode(true);
+        ApplyRouteProgramFields(route.ProgramType);
         NavigationButton_Click(NavLines, new RoutedEventArgs(Button.ClickEvent, NavLines));
         RouteStatusTextBlock.Text = "Hakedişten gelen düzenleme: Hat bilgilerini değiştirin ve DÜZENLE'e basın.";
         SetLiveHistoryCorrectionContext(item.Id, HistoryCorrectionSection.Route);
@@ -8349,6 +8342,10 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         public string GuideSummaryText => $"Rehber Personel Günlük Fiyat: {GuideDailyPrice:N2} ₺";
         public string ServiceSummaryText => $"Taşıma {TransportWorkDays} gün • Rehber günlük {GuideDailyPrice:N2} ₺";
         public string RelationshipText => $"İKN: {TenderNumber} • Yüklenici: {ContractorName}";
+        public string PanelTitleText => $"Hat {RouteNumber} — {Name}";
+        public string PanelTransportText => $"Taşıma: {TransportWorkDays.ToString(CultureInfo.GetCultureInfo("tr-TR"))} gün × {FormatCalculationInput(DailyPrice)} ₺ / gün";
+        public string PanelGuideText => HasGuideStaff(ProgramType) ? $"Rehber günlük: {FormatCalculationInput(GuideDailyPrice)} ₺" : string.Empty;
+        public string PanelContractText => $"Sözleşme: {(ContractAmount.HasValue ? FormatMoney(ContractAmount.Value) : "belirtilmedi")} • Tarih: {ContractDate?.ToString("dd.MM.yyyy", CultureInfo.GetCultureInfo("tr-TR")) ?? "belirtilmedi"}";
         public string DisplayText => string.IsNullOrWhiteSpace(ContractorName)
             ? $"Hat {RouteNumber} — {Name}"
             : $"Hat {RouteNumber} — {Name} • {ContractorName}";
