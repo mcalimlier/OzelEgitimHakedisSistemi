@@ -33,7 +33,7 @@ public sealed class OehsBackupTests
             var path = Path.Combine(root.FullName,"backup.zip");
             new OehsBackupService(data,output).Create(path);
             var destination = new OehsBackupService(Path.Combine(root.FullName,"destination-data"),Path.Combine(root.FullName,"destination-output"));
-            Assert.Equal(4,destination.Inspect(path).PdfCount);
+            Assert.Equal(4,OehsBackupService.Inspect(path).PdfCount);
             var recovery = destination.Restore(path);
             Assert.True(File.Exists(recovery));
             Assert.Single(new OehsProgramScopedApplicationDataStore(Path.Combine(root.FullName,"destination-data")).Load().Routes);
@@ -52,7 +52,7 @@ public sealed class OehsBackupTests
         {
             var path=Path.Combine(root.FullName,"bad.zip");
             using(var zip=ZipFile.Open(path,ZipArchiveMode.Create)) { using var writer=new StreamWriter(zip.CreateEntry(entry).Open()); writer.Write("bad"); }
-            Assert.ThrowsAny<InvalidDataException>(()=>new OehsBackupService(Path.Combine(root.FullName,"d"),Path.Combine(root.FullName,"o")).Inspect(path));
+            Assert.ThrowsAny<InvalidDataException>(()=>OehsBackupService.Inspect(path));
         }
         finally {root.Delete(true);}
         }
@@ -83,7 +83,7 @@ public sealed class OehsBackupTests
             File.WriteAllText(Path.Combine(data,"official-document-settings.json"),"{}");
             var service=new OehsBackupService(data,Path.Combine(root.FullName,"o")); var path=Path.Combine(root.FullName,"backup.zip"); service.Create(path);
             using(var zip=ZipFile.Open(path,ZipArchiveMode.Update)) { var e=zip.GetEntry("data/official-document-settings.json")!; e.Delete(); using var w=new StreamWriter(zip.CreateEntry("data/official-document-settings.json").Open()); w.Write("{bad}"); }
-            Assert.Throws<InvalidDataException>(()=>service.Inspect(path));
+            Assert.Throws<InvalidDataException>(()=>OehsBackupService.Inspect(path));
         }
         finally {root.Delete(true);}
     }

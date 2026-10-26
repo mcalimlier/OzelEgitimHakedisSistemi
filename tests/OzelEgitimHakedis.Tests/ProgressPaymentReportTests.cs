@@ -6,6 +6,14 @@ namespace OzelEgitimHakedis.Tests;
 
 public sealed class ProgressPaymentReportTests
 {
+    private static readonly string[] ExpectedDocumentNames = new[]
+            {
+                "Hakediş Raporu",
+                "Hizmet İşleri Hakediş Raporu",
+                "Hizmet İşleri Kabul Tutanağı",
+                "Hakediş İcmali"
+            };
+
     private static readonly string[] DocumentNames =
     {
         "Hakediş Raporu",
@@ -116,13 +124,7 @@ public sealed class ProgressPaymentReportTests
         var names = ProgressPaymentReportService.RequiredDocumentNames;
 
         Assert.Equal(
-            new[]
-            {
-                "Hakediş Raporu",
-                "Hizmet İşleri Hakediş Raporu",
-                "Hizmet İşleri Kabul Tutanağı",
-                "Hakediş İcmali"
-            },
+            ExpectedDocumentNames,
             names);
     }
 

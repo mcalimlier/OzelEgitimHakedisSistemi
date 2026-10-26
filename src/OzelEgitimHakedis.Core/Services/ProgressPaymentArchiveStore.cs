@@ -81,7 +81,7 @@ public sealed class ProgressPaymentArchiveStore
         }
     }
 
-    public string SaveRevision(string sourcePath, ProgressPaymentArchive archive)
+    public static string SaveRevision(string sourcePath, ProgressPaymentArchive archive)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(sourcePath);
         ArgumentNullException.ThrowIfNull(archive);

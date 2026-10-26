@@ -173,12 +173,12 @@ public partial class MainWindow : Window
 
     private void ResetEditorUiToCreateMode()
     {
-        SaveContractButton.Content = "KAYDET";
+        SaveContractButton.Content = "İHALEYİ KAYDET";
         CancelContractEditButton.Visibility = Visibility.Collapsed;
         ClearContractButton.IsEnabled = true;
         ClearContractButton.Visibility = Visibility.Visible;
-        ContractEditorTitleTextBlock.Text = "Sözleşme Bilgileri";
-        ContractEditorSubtitleTextBlock.Text = "Temel ihale ve sözleşme alanları";
+        ContractEditorTitleTextBlock.Text = "İhale bilgileri";
+        ContractEditorSubtitleTextBlock.Text = "Programı seçin, İKN ve hizmet tarihlerini girin.";
 
         SaveContractorButton.Content = "KAYDET";
         CancelContractorEditButton.Visibility = Visibility.Collapsed;
@@ -204,14 +204,14 @@ public partial class MainWindow : Window
 
     private void SetContractEditorMode(bool editing)
     {
-        SaveContractButton.Content = editing ? "DÜZENLE" : "KAYDET";
+        SaveContractButton.Content = editing ? "DEĞİŞİKLİKLERİ KAYDET" : "İHALEYİ KAYDET";
         CancelContractEditButton.Visibility = editing ? Visibility.Visible : Visibility.Collapsed;
         ClearContractButton.IsEnabled = !editing;
         ClearContractButton.Visibility = editing ? Visibility.Collapsed : Visibility.Visible;
-        ContractEditorTitleTextBlock.Text = editing ? "İHALE / SÖZLEŞME DÜZENLE" : "Sözleşme Bilgileri";
+        ContractEditorTitleTextBlock.Text = editing ? "İhale kaydını düzenle" : "İhale bilgileri";
         ContractEditorSubtitleTextBlock.Text = editing
             ? "Mevcut kaydı düzenliyorsunuz. Vazgeçerseniz DÜZENLEME İPTAL düğmesini kullanın."
-            : "Temel ihale ve sözleşme alanları";
+            : "Programı seçin, İKN ve hizmet tarihlerini girin.";
     }
 
     private void SetContractorEditorMode(bool editing)
@@ -965,6 +965,7 @@ public partial class MainWindow : Window
 
     private void ApplyContractToForm(ContractDraftData contract)
     {
+        ResetTenderDateValidation();
         _suppressSelectionEvents = true;
         try
         {
@@ -995,6 +996,7 @@ public partial class MainWindow : Window
 
     private void ClearContractFormOnly()
     {
+        ResetTenderDateValidation();
         TenderNumberTextBox.Clear();
         ContractNumberTextBox.Clear();
         ContractWorkDaysTextBox.Clear();
@@ -1206,7 +1208,7 @@ public partial class MainWindow : Window
             RouteTenderListBox.ItemsSource = scopedContracts;
             ProgressTenderListBox.ItemsSource = _contracts.ToArray();
             OutputTenderListBox.ItemsSource = _contracts.ToArray();
-            ContractsListBox.ItemsSource = scopedContracts;
+            RefreshTenderList();
             ContractorsListBox.ItemsSource = _contractors.Where(x => x.ProgramType == selectedProgram).ToArray();
 
             HomeTenderListBox.SelectedItem = homeContract;
@@ -1635,7 +1637,7 @@ public partial class MainWindow : Window
             $"{_routes.Count(x => IsRouteForContract(x, contract))} hat";
     }
 
-    private void ShowAlreadyRegistered(string message)
+    private static void ShowAlreadyRegistered(string message)
     {
         MessageBox.Show(message, "OEHS", MessageBoxButton.OK, MessageBoxImage.Information);
     }
@@ -1829,6 +1831,11 @@ public partial class MainWindow : Window
         switch (_archiveCorrectionSection)
         {
             case ArchiveCorrectionSection.Contract:
+                if (!HasValidTenderDateText(StartDatePicker) || !HasValidTenderDateText(EndDatePicker) || !HasValidTenderDateText(TenderDatePicker))
+                {
+                    message = "İhale ve hizmet tarihlerinin metnini kontrol edin.";
+                    return false;
+                }
                 input = archive.ProgressPayment.Input;
                 break;
 
@@ -2132,6 +2139,11 @@ public partial class MainWindow : Window
                 if (string.IsNullOrWhiteSpace(TenderNumberTextBox.Text))
                 {
                     message = "İhale Kayıt Numarası (İKN) zorunludur.";
+                    return false;
+                }
+                if (!HasValidTenderDateText(StartDatePicker) || !HasValidTenderDateText(EndDatePicker) || !HasValidTenderDateText(TenderDatePicker))
+                {
+                    message = "İhale ve hizmet tarihlerinin metnini kontrol edin.";
                     return false;
                 }
                 input = item.Input;
@@ -2475,7 +2487,7 @@ public partial class MainWindow : Window
                 ArchivedAt = DateTime.UtcNow,
                 Source = "ArchiveCorrection"
             };
-            var finalPath = _archiveStore.SaveRevision(_editingArchiveSourcePath, updatedArchive);
+            var finalPath = ProgressPaymentArchiveStore.SaveRevision(_editingArchiveSourcePath, updatedArchive);
             updatedArchive = ProgressPaymentArchiveStore.Load(finalPath);
             recalculatedPayment = updatedArchive.ProgressPayment;
 
@@ -2673,9 +2685,12 @@ public partial class MainWindow : Window
 
         var errors = new List<Control>();
         if (string.IsNullOrWhiteSpace(TenderNumberTextBox.Text)) errors.Add(TenderNumberTextBox);
-        if (!TurkishMoneyInput.TryParse(ContractAmountTextBox.Text, out var contractAmount) || contractAmount < 0) errors.Add(ContractAmountTextBox);
+        if (!TryReadLegacyContractAmount(ContractAmountTextBox.Text, out var contractAmount)) errors.Add(ContractAmountTextBox);
         if (!int.TryParse(ContractWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var contractWorkDays) || contractWorkDays < 0) errors.Add(ContractWorkDaysTextBox);
-        if (!TurkishMoneyInput.TryParse(ContractTransportDailyPriceTextBox.Text, out var transportDailyPrice) || transportDailyPrice < 0) errors.Add(ContractTransportDailyPriceTextBox);
+        if (!TryReadLegacyContractAmount(ContractTransportDailyPriceTextBox.Text, out var transportDailyPrice)) errors.Add(ContractTransportDailyPriceTextBox);
+        if (!HasValidTenderDateText(StartDatePicker)) errors.Add(StartDatePicker);
+        if (!HasValidTenderDateText(EndDatePicker)) errors.Add(EndDatePicker);
+        if (!HasValidTenderDateText(TenderDatePicker)) errors.Add(TenderDatePicker);
 
         DateOnly? startDate = StartDatePicker.SelectedDate.HasValue
             ? DateOnly.FromDateTime(StartDatePicker.SelectedDate.Value)
@@ -3871,13 +3886,26 @@ public partial class MainWindow : Window
             errors.Add("İhale / Dosya No");
             MarkInvalid(TenderNumberTextBox);
         }
-        TurkishMoneyInput.TryParse(ContractAmountTextBox.Text, out var contractAmount);
-        if (!int.TryParse(ContractWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var contractWorkDays) || contractWorkDays < 0)
+        if (!TryReadLegacyContractAmount(ContractAmountTextBox.Text, out var contractAmount))
+        {
+            errors.Add("Eski sözleşme bedeli");
+            MarkInvalid(ContractAmountTextBox);
+        }
+        var contractWorkDays = 0;
+        if (!string.IsNullOrWhiteSpace(ContractWorkDaysTextBox.Text) &&
+            (!int.TryParse(ContractWorkDaysTextBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out contractWorkDays) || contractWorkDays < 0))
         {
             errors.Add("Sözleşme İş Günü");
             MarkInvalid(ContractWorkDaysTextBox);
         }
-        TurkishMoneyInput.TryParse(ContractTransportDailyPriceTextBox.Text, out var transportDailyPrice);
+        if (!TryReadLegacyContractAmount(ContractTransportDailyPriceTextBox.Text, out var transportDailyPrice))
+        {
+            errors.Add("Eski taşıma günlük fiyatı");
+            MarkInvalid(ContractTransportDailyPriceTextBox);
+        }
+        if (!HasValidTenderDateText(StartDatePicker)) { errors.Add("Başlangıç tarihi metni"); MarkInvalid(StartDatePicker); }
+        if (!HasValidTenderDateText(EndDatePicker)) { errors.Add("Bitiş tarihi metni"); MarkInvalid(EndDatePicker); }
+        if (!HasValidTenderDateText(TenderDatePicker)) { errors.Add("İhale tarihi metni"); MarkInvalid(TenderDatePicker); }
         var startDate = StartDatePicker.SelectedDate;
         var endDate = EndDatePicker.SelectedDate;
         if (!startDate.HasValue)
@@ -5844,13 +5872,7 @@ public partial class MainWindow : Window
                 item.TenderNumber ?? string.Empty, item.ContractNumber ?? string.Empty,
                 route.RouteNumber, item.ProgressPaymentNumber ?? 1,
                 item.PeriodDate ?? DateOnly.FromDateTime(DateTime.Today)),
-            new[]
-            {
-                "Hakediş Raporu",
-                "Hizmet İşleri Hakediş Raporu",
-                "Hizmet İşleri Kabul Tutanağı",
-                "Hakediş İcmali"
-            });
+            ProgressPaymentReportService.RequiredDocumentNames);
 
         try
         {

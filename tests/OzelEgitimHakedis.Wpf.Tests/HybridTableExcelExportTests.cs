@@ -11,6 +11,8 @@ namespace OzelEgitimHakedis.Wpf.Tests;
 
 public sealed class HybridTableExcelExportTests
 {
+    private static readonly string[] VisibleExportHeaders = new[]{"Hattın Adı"};
+
     [Fact]
     public void TableExport_ShouldWriteExactHeadersTypedDecimalsAndLiteralText()
     {
@@ -50,7 +52,7 @@ public sealed class HybridTableExcelExportTests
         {
             var target=Path.Combine(directory.FullName,"literal.xlsx");
             System.Collections.Generic.IReadOnlyList<object?>[] rows={new object?[]{"_x0041_\rHat"}};
-            ExcelDocumentExporter.SaveTable(target,new[]{"Hattın Adı"},rows);
+            ExcelDocumentExporter.SaveTable(target,VisibleExportHeaders,rows);
             using var zip=ZipFile.OpenRead(target);
             using var stream=zip.GetEntry("xl/worksheets/sheet1.xml")!.Open();
             var xml=XDocument.Load(stream);XNamespace ns="http://schemas.openxmlformats.org/spreadsheetml/2006/main";

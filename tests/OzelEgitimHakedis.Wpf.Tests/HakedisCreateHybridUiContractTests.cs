@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -23,6 +23,18 @@ namespace OzelEgitimHakedis.Wpf.Tests;
 
 public sealed partial class HakedisCreateHybridUiContractTests
 {
+    private static readonly string[] SourceRouteNumbers = new[] { "01", "02" };
+    private static readonly string[] RouteMoneyFieldNames = new[]{"RouteDailyPriceTextBox","RouteContractAmountTextBox","RouteGuideDailyPriceTextBox"};
+    private static readonly string[] ExpectedExportHeaders = new[]{"Rehber Personel Günlük Fiyat","Hattın Adı","Döneme Esas THGS"};
+    private static readonly string[] HomeFinancialCardNames = new[]{"Net","Gross","Deductions","Vat","Transport","Difference","Routes","Firms"};
+    private static readonly double[] HybridRenderDpis = new[]{96d,120d,144d};
+    private static readonly int[] SelectedRouteCounts = new[]{1,2};
+    private static readonly string[] InvalidSharedInputNames = new[]{"WorkDaysTextBox","DailyPriceTextBox","PriceDifferenceTextBox","TaxDebtTextBox"};
+    private static readonly string[] HomeDetailPanelNames = new[]{"HomeMonthlyGrid","HomePreflightPanel"};
+    private static readonly string[] HomeOutputActionNames = new[]{"HomePreviewButton","HomeSavePdfsButton"};
+    private static readonly string[] ProgressMoneyInputNames = new[] { "WorkDaysTextBox", "DailyPriceTextBox", "PriceDifferenceTextBox", "MinimumWageSupportTextBox" };
+    private static readonly string[] InitiallyHiddenPanelNames = new[] { "HomePanel", "ProgressPanel", "SummaryPanel", "AcceptancePanel", "StatisticsPanel", "PlaceholderPanel" };
+
     private static readonly XNamespace XamlNamespace =
         "http://schemas.microsoft.com/winfx/2006/xaml";
 
@@ -68,7 +80,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
                 var tender = Field<ComboBox>(window, "ProgressTenderListBox");
                 tender.Items.Add(contract); tender.SelectedItem = contract;
                 var selector = Field<ListBox>(window, "ProgressRouteComboBox");
-                foreach (var number in new[] { "01", "02" })
+                foreach (var number in SourceRouteNumbers)
                 {
                     var route = CreateRoute(number, "Hat " + number, "12345678901");
                     Collection(window, "_routes").Add(route);
@@ -275,13 +287,13 @@ public sealed partial class HakedisCreateHybridUiContractTests
             Field<TextBox>(window,"RouteContractAmountTextBox").Text="12.536,48";
             Field<TextBox>(window,"RouteGuideDailyPriceTextBox").Text="100,00";
             Field<DatePicker>(window,"RouteContractDatePicker").SelectedDate=new DateTime(2026,1,1);
-            foreach(var fieldName in new[]{"RouteDailyPriceTextBox","RouteContractAmountTextBox","RouteGuideDailyPriceTextBox"})
+            foreach(var fieldName in RouteMoneyFieldNames)
             {
                 var field=Field<TextBox>(window,fieldName);var original=field.Text;field.Text=fieldName=="RouteContractAmountTextBox"?"12,345":"12,34567";
                 Invoke(window,"AddRouteButton_Click",window,new RoutedEventArgs());
                 Assert.Single(Collection(window,"_routes"));
                 var expected=fieldName switch { "RouteDailyPriceTextBox"=>"Taşıma Günlük Fiyatı", "RouteContractAmountTextBox"=>"Sözleşme Bedeli", _=>"Rehber Personel Günlük Fiyat" };
-                Assert.Contains(expected,Field<TextBlock>(window,"RouteValidationMessageTextBlock").Text);
+                Assert.Contains(expected,Field<TextBlock>(window,"RouteValidationMessageTextBlock").Text, StringComparison.Ordinal);
                 field.Text=original;
             }
             var progressTender=Field<ComboBox>(window,"ProgressTenderListBox");
@@ -781,7 +793,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
                 using var zip=System.IO.Compression.ZipFile.OpenRead(path);
                 using var stream=zip.GetEntry("xl/worksheets/sheet1.xml")!.Open();
                 var xml=XDocument.Load(stream);XNamespace ns="http://schemas.openxmlformats.org/spreadsheetml/2006/main";
-                Assert.Equal(new[]{"Rehber Personel Günlük Fiyat","Hattın Adı","Döneme Esas THGS"},xml.Descendants(ns+"row").First().Descendants(ns+"t").Select(e=>e.Value).ToArray());
+                Assert.Equal(ExpectedExportHeaders,xml.Descendants(ns+"row").First().Descendants(ns+"t").Select(e=>e.Value).ToArray());
                 var cells=xml.Descendants(ns+"row").Last().Elements(ns+"c").ToArray();
                 Assert.Equal(3,cells.Length);
                 Assert.Equal("1234.5678",cells[0].Element(ns+"v")!.Value);
@@ -809,7 +821,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
             Assert.Equal("2",(string?)cards.Attribute("Rows"));
             Assert.Equal(8,cards.Elements().Count());
             var layout=LoadLayoutFragment(home);
-            foreach(var name in new[]{"Net","Gross","Deductions","Vat","Transport","Difference","Routes","Firms"})
+            foreach(var name in HomeFinancialCardNames)
             {
                 var icon=(ContentControl)layout.FindName("Home"+name+"Icon");
                 Assert.NotNull(icon);
@@ -919,7 +931,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
                 {
                     grid.BringIntoView();layout.UpdateLayout();
                     Directory.CreateDirectory(preview);
-                    foreach(var dpi in new[]{96d,120d,144d})
+                    foreach(var dpi in HybridRenderDpis)
                     {
                         var scale=dpi/96d;
                         var width=(int)Math.Ceiling(layout.ActualWidth*scale);
@@ -944,7 +956,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
     {
         RunOnSta(() =>
         {
-            foreach(var count in new[]{1,2})
+            foreach(var count in SelectedRouteCounts)
             {
                 var temp=Directory.CreateTempSubdirectory("oehs-hybrid-save-");
                 try
@@ -972,7 +984,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
                     var rows=Field<System.Collections.ObjectModel.ObservableCollection<MainWindow.MultiRoutePaymentDraftRow>>(window,"_multiRoutePaymentRows");
                     for(var index=0;index<count;index++)
                     {Assert.Equal(16.5m+index,rows[index].WorkDays);Assert.Equal(0m,rows[index].GuideWorkDays);rows[index].PriceDifference=100+index*50;rows[index].TaxDebt=3+index*4;}
-                    foreach(var name in new[]{"WorkDaysTextBox","DailyPriceTextBox","PriceDifferenceTextBox","TaxDebtTextBox"})
+                    foreach(var name in InvalidSharedInputNames)
                         Field<TextBox>(window,name).Text="geçersiz ortak alan";
                     Invoke(window,"CalculateProgressButton_Click",window,new RoutedEventArgs());
                     var saved=new OehsProgramScopedApplicationDataStore(Path.Combine(temp.FullName,"data")).Load();
@@ -1058,7 +1070,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
     {
         RunOnSta(() =>
         {
-            foreach(var count in new[]{1,2})
+            foreach(var count in SelectedRouteCounts)
             {
                 var temp=Directory.CreateTempSubdirectory("oehs-hybrid-save-");
                 try
@@ -1086,7 +1098,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
                     var rows=Field<System.Collections.ObjectModel.ObservableCollection<MainWindow.MultiRoutePaymentDraftRow>>(window,"_multiRoutePaymentRows");
                     for(var index=0;index<count;index++)
                     {rows[index].WorkDays=16+index;rows[index].PriceDifference=100+index*50;rows[index].TaxDebt=3+index*4;}
-                    foreach(var name in new[]{"WorkDaysTextBox","DailyPriceTextBox","PriceDifferenceTextBox","TaxDebtTextBox"})
+                    foreach(var name in InvalidSharedInputNames)
                         Field<TextBox>(window,name).Text="geçersiz ortak alan";
                     Invoke(window,"CalculateProgressButton_Click",window,new RoutedEventArgs());
                     var saved=new OehsProgramScopedApplicationDataStore(Path.Combine(temp.FullName,"data")).Load();
@@ -1402,14 +1414,14 @@ public sealed partial class HakedisCreateHybridUiContractTests
                     Assert.InRange(bounds.Right,1,viewer.ActualWidth+1);
                     Assert.True(card.ActualHeight>=124);
                 }
-                foreach(var name in new[]{"HomeMonthlyGrid","HomePreflightPanel"})
+                foreach(var name in HomeDetailPanelNames)
                 {
                     var element=(FrameworkElement)layout.FindName(name);
                     var rect=element.TransformToAncestor(viewer).TransformBounds(new Rect(element.RenderSize));
                     Assert.InRange(rect.Right,1,viewer.ActualWidth+1);
                 }
                 viewer.ScrollToBottom();layout.UpdateLayout();
-                foreach(var name in new[]{"HomePreviewButton","HomeSavePdfsButton"})
+                foreach(var name in HomeOutputActionNames)
                 {
                     var button=(Button)layout.FindName(name);
                     var rect=button.TransformToAncestor(viewer).TransformBounds(new Rect(button.RenderSize));
@@ -1538,7 +1550,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
             var layout = LoadLayoutFragment(NamedElement(LoadMainWindowXaml(), "ProgressPanel"));
             ArrangeLayout(layout, width - 215 - 38, height - 60 - 38);
             var viewer = VisualDescendants<ScrollViewer>(layout).First();
-            foreach (var name in new[] { "WorkDaysTextBox", "DailyPriceTextBox", "PriceDifferenceTextBox", "MinimumWageSupportTextBox" })
+            foreach (var name in ProgressMoneyInputNames)
             {
                 var input = (TextBox)layout.FindName(name);
                 Assert.True(input.ActualWidth >= 90, $"{name} is too narrow at {width}px: {input.ActualWidth}px.");
@@ -1641,7 +1653,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
             Assert.Equal(title, Field<TextBlock>(window, "HeaderModuleText").Text);
             Assert.Equal("Active", button.Uid);
             Assert.Empty(Field<Button>(window, "NavProgress").Uid);
-            foreach (var name in new[] { "HomePanel", "ProgressPanel", "SummaryPanel", "AcceptancePanel", "StatisticsPanel", "PlaceholderPanel" })
+            foreach (var name in InitiallyHiddenPanelNames)
                 Assert.Equal(name == panelName ? Visibility.Visible : Visibility.Collapsed, Field<FrameworkElement>(window, name).Visibility);
         });
     }
@@ -1861,8 +1873,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
     {
         var list = LoadMainWindowXaml().Descendants()
             .Single(element => (string?)element.Attribute(XamlNamespace + "Name") == listName);
-        var title = list.Descendants().Last(element => element.Name.LocalName == "TextBlock");
-        var binding = Assert.Single(title.Descendants().Where(element => element.Name.LocalName == "MultiBinding"));
+        var binding = Assert.Single(list.Descendants().Where(element => element.Name.LocalName == "MultiBinding"));
         Assert.Equal("{StaticResource ContractWorkNameConverter}", (string?)binding.Attribute("Converter"));
         // ComboBox popup items cannot rely on finding their Window visually.
         Assert.Contains(binding.Elements(), element => (string?)element.Attribute("Path") == "Titles"
@@ -2051,7 +2062,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
     {
         try
         {
-            return typeof(MainWindow).GetMethod(name, BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window, arguments);
+            return typeof(MainWindow).GetMethod(name, BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic)!.Invoke(window, arguments);
         }
         catch (TargetInvocationException error) when (error.InnerException is not null)
         {
@@ -2211,7 +2222,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
         {
             Assert.Contains(editableHeader, columns.Keys);
             Assert.Contains("Mode=TwoWay",
-                (string?)columns[editableHeader].Attribute("Binding") ?? string.Empty);
+                (string?)columns[editableHeader].Attribute("Binding") ?? string.Empty, StringComparison.Ordinal);
         }
 
         foreach (var readOnlyHeader in new[] { "Hat" })

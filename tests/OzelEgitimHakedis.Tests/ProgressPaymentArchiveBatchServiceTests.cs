@@ -5,6 +5,14 @@ namespace OzelEgitimHakedis.Tests;
 
 public sealed class ProgressPaymentArchiveBatchServiceTests
 {
+    private static readonly string[] AllArchiveIds = new[] { "A", "B", "C" };
+    private static readonly string[] ExpectedDeletedFiles = new[] { "B.json", "A.json" };
+    private static readonly string[] SelectedArchiveIds = new[] { "A", "B" };
+    private static readonly string[] OrderedArchiveFiles = new[] { "A.json", "B.json" };
+    private static readonly string[] ExpectedDeleteErrors = new[] { "A.json: delete failed" };
+    private static readonly string[] ExpectedRollbackErrors = new[] { "A.json: unexpected rollback failure" };
+    private static readonly string[] SingleArchiveFile = new[] { "A.json" };
+
     [Fact]
     public void Execute_ShouldRollbackEarlierFiles_WhenLaterArchiveWriteFails()
     {
@@ -12,7 +20,7 @@ public sealed class ProgressPaymentArchiveBatchServiceTests
         var rolledBack = new List<string>();
 
         var result = ProgressPaymentArchiveBatchService.Execute(
-            new[] { "A", "B", "C" },
+            AllArchiveIds,
             item =>
             {
                 if (item == "C")
@@ -26,7 +34,7 @@ public sealed class ProgressPaymentArchiveBatchServiceTests
 
         Assert.False(result.Success);
         Assert.Equal("simulated disk failure", result.Error);
-        Assert.Equal(new[] { "B.json", "A.json" }, rolledBack);
+        Assert.Equal(ExpectedDeletedFiles, rolledBack);
         Assert.Empty(result.WrittenPaths);
         Assert.Empty(result.RollbackFailures);
     }
@@ -37,12 +45,12 @@ public sealed class ProgressPaymentArchiveBatchServiceTests
         var rolledBack = new List<string>();
 
         var result = ProgressPaymentArchiveBatchService.Execute(
-            new[] { "A", "B" },
+            SelectedArchiveIds,
             item => (true, item + ".json", (string?)null),
             path => rolledBack.Add(path));
 
         Assert.True(result.Success);
-        Assert.Equal(new[] { "A.json", "B.json" }, result.WrittenPaths);
+        Assert.Equal(OrderedArchiveFiles, result.WrittenPaths);
         Assert.Empty(result.RollbackFailures);
         Assert.Empty(rolledBack);
     }
@@ -51,7 +59,7 @@ public sealed class ProgressPaymentArchiveBatchServiceTests
     public void Execute_ShouldReportRollbackFailures_WithoutHidingOriginalWriteFailure()
     {
         var result = ProgressPaymentArchiveBatchService.Execute(
-            new[] { "A", "B" },
+            SelectedArchiveIds,
             item => item == "B"
                 ? (false, (string?)null, (string?)"write failed")
                 : (true, (string?)"A.json", (string?)null),
@@ -59,7 +67,7 @@ public sealed class ProgressPaymentArchiveBatchServiceTests
 
         Assert.False(result.Success);
         Assert.Equal("write failed", result.Error);
-        Assert.Equal(new[] { "A.json: delete failed" }, result.RollbackFailures);
+        Assert.Equal(ExpectedDeleteErrors, result.RollbackFailures);
     }
 
     [Fact]
@@ -68,7 +76,7 @@ public sealed class ProgressPaymentArchiveBatchServiceTests
         var rolledBack = new List<string>();
 
         var result = ProgressPaymentArchiveBatchService.Execute(
-            new[] { "A", "B" },
+            SelectedArchiveIds,
             item => item == "B"
                 ? throw new FormatException("unexpected writer failure")
                 : (true, (string?)"A.json", (string?)null),
@@ -76,7 +84,7 @@ public sealed class ProgressPaymentArchiveBatchServiceTests
 
         Assert.False(result.Success);
         Assert.Equal("unexpected writer failure", result.Error);
-        Assert.Equal(new[] { "A.json" }, rolledBack);
+        Assert.Equal(SingleArchiveFile, rolledBack);
         Assert.Empty(result.WrittenPaths);
     }
 
@@ -84,7 +92,7 @@ public sealed class ProgressPaymentArchiveBatchServiceTests
     public void Execute_ShouldReportUnexpectedRollbackException()
     {
         var result = ProgressPaymentArchiveBatchService.Execute(
-            new[] { "A", "B" },
+            SelectedArchiveIds,
             item => item == "B"
                 ? (false, (string?)null, (string?)"write failed")
                 : (true, (string?)"A.json", (string?)null),
@@ -92,7 +100,7 @@ public sealed class ProgressPaymentArchiveBatchServiceTests
 
         Assert.False(result.Success);
         Assert.Equal("write failed", result.Error);
-        Assert.Equal(new[] { "A.json: unexpected rollback failure" }, result.RollbackFailures);
+        Assert.Equal(ExpectedRollbackErrors, result.RollbackFailures);
     }
 
     [Fact]

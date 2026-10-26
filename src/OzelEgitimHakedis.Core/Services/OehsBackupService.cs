@@ -72,7 +72,7 @@ public sealed class OehsBackupService
         }
         finally { if(File.Exists(temp)) File.Delete(temp); }
     }
-    public BackupSummary Inspect(string path)
+    public static BackupSummary Inspect(string path)
     {
         var stage=Directory.CreateTempSubdirectory("oehs-backup-check-").FullName;
         try { return ExtractVerified(path,stage); }
@@ -87,7 +87,7 @@ public sealed class OehsBackupService
             var names=new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach(var e in zip.Entries)
             {
-                if(!names.Add(e.FullName) || e.FullName.Contains('\\') || e.FullName.Split('/').Any(p=>p is ".." or "." or "") ||
+                if(!names.Add(e.FullName) || e.FullName.Contains('\\', StringComparison.Ordinal) || e.FullName.Split('/').Any(p=>p is ".." or "." or "") ||
                    e.FullName != "manifest.json" && !e.FullName.StartsWith("data/",StringComparison.Ordinal) && !e.FullName.StartsWith("outputs/",StringComparison.Ordinal))
                     throw new InvalidDataException("Geçersiz/tekrarlanan paket yolu.");
                 _=OutputEvidenceStore.ResolveInside(stage,e.FullName);

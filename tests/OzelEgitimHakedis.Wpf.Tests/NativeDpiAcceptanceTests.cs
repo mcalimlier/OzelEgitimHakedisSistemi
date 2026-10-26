@@ -14,6 +14,9 @@ namespace OzelEgitimHakedis.Wpf.Tests;
 
 public sealed partial class HakedisCreateHybridUiContractTests
 {
+    private static readonly System.Text.Json.JsonSerializerOptions NativeDpiEvidenceJsonOptions = new JsonSerializerOptions { WriteIndented = true };
+    private static readonly string[] NativeDpiSelectionInputNames = new[] { "ProgressTenderListBox", "ProgressContractorComboBox", "ProgressPeriodMonthComboBox" };
+
     [DllImport("user32.dll")]
     private static extern uint GetDpiForWindow(IntPtr hwnd);
 
@@ -52,7 +55,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
                 Assert.InRange(Math.Abs(actualDpi.PixelsPerInchX - nativeDpi), 0d, 0.01d);
                 var expectedDpi = Environment.GetEnvironmentVariable("OEHS_EXPECTED_NATIVE_DPI");
                 if (expectedDpi is not null) Assert.Equal(uint.Parse(expectedDpi, System.Globalization.CultureInfo.InvariantCulture), nativeDpi);
-                var controls = new[] { "ProgressTenderListBox", "ProgressContractorComboBox", "ProgressPeriodMonthComboBox" }
+                var controls = NativeDpiSelectionInputNames
                     .Select(name => (FrameworkElement)layout.FindName(name)).ToArray();
                 var bounds = controls.Select(c => c.TransformToAncestor(layout).TransformBounds(new Rect(c.RenderSize))).ToArray();
                 Assert.All(bounds, b => Assert.InRange(Math.Abs(b.Top - bounds[0].Top), 0d, 1d));
@@ -66,7 +69,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
                         HybridRowCount = rows.Length,
                         InputBounds = bounds.Select(b => new { b.X, b.Y, b.Width, b.Height }),
                         Method = "Shown native HWND; actual OS monitor DPI; no simulated scale or WM_DPICHANGED injection" };
-                    File.WriteAllText(Path.Combine(output, $"native-dpi-{nativeDpi}.json"), JsonSerializer.Serialize(evidence, new JsonSerializerOptions { WriteIndented = true }));
+                    File.WriteAllText(Path.Combine(output, $"native-dpi-{nativeDpi}.json"), JsonSerializer.Serialize(evidence, NativeDpiEvidenceJsonOptions));
                     var bmp = new RenderTargetBitmap((int)Math.Ceiling(layout.ActualWidth * actualDpi.DpiScaleX),
                         (int)Math.Ceiling(layout.ActualHeight * actualDpi.DpiScaleY), nativeDpi, nativeDpi, PixelFormats.Pbgra32);
                     bmp.Render(layout);

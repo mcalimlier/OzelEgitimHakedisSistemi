@@ -21,11 +21,11 @@ public sealed class PaymentDetailsTests
         var rows = PaymentCalculationDetailsService.Build(payment, [payment]);
         Assert.Equal(98765.4321m, rows.Single(r => r.Name == "Net ödenecek (hesaplama)").Value);
         Assert.Equal(saved.StampTax, rows.Single(r => r.Name == "Damga vergisi").Value);
-        Assert.Contains("%1,1", rows.Single(r => r.Name == "Damga vergisi").Formula);
+        Assert.Contains("%1,1", rows.Single(r => r.Name == "Damga vergisi").Formula, StringComparison.Ordinal);
         Assert.Equal("2.446,9323", rows.Single(r => r.Name == "Taşıma günlük fiyatı").ValueText);
         Assert.True(rows.Count >= 45);
         var old = payment with { Calculation = saved with { AppliedConstants = null } };
-        Assert.Contains("oran kaydı yok", PaymentCalculationDetailsService.Build(old, [old]).Single(r => r.Name == "Damga vergisi").Formula);
+        Assert.Contains("oran kaydı yok", PaymentCalculationDetailsService.Build(old, [old]).Single(r => r.Name == "Damga vergisi").Formula, StringComparison.Ordinal);
     }
 
     [Theory]

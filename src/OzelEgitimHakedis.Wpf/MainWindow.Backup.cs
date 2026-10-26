@@ -39,7 +39,7 @@ public partial class MainWindow
         IsEnabled=false;
         try
         {
-            var service=BackupService();var summary=await Task.Run(()=>service.Inspect(dialog.FileName));
+            var service=BackupService();var summary=await Task.Run(()=>OehsBackupService.Inspect(dialog.FileName));
             var message=$"Yedek tarihi: {summary.CreatedAt.ToLocalTime():dd.MM.yyyy HH:mm}\n"+
                 $"Sözleşme: {summary.ContractCount} · Hat: {summary.RouteCount} · Hakediş: {summary.PaymentCount}\n"+
                 $"Arşiv revizyonu: {summary.ArchiveCount} · PDF: {summary.PdfCount} · Dosya: {summary.FileCount}\n\n"+

@@ -334,7 +334,7 @@ public sealed class ProgressPaymentArchiveStoreTests
         };
 
         var exception = Assert.Throws<ProgressPaymentArchiveException>(
-            () => store.SaveRevision(firstPath, inconsistent));
+            () => ProgressPaymentArchiveStore.SaveRevision(firstPath, inconsistent));
 
         Assert.Contains("Sözleşme numarası", exception.Message, StringComparison.Ordinal);
         Assert.Single(store.List());
@@ -366,7 +366,7 @@ public sealed class ProgressPaymentArchiveStoreTests
             }
         };
 
-        var revisedPath = store.SaveRevision(path, updated);
+        var revisedPath = ProgressPaymentArchiveStore.SaveRevision(path, updated);
         var oldVersion = ProgressPaymentArchiveStore.Load(path);
         var newVersion = ProgressPaymentArchiveStore.Load(revisedPath);
 
@@ -410,7 +410,7 @@ public sealed class ProgressPaymentArchiveStoreTests
             ProgressPayment = recalculatedPayment
         };
 
-        var revisedPath = store.SaveRevision(path, updated);
+        var revisedPath = ProgressPaymentArchiveStore.SaveRevision(path, updated);
         var oldVersion = ProgressPaymentArchiveStore.Load(path);
         var newVersion = ProgressPaymentArchiveStore.Load(revisedPath);
 
@@ -463,7 +463,7 @@ public sealed class ProgressPaymentArchiveStoreTests
         };
 
         var ex = Assert.Throws<ProgressPaymentArchiveException>(
-            () => store.SaveRevision(originalPath, attemptedUpdate));
+            () => ProgressPaymentArchiveStore.SaveRevision(originalPath, attemptedUpdate));
 
         Assert.Contains("başka bir arşiv", ex.Message, StringComparison.OrdinalIgnoreCase);
         Assert.True(File.Exists(originalPath));
@@ -480,7 +480,7 @@ public sealed class ProgressPaymentArchiveStoreTests
         var missingPath = Path.Combine(temp.Path, "OEHS_IHALE_Hat-01_Hakedis-01_2026-10-31_v01.json");
 
         Assert.Throws<ProgressPaymentArchiveException>(() =>
-            store.SaveRevision(missingPath, CreateArchive(1)));
+            ProgressPaymentArchiveStore.SaveRevision(missingPath, CreateArchive(1)));
 
         Assert.Empty(store.List());
         Assert.False(File.Exists(missingPath));
@@ -505,7 +505,7 @@ public sealed class ProgressPaymentArchiveStoreTests
                 Calculation = ProgressPaymentCalculator.Calculate(changedInput)
             }
         };
-        var v2Path = store.SaveRevision(v1Path, v2);
+        var v2Path = ProgressPaymentArchiveStore.SaveRevision(v1Path, v2);
 
         var staleInput = v1.ProgressPayment.Input with { WorkDays = 30 };
         var staleUpdate = v1 with
@@ -518,7 +518,7 @@ public sealed class ProgressPaymentArchiveStoreTests
         };
 
         var ex = Assert.Throws<ProgressPaymentArchiveException>(
-            () => store.SaveRevision(v1Path, staleUpdate));
+            () => ProgressPaymentArchiveStore.SaveRevision(v1Path, staleUpdate));
 
         Assert.Contains("daha yeni bir revision", ex.Message, StringComparison.OrdinalIgnoreCase);
         Assert.Equal(2, store.List().Count);

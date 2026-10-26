@@ -86,20 +86,20 @@ public sealed partial class HakedisCreateHybridUiContractTests
                         Assert.Single(pdf.GetPages());
                         var text = string.Concat(pdf.GetPage(1).Letters.Select(l => l.Value));
                         string Compact(string value) => string.Concat(value.Where(c => !char.IsWhiteSpace(c)));
-                        Assert.Contains(Compact("Kaynak Test Güzergâhı"), Compact(text));
-                        Assert.Contains(Compact(context.PreparerName), Compact(text));
-                        Assert.Contains(Compact(context.ControllerName), Compact(text));
-                        Assert.Contains(Compact(context.ApproverName), Compact(text));
-                        Assert.Contains(context.GeneratedDate.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture), text);
+                        Assert.Contains(Compact("Kaynak Test Güzergâhı"), Compact(text), StringComparison.Ordinal);
+                        Assert.Contains(Compact(context.PreparerName), Compact(text), StringComparison.Ordinal);
+                        Assert.Contains(Compact(context.ControllerName), Compact(text), StringComparison.Ordinal);
+                        Assert.Contains(Compact(context.ApproverName), Compact(text), StringComparison.Ordinal);
+                        Assert.Contains(context.GeneratedDate.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture), text, StringComparison.Ordinal);
                         if (output.Kind is OehsOfficialDocumentKind.KabulTutanagi or OehsOfficialDocumentKind.HizmetIsleriHakedisRaporu)
                         {
-                            Assert.Contains(Compact(context.ContractorName), Compact(text));
-                            Assert.Contains(context.ContractDate!.Value.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture), text);
-                            Assert.Contains(context.ContractEndDate!.Value.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture), text);
-                            Assert.Contains(context.ContractAmount.ToString("N2", CultureInfo.GetCultureInfo("tr-TR")), text);
+                            Assert.Contains(Compact(context.ContractorName), Compact(text), StringComparison.Ordinal);
+                            Assert.Contains(context.ContractDate!.Value.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture), text, StringComparison.Ordinal);
+                            Assert.Contains(context.ContractEndDate!.Value.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture), text, StringComparison.Ordinal);
+                            Assert.Contains(context.ContractAmount.ToString("N2", CultureInfo.GetCultureInfo("tr-TR")), text, StringComparison.Ordinal);
                         }
                         if (output.Kind == OehsOfficialDocumentKind.HizmetIsleriHakedisRaporu)
-                            Assert.Contains(context.ContractStartDate!.Value.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture), text);
+                            Assert.Contains(context.ContractStartDate!.Value.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture), text, StringComparison.Ordinal);
                         var financialSheet = output.Kind == OehsOfficialDocumentKind.HakedisRaporu ? "Hakediş Raporu"
                             : output.Kind == OehsOfficialDocumentKind.HakedisIcmali ? "Hakediş İcmali" : null;
                         if (financialSheet is not null)

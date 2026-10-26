@@ -16,6 +16,10 @@ namespace OzelEgitimHakedis.Wpf.Tests;
 
 public sealed partial class HakedisCreateHybridUiContractTests
 {
+    private static readonly System.Text.Json.JsonSerializerOptions ExcelFixtureJsonOptions = new JsonSerializerOptions{PropertyNameCaseInsensitive=true};
+    private static readonly string[] ReleaseSelectionInputNames = new[]{"ProgressTenderListBox","ProgressContractorComboBox","ProgressPeriodMonthComboBox"};
+    private static readonly System.Text.Json.JsonSerializerOptions ReleaseAuditEvidenceJsonOptions = new JsonSerializerOptions{WriteIndented=true};
+
     [Fact]
     public void PaymentSelectionCards_ShouldAlignInputBoundsAtSupportedSizes()
     {
@@ -25,7 +29,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
             {
                 var layout=LoadLayoutFragment(NamedElement(LoadMainWindowXaml(),"ProgressPanel"));
                 ArrangeLayout(layout,size.Item1-253,size.Item2-98);
-                var controls=new[]{"ProgressTenderListBox","ProgressContractorComboBox","ProgressPeriodMonthComboBox"}
+                var controls=ReleaseSelectionInputNames
                     .Select(name=>(FrameworkElement)layout.FindName(name)).ToArray();
                 var bounds=controls.Select(c=>c.TransformToAncestor(layout).TransformBounds(new Rect(c.RenderSize))).ToArray();
                 Assert.All(bounds,b=>Assert.InRange(System.Math.Abs(b.Top-bounds[0].Top),0,1));
@@ -58,7 +62,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
 
     private static ExcelAuditCase[] ReadExcelAuditCases() => JsonSerializer.Deserialize<ExcelAuditCase[]>(
         File.ReadAllText(LoadProjectFile("tests","OzelEgitimHakedis.Wpf.Tests","Fixtures","excel-recalculated-2026-10-25.json")),
-        new JsonSerializerOptions{PropertyNameCaseInsensitive=true})!;
+        ExcelFixtureJsonOptions)!;
 
     private static void AssertExcelResult(ExcelAuditCase sample,ProgressPaymentCalculation calculation)
     {
@@ -150,7 +154,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
                     if(!string.IsNullOrEmpty(savedOutput))
                     {
                         Directory.CreateDirectory(savedOutput);
-                        File.WriteAllText(Path.Combine(savedOutput,$"wpf-saved-{group.Key}.json"),JsonSerializer.Serialize(saved,new JsonSerializerOptions{WriteIndented=true}));
+                        File.WriteAllText(Path.Combine(savedOutput,$"wpf-saved-{group.Key}.json"),JsonSerializer.Serialize(saved,ReleaseAuditEvidenceJsonOptions));
                     }
                 }
                 finally {directory.Delete(true);}

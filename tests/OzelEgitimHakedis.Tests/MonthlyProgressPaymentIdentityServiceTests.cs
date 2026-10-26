@@ -6,6 +6,8 @@ namespace OzelEgitimHakedis.Tests;
 
 public sealed class MonthlyProgressPaymentIdentityServiceTests
 {
+    private static readonly string[] UnorderedRouteNumbers = new[] { "Q3", "Q1", "Q2" };
+
     [Fact]
     public void BuildDisplayName_ShouldIncludeProgramTenderContractorRoutesAndMonth()
     {
@@ -14,7 +16,7 @@ public sealed class MonthlyProgressPaymentIdentityServiceTests
             "2026-454",
             "S-2026",
             "A Firması",
-            new[] { "Q3", "Q1", "Q2" },
+            UnorderedRouteNumbers,
             new DateOnly(2026, 10, 31));
 
         Assert.Equal("Özel Eğitim | İKN 2026-454 • Sözleşme S-2026 | A Firması | Q1+Q2+Q3 | Ekim 2026", name);

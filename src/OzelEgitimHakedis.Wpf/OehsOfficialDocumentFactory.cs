@@ -65,7 +65,7 @@ internal static class OehsOfficialDocumentFactory
     private static readonly Brush White = Brushes.White;
     private static readonly Brush TotalGray = CreateFrozenTotalGray();
 
-    private static Brush CreateFrozenTotalGray()
+    private static SolidColorBrush CreateFrozenTotalGray()
     {
         var brush = new SolidColorBrush(Color.FromRgb(217, 217, 217));
         brush.Freeze();

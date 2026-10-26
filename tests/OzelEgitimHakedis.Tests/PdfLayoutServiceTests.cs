@@ -5,6 +5,9 @@ namespace OzelEgitimHakedis.Tests;
 
 public sealed class PdfLayoutServiceTests
 {
+    private static readonly double[] ZeroWidthColumnWeights = new[] { 100d, 0d, 200d };
+    private static readonly double[] LargeColumnWeights = new[] { 1_000_000d, 2_000_000d, 3_000_000d };
+
     private static readonly double[] IcmalHeaderWidths = { 500d, 218.11d };
     [Fact]
     public void A4PrintableWidth_ShouldLeaveDriverSafetyMargin()
@@ -56,7 +59,7 @@ public sealed class PdfLayoutServiceTests
     public void FitColumns_ShouldRejectZeroColumnWidth()
     {
         Assert.Throws<ArgumentOutOfRangeException>(
-            () => PdfLayoutService.FitColumns(new[] { 100d, 0d, 200d }));
+            () => PdfLayoutService.FitColumns(ZeroWidthColumnWeights));
     }
 
     [Fact]
@@ -90,7 +93,7 @@ public sealed class PdfLayoutServiceTests
     [Fact]
     public void FitColumns_ShouldKeepEveryWidthPositiveForVeryWideTables()
     {
-        var fitted = PdfLayoutService.FitColumns(new[] { 1_000_000d, 2_000_000d, 3_000_000d });
+        var fitted = PdfLayoutService.FitColumns(LargeColumnWeights);
 
         Assert.All(fitted, width => Assert.True(width > 0d));
         Assert.Equal(PdfLayoutService.SafeContentWidth, fitted.Sum(), precision: 6);

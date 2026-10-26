@@ -5,6 +5,12 @@ namespace OzelEgitimHakedis.Tests;
 
 public sealed class RouteDraftCacheTests
 {
+    private static readonly string[] NonAdjacentRouteKeys = new[] { "A", "C" };
+    private static readonly string[] FirstTwoRouteKeys = new[] { "A", "B" };
+    private static readonly string[] BlankRouteKey = new[] { " " };
+    private static readonly string[] SingleRouteKey = new[] { "A" };
+    private static readonly string[] DuplicateRouteKeys = new[] { "A", "A" };
+
     [Fact]
     public void SelectionChange_ShouldRetainDeselectedDraft_AndRestoreOnlyMatchingRoute()
     {
@@ -17,7 +23,7 @@ public sealed class RouteDraftCacheTests
         // A/B -> A/C: B remains cached but is not part of the selected/output set.
         var routeC = new Draft { RouteKey = "C", PriceDifference = 0m };
         cache[routeC.RouteKey] = routeC;
-        var selectedAC = new[] { "A", "C" }.Select(key => cache[key]).ToArray();
+        var selectedAC = NonAdjacentRouteKeys.Select(key => cache[key]).ToArray();
 
         Assert.Equal(2, selectedAC.Length);
         Assert.Contains(routeA, selectedAC);
@@ -26,7 +32,7 @@ public sealed class RouteDraftCacheTests
         Assert.Equal(200m, cache["B"].PriceDifference);
 
         // Restoring B reuses its own draft; no sibling's values are copied.
-        var selectedAB = new[] { "A", "B" }.Select(key => cache[key]).ToArray();
+        var selectedAB = FirstTwoRouteKeys.Select(key => cache[key]).ToArray();
         Assert.Contains(routeB, selectedAB);
         Assert.Equal(200m, selectedAB.Single(x => x.RouteKey == "B").PriceDifference);
         Assert.Equal(100m, selectedAB.Single(x => x.RouteKey == "A").PriceDifference);
@@ -71,9 +77,9 @@ public sealed class RouteDraftCacheTests
             ["C"] = new Draft { RouteKey = "C", PriceDifference = 30m }
         };
 
-        var selected = SelectedRouteDrafts.SelectExact(new[] { "A", "C" }, cache);
+        var selected = SelectedRouteDrafts.SelectExact(NonAdjacentRouteKeys, cache);
 
-        Assert.Equal(new[] { "A", "C" }, selected.Select(x => x.RouteKey));
+        Assert.Equal(NonAdjacentRouteKeys, selected.Select(x => x.RouteKey));
         Assert.DoesNotContain(selected, x => x.RouteKey == "B");
         Assert.Equal(40m, selected.Sum(x => x.PriceDifference));
     }
@@ -87,7 +93,7 @@ public sealed class RouteDraftCacheTests
         };
 
         Assert.Throws<InvalidOperationException>(() =>
-            SelectedRouteDrafts.SelectExact(new[] { "A", "B" }, cache));
+            SelectedRouteDrafts.SelectExact(FirstTwoRouteKeys, cache));
     }
 
     [Fact]
@@ -99,7 +105,7 @@ public sealed class RouteDraftCacheTests
         };
 
         Assert.Throws<ArgumentException>(() =>
-            SelectedRouteDrafts.SelectExact(new[] { " " }, cache));
+            SelectedRouteDrafts.SelectExact(BlankRouteKey, cache));
     }
 
     [Fact]
@@ -123,7 +129,7 @@ public sealed class RouteDraftCacheTests
         };
 
         Assert.Throws<InvalidOperationException>(() =>
-            SelectedRouteDrafts.SelectExact(new[] { "A" }, cache));
+            SelectedRouteDrafts.SelectExact(SingleRouteKey, cache));
     }
 
     [Fact]
@@ -135,7 +141,7 @@ public sealed class RouteDraftCacheTests
         };
 
         Assert.Throws<InvalidOperationException>(() =>
-            SelectedRouteDrafts.SelectExact(new[] { "A", "A" }, cache));
+            SelectedRouteDrafts.SelectExact(DuplicateRouteKeys, cache));
     }
 
 

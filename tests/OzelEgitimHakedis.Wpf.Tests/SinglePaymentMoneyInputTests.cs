@@ -39,7 +39,7 @@ public sealed class SinglePaymentMoneyInputTests
             var text = (string)format.Invoke(null, [19539.1608m])!;
             object?[] args = [text, 0m];
             Assert.True((bool)parse.Invoke(null, args)!);
-            Assert.Contains(",", text);
+            Assert.Contains(",", text, StringComparison.Ordinal);
         }
         finally { CultureInfo.CurrentCulture = old; }
     }

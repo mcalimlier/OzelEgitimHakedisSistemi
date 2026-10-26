@@ -212,7 +212,7 @@ public partial class MainWindow
         }
     }
 
-    private void RefreshHybridSourceViews(IReadOnlySet<string> selected)
+    private void RefreshHybridSourceViews(HashSet<string> selected)
     {
         // Replace selector objects without triggering selection/month resets or losing row drafts.
         var choices = ProgressRouteComboBox.Items.OfType<RouteDraft>()

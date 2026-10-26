@@ -160,7 +160,7 @@ public partial class MainWindow
     private void HomeIssue_Click(object sender,RoutedEventArgs e)
     {if(sender is Button {Tag:PaymentIssue issue}) OpenHomeTarget(issue.Target);}
     private void HomeNextAction_Click(object sender,RoutedEventArgs e)
-    {if(HomeMonthlyGrid.SelectedItem is MonthlyPaymentRow row) OpenHomeTarget(row.Issues.FirstOrDefault()?.Target??"Progress");}
+    {if(HomeMonthlyGrid.SelectedItem is MonthlyPaymentRow row) OpenHomeTarget(row.Issues.Count > 0 ? row.Issues[0].Target : "Progress");}
     private void OpenHomeTarget(string target)
     {
         if(HomeMonthlyGrid.SelectedItem is not MonthlyPaymentRow row || IsArchiveCorrection) return;
