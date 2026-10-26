@@ -28,7 +28,7 @@ public sealed class SinglePaymentMoneyInputTests
     [Theory]
     [InlineData("en-US")]
     [InlineData("tr-TR")]
-    public void RestoredFormMoney_ShowsHistoricalPrecisionButRequiresCorrectionBeforeSaving(string cultureName)
+    public void RestoredFormMoney_PreservesHistoricalFourDigitPrecisionWhenSaving(string cultureName)
     {
         var old = CultureInfo.CurrentCulture;
         try
@@ -38,17 +38,17 @@ public sealed class SinglePaymentMoneyInputTests
             var parse = typeof(MainWindow).GetMethod("TryParseDecimalOrZero", BindingFlags.NonPublic | BindingFlags.Static)!;
             var text = (string)format.Invoke(null, [19539.1608m])!;
             object?[] args = [text, 0m];
-            Assert.False((bool)parse.Invoke(null, args)!);
+            Assert.True((bool)parse.Invoke(null, args)!);
             Assert.Contains(",", text);
         }
         finally { CultureInfo.CurrentCulture = old; }
     }
 
     [Theory]
-    [InlineData("12,345")]
-    [InlineData("12,000")]
-    [InlineData("12.536,480")]
-    public void FormMoneyInput_RejectsMoreThanTwoFractionalDigits(string input)
+    [InlineData("12,34567")]
+    [InlineData("12,00000")]
+    [InlineData("12.536,48001")]
+    public void FormMoneyInput_RejectsMoreThanFourFractionalDigits(string input)
     {
         var method = typeof(MainWindow).GetMethod("TryParseDecimalOrZero", BindingFlags.NonPublic | BindingFlags.Static)!;
         object?[] args = [input, 0m];

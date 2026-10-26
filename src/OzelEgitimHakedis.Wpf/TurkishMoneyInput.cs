@@ -19,12 +19,18 @@ internal static class TurkishMoneyInput
     public static string Format(decimal value) => value.ToString("#,##0.00##########################", Culture);
 
     public static bool TryParseCents(string? text, out decimal value)
+        => TryParsePrecision(text, 2, out value);
+
+    public static bool TryParseCalculationAmount(string? text, out decimal value)
+        => TryParsePrecision(text, 4, out value);
+
+    private static bool TryParsePrecision(string? text, int fractionalDigits, out decimal value)
     {
         value = 0m;
         if (!TryParse(text, out var parsed)) return false;
         var trimmed = text!.Trim();
         var comma = trimmed.IndexOf(',', StringComparison.Ordinal);
-        if (comma >= 0 && trimmed.Length - comma - 1 > 2) return false;
+        if (comma >= 0 && trimmed.Length - comma - 1 > fractionalDigits) return false;
         value = parsed;
         return true;
     }

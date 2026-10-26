@@ -1209,7 +1209,7 @@
 </Grid>
 
 <Grid x:Name="HistoryPanel" Visibility="Collapsed">
-                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Padding="0,0,4,0">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0">
     <StackPanel><Border Style="{StaticResource PaymentWorkspaceCard}" Margin="0,0,0,10"><StackPanel><TextBlock Text="ARA VE FİLTRELE · AKTİF PROGRAM" Foreground="#F4C247" FontWeight="SemiBold"/><WrapPanel Margin="0,8,0,0">
  <StackPanel Width="180" Margin="0,0,8,6"><TextBlock Text="Firma / hat / İKN ara" Foreground="#C5D7E7"/><TextBox x:Name="HistorySearchBox" Style="{StaticResource FieldTextBox}" TextChanged="RecordsFilter_Changed"/></StackPanel>
  <StackPanel Width="130" Margin="0,0,8,6"><TextBlock Text="İKN" Foreground="#C5D7E7"/><TextBox x:Name="HistoryTenderFilter" Style="{StaticResource FieldTextBox}" TextChanged="RecordsFilter_Changed"/></StackPanel>
@@ -1248,33 +1248,31 @@
             <StackPanel>
                 <TextBlock Text="HAKEDİŞ KAYITLARI" Style="{StaticResource CardTitle}"/>
                 <TextBlock Text="Kaydedilmiş dönemsel hesaplamalar; hat, hakediş no ve tutar bilgileriyle izlenir." Style="{StaticResource CardSubtitle}" Margin="0,0,0,8.5" TextWrapping="Wrap"/>
-                <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="9" Padding="8.5,7.5">
-                    <Grid>
-                        <Grid.ColumnDefinitions><ColumnDefinition Width="170"/><ColumnDefinition Width="*"/><ColumnDefinition Width="120"/><ColumnDefinition Width="120"/><ColumnDefinition Width="90"/><ColumnDefinition Width="300"/></Grid.ColumnDefinitions>
-                        <TextBlock Text="HAKEDİŞ / DÖNEM" Foreground="#C5D7E7" FontWeight="Bold"/>
-                        <TextBlock Grid.Column="2" Text="TUTAR" Foreground="#C5D7E7" FontWeight="Bold"/>
-                        <TextBlock Grid.Column="3" Text="NET ÖDEME" Foreground="#C5D7E7" FontWeight="Bold"/>
-                        <TextBlock Grid.Column="4" Text="DURUM" Foreground="#C5D7E7" FontWeight="Bold"/><TextBlock Grid.Column="5" Text="İŞLEM" Foreground="#C5D7E7" FontWeight="Bold"/>
-                    </Grid>
-                </Border>
-                <ItemsControl x:Name="HistoryItemsControl" Margin="0,6.5,0,0">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Border Background="#F7F9FC" BorderBrush="{StaticResource Line200Brush}" BorderThickness="1" CornerRadius="8" Padding="8,7" Margin="0,3">
-                                <Grid>
-                                    <Grid.ColumnDefinitions><ColumnDefinition Width="170"/><ColumnDefinition Width="*"/><ColumnDefinition Width="120"/><ColumnDefinition Width="120"/><ColumnDefinition Width="90"/><ColumnDefinition Width="300"/></Grid.ColumnDefinitions>
-                                    <StackPanel>
-                                        <TextBlock Text="{Binding DisplayTitle}" Foreground="{StaticResource Text900Brush}" FontSize="11.5" FontWeight="SemiBold"/>
-                                        <TextBlock Text="{Binding CreatedAtText}" Foreground="{StaticResource Text600Brush}" FontSize="11.5" Margin="0,2,0,0"/>
-                                    </StackPanel>
-                                    <TextBlock Grid.Column="2" Text="{Binding TotalAmountText}" Foreground="{StaticResource Text900Brush}" FontSize="11.5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                    <TextBlock Grid.Column="3" Text="{Binding NetPayableText}" Foreground="{StaticResource Blue700Brush}" FontSize="11.5" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                    <TextBlock Grid.Column="4" Text="HESAPLANDI" Foreground="{StaticResource Gold600Brush}" FontSize="11.5" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center"/><StackPanel Grid.Column="5" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center"><Button Content="KLASÖR" Tag="{Binding}" Click="OpenHistoryFolderButton_Click" Style="{StaticResource SecondaryButton}" Height="32" FontSize="11.5" Width="96" Margin="3,0,3,0"/><Button Content="DÜZENLE" Tag="{Binding}" Click="EditHistoryButton_Click" Style="{StaticResource SecondaryButton}" Height="32" FontSize="11.5" Width="96" Margin="3,0,3,0"/><Button Content="SİL" Tag="{Binding}" Click="DeleteHistoryButton_Click" Style="{StaticResource SecondaryButton}" Height="32" FontSize="11.5" Width="60" Margin="3,0,0,0"/></StackPanel>
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                <DataGrid x:Name="HistoryItemsControl" AutoGenerateColumns="False" IsReadOnly="True"
+                          CanUserAddRows="False" CanUserDeleteRows="False" FrozenColumnCount="1"
+                          MinHeight="240" Height="420" MinRowHeight="44" FontSize="12"
+                          HeadersVisibility="Column" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                          Background="#F7F9FC" Foreground="#08223A" RowBackground="#FFFFFF" AlternatingRowBackground="#EEF3F8"
+                          EnableRowVirtualization="True" SelectionMode="Single" SelectionUnit="FullRow">
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Header="İşlemler" Width="365">
+                            <DataGridTemplateColumn.CellTemplate><DataTemplate>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="4">
+                                    <Button Content="Düzenle" Tag="{Binding}" Click="EditHistoryButton_Click" Style="{StaticResource SecondaryButton}" Height="32" MinWidth="70" Margin="0,0,4,0"/>
+                                    <Button Content="Sil" Tag="{Binding}" Click="DeleteHistoryButton_Click" Style="{StaticResource SecondaryButton}" Height="32" MinWidth="45" Margin="0,0,4,0"/>
+                                    <Button Content="Hesaplamayı Görüntüle" Tag="{Binding}" Click="ViewHistoryCalculationButton_Click" Style="{StaticResource SecondaryButton}" Height="32" MinWidth="175"/>
+                                </StackPanel>
+                            </DataTemplate></DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="Hakediş / Hat / İKN" Binding="{Binding DisplayTitle}" Width="340"/>
+                        <DataGridTextColumn Header="Dönem / Yüklenici / Kayıt" Binding="{Binding CreatedAtText}" Width="460"/>
+                        <DataGridTextColumn Header="Matrah" Binding="{Binding TotalAmountText}" Width="140"/>
+                        <DataGridTextColumn Header="Net ödeme" Binding="{Binding NetPayableText}" Width="140"/>
+                        <DataGridTemplateColumn Header="Çıktılar" Width="105"><DataGridTemplateColumn.CellTemplate><DataTemplate>
+                            <Button Content="Klasör" Tag="{Binding}" Click="OpenHistoryFolderButton_Click" Style="{StaticResource SecondaryButton}" Height="32" Margin="4"/>
+                        </DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
                 <Border x:Name="HistoryEmptyStateBorder" Style="{StaticResource InfoNote}" Margin="0,8,0,0" Padding="11.5,8.5">
                     <StackPanel HorizontalAlignment="Center">
                         <TextBlock Text="HENÜZ HAKEDİŞ KAYDI YOK" Foreground="{StaticResource Blue700Brush}" FontSize="11.5" FontWeight="Bold" HorizontalAlignment="Center"/>

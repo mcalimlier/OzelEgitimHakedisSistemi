@@ -338,7 +338,7 @@ public sealed class OfficialDocumentOutputTests
     [InlineData(false, "tr-TR")]
     [InlineData(true, "tr-TR")]
     [InlineData(true, "en-US")]
-    public void PaymentSelectionAndRecalculation_RequiresCentPrecisionAndProducesOfficialReportNet(bool selectRoute, string culture)
+    public void PaymentSelectionAndRecalculation_PreservesExcelPrecisionAndProducesOfficialReportNet(bool selectRoute, string culture)
     {
         RunOnSta(() =>
         {
@@ -359,9 +359,6 @@ public sealed class OfficialDocumentOutputTests
             }
 
             var preview = new object?[] { null, null, null };
-            Assert.False((bool)InvokeEditor(window, "TryCreateHistoryCorrectionPreview", preview)!);
-            EditorField<TextBox>(window, "DailyPriceTextBox").Text = "19.539,16";
-            preview = [null, null, null];
             Assert.True((bool)InvokeEditor(window, "TryCreateHistoryCorrectionPreview", preview)!, preview[2]?.ToString());
             var recalculated = payment with
             {
@@ -370,12 +367,12 @@ public sealed class OfficialDocumentOutputTests
             };
             var context = CreateDocumentContext(recalculated);
 
-            Assert.Equal(332516.06m, context.ReportNetPayable);
-            Assert.Equal(19539.16m, recalculated.Input.DailyPrice);
-            Assert.Equal(332516.0611932m, recalculated.Calculation.NetPayable);
+            Assert.Equal(332516.08m, context.ReportNetPayable);
+            Assert.Equal(19539.1608m, recalculated.Input.DailyPrice);
+            Assert.Equal(332516.074511856m, recalculated.Calculation.NetPayable);
             var output = OehsOfficialDocumentFactory.BuildSeparate(context)
                 .Single(document => document.Kind == OehsOfficialDocumentKind.HakedisRaporu);
-            Assert.Equal("332.516,06 TL", GetCellTextAt((FixedPage)output.Document.Pages[0].Child, 476d, 796d));
+            Assert.Equal("332.516,08 TL", GetCellTextAt((FixedPage)output.Document.Pages[0].Child, 476d, 796d));
         });
     }
 
@@ -421,16 +418,9 @@ public sealed class OfficialDocumentOutputTests
             {
                 var preview = new object?[] { null, null, null };
                 var method = path == "archive" ? "TryCreateArchiveCorrectionPreview" : "TryCreateHistoryCorrectionPreview";
-                Assert.False((bool)InvokeEditor(window, method, preview)!);
-                foreach (var (field, _) in expected)
-                    EditorField<TextBox>(window, field).Text = "12.536,48";
-                preview = [null, null, null];
                 Assert.True((bool)InvokeEditor(window, method, preview)!, preview[2]?.ToString());
                 var updated = Assert.IsType<ProgressPaymentInput>(preview[0]);
-                Assert.Equal(12536.48m, updated.DailyPrice);
-                Assert.Equal(12536.48m, updated.PriceDifference);
-                Assert.Equal(12536.48m, updated.GuidePriceDifference);
-                Assert.Equal(12536.48m, updated.SocialSecurityDebt);
+                Assert.Equal(input, updated);
             }
         });
     }

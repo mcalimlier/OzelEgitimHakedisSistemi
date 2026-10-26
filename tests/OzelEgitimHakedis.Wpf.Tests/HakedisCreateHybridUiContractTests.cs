@@ -253,7 +253,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
     }
 
     [Fact]
-    public void RouteEditor_ShouldRejectThirdDecimalForEachMoneyField()
+    public void RouteEditor_ShouldRejectExcessPrecisionForEachMoneyField()
     {
         RunOnSta(() =>
         {
@@ -277,7 +277,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
             Field<DatePicker>(window,"RouteContractDatePicker").SelectedDate=new DateTime(2026,1,1);
             foreach(var fieldName in new[]{"RouteDailyPriceTextBox","RouteContractAmountTextBox","RouteGuideDailyPriceTextBox"})
             {
-                var field=Field<TextBox>(window,fieldName);var original=field.Text;field.Text="12,345";
+                var field=Field<TextBox>(window,fieldName);var original=field.Text;field.Text=fieldName=="RouteContractAmountTextBox"?"12,345":"12,34567";
                 Invoke(window,"AddRouteButton_Click",window,new RoutedEventArgs());
                 Assert.Single(Collection(window,"_routes"));
                 var expected=fieldName switch { "RouteDailyPriceTextBox"=>"Taşıma Günlük Fiyatı", "RouteContractAmountTextBox"=>"Sözleşme Bedeli", _=>"Rehber Personel Günlük Fiyat" };
@@ -515,16 +515,16 @@ public sealed partial class HakedisCreateHybridUiContractTests
                 Assert.True(grid.BeginEdit());
                 grid.UpdateLayout();
                 editor=Assert.IsType<TextBox>(column.GetCellContent(row));
-                editor.Text="12.536,487";
+                editor.Text="12.536,48701";
                 Assert.False(grid.CommitEdit(DataGridEditingUnit.Cell,true));
                 Assert.Equal(12536.48m,row.PriceDifference);
-                editor.Text=" 12.536,487";
+                editor.Text=" 12.536,48701";
                 Assert.False(grid.CommitEdit(DataGridEditingUnit.Cell,true));
-                editor.Text="12.536,480";
+                editor.Text="12.536,48000";
                 Assert.False(grid.CommitEdit(DataGridEditingUnit.Cell,true));
-                editor.Text="12.536,49";
+                editor.Text="12.536,4901";
                 Assert.True(grid.CommitEdit(DataGridEditingUnit.Cell,true));
-                Assert.Equal(12536.49m,row.PriceDifference);
+                Assert.Equal(12536.4901m,row.PriceDifference);
 
                 row.PriceDifference=12536.487m; // Pre-existing legacy value may be kept unchanged.
                 Assert.True(grid.BeginEdit());
@@ -1466,24 +1466,24 @@ public sealed partial class HakedisCreateHybridUiContractTests
         var history = NamedElement(LoadMainWindowXaml(), "HistoryPanel");
         var items = history.Descendants().Single(element => (string?)element.Attribute(XamlNamespace + "Name") == "HistoryItemsControl");
         var scroll = items.Ancestors().First(element => element.Name.LocalName == "ScrollViewer");
-        Assert.Equal("Auto", (string?)scroll.Attribute("HorizontalScrollBarVisibility"));
+        Assert.Equal("Disabled", (string?)scroll.Attribute("HorizontalScrollBarVisibility"));
         Assert.Equal("Auto", (string?)scroll.Attribute("VerticalScrollBarVisibility"));
 
         RunOnSta(() =>
         {
             var layout = LoadLayoutFragment(history);
-            var control = (ItemsControl)layout.FindName("HistoryItemsControl");
+            var control = (DataGrid)layout.FindName("HistoryItemsControl");
             control.Items.Add(new { DisplayTitle = "Test dönemi", CreatedAtText = "22.10.2026", TotalAmountText = "100,00 ₺", NetPayableText = "90,00 ₺" });
             ArrangeLayout(layout, windowWidth - 215 - 38, 600 - 60 - 38);
-            var viewer = VisualDescendants<ScrollViewer>(layout).First();
+            var viewer = VisualDescendants<ScrollViewer>(control).First();
             if (windowWidth == 1024)
                 Assert.True(viewer.ScrollableWidth > 0, "History fixed columns need horizontal access at minimum window width.");
             viewer.ScrollToRightEnd();
             layout.UpdateLayout();
-            var deleteButton = VisualDescendants<Button>(control).Single(button => Equals(button.Content, "SİL"));
-            var bounds = deleteButton.TransformToAncestor(viewer).TransformBounds(new Rect(deleteButton.RenderSize));
-            Assert.InRange(bounds.Left, 0, viewer.ViewportWidth);
-            Assert.InRange(bounds.Right, 1, viewer.ViewportWidth + 1);
+            var deleteButton = VisualDescendants<Button>(control).Single(button => Equals(button.Content, "Sil"));
+            var bounds = deleteButton.TransformToAncestor(control).TransformBounds(new Rect(deleteButton.RenderSize));
+            Assert.InRange(bounds.Left, 0, control.ActualWidth);
+            Assert.InRange(bounds.Right, 1, control.ActualWidth);
         });
     }
 

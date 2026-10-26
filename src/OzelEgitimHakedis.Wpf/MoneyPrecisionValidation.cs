@@ -15,15 +15,15 @@ internal sealed class MoneyPrecisionValidation : ValidationRule
             return new ValidationResult(false, "Geçerli bir TL tutarı girin.");
 
         var normalized = text.Trim();
-        var comma = normalized.IndexOf(',');
-        if (comma < 0 || normalized.Length - comma - 1 <= 2)
+        var comma = normalized.IndexOf(',', StringComparison.Ordinal);
+        if (comma < 0 || normalized.Length - comma - 1 <= 4)
             return ValidationResult.ValidResult;
 
         if (owner is BindingExpression binding && binding.ResolvedSource is { } source &&
             source.GetType().GetProperty(binding.ResolvedSourcePropertyName)?.GetValue(source) is decimal original &&
-            decimal.Round(original, 2) != original && original == amount)
+            decimal.Round(original, 4) != original && original == amount)
             return ValidationResult.ValidResult;
 
-        return new ValidationResult(false, "Yeni tutarlarda en fazla iki kuruş basamağı kullanın.");
+        return new ValidationResult(false, "Hesap tutarlarında en fazla dört ondalık basamak kullanın.");
     }
 }

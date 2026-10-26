@@ -1842,14 +1842,14 @@ public partial class MainWindow : Window
                     message = "Döneme Esas THGS değerini sıfır veya daha büyük, en fazla 20 ondalık basamaklı bir sayı olarak girin.";
                     return false;
                 }
-                if (!TurkishMoneyInput.TryParseCents(RouteDailyPriceTextBox.Text, out var routePrice) || routePrice < 0 ||
+                if (!TurkishMoneyInput.TryParseCalculationAmount(RouteDailyPriceTextBox.Text, out var routePrice) || routePrice < 0 ||
                     !TurkishMoneyInput.TryParseCents(RouteContractAmountTextBox.Text, out var routeAmount) || routeAmount < 0 ||
                     !RouteContractDatePicker.SelectedDate.HasValue)
                 {
                     message = "Hat fiyatı, sözleşme bedeli ve tarihini kontrol edin.";
                     return false;
                 }
-                if (!TurkishMoneyInput.TryParseCents(RouteGuideDailyPriceTextBox.Text, out var guideDailyPrice) || guideDailyPrice < 0)
+                if (!TurkishMoneyInput.TryParseCalculationAmount(RouteGuideDailyPriceTextBox.Text, out var guideDailyPrice) || guideDailyPrice < 0)
                 {
                     message = "Rehber günlük fiyatını geçerli bir tutar olarak girin.";
                     return false;
@@ -2153,14 +2153,14 @@ public partial class MainWindow : Window
                     message = "Döneme Esas THGS değerini sıfır veya daha büyük, en fazla 20 ondalık basamaklı bir sayı olarak girin.";
                     return false;
                 }
-                if (!TurkishMoneyInput.TryParseCents(RouteDailyPriceTextBox.Text, out var routePrice) || routePrice < 0 ||
+                if (!TurkishMoneyInput.TryParseCalculationAmount(RouteDailyPriceTextBox.Text, out var routePrice) || routePrice < 0 ||
                     !TurkishMoneyInput.TryParseCents(RouteContractAmountTextBox.Text, out var routeAmount) || routeAmount < 0 ||
                     !RouteContractDatePicker.SelectedDate.HasValue)
                 {
                     message = "Hat fiyatı, sözleşme bedeli ve tarihini kontrol edin.";
                     return false;
                 }
-                if (!TurkishMoneyInput.TryParseCents(RouteGuideDailyPriceTextBox.Text, out var guideDailyPrice) || guideDailyPrice < 0)
+                if (!TurkishMoneyInput.TryParseCalculationAmount(RouteGuideDailyPriceTextBox.Text, out var guideDailyPrice) || guideDailyPrice < 0)
                 {
                     message = "Rehber günlük fiyatını geçerli bir tutar olarak girin.";
                     return false;
@@ -2424,8 +2424,7 @@ public partial class MainWindow : Window
         value = 0m;
         var input = text?.Trim();
         if (string.IsNullOrEmpty(input)) return false;
-        var comma = input.IndexOf(',', StringComparison.Ordinal);
-        return (comma < 0 || input.Length - comma - 1 <= 2) && TurkishMoneyInput.TryParse(input, out value);
+        return TurkishMoneyInput.TryParseCalculationAmount(input, out value);
     }
 
     private bool SaveArchiveCorrectionSnapshot(ProgressPaymentArchive updatedArchive, string sectionName)
@@ -2818,7 +2817,7 @@ public partial class MainWindow : Window
         var errors = new List<Control>();
         if (string.IsNullOrWhiteSpace(routeNumber)) errors.Add(RouteNumberTextBox);
         if (string.IsNullOrWhiteSpace(routeName)) errors.Add(RouteNameTextBox);
-        if (!TurkishMoneyInput.TryParseCents(RouteDailyPriceTextBox.Text, out var routeDailyPrice) || routeDailyPrice < 0) errors.Add(RouteDailyPriceTextBox);
+        if (!TurkishMoneyInput.TryParseCalculationAmount(RouteDailyPriceTextBox.Text, out var routeDailyPrice) || routeDailyPrice < 0) errors.Add(RouteDailyPriceTextBox);
         if (!TurkishMoneyInput.TryParseCents(RouteContractAmountTextBox.Text, out var routeContractAmount) || routeContractAmount < 0) errors.Add(RouteContractAmountTextBox);
         if (!RouteContractDatePicker.SelectedDate.HasValue) errors.Add(RouteContractDatePicker);
         if (!TryParseWorkDays(RouteTransportWorkDaysTextBox.Text, out var transportWorkDays) || transportWorkDays < 0) errors.Add(RouteTransportWorkDaysTextBox);
@@ -2826,7 +2825,7 @@ public partial class MainWindow : Window
         var guideDailyPrice = 0m;
         if (hasGuide)
         {
-            if (!TurkishMoneyInput.TryParseCents(RouteGuideDailyPriceTextBox.Text, out guideDailyPrice) || guideDailyPrice < 0) errors.Add(RouteGuideDailyPriceTextBox);
+            if (!TurkishMoneyInput.TryParseCalculationAmount(RouteGuideDailyPriceTextBox.Text, out guideDailyPrice) || guideDailyPrice < 0) errors.Add(RouteGuideDailyPriceTextBox);
         }
 
         if (errors.Count > 0)
@@ -3365,7 +3364,7 @@ public partial class MainWindow : Window
             errors.Add("Hat Adı");
             MarkInvalid(RouteNameTextBox);
         }
-        if (!TurkishMoneyInput.TryParseCents(RouteDailyPriceTextBox.Text, out var routeDailyPrice) || routeDailyPrice < 0)
+        if (!TurkishMoneyInput.TryParseCalculationAmount(RouteDailyPriceTextBox.Text, out var routeDailyPrice) || routeDailyPrice < 0)
         {
             errors.Add("Taşıma Günlük Fiyatı");
             MarkInvalid(RouteDailyPriceTextBox);
@@ -3389,7 +3388,7 @@ public partial class MainWindow : Window
         var guideDailyPrice = 0m;
         if (hasGuide)
         {
-            if (!TurkishMoneyInput.TryParseCents(RouteGuideDailyPriceTextBox.Text, out guideDailyPrice) || guideDailyPrice < 0)
+            if (!TurkishMoneyInput.TryParseCalculationAmount(RouteGuideDailyPriceTextBox.Text, out guideDailyPrice) || guideDailyPrice < 0)
             {
                 errors.Add("Rehber Personel Günlük Fiyat");
                 MarkInvalid(RouteGuideDailyPriceTextBox);
@@ -4926,7 +4925,7 @@ public partial class MainWindow : Window
 
             var message = "Lütfen kırmızı işaretli alanları tamamlayın/düzeltin: " +
                           string.Join(", ", invalidFields.Select(x => x.Name)) +
-                          ". Tutarları en fazla iki kuruş basamağıyla girin (ör. 12.536,48).";
+                          ". Hesap tutarlarını en fazla dört ondalık basamakla girin (ör. 12.536,4801).";
             ProgressValidationMessageTextBlock.Text = message;
             ProgressValidationBanner.Visibility = Visibility.Visible;
             ProgressCalculationSummaryTextBlock.Text = "KONTROL GEREKLİ";
