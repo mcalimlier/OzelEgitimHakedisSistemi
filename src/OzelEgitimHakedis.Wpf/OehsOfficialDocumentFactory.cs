@@ -445,6 +445,8 @@ internal static class OehsOfficialDocumentFactory
         foreach (var month in periods)
         {
             var monthPayments = c.Payments
+                // Reprinting an older payment must not include later issued periods.
+                .Where(p => p.PeriodDate <= (c.PeriodDate ?? c.GeneratedDate))
                 .Where(p => p.PeriodDate.HasValue &&
                             p.PeriodDate.Value.Year == month.Year &&
                             p.PeriodDate.Value.Month == month.Month)

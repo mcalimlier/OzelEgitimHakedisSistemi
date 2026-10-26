@@ -1,7 +1,7 @@
 <Window x:Class="OzelEgitimHakedis.Wpf.DocumentPreviewWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="OEHS — Belge Önizleme"
+        Title="TEHYS — Belge Önizleme"
         Width="1080" Height="820" MinWidth="820" MinHeight="620"
         WindowStartupLocation="CenterOwner"
         Background="#E9EEF4"
@@ -19,7 +19,7 @@
                            FontSize="18"
                            FontWeight="Bold"
                            VerticalAlignment="Center"/>
-                <TextBlock Text="A4 • OEHS belge görüntüleyicisi"
+                <TextBlock Text="A4 • TEHYS belge görüntüleyicisi"
                            Foreground="#B9C8D8"
                            FontSize="12"
                            VerticalAlignment="Center"

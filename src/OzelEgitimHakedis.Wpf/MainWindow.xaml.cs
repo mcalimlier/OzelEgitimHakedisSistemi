@@ -6806,100 +6806,7 @@ public partial class MainWindow : Window
 
     private void UpdateReportView()
     {
-        _reportRows.Clear();
-
-        var selectedRoute = ReportRouteComboBox.SelectedItem as RouteDraft;
-        ServiceReportSheetNameTextBlock.Text = OfficialTemplateProfile.For(
-            selectedRoute?.ProgramType ?? GetSelectedTransportationProgramType()).ServiceReportSheetName;
-        var routePayments = selectedRoute is null
-            ? _progressHistory.ToArray()
-            : _progressHistory
-                .Where(x =>
-                    string.Equals(x.TenderNumber, selectedRoute.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(x.ContractNumber, selectedRoute.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(x.RouteNumber, selectedRoute.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(
-                        OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
-                        OehsIdentityService.NormalizeIdentity(selectedRoute.ContractorTaxOrIdentityNumber),
-                        StringComparison.Ordinal))
-                .ToArray();
-
-        foreach (var item in routePayments
-                     .OrderByDescending(x => x.PeriodDate ?? DateOnly.MinValue)
-                     .ThenByDescending(x => x.CreatedAt))
-        {
-            var title = !string.IsNullOrWhiteSpace(item.BatchDisplayName)
-                ? $"{item.BatchDisplayName} • Hat {item.RouteNumber ?? "-"} • Hakediş No {item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"}"
-                : item.ProgressPaymentNumber.HasValue
-                    ? $"Hakediş No {item.ProgressPaymentNumber.Value}"
-                    : "Hakediş Hesaplama";
-
-            var period = item.PeriodDate.HasValue
-                ? $"Dönem: {CultureInfo.GetCultureInfo("tr-TR").TextInfo.ToTitleCase(item.PeriodDate.Value.ToString("MMMM yyyy", CultureInfo.GetCultureInfo("tr-TR")))}"
-                : $"Kayıt: {item.CreatedAt:dd.MM.yyyy HH:mm}";
-
-            _reportRows.Add(new ReportRow(
-                title,
-                period,
-                FormatMoney(item.Calculation.GrossAmount),
-                FormatMoney(item.Calculation.NetPayable)));
-        }
-
-        ReportCountTextBlock.Text = routePayments.Length.ToString(CultureInfo.CurrentCulture);
-        ReportGrossTextBlock.Text = FormatMoney(routePayments.Sum(x => x.Calculation.GrossAmount));
-        ReportNetTextBlock.Text = FormatMoney(routePayments.Sum(x => x.Calculation.NetPayable));
-
-        var latest = routePayments
-            .OrderByDescending(x => x.PeriodDate ?? DateOnly.MinValue)
-            .ThenByDescending(x => x.CreatedAt)
-            .FirstOrDefault();
-
-        if (selectedRoute is null)
-        {
-            ReportPdfTargetTextBlock.Text = "PDF hedefi: önce bir hat seçin.";
-        }
-        else
-        {
-            var targetFolder = OehsOutputPathService.BuildPdfDirectoryForContractor(
-                selectedRoute.TenderNumber,
-                selectedRoute.ContractorName,
-                selectedRoute.ContractorTaxOrIdentityNumber,
-                selectedRoute.RouteNumber,
-                selectedRoute.ProgramType,
-                latest?.BatchRouteNumbers,
-                latest?.PeriodDate);
-            ReportPdfTargetTextBlock.Text = $"PDF hedefi: {targetFolder}";
-        }
-
-        if (latest is null)
-        {
-            ReportDetailTitleTextBlock.Text = "Henüz kayıt yok";
-            ReportDetailGrossTextBlock.Text = FormatMoney(0);
-            ReportDetailNetTextBlock.Text = FormatMoney(0);
-            ReportDetailMetaTextBlock.Text = selectedRoute is null
-                ? "Hakediş ekranından bir hesaplama kaydedildiğinde son kayıt burada gösterilir."
-                : "Seçilen hat için henüz hakediş kaydı yok.";
-        }
-        else
-        {
-            var title = latest.ProgressPaymentNumber.HasValue
-                ? $"Hakediş No {latest.ProgressPaymentNumber.Value}"
-                : "Hakediş Hesaplama";
-
-            var period = latest.PeriodDate.HasValue
-                ? $"Dönem: {latest.PeriodDate.Value:dd.MM.yyyy}"
-                : $"Kayıt: {latest.CreatedAt:dd.MM.yyyy HH:mm}";
-
-            var vatText = latest.Input.IsVatExempt ? "KDV istisnası uygulanıyor" : "KDV uygulanıyor";
-            var deductionText = $"Toplam kesinti: {FormatMoney(latest.Calculation.TotalDeductions)}";
-
-            ReportDetailTitleTextBlock.Text = title;
-            ReportDetailGrossTextBlock.Text = FormatMoney(latest.Calculation.GrossAmount);
-            ReportDetailNetTextBlock.Text = FormatMoney(latest.Calculation.NetPayable);
-            ReportDetailMetaTextBlock.Text = $"{period} • {vatText} • {deductionText}";
-        }
-
-        ReportEmptyStateBorder.Visibility = _reportRows.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        RefreshOutputRecords();
     }
 
     private void ProgressRouteComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -7178,54 +7085,16 @@ public partial class MainWindow : Window
             .FirstOrDefault();
     }
 
-    private ProgressPaymentHistoryData? GetSelectedRouteLatestPayment()
-    {
-        var route = ReportRouteComboBox.SelectedItem as RouteDraft;
-        IEnumerable<ProgressPaymentHistoryData> query = _progressHistory;
-
-        if (route is not null)
-            query = query.Where(x =>
-                string.Equals(x.TenderNumber, route.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(x.ContractNumber, route.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
-                x.Input.ProgramType == route.ProgramType &&
-                string.Equals(x.RouteNumber, route.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(
-                        OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
-                        OehsIdentityService.NormalizeIdentity(route.ContractorTaxOrIdentityNumber),
-                        StringComparison.Ordinal));
-
-        return query
-            .OrderByDescending(x => x.PeriodDate ?? DateOnly.MinValue)
-            .ThenByDescending(x => x.CreatedAt)
-            .FirstOrDefault();
-    }
+    private ProgressPaymentHistoryData? GetSelectedRouteLatestPayment() => GetSelectedRoutePayments().LastOrDefault();
 
     private List<ProgressPaymentHistoryData> GetSelectedRoutePayments()
     {
-        var route = ReportRouteComboBox.SelectedItem as RouteDraft;
-        IEnumerable<ProgressPaymentHistoryData> query = _progressHistory;
-
-        if (route is not null)
-            query = query.Where(x =>
-                string.Equals(x.TenderNumber, route.TenderNumber, StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(x.ContractNumber, route.ContractNumber, StringComparison.OrdinalIgnoreCase) &&
-                x.Input.ProgramType == route.ProgramType &&
-                string.Equals(x.RouteNumber, route.RouteNumber, StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(
-                        OehsIdentityService.NormalizeIdentity(x.ContractorTaxOrIdentityNumber),
-                        OehsIdentityService.NormalizeIdentity(route.ContractorTaxOrIdentityNumber),
-                        StringComparison.Ordinal));
-
-        return query.OrderBy(x => x.PeriodDate ?? DateOnly.MinValue).ThenBy(x => x.CreatedAt).ToList();
+        if (!TryGetOutputRoute(out var route)) return new List<ProgressPaymentHistoryData>();
+        return _progressHistory.Where(payment => IsOutputPaymentForRoute(payment, route!))
+            .OrderBy(payment => payment.PeriodDate ?? DateOnly.MinValue).ThenBy(payment => payment.CreatedAt).ToList();
     }
 
-    private void RequireSelectedRoute()
-    {
-        // This helper is for document/output navigation only. Hakediş calculation
-        // must leave the route unselected until the user explicitly picks one.
-        if (ReportRouteComboBox.SelectedItem is null && _routes.Count > 0)
-            ReportRouteComboBox.SelectedIndex = 0;
-    }
+
 
     private static TableCell CreateCell(string text, bool bold = false, bool right = false, bool center = false, bool shaded = false)
     {
@@ -7679,7 +7548,7 @@ public partial class MainWindow : Window
     private OehsOfficialDocumentContext? BuildSelectedOfficialDocumentContext()
     {
         if (_homeOutputPayment is null && !EnsureRouteForOutput()) return null;
-        var latest = _homeOutputPayment ?? GetSelectedRouteLatestPayment();
+        var latest = _homeOutputPayment ?? GetSelectedOutputPayment();
         if (latest is null || !EnsurePaymentPreflight(latest)) return null;
         return BuildOfficialDocumentContextForPayment(latest);
     }
@@ -7831,37 +7700,22 @@ public partial class MainWindow : Window
 
     private bool EnsureRouteForOutput()
     {
-        RequireSelectedRoute();
-
-        if (ReportRouteComboBox.SelectedItem is not RouteDraft route)
-        {
-            MessageBox.Show("Önce Hatlar ekranından en az bir hat tanımlayın.", "OEHS", MessageBoxButton.OK, MessageBoxImage.Information);
-            return false;
-        }
-
-        if (GetSelectedRouteLatestPayment() is null)
-        {
-            MessageBox.Show("Seçilen hat için henüz hakediş kaydı yok.", "OEHS", MessageBoxButton.OK, MessageBoxImage.Information);
-            return false;
-        }
-
-        return true;
+        if (GetSelectedOutputPayment() is not null) return true;
+        UpdateReportView();
+        ShowOutputStatus("İhale, hat ve hakediş seçimini kontrol edin. Kayıt güncellendiyse bilgileri tekrar doğrulayıp işlemi yineleyin.", warning: true);
+        return false;
     }
 
     private void CreateSaveAllRouteDocumentsButton_Click(object sender, RoutedEventArgs e)
     {
-        var context = BuildSelectedOfficialDocumentContext();
-        if (context is null)
-            return;
-
-        var latest = _homeOutputPayment ?? GetSelectedRouteLatestPayment();
-        if (latest is null)
-            return;
-
         string? stagingFolder = null;
         var preserveStagingFolderForRecovery = false;
         try
         {
+            var context = BuildSelectedOfficialDocumentContext();
+            if (context is null) return;
+            var latest = _homeOutputPayment ?? GetSelectedOutputPayment();
+            if (latest is null) return;
             var targetFolder = OehsOutputPathService.BuildPdfDirectoryForContractor(
                 latest.TenderNumber ?? string.Empty,
                 latest.ContractorName ?? string.Empty,
@@ -7991,7 +7845,7 @@ public partial class MainWindow : Window
             CalculationStatusTextBlock.Text =
                 $"Dört resmî PDF dosyası oluşturuldu: {Path.GetFileName(targetPaths[0])} (+3 dosya).";
 
-            if (!metadataSaved)
+            if (!metadataSaved && _homeOutputPayment is not null)
             {
                 MessageBox.Show(
                     this,
@@ -8002,18 +7856,25 @@ public partial class MainWindow : Window
             }
 
             var savedNames = string.Join(Environment.NewLine, targetPaths.Select(Path.GetFileName));
-            ShowPdfSaveInfoDialog(targetFolder, savedNames, targetPaths[0]);
+            if (_homeOutputPayment is not null)
+                ShowPdfSaveInfoDialog(targetFolder, savedNames, targetPaths[0]);
+            else
+            {
+                RefreshOutputSelection(clearOperationStatus: false);
+                ShowOutputStatus(metadataSaved ? "Dört PDF kaydedildi. PDF klasörünü aç düğmesiyle dosyalara ulaşabilirsiniz."
+                    : $"Dört PDF kaydedildi; arşiv bilgi kaydı tamamlanamadı: {metadataError}", warning: !metadataSaved);
+            }
         }
         catch (Exception ex)
         {
             var recoveryNote = preserveStagingFolderForRecovery && !string.IsNullOrWhiteSpace(stagingFolder)
                 ? $"\n\nGeri alma işlemi tam tamamlanamadı. Kurtarma kopyaları şu klasörde korundu:\n{stagingFolder}"
                 : string.Empty;
-            MessageBox.Show(
-                $"Resmî PDF belgeleri oluşturulurken hata oluştu.\n\n{ex.Message}{recoveryNote}",
-                "OEHS PDF Çıktı Hatası",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+            if (_homeOutputPayment is null)
+                ShowOutputStatus($"PDF kaydedilemedi: {ex.Message}{recoveryNote}", warning: true);
+            else
+                MessageBox.Show($"Resmî PDF belgeleri oluşturulurken hata oluştu.\n\n{ex.Message}{recoveryNote}",
+                    "OEHS PDF Çıktı Hatası", MessageBoxButton.OK, MessageBoxImage.Error);
         }
         finally
         {
@@ -8389,6 +8250,7 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         string NetText);
 
     private sealed record ReportRow(
+        ProgressPaymentHistoryData Payment,
         string Title,
         string PeriodText,
         string GrossText,
