@@ -27,10 +27,15 @@ public partial class MainWindow
         !string.IsNullOrWhiteSpace(TenderNumberTextBox.Text) || !string.IsNullOrWhiteSpace(RouteNumberTextBox.Text) ||
         !string.IsNullOrWhiteSpace(RouteNameTextBox.Text) || !string.IsNullOrWhiteSpace(ContractorNameTextBox.Text) ||
         !string.IsNullOrWhiteSpace(ContractorTaxTextBox.Text) ||
-        TryParseDecimal(WorkDaysTextBox.Text,out var days)&&days!=0 ||
-        TurkishMoneyInput.TryParse(PriceDifferenceTextBox.Text,out var difference)&&difference!=0 ||
-        TryParseDecimal(GuideWorkDaysTextBox.Text,out var guideDays)&&guideDays!=0 ||
-        _multiRoutePaymentRows.Count>0;
+        _multiRoutePaymentRows.Count>0 || HasUnsavedPaymentAmounts();
+    private bool HasUnsavedPaymentAmounts() => new[]
+    {
+        WorkDaysTextBox, GuideWorkDaysTextBox, PriceDifferenceTextBox,
+        DailyPriceTextBox, GuideDailyPriceTextBox, GuidePriceDifferenceTextBox,
+        DiscountTextBox, GuideDiscountTextBox, TaxDebtTextBox, SocialSecurityDebtTextBox,
+        MinimumWageSupportTextBox, InspectionPenaltyTextBox
+    }.Any(box => !string.IsNullOrWhiteSpace(box.Text) &&
+        (!TurkishMoneyInput.TryParse(box.Text, out var amount) || amount != 0m));
     private async void BackupRestore_Click(object sender,RoutedEventArgs e)
     {
         if(HasOpenWorkForRestore()) {MessageBox.Show(this,"Önce açık düzenlemeyi kaydedin veya formu temizleyin. Geri yükleme kaydedilmemiş girdileri değiştirebilir.","OEHS",MessageBoxButton.OK,MessageBoxImage.Information);return;}

@@ -11,7 +11,7 @@ public partial class MainWindow
     {
         var box=archive?ArchiveMonthFilter:HistoryMonthFilter;
         var previous=(box.SelectedItem as ProgressPaymentMonthOption)?.PeriodDate;
-        var program=HomeProgram??GetSelectedTransportationProgramType();
+        var program=RecordsProgram;
         var tender=(archive?ArchiveTenderFilter:HistoryTenderFilter).Text;
         var periods=new List<ProgressPaymentMonthOption>();
         foreach(var contract in _contracts.Where(c=>c.EndDate>=c.StartDate && c.ProgramType==program && PaymentOperationsService.Contains(c.TenderNumber,tender)))

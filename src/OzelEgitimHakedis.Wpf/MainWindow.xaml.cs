@@ -423,8 +423,17 @@ public partial class MainWindow : Window
         }
 
         var preference = new WindowLayoutPreference(mode);
-        ApplyWindowLayoutPreference(preference);
-        WindowLayoutPreferenceStore.Save(preference);
+        try
+        {
+            WindowLayoutPreferenceStore.Save(preference);
+            ApplyWindowLayoutPreference(preference);
+            WindowLayoutStatusText.Text = "Pencere tercihi kaydedildi. Windows ekran çözünürlüğü değişmedi.";
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+        {
+            SelectWindowLayoutMode(_windowLayoutPreference.Mode);
+            WindowLayoutStatusText.Text = $"Pencere tercihi kaydedilemedi; önceki seçim korundu. {error.Message}";
+        }
     }
 
     private void MainWindow_SourceInitialized(object? sender, EventArgs e)
@@ -779,7 +788,8 @@ public partial class MainWindow : Window
                 _ => string.Empty
             };
 
-            if (!string.Equals(page, correctionPage, StringComparison.Ordinal))
+            if (!string.Equals(page, correctionPage, StringComparison.Ordinal) &&
+                !(correctionPage == "Progress" && page == "Trace"))
             {
                 MessageBox.Show(
                     "Arşiv düzeltmesi devam ediyor. Önce DÜZENLEME İPTAL veya düzenleme kaydetme işlemini tamamlayın.",
@@ -813,17 +823,19 @@ public partial class MainWindow : Window
         ProgressPanel.Visibility = page == "Progress" ? Visibility.Visible : Visibility.Collapsed;
         LinesPanel.Visibility = page == "Lines" ? Visibility.Visible : Visibility.Collapsed;
         ContractorsPanel.Visibility = page == "Contractors" ? Visibility.Visible : Visibility.Collapsed;
+        RecordsPanel.Visibility = page is "History" or "Archives" ? Visibility.Visible : Visibility.Collapsed;
+        SelectRecordsSection(page);
+        if (page == "Trace" && _operationsReady) RefreshCalculationTraceLive();
         HistoryPanel.Visibility = page == "History" ? Visibility.Visible : Visibility.Collapsed;
         ArchivePanel.Visibility = page == "Archives" ? Visibility.Visible : Visibility.Collapsed;
         SummaryPanel.Visibility = page == "Summary" ? Visibility.Visible : Visibility.Collapsed;
         ReportsPanel.Visibility = page == "Reports" ? Visibility.Visible : Visibility.Collapsed;
         AcceptancePanel.Visibility = page == "Acceptance" ? Visibility.Visible : Visibility.Collapsed;
-        StatisticsPanel.Visibility = page == "Statistics" ? Visibility.Visible : Visibility.Collapsed;
         SettingsPanel.Visibility = page == "Settings" ? Visibility.Visible : Visibility.Collapsed;
         SignatoriesPanel.Visibility = page == "Signatories" ? Visibility.Visible : Visibility.Collapsed;
         CalculationConstantsPanel.Visibility = page == "Constants" ? Visibility.Visible : Visibility.Collapsed;
         PlaceholderPanel.Visibility = page is "Home" or "Contract" or "Progress" or "Lines" or "Contractors"
-            or "History" or "Archives" or "Summary" or "Reports" or "Acceptance" or "Statistics" or "Settings" or "Signatories" or "Constants" or "Trace"
+            or "History" or "Archives" or "Summary" or "Reports" or "Acceptance" or "Settings" or "Signatories" or "Constants" or "Trace"
             ? Visibility.Collapsed
             : Visibility.Visible;
 
@@ -833,16 +845,15 @@ public partial class MainWindow : Window
             "Progress" => "Hakediş Oluştur",
             "Lines" => "Hatlar",
             "Contractors" => "Yüklenici Firmalar",
-            "History" => "Hakediş Geçmişi",
-            "Archives" => "Arşivler",
+            "History" => "Kayıtlar ve Arşiv",
+            "Archives" => "Kayıtlar ve Arşiv",
             "Summary" => "İcmal",
             "Reports" => "Çıktılar",
             "Acceptance" => "Kabul Tutanağı",
-            "Statistics" => "İstatistikler",
             "Settings" => "Ayarlar",
             "Signatories" => "Resmî Belge İmzacıları",
             "Constants" => "Hesaplama Sabitleri",
-            "Trace" => "Geçici Hesap Tutucu",
+            "Trace" => "Canlı Hesap Dökümü",
             _ => "Ana Ekran"
         };
 
@@ -864,11 +875,13 @@ public partial class MainWindow : Window
         foreach (var button in new[]
         {
             NavHome, NavContract, NavSignatories, NavContractors, NavLines,
-            NavProgress, NavReports, NavHistory, NavArchives, NavStatistics, NavSettings
+            NavProgress, NavReports, NavHistory, NavSettings
         })
         {
             var buttonPage = button.Tag?.ToString();
             button.Uid = buttonPage == page || (page == "Constants" && buttonPage == "Settings")
+                || (page == "Archives" && buttonPage == "History")
+                || (page == "Trace" && buttonPage == "Progress")
                 ? "Active"
                 : string.Empty;
         }
@@ -2540,7 +2553,7 @@ public partial class MainWindow : Window
                 _suppressArchiveDirtyTracking = false;
             }
             UpdateArchiveView();
-            NavigationButton_Click(NavArchives, new RoutedEventArgs(Button.ClickEvent, NavArchives));
+            NavigateToArchives();
 
             // Panel navigation and selection refreshes can restore previous payment
             // editor values. Clear the hakediş inputs after navigation as a final guard.
@@ -3100,7 +3113,7 @@ public partial class MainWindow : Window
 
         if (archiveCorrection)
         {
-            NavigationButton_Click(NavArchives, new RoutedEventArgs(Button.ClickEvent, NavArchives));
+            NavigateToArchives();
             return;
         }
 
@@ -3740,7 +3753,7 @@ public partial class MainWindow : Window
         SetRouteEditorMode(false);
         if (archiveCorrection)
         {
-            NavigationButton_Click(NavArchives, new RoutedEventArgs(Button.ClickEvent, NavArchives));
+            NavigateToArchives();
             return;
         }
         RouteStatusTextBlock.Text = "Hat düzenlemesi iptal edildi; kayıt değiştirilmedi.";
@@ -3795,7 +3808,7 @@ public partial class MainWindow : Window
         if (archiveCorrection)
         {
             ClearContractFormOnly();
-            NavigationButton_Click(NavArchives, new RoutedEventArgs(Button.ClickEvent, NavArchives));
+            NavigateToArchives();
             return;
         }
 
@@ -5528,9 +5541,9 @@ public partial class MainWindow : Window
 
         var lines = new List<string>
         {
-            "OEHS — GEÇİCİ HESAP TUTUCU / CANLI HESAPLAMA İZİ",
+            "TEHYS — CANLI HESAP DÖKÜMÜ",
             "Son güncelleme: " + DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss", culture),
-            "Program: " + (selectedProgram?.ToString() ?? "Seçilmedi"),
+            "Program: " + (selectedProgram.HasValue ? ProgramLabel(selectedProgram) : "Seçilmedi"),
             "İhale: " + (selectedContract?.TenderNumber ?? "Seçilmedi"),
             "Hat: " + selectedRouteName,
             "Dönem: " + ((ProgressPeriodMonthComboBox.SelectedItem as ProgressPaymentMonthOption)?.PeriodDate.ToString("MMMM yyyy", culture) ?? "Seçilmedi"),
@@ -5580,11 +5593,11 @@ public partial class MainWindow : Window
             "",
             "3) OEHS CANLI FORMÜL VE ARA DEĞERLER",
             "K — Taşıma neti = G × H + I − J = " + (issues.Count == 0
-                ? N(g) + " × " + M(h) + " + " + M(i) + " − " + M(j) + " = " + M(transportNet) + " TL"
+                ? N(g) + " × " + N(h) + " + " + N(i) + " − " + N(j) + " = " + M(transportNet) + " TL"
                 : "Hesap bekliyor (eksik/geçersiz giriş)"),
             hasGuide
                 ? "T — Rehber neti = P × Q + R − S = " + (issues.Count == 0
-                    ? N(p) + " × " + M(q) + " + " + M(r) + " − " + M(s) + " = " + M(guideNet) + " TL"
+                    ? N(p) + " × " + N(q) + " + " + N(r) + " − " + N(s) + " = " + M(guideNet) + " TL"
                     : "Hesap bekliyor (eksik/geçersiz giriş)")
                 : selectedProgram == TransportationProgramType.BasicOrSecondary
                     ? "T — Rehber neti = Bu programda rehber kalemi yok; 0,00 TL"
@@ -5798,7 +5811,7 @@ public partial class MainWindow : Window
 
         _lastCalculatedHistoryId = null;
         UpdateArchiveView();
-        NavigationButton_Click(NavArchives, new RoutedEventArgs(Button.ClickEvent, NavArchives));
+        NavigateToArchives();
 
         var routeSummary = string.Join(", ", batch.Select(x => x.RouteNumber).Where(x => !string.IsNullOrWhiteSpace(x)));
         var batchTitle = item.BatchDisplayName ?? $"Hakediş No {item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"}";
@@ -5937,6 +5950,7 @@ public partial class MainWindow : Window
 
     private void UpdateArchiveView()
     {
+        var selectedPath = (ArchiveItemsControl.SelectedItem as ArchiveRow)?.FullPath;
         _archiveRows.Clear();
 
         foreach (var row in FilterArchives())
@@ -5951,21 +5965,8 @@ public partial class MainWindow : Window
 
         ArchiveCountTextBlock.Text = _archiveRows.Count.ToString(CultureInfo.CurrentCulture);
 
-        var latestRevision = _archiveRows
-            .Select(row => row.RevisionText)
-            .Select(text => int.TryParse(
-                text.TrimStart('v', 'V'),
-                NumberStyles.Integer,
-                CultureInfo.InvariantCulture,
-                out var revision) ? revision : 0)
-            .DefaultIfEmpty(0)
-            .Max();
-
-        ArchiveLatestRevisionTextBlock.Text = latestRevision > 0
-            ? $"v{latestRevision:00}"
-            : "-";
-
-        ArchiveStatusTextBlock.Text = _archiveRows.Count == 0 ? "HAZIR" : "GÜNCEL";
+        ArchiveItemsControl.SelectedItem = _archiveRows.FirstOrDefault(row => row.FullPath == selectedPath);
+        ArchiveStatusTextBlock.Text = "İşlem yapmak için bir arşiv satırı seçin. Önceki revizyonlar korunur.";
         ArchiveEmptyStateBorder.Visibility = _archiveRows.Count == 0
             ? Visibility.Visible
             : Visibility.Collapsed;
@@ -6082,80 +6083,15 @@ public partial class MainWindow : Window
                 return;
             }
 
-            var liveContract = FindContract(archive.Contract.TenderNumber, archive.Contract.ContractNumber, archive.Contract.ProgramType)
-                ?? archive.Contract;
-
-            var liveRoute = _routes.FirstOrDefault(x =>
-                string.Equals(
-                    OehsIdentityService.BuildRouteKey(
-                        x.TenderNumber,
-                        x.RouteNumber,
-                        x.ContractorTaxOrIdentityNumber,
-                        x.ContractNumber,
-                        x.ProgramType),
-                    OehsIdentityService.BuildRouteKey(
-                        archive.Route.TenderNumber,
-                        archive.Route.RouteNumber,
-                        archive.Route.ContractorTaxOrIdentityNumber,
-                        archive.Route.ContractNumber,
-                        archive.Route.ProgramType),
-                    StringComparison.Ordinal))
-                ?? new RouteDraft(
-                    archive.Route.RouteNumber,
-                    archive.Route.Name,
-                    archive.Route.DailyPrice,
-                    archive.Route.GuideDailyPrice,
-                    archive.Route.TransportWorkDays,
-                    archive.Route.TenderNumber,
-                    OehsIdentityService.NormalizeIdentity(archive.Route.ContractorTaxOrIdentityNumber),
-                    archive.Contractor.Name,
-                    archive.Route.ContractNumber,
-                    archive.Contract.ProgramType,
-                    archive.Route.ContractAmount ?? archive.ProgressPayment.Input.ContractAmount,
-                    archive.Route.ContractDate ?? archive.ProgressPayment.ContractDate);
-
-            _historyOperationProgram = archive.ProgressPayment.Input.ProgramType;
-            var existing = _progressHistory.FirstOrDefault(x => x.Id == archive.ProgressPayment.Id && x.Input.ProgramType == archive.ProgressPayment.Input.ProgramType);
-            _editingHistoryId = existing?.Id;
-            _lastCalculatedHistoryId = archive.ProgressPayment.Id;
-
-            _suppressSelectionEvents = true;
-            try
-            {
-                ProgressTenderListBox.SelectedItem = liveContract;
-            }
-            finally
-            {
-                _suppressSelectionEvents = false;
-            }
-
-            UpdateProgressContractorAndRoutes(liveContract);
-            ProgressRouteComboBox.SelectedItem = liveRoute;
-
-            var input = archive.ProgressPayment.Input;
-            // Dönemsel girdi hatın varsayılanından farklı olabilir; ödeme snapshot'ını kullan.
-            WorkDaysTextBox.Text = input.WorkDays.ToString(CultureInfo.CurrentCulture);
-            DailyPriceTextBox.Text = FormatCalculationInput(input.DailyPrice);
-            GuideWorkDaysTextBox.Text = archive.ProgressPayment.Input.GuideWorkDays.ToString(CultureInfo.CurrentCulture);
-            GuideDailyPriceTextBox.Text = FormatCalculationInput(input.GuideDailyPrice);
-            DiscountTextBox.Text = FormatCalculationInput(input.DiscountAmount);
-            GuideDiscountTextBox.Text = FormatCalculationInput(input.GuideDiscountAmount);
-            PriceDifferenceTextBox.Text = FormatCalculationInput(input.PriceDifference);
-            GuidePriceDifferenceTextBox.Text = FormatCalculationInput(input.GuidePriceDifference);
-            TaxDebtTextBox.Text = FormatCalculationInput(input.TaxDebt);
-            SocialSecurityDebtTextBox.Text = FormatCalculationInput(input.SocialSecurityDebt);
-            MinimumWageSupportTextBox.Text = FormatCalculationInput(input.MinimumWageSupport);
-            RestoreMinimumWageSupportInputState(input.ProgramType, input.MinimumWageSupport);
-            InspectionPenaltyTextBox.Text = FormatCalculationInput(input.InspectionPenalty);
-            ProgressNumberTextBox.Text = archive.ProgressPayment.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
-            SelectProgressPeriod(archive.ProgressPayment.PeriodDate);
-
+            // Refresh master lists before selecting the editor context. Refreshing
+            // afterwards clears its contractor, route and period selections.
             UpdateContractSelectors();
             UpdateHistoryView();
             UpdateArchiveView();
             UpdateHomeSummaryView();
             UpdateAcceptanceView();
-            NavigationButton_Click(NavProgress, new RoutedEventArgs(Button.ClickEvent, NavProgress));
+            BeginProgressHistoryEdit(archive.ProgressPayment);
+            _lastCalculatedHistoryId = archive.ProgressPayment.Id;
 
             CalculationStatusTextBlock.Text =
                 restored.AddedAnything
@@ -6198,18 +6134,13 @@ public partial class MainWindow : Window
         if (sender is not Button { Tag: ArchiveRow row })
             return;
 
-        var folder = Path.GetDirectoryName(row.FullPath) ?? OehsOutputPathService.PdfRoot;
-
-        Directory.CreateDirectory(folder);
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = folder,
-            UseShellExecute = true
-        });
+        var folder = Path.GetDirectoryName(row.FullPath);
+        OpenRecordsFolder(folder, archive: true);
     }
 
     private void UpdateHistoryView()
     {
+        var selected = HistoryItemsControl.SelectedItem as HistoryRow;
         _historyRows.Clear();
 
         var orderedHistory = FilterHistory();
@@ -6217,6 +6148,7 @@ public partial class MainWindow : Window
         for (var index = 0; index < orderedHistory.Count; index++)
         {
             var item = orderedHistory[index];
+            var recordedAt = item.CreatedAt.Kind == DateTimeKind.Utc ? item.CreatedAt.ToLocalTime() : item.CreatedAt;
             var batchTitle = item.BatchDisplayName;
             var displayNumber = !string.IsNullOrWhiteSpace(batchTitle)
                 ? $"{batchTitle} • Hat {item.RouteNumber ?? "-"} • Hakediş No {item.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "-"}"
@@ -6224,8 +6156,8 @@ public partial class MainWindow : Window
                     ? $"Hakediş No {item.ProgressPaymentNumber.Value} • İhale/Dosya: {item.TenderNumber ?? "-"} • Hat: {item.RouteNumber ?? "-"}"
                     : $"Hesaplama {index + 1} • İhale/Dosya: {item.TenderNumber ?? "-"} • Hat: {item.RouteNumber ?? "-"}";
             var periodText = item.PeriodDate.HasValue
-                ? $"Dönem: {CultureInfo.GetCultureInfo("tr-TR").TextInfo.ToTitleCase(item.PeriodDate.Value.ToString("MMMM yyyy", CultureInfo.GetCultureInfo("tr-TR")))} • Yüklenici: {item.ContractorName ?? "-"} • Kayıt: {item.CreatedAt:dd.MM.yyyy HH:mm}"
-                : $"Yüklenici: {item.ContractorName ?? "-"} • Kayıt: {item.CreatedAt:dd.MM.yyyy HH:mm}";
+                ? $"Dönem: {CultureInfo.GetCultureInfo("tr-TR").TextInfo.ToTitleCase(item.PeriodDate.Value.ToString("MMMM yyyy", CultureInfo.GetCultureInfo("tr-TR")))} • Yüklenici: {item.ContractorName ?? "-"} • Kayıt: {recordedAt:dd.MM.yyyy HH:mm}"
+                : $"Yüklenici: {item.ContractorName ?? "-"} • Kayıt: {recordedAt:dd.MM.yyyy HH:mm}";
 
             _historyRows.Add(new HistoryRow(
                 item.Id,
@@ -6237,8 +6169,10 @@ public partial class MainWindow : Window
 
         HistoryCountTextBlock.Text = orderedHistory.Count.ToString(CultureInfo.CurrentCulture);
         HistoryNetTotalTextBlock.Text = FormatMoney(orderedHistory.Sum(x => x.Calculation.NetPayable));
-        HistoryStatusTextBlock.Text = _progressHistory.Count == 0 ? "HAZIR" : "GÜNCEL";
-        HistoryEmptyStateBorder.Visibility = _progressHistory.Count == 0
+        HistoryItemsControl.SelectedItem = _historyRows.FirstOrDefault(row => selected is not null && row.Id == selected.Id && row.ProgramType == selected.ProgramType);
+        HistoryOperationStatusTextBlock.Text = string.Empty;
+        HistoryOperationStatusTextBlock.Visibility = Visibility.Collapsed;
+        HistoryEmptyStateBorder.Visibility = orderedHistory.Count == 0
             ? Visibility.Visible
             : Visibility.Collapsed;
     }
@@ -6266,13 +6200,7 @@ public partial class MainWindow : Window
         if (item is null)
             return;
 
-        var folder = GetHistoryArchiveFolder(item);
-        Directory.CreateDirectory(folder);
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = folder,
-            UseShellExecute = true
-        });
+        OpenRecordsFolder(GetHistoryArchiveFolder(item), archive: false);
     }
 
     private void EditHistoryButton_Click(object sender, RoutedEventArgs e)
@@ -6686,7 +6614,7 @@ public partial class MainWindow : Window
         if (archiveCorrection)
         {
             ProgressValidationBanner.Visibility = Visibility.Collapsed;
-            NavigationButton_Click(NavArchives, new RoutedEventArgs(Button.ClickEvent, NavArchives));
+            NavigateToArchives();
             return;
         }
 
@@ -8233,7 +8161,10 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         string DisplayTitle,
         string DetailText,
         string NetPayableText,
-        string RevisionText);
+        string RevisionText)
+    {
+        public bool IsReadable => !string.Equals(RevisionText, "GEÇERSİZ", StringComparison.OrdinalIgnoreCase);
+    }
 
     private sealed record HistoryRow(
         Guid Id,

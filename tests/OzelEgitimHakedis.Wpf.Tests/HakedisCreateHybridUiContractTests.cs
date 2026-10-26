@@ -33,7 +33,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
     private static readonly string[] HomeDetailPanelNames = new[]{"HomeMonthlyGrid","HomePreflightPanel"};
     private static readonly string[] HomeOutputActionNames = new[]{"HomePreviewButton","HomeSavePdfsButton"};
     private static readonly string[] ProgressMoneyInputNames = new[] { "WorkDaysTextBox", "DailyPriceTextBox", "PriceDifferenceTextBox", "MinimumWageSupportTextBox" };
-    private static readonly string[] InitiallyHiddenPanelNames = new[] { "HomePanel", "ProgressPanel", "SummaryPanel", "AcceptancePanel", "StatisticsPanel", "PlaceholderPanel" };
+    private static readonly string[] InitiallyHiddenPanelNames = new[] { "HomePanel", "ProgressPanel", "SummaryPanel", "AcceptancePanel", "RecordsPanel", "PlaceholderPanel" };
 
     private static readonly XNamespace XamlNamespace =
         "http://schemas.microsoft.com/winfx/2006/xaml";
@@ -1460,10 +1460,10 @@ public sealed partial class HakedisCreateHybridUiContractTests
             var layout = LoadLayoutFragment(navigation);
             ArrangeLayout(layout, 215, 600 - 60 - 14);
             var viewer = VisualDescendants<ScrollViewer>(layout).Single();
-            Assert.True(viewer.ScrollableHeight > 0, "The last navigation targets must be reachable at 600px height.");
+            Assert.True(viewer.ViewportHeight > 0, "Navigation must remain usable at 600px height.");
             viewer.ScrollToBottom();
             layout.UpdateLayout();
-            var lastButton = (Button)layout.FindName("NavTemporaryCalculationTrace");
+            var lastButton = (Button)layout.FindName("NavSettings");
             var bounds = lastButton.TransformToAncestor(viewer).TransformBounds(new Rect(lastButton.RenderSize));
             Assert.InRange(bounds.Bottom, 1, viewer.ViewportHeight + 1);
         });
@@ -1477,9 +1477,8 @@ public sealed partial class HakedisCreateHybridUiContractTests
     {
         var history = NamedElement(LoadMainWindowXaml(), "HistoryPanel");
         var items = history.Descendants().Single(element => (string?)element.Attribute(XamlNamespace + "Name") == "HistoryItemsControl");
-        var scroll = items.Ancestors().First(element => element.Name.LocalName == "ScrollViewer");
-        Assert.Equal("Disabled", (string?)scroll.Attribute("HorizontalScrollBarVisibility"));
-        Assert.Equal("Auto", (string?)scroll.Attribute("VerticalScrollBarVisibility"));
+        Assert.Null(items.Attribute("Height")); // Table uses remaining space; actions stay below it.
+        Assert.Equal("2", (string?)NamedElement(LoadMainWindowXaml(), "HistoryActionsPanel").Ancestors().First(element => element.Name.LocalName == "Border").Attribute("Grid.Row"));
 
         RunOnSta(() =>
         {
@@ -1628,7 +1627,6 @@ public sealed partial class HakedisCreateHybridUiContractTests
 
     [Theory]
     [InlineData("Signatories", "SignatoriesPanel", "Resmî Belge İmzacıları")]
-    [InlineData("Statistics", "StatisticsPanel", "İstatistikler")]
     public void Navigation_ShouldExposeDedicatedButtonAndOnlyItsTargetPanel(string target, string panelName, string title)
     {
         var buttons = LoadMainWindowXaml().Descendants()

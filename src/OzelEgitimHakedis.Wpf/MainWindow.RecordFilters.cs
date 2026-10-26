@@ -13,7 +13,7 @@ public partial class MainWindow
         var date=((archive?ArchiveMonthFilter:HistoryMonthFilter).SelectedItem as ProgressPaymentMonthOption)?.PeriodDate;
         return new((archive?ArchiveSearchBox:HistorySearchBox).Text,date,
             (archive?ArchiveTenderFilter:HistoryTenderFilter).Text,(archive?ArchiveFirmFilter:HistoryFirmFilter).Text,
-            HomeProgram??GetSelectedTransportationProgramType(),Choice(archive?ArchiveStatusFilter:HistoryStatusFilter)=="Undated");
+            RecordsProgram,Choice(archive?ArchiveStatusFilter:HistoryStatusFilter)=="Undated");
     }
     private IReadOnlyList<ProgressPaymentHistoryData> FilterHistory()
     {

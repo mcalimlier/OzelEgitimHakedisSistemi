@@ -6,6 +6,13 @@ namespace OzelEgitimHakedis.Tests;
 public sealed class OehsRuntimePathsTests
 {
     [Fact]
+    public void IsolatedArchivesMustBeInsideFullBackupOutputRoot()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "tehys-backup-paths");
+        var paths = OehsRuntimePaths.Resolve(Path.Combine(root, "Package"), Path.Combine(root, "Local"), Path.Combine(root, "Desktop"), true);
+        Assert.StartsWith(paths.DesktopRoot + Path.DirectorySeparatorChar, paths.ArchiveFolderPath, StringComparison.OrdinalIgnoreCase);
+    }
+    [Fact]
     public void IsolatedTestPackage_ShouldUseOnlyItsOwnDataAndOutputFolders()
     {
         var packageRoot = Path.Combine(Path.GetTempPath(), "OEHS-Package", "Release");
@@ -17,7 +24,7 @@ public sealed class OehsRuntimePathsTests
         var testDataRoot = Path.Combine(Path.GetFullPath(packageRoot), "DenemeVerisi");
         Assert.Equal(Path.Combine(testDataRoot, "OEHS"), paths.DataRoot);
         Assert.Equal(Path.Combine(testDataRoot, "OEHS", "oehs-data.json"), paths.ApplicationDataFilePath);
-        Assert.Equal(Path.Combine(testDataRoot, "Arsiv", "Hakedisler"), paths.ArchiveFolderPath);
+        Assert.Equal(Path.Combine(testDataRoot, "OzelEgitimHakedisSistemi", "Arsiv", "Hakedisler"), paths.ArchiveFolderPath);
         Assert.Equal(Path.Combine(testDataRoot, "OzelEgitimHakedisSistemi"), paths.DesktopRoot);
         Assert.Equal(Path.Combine(testDataRoot, "OEHS", "official-document-settings.json"), paths.OfficialDocumentSettingsFilePath);
 

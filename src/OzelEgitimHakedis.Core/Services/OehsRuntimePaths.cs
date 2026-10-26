@@ -41,7 +41,7 @@ public static class OehsRuntimePaths
             return new OehsRuntimePathSet(
                 DataRoot: dataRoot,
                 ApplicationDataFilePath: Path.Combine(dataRoot, "oehs-data.json"),
-                ArchiveFolderPath: Path.Combine(testDataRoot, "Arsiv", "Hakedisler"),
+                ArchiveFolderPath: Path.Combine(testDataRoot, "OzelEgitimHakedisSistemi", "Arsiv", "Hakedisler"),
                 DesktopRoot: Path.Combine(testDataRoot, "OzelEgitimHakedisSistemi"),
                 OfficialDocumentSettingsFilePath: Path.Combine(dataRoot, "official-document-settings.json"));
         }

@@ -6,10 +6,15 @@ public static class OehsFreshStartService
     // backup, never permanently deleted by an automatic launch-time operation.
     public const string CurrentResetVersion = "2026-10-16-program-partitioned-storage-v3";
 
-    public static bool EnsureFreshStart() =>
-        EnsureFreshStart(
+    public static bool EnsureFreshStart()
+    {
+        var reset = EnsureFreshStart(
             OehsRuntimePaths.DataRoot,
             OehsRuntimePaths.DesktopRoot);
+        if (OehsRuntimePaths.IsIsolatedTestPackage)
+            OehsIsolatedArchiveMigration.Ensure(AppContext.BaseDirectory);
+        return reset;
+    }
 
     public static bool EnsureFreshStart(string localDataRoot, string desktopRoot)
     {
