@@ -180,11 +180,7 @@ public partial class MainWindow : Window
         ContractEditorTitleTextBlock.Text = "İhale bilgileri";
         ContractEditorSubtitleTextBlock.Text = "Programı seçin, İKN ve hizmet tarihlerini girin.";
 
-        SaveContractorButton.Content = "KAYDET";
-        CancelContractorEditButton.Visibility = Visibility.Collapsed;
-        ClearContractorButton.IsEnabled = true;
-        ClearContractorButton.Visibility = Visibility.Visible;
-        ContractorEditorTitleTextBlock.Text = "FİRMA BİLGİLERİ";
+        SetContractorEditorMode(false);
 
         AddRouteButton.Content = "HAT EKLE";
         CancelRouteEditButton.Visibility = Visibility.Collapsed;
@@ -216,11 +212,18 @@ public partial class MainWindow : Window
 
     private void SetContractorEditorMode(bool editing)
     {
-        SaveContractorButton.Content = editing ? "DÜZENLE" : "KAYDET";
+        SaveContractorButton.Content = editing ? "DEĞİŞİKLİKLERİ KAYDET" : "FİRMAYI KAYDET";
         CancelContractorEditButton.Visibility = editing ? Visibility.Visible : Visibility.Collapsed;
         ClearContractorButton.IsEnabled = !editing;
         ClearContractorButton.Visibility = editing ? Visibility.Collapsed : Visibility.Visible;
-        ContractorEditorTitleTextBlock.Text = editing ? "YÜKLENİCİ FİRMA DÜZENLE" : "FİRMA BİLGİLERİ";
+        ContractorEditorTitleTextBlock.Text = editing ? "Firma kaydını düzenle" : "Firma bilgileri";
+        ContractorProgramComboBox.Visibility = editing ? Visibility.Collapsed : Visibility.Visible;
+        ContractorEditingProgramTextBlock.Visibility = editing ? Visibility.Visible : Visibility.Collapsed;
+        var program = IsArchiveCorrectionFor(ArchiveCorrectionSection.Contractor)
+            ? _editingArchiveSnapshot!.Contract.ProgramType
+            : FindContractorByKey(_editingContractorKey)?.ProgramType;
+        ContractorEditingProgramTextBlock.Text = program == TransportationProgramType.BasicOrSecondary
+            ? "Temel / Ortaöğretim" : program.HasValue ? "Özel Eğitim" : string.Empty;
     }
 
     private void SetRouteEditorMode(bool editing, bool archiveCorrection = false)
@@ -1209,7 +1212,7 @@ public partial class MainWindow : Window
             ProgressTenderListBox.ItemsSource = _contracts.ToArray();
             OutputTenderListBox.ItemsSource = _contracts.ToArray();
             RefreshTenderList();
-            ContractorsListBox.ItemsSource = _contractors.Where(x => x.ProgramType == selectedProgram).ToArray();
+            RefreshContractorList();
 
             HomeTenderListBox.SelectedItem = homeContract;
             RouteTenderListBox.SelectedItem = contract;
@@ -2619,13 +2622,16 @@ public partial class MainWindow : Window
     private void SaveArchivedContractorCorrection()
     {
         var archive = _editingArchiveSnapshot!;
+        ClearContractorValidation();
 
         var name = ContractorNameTextBox.Text.Trim();
         var tax = OehsIdentityService.NormalizeIdentity(ContractorTaxTextBox.Text);
 
         if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(tax))
         {
-            ContractorStatusTextBlock.Text = "Firma adı ve TC / Vergi No zorunludur.";
+            if (string.IsNullOrWhiteSpace(name)) MarkInvalid(ContractorNameTextBox);
+            if (string.IsNullOrWhiteSpace(tax)) MarkInvalid(ContractorTaxTextBox);
+            ShowContractorValidation("Firma adı ve TC / Vergi No zorunludur.");
             return;
         }
 
@@ -2905,6 +2911,7 @@ public partial class MainWindow : Window
 
     private void SaveContractorButton_Click(object sender, RoutedEventArgs e)
     {
+        ClearContractorValidation();
         if (IsArchiveEditing)
         {
             if (IsArchiveCorrectionFor(ArchiveCorrectionSection.Contractor))
@@ -2923,15 +2930,23 @@ public partial class MainWindow : Window
         var tax = OehsIdentityService.NormalizeIdentity(ContractorTaxTextBox.Text);
         if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(tax))
         {
-            ContractorStatusTextBlock.Text = "Firma adı ve TC / Vergi No zorunludur.";
+            if (string.IsNullOrWhiteSpace(name)) MarkInvalid(ContractorNameTextBox);
+            if (string.IsNullOrWhiteSpace(tax)) MarkInvalid(ContractorTaxTextBox);
+            ShowContractorValidation("Firma adı ve TC / Vergi No zorunludur.");
             return;
         }
 
         var editingContractor = FindContractorByKey(_editingContractorKey);
+        if (!string.IsNullOrWhiteSpace(_editingContractorKey) && editingContractor is null)
+        {
+            ShowContractorValidation("Düzenlenen firma bulunamadı. Düzenlemeyi iptal edip yeni kayıt açın; firma kaydedilmedi.");
+            return;
+        }
         if (editingContractor is null &&
             !TryGetSelectedTransportationProgramType(out _))
         {
-            ContractorStatusTextBlock.Text = "Önce TAŞIMA PROGRAMI alanından Özel Eğitim veya Temel / Ortaöğretim programını seçin. Firma kaydedilmedi.";
+            MarkInvalid(ContractorProgramComboBox);
+            ShowContractorValidation("Önce TAŞIMA PROGRAMI alanından Özel Eğitim veya Temel / Ortaöğretim programını seçin. Firma kaydedilmedi.");
             return;
         }
 
@@ -2945,11 +2960,12 @@ public partial class MainWindow : Window
                 OehsIdentityService.NormalizeIdentity(x.TaxOrIdentityNumber),
                 tax,
                 StringComparison.Ordinal) &&
-            !string.Equals(BuildContractorKey(x), _editingContractorKey ?? string.Empty, StringComparison.Ordinal));
+            !ReferenceEquals(x, editingContractor));
 
         if (duplicate is not null)
         {
-            ShowAlreadyRegistered($"'{name}' zaten kayıtlı. Mükerrer firma kaydı oluşturulmadı.");
+            MarkInvalid(ContractorTaxTextBox);
+            ShowContractorValidation($"Bu TC / Vergi No ile '{duplicate.Name}' aynı programda zaten kayıtlı. Listeden DÜZENLE düğmesini kullanın; mükerrer firma oluşturulmadı.");
             return;
         }
 
@@ -3059,9 +3075,15 @@ public partial class MainWindow : Window
 
     private void EditContractorButton_Click(object sender, RoutedEventArgs e)
     {
-        ClearArchiveCorrectionState();
+        if (IsArchiveEditing)
+        {
+            ShowContractorValidation("Arşiv düzeltmesi sürüyor. Önce değişiklikleri kaydedin veya düzenlemeyi iptal edin.");
+            return;
+        }
         if (sender is not Button { Tag: ContractorDraft contractor })
             return;
+        ClearArchiveCorrectionState();
+        ClearContractorValidation();
 
         _editingContractorKey = BuildContractorKey(contractor);
         SetContractorEditorMode(true);
@@ -3069,34 +3091,21 @@ public partial class MainWindow : Window
         ContractorTaxTextBox.Text = contractor.TaxOrIdentityNumber;
         ContractorBankTextBox.Text = contractor.BankAccountNumber;
         ContractorVatExemptCheckBox.IsChecked = contractor.VatExempt;
-        ContractorStatusTextBlock.Text = $"Düzenleme modu: {contractor.Name}. KDV istisnası firma kartına bağlıdır; DÜZENLE ile kaydedin.";
+        ContractorStatusTextBlock.Text = $"Düzenlenen firma: {contractor.Name}. Programı korunur; değişiklikleri kaydederek tamamlayın.";
     }
 
     private void CancelContractorEditButton_Click(object sender, RoutedEventArgs e)
     {
         var archiveCorrection = IsArchiveCorrectionFor(ArchiveCorrectionSection.Contractor);
-        var original = !archiveCorrection && !string.IsNullOrWhiteSpace(_editingContractorKey)
-            ? FindContractorByKey(_editingContractorKey)
-            : null;
-
         ClearArchiveCorrectionState();
         _editingContractorKey = null;
+        ClearContractorEditorFields();
+        SetContractorEditorMode(false);
 
         if (archiveCorrection)
         {
-            ContractorNameTextBox.Clear();
-            ContractorTaxTextBox.Clear();
-            ContractorBankTextBox.Clear();
             NavigationButton_Click(NavArchives, new RoutedEventArgs(Button.ClickEvent, NavArchives));
             return;
-        }
-
-        if (original is not null)
-        {
-            ContractorNameTextBox.Text = original.Name;
-            ContractorTaxTextBox.Text = original.TaxOrIdentityNumber;
-            ContractorBankTextBox.Text = original.BankAccountNumber;
-            ContractorVatExemptCheckBox.IsChecked = original.VatExempt;
         }
 
         ContractorStatusTextBlock.Text = "Firma düzenlemesi iptal edildi; kayıt değiştirilmedi.";
@@ -3104,8 +3113,14 @@ public partial class MainWindow : Window
 
     private void DeleteContractorButton_Click(object sender, RoutedEventArgs e)
     {
+        if (IsArchiveEditing)
+        {
+            ShowContractorValidation("Arşiv düzeltmesi sürerken kayıtlı firma silinemez. Önce düzenlemeyi tamamlayın veya iptal edin.");
+            return;
+        }
         if (sender is not Button { Tag: ContractorDraft contractor })
             return;
+        ClearContractorValidation();
 
         var normalizedContractorIdentity = OehsIdentityService.NormalizeIdentity(contractor.TaxOrIdentityNumber);
         var usedByContract = _contracts.Any(x => x.ProgramType == contractor.ProgramType && string.Equals(
@@ -3120,7 +3135,7 @@ public partial class MainWindow : Window
 
         if (usedByContract || usedByRoute || usedByHistory)
         {
-            ShowAlreadyRegistered($"'{contractor.Name}' kayıtlı hat/hakediş kayıtlarında kullanılıyor. Önce ilişkili kayıtları düzeltin; firma silinmedi.");
+            ShowContractorValidation($"'{contractor.Name}' kayıtlı ihale, hat veya hakedişte kullanılıyor. Önce ilişkili kayıtları düzeltin; firma silinmedi.");
             return;
         }
 
@@ -3130,6 +3145,7 @@ public partial class MainWindow : Window
         if (result != MessageBoxResult.Yes)
             return;
 
+        var wasEditingDeletedFirm = ReferenceEquals(FindContractorByKey(_editingContractorKey), contractor);
         var index = _contractors.IndexOf(contractor);
         if (index < 0) return;
         _contractors.RemoveAt(index);
@@ -3146,6 +3162,8 @@ public partial class MainWindow : Window
         UpdateContractorSummary();
         UpdateContractSelectors();
         UpdateHomeSummaryView();
+        if (wasEditingDeletedFirm)
+            ClearContractorButton_Click(sender, e);
         ContractorStatusTextBlock.Text = $"Firma silindi: {contractor.Name}.";
     }
 
@@ -3153,19 +3171,14 @@ public partial class MainWindow : Window
     {
         ClearArchiveCorrectionState();
         _editingContractorKey = null;
-        ContractorNameTextBox.Clear();
-        ContractorTaxTextBox.Clear();
-        ContractorBankTextBox.Clear();
-        ContractorVatExemptCheckBox.IsChecked = false;
+        ClearContractorEditorFields();
         SetContractorEditorMode(false);
         ContractorStatusTextBlock.Text = "Yeni firma kaydı için alanlar temizlendi.";
     }
 
     private void UpdateContractorSummary()
     {
-        var programType = GetSelectedTransportationProgramType();
-        ContractorCountTextBlock.Text = _contractors.Count(x => x.ProgramType == programType)
-            .ToString(CultureInfo.CurrentCulture);
+        RefreshContractorList();
     }
 
     private void TransportProgramTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -6447,11 +6460,13 @@ public partial class MainWindow : Window
             ContractorNameTextBox.Text = archivedContractor.Name;
             ContractorTaxTextBox.Text = archivedContractor.TaxOrIdentityNumber;
             ContractorBankTextBox.Text = archivedContractor.BankAccountNumber;
+            ContractorVatExemptCheckBox.IsChecked = archivedContractor.VatExempt ?? _editingArchiveSnapshot.ProgressPayment.Input.IsVatExempt;
+            ClearContractorValidation();
             NavigationButton_Click(NavContractors, new RoutedEventArgs(Button.ClickEvent, NavContractors));
             // Panel geçişinden sonra editör modunu son kez uygula.
             SetContractorEditorMode(true);
             ContractorStatusTextBlock.Text =
-                "ARŞİV DÜZELTME MODU: firma bilgilerini güncelleyin. DÜZENLE mevcut arşiv revision'ını aynı kayıt üzerinde güncelleyecektir.";
+                "ARŞİV DÜZELTME MODU: firma bilgilerini güncelleyin. Değişiklikleri kaydettiğinizde bu arşivin yeni revizyonu oluşturulur.";
             _suppressArchiveDirtyTracking = false;
             return;
         }
@@ -6464,13 +6479,15 @@ public partial class MainWindow : Window
             return;
         }
 
-        _editingContractorKey = contractor.TaxOrIdentityNumber;
+        _editingContractorKey = BuildContractorKey(contractor);
         SetContractorEditorMode(true);
         ContractorNameTextBox.Text = contractor.Name;
         ContractorTaxTextBox.Text = contractor.TaxOrIdentityNumber;
         ContractorBankTextBox.Text = contractor.BankAccountNumber;
+        ContractorVatExemptCheckBox.IsChecked = contractor.VatExempt;
+        ClearContractorValidation();
         NavigationButton_Click(NavContractors, new RoutedEventArgs(Button.ClickEvent, NavContractors));
-        ContractorStatusTextBlock.Text = "Hakedişten gelen düzenleme: Firma bilgilerini değiştirin ve DÜZENLE'e basın.";
+        ContractorStatusTextBlock.Text = "Hakedişten gelen düzenleme: Firma bilgilerini değiştirip DEĞİŞİKLİKLERİ KAYDET düğmesini kullanın.";
         SetLiveHistoryCorrectionContext(item.Id, HistoryCorrectionSection.Contractor);
     }
 
@@ -8349,6 +8366,8 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         bool VatExempt = false)
     {
         public string VatExemptText => VatExempt ? "KDV İstisnası: VAR" : "KDV İstisnası: YOK";
+        public string ProgramDisplayText => ProgramType == TransportationProgramType.BasicOrSecondary ? "Temel / Ortaöğretim" : "Özel Eğitim";
+        public string BankDisplayText => string.IsNullOrWhiteSpace(BankAccountNumber) ? "Banka bilgisi girilmedi" : $"Banka / IBAN: {BankAccountNumber}";
     }
 
     private sealed record ArchiveRow(

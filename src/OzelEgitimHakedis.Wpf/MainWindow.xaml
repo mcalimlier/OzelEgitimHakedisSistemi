@@ -1096,78 +1096,82 @@
 </Grid>
 
                         <Grid x:Name="ContractorsPanel" Visibility="Collapsed">
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0">
         <StackPanel>
             <TextBlock Text="YÜKLENİCİ FİRMALAR" Style="{StaticResource PageTitle}"/>
-            <TextBlock Text="Firma bilgilerini bir kez tanımlayın. Aynı firma birden fazla ihale/dosya numarasıyla ilişkilendirilebilir." Style="{StaticResource PageSubtitle}"/>
-            <Grid Margin="0,0,0,8.5">
-                <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-                <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,5,0" Padding="9.5">
+            <TextBlock Text="Firma kartını tanımlayın; aynı firmayı birden fazla ihalede kullanın." Style="{StaticResource PageSubtitle}"/>
+            <Border Style="{StaticResource Card}"><StackPanel>
+                <TextBlock x:Name="ContractorEditorTitleTextBlock" Text="Firma bilgileri" Style="{StaticResource CardTitle}"/>
+                <TextBlock Text="Programı seçin, firma unvanını ve TC / vergi numarasını girin. * Zorunlu alan" Style="{StaticResource CardSubtitle}" TextWrapping="Wrap" Margin="0,4,0,10"/>
+                <Border x:Name="ContractorValidationBanner" Visibility="Collapsed" Background="#FFF1F1" BorderBrush="#E53935" BorderThickness="1.5" CornerRadius="9" Padding="9,8" Margin="0,0,0,10">
+                    <StackPanel><TextBlock Text="FİRMA BİLGİLERİNİ KONTROL EDİN" Foreground="#C62828" FontWeight="Bold"/><TextBlock x:Name="ContractorValidationMessageTextBlock" Foreground="#8E1B1B" TextWrapping="Wrap" Margin="0,3,0,0"/></StackPanel>
+                </Border>
+                <Grid>
+                    <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                    <StackPanel Margin="0,0,10,12">
+                        <TextBlock Text="Taşıma programı *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
+                        <ComboBox x:Name="ContractorProgramComboBox" Height="34" Style="{StaticResource FieldComboBox}" SelectedIndex="{Binding SelectedIndex, ElementName=TransportProgramTypeComboBox, Mode=TwoWay}" TabIndex="0">
+                            <ComboBoxItem Content="Özel Eğitim" Tag="SpecialEducation"/><ComboBoxItem Content="Temel / Ortaöğretim" Tag="BasicOrSecondary"/>
+                        </ComboBox>
+                        <TextBlock x:Name="ContractorEditingProgramTextBlock" Visibility="Collapsed" Height="34" Padding="0,8,0,0" Foreground="White" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Grid.ColumnSpan="2" Margin="0,0,0,12">
+                        <TextBlock Text="Firma adı / ticari unvan *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
+                        <TextBox x:Name="ContractorNameTextBox" Height="34" Style="{StaticResource FieldTextBox}" TabIndex="1"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Margin="0,0,10,0">
+                        <TextBlock Text="TC / Vergi No *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
+                        <TextBox x:Name="ContractorTaxTextBox" Height="34" Style="{StaticResource FieldTextBox}" TabIndex="2"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
+                        <TextBlock Text="Banka hesap no / IBAN (varsa)" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
+                        <TextBox x:Name="ContractorBankTextBox" Height="34" Style="{StaticResource FieldTextBox}" TabIndex="3"/>
+                    </StackPanel>
+                </Grid>
+                <Border Style="{StaticResource StatusBanner}" Margin="0,12,0,0" Padding="10">
                     <StackPanel>
-                        <TextBlock x:Name="ContractorEditorTitleTextBlock" Text="FİRMA BİLGİLERİ" Style="{StaticResource CardTitle}"/>
-                        <TextBlock x:Name="ContractorStatusTextBlock" Margin="0,4,0,6" Foreground="{StaticResource Blue600Brush}" FontWeight="SemiBold" TextWrapping="Wrap"/>
-                        <Grid Margin="0,6,0,0">
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="170"/><ColumnDefinition/></Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Firma Adı / Ticari Unvan" Style="{StaticResource FieldLabel}" Margin="0,4"/>
-                            <TextBox x:Name="ContractorNameTextBox" Grid.Row="0" Grid.Column="1" Margin="4" Style="{StaticResource FieldTextBox}"/>
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="TC / Vergi No" Style="{StaticResource FieldLabel}" Margin="0,4"/>
-                            <TextBox x:Name="ContractorTaxTextBox" Grid.Row="1" Grid.Column="1" Margin="4" Style="{StaticResource FieldTextBox}"/>
+                        <TextBlock Text="KDV İSTİSNASI" Foreground="{StaticResource Blue700Brush}" FontWeight="Bold"/>
+                        <CheckBox x:Name="ContractorVatExemptCheckBox" Content="Bu firma için KDV istisnası uygula" Style="{StaticResource LightCheckBox}" Margin="0,7,0,5" Checked="ContractorVatExemptCheckBox_Changed" Unchecked="ContractorVatExemptCheckBox_Changed" TabIndex="4"/>
+                        <TextBlock Text="İşaretliyse yeni hesaplamalarda KDV ve tevkifat uygulanmaz. Kaydedilmiş hakedişlerin vergi tutarları korunur." Foreground="{StaticResource Text900Brush}" TextWrapping="Wrap" FontSize="11"/>
+                    </StackPanel>
+                </Border>
+                <TextBlock x:Name="ContractorStatusTextBlock" Margin="0,8,0,0" Foreground="#C5D7E7" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                <WrapPanel Margin="0,12,0,0">
+                    <Button x:Name="SaveContractorButton" Content="FİRMAYI KAYDET" Click="SaveContractorButton_Click" Style="{StaticResource ModernButton}" Height="36" MinWidth="165" Margin="0,0,8,6" TabIndex="5"/>
+                    <Button x:Name="CancelContractorEditButton" Content="DÜZENLEMEYİ İPTAL ET" Click="CancelContractorEditButton_Click" Style="{StaticResource SecondaryButton}" Height="36" MinWidth="175" Margin="0,0,8,6" Visibility="Collapsed"/>
+                    <Button x:Name="ClearContractorButton" Content="FORMU TEMİZLE" Click="ClearContractorButton_Click" Style="{StaticResource SecondaryButton}" Height="36" MinWidth="140" Margin="0,0,0,6"/>
+                </WrapPanel>
+            </StackPanel></Border>
+            <Border Style="{StaticResource Card}" Margin="0,10,0,0"><StackPanel>
+                <TextBlock Text="KAYITLI FİRMALAR" Style="{StaticResource CardTitle}"/>
+                <Grid Margin="0,8,0,8"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                    <StackPanel><TextBlock Text="Firma adı, TC / Vergi No veya banka bilgisi ara" Style="{StaticResource FieldLabel}" Margin="0,0,0,4"/>
+                        <TextBox x:Name="ContractorSearchTextBox" Height="34" Style="{StaticResource FieldTextBox}" TextChanged="ContractorSearch_TextChanged"/>
+                    </StackPanel>
+                    <TextBlock x:Name="ContractorCountTextBlock" Grid.Column="1" Foreground="{StaticResource Blue600Brush}" FontWeight="SemiBold" Margin="14,0,0,0" VerticalAlignment="Bottom"/>
+                </Grid>
+                <ItemsControl x:Name="ContractorsListBox"><ItemsControl.ItemTemplate><DataTemplate>
+                    <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,4">
+                        <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                            <StackPanel Margin="0,0,14,0">
+                                <TextBlock Text="{Binding Name}" Foreground="White" FontSize="14" FontWeight="Bold" TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding ProgramDisplayText}" Foreground="#C5D7E7" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding TaxOrIdentityNumber, StringFormat='TC / Vergi No: {0}'}" Foreground="#C5D7E7" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                <TextBlock Text="{Binding BankDisplayText}" Foreground="#C5D7E7" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                <TextBlock Text="{Binding VatExemptText}" Foreground="#F4C247" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,5,0,0"/>
+                            </StackPanel>
+                            <WrapPanel Grid.Column="1" VerticalAlignment="Center">
+                                <Button Content="DÜZENLE" Tag="{Binding}" Click="EditContractorButton_Click" Style="{StaticResource SecondaryButton}" Height="34" MinWidth="90" Margin="0,0,6,4"/>
+                                <Button Content="SİL" Tag="{Binding}" Click="DeleteContractorButton_Click" Style="{StaticResource SecondaryButton}" Height="34" MinWidth="55" Margin="0,0,0,4"/>
+                            </WrapPanel>
                         </Grid>
-                        <StackPanel Margin="0,8,0,0">
-                            <TextBlock Text="Ek uygulama bilgisi" Style="{StaticResource CardSubtitle}"/>
-                            <Grid>
-                                <Grid.ColumnDefinitions><ColumnDefinition Width="170"/><ColumnDefinition/></Grid.ColumnDefinitions>
-                                <TextBlock Text="Banka Hesap No / IBAN" Style="{StaticResource FieldLabel}" Margin="0,4"/>
-                                <TextBox x:Name="ContractorBankTextBox" Grid.Column="1" Margin="4" Style="{StaticResource FieldTextBox}"/>
-                            </Grid>
-                        </StackPanel>
-                        <Border Style="{StaticResource StatusBanner}" Margin="4,8,4,0" Padding="8,7">
-                            <Grid>
-                                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                <StackPanel VerticalAlignment="Center">
-                                    <TextBlock Text="KDV İSTİSNASI" Foreground="{StaticResource Blue700Brush}" FontSize="11.5" FontWeight="Bold"/>
-                                    <TextBlock Text="KDV istisnası firma kartında belirlenir ve firma kaydıyla kalıcı olarak saklanır. Bu firma için istisna uygulanacaksa İSTİSNA seçeneğini işaretleyin. Yeni hesaplamalarda bu kayıt esas alınır; geçmiş hakedişlerin kaydedilmiş vergi sonuçları geriye dönük değiştirilmez." Foreground="{StaticResource Text900Brush}" FontSize="10.5" TextWrapping="Wrap" Margin="0,3,8,0"/>
-                                </StackPanel>
-                                <CheckBox x:Name="ContractorVatExemptCheckBox" Grid.Column="1" Content="İSTİSNA" Style="{StaticResource LightCheckBox}" VerticalAlignment="Center" Margin="8,0,0,0" Checked="ContractorVatExemptCheckBox_Changed" Unchecked="ContractorVatExemptCheckBox_Changed"/>
-                            </Grid>
-                        </Border>
-                        <WrapPanel Margin="4.5,6,0,0">
-                            <Button x:Name="SaveContractorButton" Content="KAYDET" Click="SaveContractorButton_Click" Style="{StaticResource ModernButton}" Width="130" Margin="0,0,8,6"/>
-                            <Button x:Name="CancelContractorEditButton" Content="DÜZENLEME İPTAL" Click="CancelContractorEditButton_Click" Style="{StaticResource SecondaryButton}" Width="160" Margin="0,0,8,6" Visibility="Collapsed"/>
-                            <Button x:Name="ClearContractorButton" Content="TEMİZLE" Click="ClearContractorButton_Click" Style="{StaticResource SecondaryButton}" Width="120" Margin="0,0,8,6"/>
-                        </WrapPanel>
-                    </StackPanel>
+                    </Border>
+                </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+                <Border x:Name="ContractorListEmptyBorder" Style="{StaticResource StatusBanner}" Margin="0,6,0,0">
+                    <TextBlock x:Name="ContractorListEmptyTextBlock" Text="Henüz kayıt yok. Firma bilgilerini doldurup kaydedin." Foreground="{StaticResource Text900Brush}" TextWrapping="Wrap"/>
                 </Border>
-                <Border Grid.Column="1" Style="{StaticResource Card}" Margin="5,0,0,0" Padding="9.5">
-                    <StackPanel>
-                        <TextBlock Text="KAYITLI FİRMALAR" Style="{StaticResource CardTitle}"/>
-                        <TextBlock x:Name="ContractorCountTextBlock" Text="0" Foreground="{StaticResource Blue600Brush}" FontSize="18" FontWeight="Bold" Margin="0,6,0,0"/>
-                        <ItemsControl x:Name="ContractorsListBox" Margin="0,6.5,0,0">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Background="#0A2A49" BorderBrush="#335A79" BorderThickness="1" CornerRadius="8" Padding="8" Margin="0,2.5">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="125"/><ColumnDefinition Width="110"/><ColumnDefinition Width="70"/></Grid.ColumnDefinitions>
-                                            <StackPanel>
-                                                <TextBlock Text="{Binding Name}" Foreground="White" FontSize="11.5" FontWeight="Bold"/>
-                                                <TextBlock Text="{Binding TaxOrIdentityNumber}" Foreground="#C5D7E7" FontSize="11.5"/>
-                                                <TextBlock Text="{Binding BankAccountNumber}" Foreground="#C5D7E7" FontSize="11.5"/>
-                                                <TextBlock Text="{Binding VatExemptText}" Foreground="#F2C66D" FontSize="10.5" FontWeight="SemiBold"/>
-                                            </StackPanel>
-                                            <TextBlock Grid.Column="1" Text="{Binding Phone}" Foreground="#C5D7E7" FontSize="11.5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                            <Button Grid.Column="2" Content="DÜZENLE" Tag="{Binding}" Click="EditContractorButton_Click" Style="{StaticResource SecondaryButton}" Height="30" FontSize="11" Width="96" Margin="4,0"/>
-                                            <Button Grid.Column="3" Content="SİL" Tag="{Binding}" Click="DeleteContractorButton_Click" Style="{StaticResource SecondaryButton}" Height="30" FontSize="11" Width="56" Margin="4,0"/>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                </Border>
-            </Grid>
+            </StackPanel></Border>
         </StackPanel>
     </ScrollViewer>
 </Grid>
