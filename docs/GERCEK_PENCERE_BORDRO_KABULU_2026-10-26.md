@@ -45,6 +45,12 @@ Excel nihai neti sonunda yuvarlar. Mevcut Hakediş Raporu zinciri brüt ve kesin
 - Uzun güzergâh ve yüklenici metni, seçimin kaldırılması ve 1024/1366/1920 genişliklerinde buton erişimi denetlendi.
 - WPF regresyon paketi: 213 başarılı, 0 başarısız. Kanıt: `tests/OzelEgitimHakedis.Wpf.Tests/TestResults/history-native-2026-10-26.trx`.
 
+### Visual Studio derleme doğrulaması
+
+Normal Visual Studio Debug derlemesinde, yeni testteki `Assert.Empty(collection.Where(...))` ifadesi xUnit2029 kalite kuralı nedeniyle derlemeyi durdurdu. Önceki hızlı test çalıştırmalarında analizörler kapalı olduğundan bu derleme kuralı yakalanmamıştı. İfade aynı kontrolü yapan `Assert.DoesNotContain(collection, predicate)` ile düzeltildi; test kayıt numarası biçimlemesi de kültürden bağımsız yapıldı. Analizörler veya uyarı kuralları kapatılmadı.
+
+Visual Studio üzerinden tüm çözüm yeniden derlendi: dört proje başarılı. NuGet paket bilgileri yenilendi ve çözüm kaydedilerek yeniden yüklendi. Son doğrulama doğrudan açık Visual Studio oturumundan yapıldı: `BuildState=3`, `LastBuildInfo=0`, Hata Listesi'nde 0 hata; derleme çıktısında 4 başarılı / 0 başarısız. Kanıtlar `.superpowers/vs-open-ide-final-build.log`, `vs-open-ide-final-state.txt` ve `vs-open-ide-final-nuget.log` dosyalarındadır. İlgili iki test Debug derlemesinde tekrar çalıştırıldı ve geçti (`vs-build-fix-2026-10-26.trx`).
+
 ## Kanıtlar ve yeniden çalıştırma
 
 Çalışan kabul aracı: `tests/OzelEgitimHakedis.NativeAcceptance/`. Yeniden çalıştırma: `scripts/Run-PayrollNativeAcceptance.ps1`. Betik önce kaynak Excel dosyalarının hashlerini doğrular, sonra kendi yeni deneme klasöründe çalışır. Normal veri farklı çıkarsa kendi kendine geri yükleme yapmaz; kontrolü başarısız sayar.

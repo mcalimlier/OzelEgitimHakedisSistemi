@@ -36,7 +36,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
                 }
                 var actual = row.Preview!;
                 saved.Add(new(Guid.NewGuid(), DateTime.Now, row.CreateInput(), actual,
-                    PeriodDate: new DateOnly(2026, 10, 31), RouteNumber: saved.Count.ToString(), TenderNumber: "QA-IKN"));
+                    PeriodDate: new DateOnly(2026, 10, 31), RouteNumber: saved.Count.ToString(System.Globalization.CultureInfo.InvariantCulture), TenderNumber: "QA-IKN"));
                 var net = sample.GetProperty("Expected").EnumerateArray().Single(c => c.GetProperty("Property").GetString() == "NetPayable").GetProperty("Value").GetDecimal();
                 Assert.True(Math.Abs(net - actual.NetPayable) < 0.0000001m);
             }
@@ -77,7 +77,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
             grid.ItemsSource = entries;
             ArrangeLayout(layout, 740, 850);
             Assert.True(grid.IsReadOnly);
-            Assert.Empty(VisualDescendants<Button>(grid).Where(b => b.Content is string s && s == "Hesaplamayı Görüntüle"));
+            Assert.DoesNotContain(VisualDescendants<Button>(grid), b => b.Content is string s && s == "Hesaplamayı Görüntüle");
             var panel = (WrapPanel)layout.FindName("HistoryActionsPanel");
             var buttons = panel.Children.OfType<Button>().ToArray();
             Assert.Equal(4, buttons.Length);
