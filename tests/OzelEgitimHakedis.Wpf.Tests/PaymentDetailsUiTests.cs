@@ -59,31 +59,42 @@ public sealed partial class HakedisCreateHybridUiContractTests
     }
 
     [Fact]
-    public void SavedHistoryGrid_KeepsThreeActionsVisibleAndBoundToTheirOwnRows()
+    public void SavedHistoryGrid_UsesBottomActionsOnlyForSelectedRowAndWrapsLongDetails()
     {
         RunOnSta(() =>
         {
-            var source = NamedElement(LoadMainWindowXaml(), "HistoryItemsControl");
-            Assert.Equal("DataGrid", source.Name.LocalName);
-            var events = source.Descendants().Where(e => e.Name.LocalName == "Button").Select(e => (string?)e.Attribute("Click")).ToArray();
+            var document = LoadMainWindowXaml();
+            var source = NamedElement(document, "HistoryPanel");
+            var actions = NamedElement(document, "HistoryActionsPanel");
+            var events = actions.Descendants().Where(e => e.Name.LocalName == "Button").Select(e => (string?)e.Attribute("Click")).ToArray();
             Assert.Contains("EditHistoryButton_Click", events);
             Assert.Contains("DeleteHistoryButton_Click", events);
             Assert.Contains("ViewHistoryCalculationButton_Click", events);
             var layout = LoadLayoutFragment(source);
             var grid = (DataGrid)layout.FindName("HistoryItemsControl");
-            grid.ItemsSource = Enumerable.Range(1, 6).Select(i => new { Id = Guid.NewGuid(), DisplayTitle = $"Hat {i} · Hakediş 1", CreatedAtText = "Ekim 2026 · Deneme", TotalAmountText = "20.417,33 TL", NetPayableText = "21.194,13 TL" }).ToArray();
-            ArrangeLayout(layout, 740, 430);
-            Assert.Equal(1, grid.FrozenColumnCount);
+            ((Border)layout.FindName("HistoryEmptyStateBorder")).Visibility = Visibility.Collapsed;
+            var entries = Enumerable.Range(1, 6).Select(i => new { Id = Guid.NewGuid(), DisplayTitle = $"Hat {i} · Çok uzun güzergâh bilgisi ve hakediş numarası ile ihale kayıt numarası 2026/1592223", CreatedAtText = "Dönem Ekim 2026 · Yüklenici: Uzun unvanlı taşıma kooperatifi · Kayıt 26.10.2026 20:00", TotalAmountText = "20.417,33 TL", NetPayableText = "21.194,13 TL" }).ToArray();
+            grid.ItemsSource = entries;
+            ArrangeLayout(layout, 740, 850);
             Assert.True(grid.IsReadOnly);
-            var buttons = VisualDescendants<Button>(grid).Where(b => b.Content is string s && s == "Hesaplamayı Görüntüle").ToArray();
-            Assert.Equal(6, buttons.Length);
-            Assert.Equal(6, buttons.Select(b => b.Tag).Distinct().Count());
+            Assert.Empty(VisualDescendants<Button>(grid).Where(b => b.Content is string s && s == "Hesaplamayı Görüntüle"));
+            var panel = (WrapPanel)layout.FindName("HistoryActionsPanel");
+            var buttons = panel.Children.OfType<Button>().ToArray();
+            Assert.Equal(4, buttons.Length);
+            Assert.All(buttons, b => Assert.False(b.IsEnabled));
+            grid.SelectedItem = entries[2]; layout.UpdateLayout();
+            Assert.All(buttons, b => { Assert.True(b.IsEnabled); Assert.Same(entries[2], b.Tag); });
             foreach (var button in buttons)
             {
-                var bounds = button.TransformToAncestor(grid).TransformBounds(new Rect(button.RenderSize));
-                Assert.InRange(bounds.Right, 1, grid.ActualWidth);
-                Assert.True(button.ActualWidth >= 175);
+                var bounds = button.TransformToAncestor(panel).TransformBounds(new Rect(button.RenderSize));
+                Assert.InRange(bounds.Right, 1, panel.ActualWidth);
             }
+            var cell = (TextBlock)grid.Columns[0].GetCellContent(entries[0]);
+            Assert.Equal(TextWrapping.Wrap, cell.TextWrapping);
+            Assert.Equal(TextTrimming.None, cell.TextTrimming);
+            Assert.True(cell.ActualHeight > cell.FontSize * 2);
+            grid.SelectedItem = null; layout.UpdateLayout();
+            Assert.All(buttons, b => { Assert.False(b.IsEnabled); Assert.Null(b.Tag); });
             SavePaymentDetailsPreview(layout, "history-actions.png");
         });
     }

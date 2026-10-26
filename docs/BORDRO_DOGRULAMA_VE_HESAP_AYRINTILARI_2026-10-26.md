@@ -2,6 +2,8 @@
 
 Başlangıç kaydı: `d9c1472`, dal: `feature/official-payment-document-templates`.
 
+Devam kontrolü: `GERCEK_PENCERE_BORDRO_KABULU_2026-10-26.md`. Bu ilk rapordaki satır içi buton yerleşimi sonradan kullanıcı isteğiyle alt eylem çubuğuna taşındı; gerçek pencere üzerinden 42 kayıt ve 168 PDF denetimi eklendi.
+
 ## Kaynak ve yöntem
 
 - `5-Taşıma Bordro GENEL (1).xlsx`: SHA256 `1214d4a22611bd3c7b8332f2bc6fd1084497d8dd62165e9d3b264e87960ed669`

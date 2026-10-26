@@ -1476,14 +1476,18 @@ public sealed partial class HakedisCreateHybridUiContractTests
             control.Items.Add(new { DisplayTitle = "Test dönemi", CreatedAtText = "22.10.2026", TotalAmountText = "100,00 ₺", NetPayableText = "90,00 ₺" });
             ArrangeLayout(layout, windowWidth - 215 - 38, 600 - 60 - 38);
             var viewer = VisualDescendants<ScrollViewer>(control).First();
-            if (windowWidth == 1024)
-                Assert.True(viewer.ScrollableWidth > 0, "History fixed columns need horizontal access at minimum window width.");
+            Assert.InRange(control.ActualWidth, 1, windowWidth - 215 - 38);
             viewer.ScrollToRightEnd();
             layout.UpdateLayout();
-            var deleteButton = VisualDescendants<Button>(control).Single(button => Equals(button.Content, "Sil"));
-            var bounds = deleteButton.TransformToAncestor(control).TransformBounds(new Rect(deleteButton.RenderSize));
-            Assert.InRange(bounds.Left, 0, control.ActualWidth);
-            Assert.InRange(bounds.Right, 1, control.ActualWidth);
+            control.SelectedIndex = 0; layout.UpdateLayout();
+            var panel = (WrapPanel)layout.FindName("HistoryActionsPanel");
+            foreach (var button in panel.Children.OfType<Button>())
+            {
+                Assert.True(button.IsEnabled);
+                var bounds = button.TransformToAncestor(panel).TransformBounds(new Rect(button.RenderSize));
+                Assert.InRange(bounds.Left, 0, panel.ActualWidth);
+                Assert.InRange(bounds.Right, 1, panel.ActualWidth);
+            }
         });
     }
 
