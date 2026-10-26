@@ -56,8 +56,14 @@ jobs:
         run: |
           $xaml = Get-Content ".\src\OzelEgitimHakedis.Wpf\MainWindow.xaml" -Raw
           $code = Get-Content ".\src\OzelEgitimHakedis.Wpf\MainWindow.xaml.cs" -Raw
-          $statusCount = ([regex]::Matches($xaml, 'Text="KAYIT DURUMU"')).Count
-          if ($statusCount -ne 1) { throw "Expected one dynamic header save-status label; found $statusCount." }
+          [xml]$document = $xaml
+          $namespaces = [System.Xml.XmlNamespaceManager]::new($document.NameTable)
+          $namespaces.AddNamespace('x', 'http://schemas.microsoft.com/winfx/2006/xaml')
+          $statusNodes = $document.SelectNodes("//*[@x:Name='HeaderSaveStatusTextBlock']", $namespaces)
+          if ($statusNodes.Count -ne 1) { throw "Expected one named dynamic header save-status value; found $($statusNodes.Count)." }
+          $headerCard = $statusNodes[0].ParentNode.ParentNode.ParentNode
+          $statusLabels = $headerCard.SelectNodes(".//*[local-name()='TextBlock' and @Text='KAYIT DURUMU']")
+          if ($statusLabels.Count -ne 1) { throw "The dynamic save-status card must have exactly one status label." }
           if ($xaml -notmatch 'dört ayrı, tek sayfalı PDF') { throw "Output page description does not match the four-PDF save behavior." }
           if ($xaml -notmatch 'x:Name="HeaderSaveStatusTextBlock"' -or $xaml -notmatch 'x:Name="HeaderSaveStatusDot"') { throw "Dynamic save-status controls are missing." }
           if ($code -notmatch 'SetHeaderSaveStatus\("Kaydedildi"' -or $code -notmatch 'SetHeaderSaveStatus\("Veri yükleme hatası"') { throw "Load/save status update paths are missing." }
@@ -89,7 +95,7 @@ jobs:
           $archiveTests = Get-Content ".\tests\OzelEgitimHakedis.Tests\ProgressPaymentArchiveStoreTests.cs" -Raw
           if (-not $code.Contains("değişiklikleri uygulansın mı?")) { throw "Archive edit confirmation prompt is missing." }
           if (-not $code.Contains("Calculation = ProgressPaymentCalculator.Calculate(updatedArchive.ProgressPayment.Input, _calculationConstants)")) { throw "Archive edits must recalculate the payment from saved inputs using the current persisted calculation constants before replacement." }
-          if (-not $code.Contains("_archiveStore.SaveRevision(_editingArchiveSourcePath, updatedArchive)")) { throw "Archive edits must create an immutable new revision and preserve prior revisions." }
+          if (-not $code.Contains("ProgressPaymentArchiveStore.SaveRevision(_editingArchiveSourcePath, updatedArchive)")) { throw "Archive edits must create an immutable new revision and preserve prior revisions." }
           if (-not $code.Contains("private void ClearProgressEntryFields(bool clearTenderSelection = true)")) { throw "Archive and new-payment entry forms must clear after save/reset." }
           if ($code -notmatch 'UpdateAcceptanceView\(\);[\s\S]{0,320}ClearContractFormOnly\(\);') { throw "The contract input form must clear after a successful save and view refresh." }
           if ($code -notmatch 'SetContractorEditorMode\(false\);\s*ContractorStatusTextBlock.Text = "Yeni firma kaydı için alanlar temizlendi\."') { throw "The contractor form must return to create mode after save." }
