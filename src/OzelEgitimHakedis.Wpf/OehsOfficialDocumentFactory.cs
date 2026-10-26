@@ -449,11 +449,14 @@ internal static class OehsOfficialDocumentFactory
                             p.PeriodDate.Value.Year == month.Year &&
                             p.PeriodDate.Value.Month == month.Month)
                 .ToArray();
-            // July is a valid lookup month for Basic/Secondary but remains a
-            // zero placeholder in the current Special Education workbook.
+            // Unlike the source workbook's blank Special Education July placeholder,
+            // an entered July payment must appear in the generated icmal.
             var isLookupMonth = ProgressPaymentIcmalService.IsMonthInWorkbookLookupRange(
                 month,
-                c.ProgramType);
+                c.ProgramType)
+                || c.ProgramType == TransportationProgramType.SpecialEducation
+                && month.Month == 7
+                && month <= (c.PeriodDate ?? c.GeneratedDate);
             // Reportable components can cancel in the monthly totals. Keep their
             // month visible, while excluding deductions and out-of-program guide inputs.
             var hasReportableAmount = isLookupMonth && monthPayments.Any(payment =>
@@ -476,12 +479,6 @@ internal static class OehsOfficialDocumentFactory
             var difference = isLookupMonth
                 ? monthPayments.Sum(ProgressPaymentReportService.CalculateWorkbookPriceDifference)
                 : 0m;
-            if (isLookupMonth && c.ProgramType == TransportationProgramType.BasicOrSecondary)
-            {
-                // Basic's separate icmal block also carries the monthly deduction value.
-                // Retain that source component; only the duplicated I price difference is removed.
-                difference += monthPayments.Sum(payment => payment.Calculation.TotalDeductions);
-            }
 
             // Compact months with reportable components; genuinely empty months stay blank.
             if (hasReportableAmount)

@@ -1,4 +1,4 @@
-﻿<Window x:Class="OzelEgitimHakedis.Wpf.MainWindow"
+<Window x:Class="OzelEgitimHakedis.Wpf.MainWindow"
         xml:lang="tr-TR"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -20,6 +20,7 @@
         SizeChanged="Window_SizeChanged">
     <Window.Resources>
         <local:ContractWorkNameConverter x:Key="ContractWorkNameConverter"/>
+        <local:TurkishMoneyConverter x:Key="TurkishMoneyConverter"/>
     </Window.Resources>
     <Border x:Name="AppShellBorder"
             HorizontalAlignment="Stretch"
@@ -372,7 +373,7 @@
                                                 <TextBlock x:Name="ContractStatusSummaryTextBlock" Text="TASLAK" FontSize="15" FontWeight="Bold" Foreground="{StaticResource Gold600Brush}"/>
                                                 <TextBlock Text="Kayıt hazırlanmaya hazır" Style="{StaticResource CardSubtitle}"/></StackPanel>
                                         </Border>
-                                        <Border Style="{StaticResource MetricCard}" Margin="4,0,4,0">
+                                        <Border Style="{StaticResource MetricCard}" Margin="4,0,4,0" Visibility="Collapsed">
                                             <StackPanel><TextBlock Text="SÖZLEŞME BEDELİ" Style="{StaticResource FieldLabel}"/>
                                                 <TextBlock x:Name="ContractAmountSummaryTextBlock" Text="0,00 ₺" FontSize="13.5" FontWeight="Bold" Foreground="White"/>
                                                 <TextBlock Text="Girilen ana tutar" Style="{StaticResource CardSubtitle}"/></StackPanel>
@@ -414,8 +415,8 @@
                                                     <TextBox x:Name="ContractNumberTextBox" Grid.Row="1" Grid.Column="3" Margin="4.5" Visibility="Collapsed" IsTabStop="False" Style="{StaticResource FieldTextBox}"/>
 
 
-                                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Sözleşme Bedeli" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
-                                                    <TextBox x:Name="ContractAmountTextBox" Grid.Row="2" Grid.Column="1" Margin="4.5" Style="{StaticResource FieldTextBox}"/>
+                                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Sözleşme Bedeli" Visibility="Collapsed" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
+                                                    <TextBox x:Name="ContractAmountTextBox" Grid.Row="2" Grid.Column="1" Visibility="Collapsed" Margin="4.5" Style="{StaticResource FieldTextBox}"/>
                                                     <TextBlock Grid.Row="2" Grid.Column="2" Text="Sözleşme İş Günü" Style="{StaticResource FieldLabel}" Margin="8.5,4.5,0,4.5"/>
                                                     <TextBox x:Name="ContractWorkDaysTextBox" Grid.Row="2" Grid.Column="3" Margin="4.5" Style="{StaticResource FieldTextBox}"/>
 
@@ -425,11 +426,11 @@
                                                     <DatePicker x:Name="EndDatePicker" Grid.Row="3" Grid.Column="3" Margin="4.5" Style="{StaticResource FieldDatePicker}"/>
                                                     <TextBlock Grid.Row="4" Grid.Column="0" Text="İhale Tarihi" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
                                                     <DatePicker x:Name="TenderDatePicker" Grid.Row="4" Grid.Column="1" Margin="4.5" Style="{StaticResource FieldDatePicker}"/>
-                                                    <TextBlock Grid.Row="4" Grid.Column="2" Text="Sözleşme Tarihi" Style="{StaticResource FieldLabel}" Margin="8.5,4.5,0,4.5"/>
-                                                    <DatePicker x:Name="ContractDatePicker" Grid.Row="4" Grid.Column="3" Margin="4.5" Style="{StaticResource FieldDatePicker}"/>
+                                                    <TextBlock Grid.Row="4" Grid.Column="2" Text="Sözleşme Tarihi" Visibility="Collapsed" Style="{StaticResource FieldLabel}" Margin="8.5,4.5,0,4.5"/>
+                                                    <DatePicker x:Name="ContractDatePicker" Grid.Row="4" Grid.Column="3" Visibility="Collapsed" Margin="4.5" Style="{StaticResource FieldDatePicker}"/>
 
-                                                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Taşıma Günlük Fiyatı" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
-                                                    <TextBox x:Name="ContractTransportDailyPriceTextBox" Grid.Row="5" Grid.Column="1" Margin="4.5" Style="{StaticResource FieldTextBox}" TextChanged="ContractTransportDailyPriceTextBox_TextChanged" ToolTip="Excel İhale Verileri içindeki Günlük Fiyat. Hat ve hakediş ekranlarında tekrar girilmez."/>
+                                                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Taşıma Günlük Fiyatı" Visibility="Collapsed" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
+                                                    <TextBox x:Name="ContractTransportDailyPriceTextBox" Grid.Row="5" Grid.Column="1" Visibility="Collapsed" Margin="4.5" Style="{StaticResource FieldTextBox}" TextChanged="ContractTransportDailyPriceTextBox_TextChanged"/>
                                                     <TextBlock Grid.Row="0" Grid.Column="0" Text="TAŞIMA PROGRAMI" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
                                                     <ComboBox x:Name="TransportProgramTypeComboBox" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Margin="4.5" Style="{StaticResource FieldComboBox}" SelectedIndex="-1" SelectionChanged="TransportProgramTypeComboBox_SelectionChanged" ToolTip="Devam etmeden önce taşıma programını seçin. Program seçilmeden kayıt işlemi yapılmamalıdır.">
                                                         <ComboBoxItem Content="Özel Eğitim Taşıma" Tag="SpecialEducation"/>
@@ -460,9 +461,9 @@
                                                         <TextBlock x:Name="ContractSummaryTenderTextBlock" Grid.Row="0" Text="Bekleniyor" Foreground="White" HorizontalAlignment="Right" TextWrapping="Wrap"/>
                                                         <TextBlock Grid.Row="1" Text="Program Türü" Foreground="#91ABC0" Margin="0,8,0,0"/>
                                                         <TextBlock x:Name="ContractSummaryContractTextBlock" Grid.Row="1" Text="Bekleniyor" Foreground="White" HorizontalAlignment="Right" TextWrapping="Wrap" Margin="0,8,0,0"/>
-                                                        <TextBlock Grid.Row="2" Text="Sözleşme Bedeli" Foreground="#91ABC0" Margin="0,8,0,0"/>
-                                                        <TextBlock x:Name="ContractSummaryAmountTextBlock" Grid.Row="2" Text="0,00 ₺" Foreground="White" HorizontalAlignment="Right" Margin="0,8,0,0"/>
-                                                        <TextBlock Grid.Row="3" Text="İş Günü / Taşıma Günlük Fiyatı" Foreground="#91ABC0" Margin="0,8,0,0"/>
+                                                        <TextBlock Grid.Row="2" Text="Sözleşme Bedeli" Visibility="Collapsed" Foreground="#91ABC0" Margin="0,8,0,0"/>
+                                                        <TextBlock x:Name="ContractSummaryAmountTextBlock" Grid.Row="2" Text="0,00 ₺" Visibility="Collapsed" Foreground="White" HorizontalAlignment="Right" Margin="0,8,0,0"/>
+                                                        <TextBlock Grid.Row="3" Text="Sözleşme İş Günü" Foreground="#91ABC0" Margin="0,8,0,0"/>
                                                         <TextBlock x:Name="ContractSummaryWorkDaysTextBlock" Grid.Row="3" Text="0 gün • 0,00 ₺" Foreground="White" HorizontalAlignment="Right" TextWrapping="Wrap" Margin="0,8,0,0"/>
                                                         <TextBlock Grid.Row="4" Text="KDV / Hat Durumu" Foreground="#91ABC0" Margin="0,8,0,0"/>
                                                         <TextBlock x:Name="ContractSummaryVatTextBlock" Grid.Row="4" Text="Standart" Foreground="{StaticResource Gold500Brush}" HorizontalAlignment="Right" TextWrapping="Wrap" Margin="0,8,0,0"/>
@@ -566,7 +567,7 @@
                                                 <ComboBox Grid.Row="2" x:Name="ProgressTenderListBox" Height="34" Margin="0,3,0,0" SelectionChanged="ProgressTenderListBox_SelectionChanged" Style="{StaticResource FieldComboBox}" ToolTip="İhale / dosya numarasını seçin">
                                                     <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding TenderNumber}" FontSize="11.5" FontWeight="SemiBold"/></DataTemplate></ComboBox.ItemTemplate>
                                                 </ComboBox>
-                                                <TextBlock Grid.Row="3" Text="Program türü, sözleşme bedeli ve günlük fiyat İhale Bilgileri kaydından alınır." Foreground="#C5D7E7" FontSize="10.5" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                                                <TextBlock Grid.Row="3" Text="Günlük fiyat, sözleşme bedeli ve tarihi hat kaydından alınır." Foreground="#C5D7E7" FontSize="10.5" TextWrapping="Wrap" Margin="0,6,0,0"/>
                                             </Grid>
                                         </Border>
                                         <Border Grid.Column="1" Background="#0A2A49" BorderBrush="#D9A62E" BorderThickness="1" CornerRadius="10" Padding="8" Margin="2,0,3,0">
@@ -724,7 +725,7 @@
                                         <Border Grid.Row="0" VerticalAlignment="Top" Style="{StaticResource PaymentWorkspaceCard}" Padding="10" Margin="0,0,0,10">
                                             <StackPanel>
                                                 <TextBlock x:Name="ProgressEditorTitleTextBlock" Text="DÖNEM HESAP BİLGİLERİ" Foreground="{StaticResource Gold500Brush}" FontSize="11.5" FontWeight="Bold"/>
-                                                <TextBlock x:Name="CalculationSheetNameTextBlock" Text="Hesaplama" Foreground="White" FontSize="13.5" FontWeight="SemiBold" Margin="0,5,0,4"/><TextBlock Text="Sözleşme bedeli İhale Bilgileri kaydından; KDV istisnası ise Firmalar panelindeki firma kartından alınır." Foreground="#B9CBDA" FontSize="11.5" TextWrapping="Wrap" Margin="0,0,0,4"/>
+                                                <TextBlock x:Name="CalculationSheetNameTextBlock" Text="Hesaplama" Foreground="White" FontSize="13.5" FontWeight="SemiBold" Margin="0,5,0,4"/><TextBlock Text="Sözleşme bedeli hat kaydından; KDV istisnası ise firma kartından alınır." Foreground="#B9CBDA" FontSize="11.5" TextWrapping="Wrap" Margin="0,0,0,4"/>
                                                 <TextBlock x:Name="CalculationStatusTextBlock" Style="{StaticResource ValidationText}" Margin="0,4,0,6"/>
                                                 <Grid x:Name="SinglePaymentFieldsGrid">
                                                     <Grid.ColumnDefinitions><ColumnDefinition Width="120"/><ColumnDefinition Width="1.2*"/><ColumnDefinition Width="145"/><ColumnDefinition Width="1.2*"/></Grid.ColumnDefinitions>
@@ -733,7 +734,7 @@
                                                     <TextBlock x:Name="WorkDaysLabel" TextWrapping="Wrap" Grid.Row="1" Grid.Column="0" Text="Döneme Esas Taşıma Hakediş Gün Sayısı (Döneme Esas THGS)" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,5"/>
                                                     <TextBox x:Name="WorkDaysTextBox" Grid.Row="1" Grid.Column="1" Margin="6" Style="{StaticResource PremiumFieldTextBox}" ToolTip="Seçilen ayda fiilen verilen taşıma hizmetinin iş gününü girin."/>
                                                     <TextBlock x:Name="DailyPriceLabel" Grid.Row="1" Grid.Column="2" Text="Taşıma Günlük Fiyatı" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="8,5,0,5"/>
-                                                    <TextBox x:Name="DailyPriceTextBox" Grid.Row="1" Grid.Column="3" Margin="6" Style="{StaticResource PremiumFieldTextBox}" IsReadOnly="True" ToolTip="İhale Bilgileri'ndeki taşıma günlük fiyatından otomatik alınır."/>
+                                                    <TextBox x:Name="DailyPriceTextBox" Grid.Row="1" Grid.Column="3" Margin="6" Style="{StaticResource PremiumFieldTextBox}" IsReadOnly="True" ToolTip="Hat kaydındaki taşıma günlük fiyatından otomatik alınır."/>
                                                     <TextBlock x:Name="ProgressGuideWorkDaysLabel" Grid.Row="2" Grid.Column="0" Text="Rehber İş Günü (bu ay)" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,5"/>
                                                     <TextBox x:Name="GuideWorkDaysTextBox" Grid.Row="2" Grid.Column="1" Margin="6" Style="{StaticResource PremiumFieldTextBox}" ToolTip="Seçilen ayda fiilen verilen rehber hizmetinin iş gününü girin."/>
                                                     <TextBlock x:Name="ProgressGuideDailyPriceLabel" Grid.Row="2" Grid.Column="2" Text="Rehber Personel Günlük Fiyat" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="8,5,0,5"/>
@@ -784,6 +785,7 @@
                                                         <TextBlock Text="Her hat kendi satırında düzenlenir. EXCEL’E AKTAR ile görünen tabloyu güncel değerleriyle Excel dosyası olarak kaydedebilirsiniz. Günlük fiyatlar hat kaydından gelir. Net tutarlar canlı önizlenir; HAKEDİŞ HESAPLA/KAYDET doğrulama sonrası kalıcı kayıt yapar. Takvim sınırı puantaj doğrulaması yerine geçmez." Foreground="#C5D7E7" FontSize="11" TextWrapping="Wrap" Margin="0,3,0,6"/>
                                                         <WrapPanel Margin="0,0,0,8"><TextBlock Text="Gösterilen alanlar" Foreground="#C5D7E7" VerticalAlignment="Center" Margin="0,0,8,0"/><ComboBox x:Name="HybridColumnView" Width="185" SelectedIndex="0" SelectionChanged="HybridColumnView_SelectionChanged" Style="{StaticResource FieldComboBox}"><ComboBoxItem Content="Tüm alanlar" Tag="All"/><ComboBoxItem Content="Taşıma bilgileri" Tag="Transport"/><ComboBoxItem Content="Rehber bilgileri" Tag="Guide"/><ComboBoxItem Content="Kesintiler" Tag="Deductions"/></ComboBox><Button x:Name="HybridExportExcelButton" Content="EXCEL’E AKTAR" Click="HybridExportExcelButton_Click" Style="{StaticResource ModernButton}" Margin="8,0,0,0"/></WrapPanel><DataGrid x:Name="MultiRoutePaymentGrid"
                                                                   LoadingRow="HybridGrid_LoadingRow"
+                                                                  Loaded="HybridGrid_Loaded"
 
                                                                   CellEditEnding="HybridGrid_CellEditEnding"
                                                                   RowHeight="32"
@@ -852,17 +854,17 @@
                                                                 <DataGridTextColumn Header="Hattın Adı" Binding="{Binding RouteName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="170"/>
 <DataGridTextColumn Header="Ele Geçen" Binding="{Binding NetPayableText}" IsReadOnly="True" Width="125"/>
                                                                 <DataGridTextColumn Header="Döneme Esas Taşıma Hakediş Gün Sayısı (Döneme Esas THGS)" Binding="{Binding WorkDays, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="180"/>
-                                                                <DataGridTextColumn Header="Taşıma Günlük Fiyatı" Binding="{Binding DailyPrice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" IsReadOnly="False" Width="112"/>
-                                                                <DataGridTextColumn Header="Taşıma İskonto" Binding="{Binding DiscountAmount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="105"/>
-                                                                <DataGridTextColumn Header="Taşıma Fiyat Farkı KDV Hariç" Binding="{Binding PriceDifference, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="190"/>
+                                                                <DataGridTextColumn Header="Taşıma Günlük Fiyatı" Binding="{Binding DailyPrice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource TurkishMoneyConverter}, ValidatesOnExceptions=True, NotifyOnValidationError=True}" IsReadOnly="False" Width="112"/>
+                                                                <DataGridTextColumn Header="Taşıma İskonto" Binding="{Binding DiscountAmount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource TurkishMoneyConverter}, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="105"/>
+                                                                <DataGridTextColumn Header="Taşıma Fiyat Farkı KDV Hariç" Binding="{Binding PriceDifference, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource TurkishMoneyConverter}, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="190"/>
                                                                 <DataGridTextColumn Header="Rehber İş Günü (bu ay)" Binding="{Binding GuideWorkDays, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="82"/>
-                                                                <DataGridTextColumn Header="Rehber Personel Günlük Fiyat" Binding="{Binding GuideDailyPrice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" IsReadOnly="False" Width="140"/>
-                                                                <DataGridTextColumn Header="Rehber İskonto" Binding="{Binding GuideDiscountAmount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="105"/>
-                                                                <DataGridTextColumn Header="Rehber Personel Fiyat Farkı KDV Hariç" Binding="{Binding GuidePriceDifference, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="230"/>
-                                                                <DataGridTextColumn Header="Vergi Borcu" Binding="{Binding TaxDebt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="100"/>
-                                                                <DataGridTextColumn Header="SGK Borcu" Binding="{Binding SocialSecurityDebt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="100"/>
+                                                                <DataGridTextColumn Header="Rehber Personel Günlük Fiyat" Binding="{Binding GuideDailyPrice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource TurkishMoneyConverter}, ValidatesOnExceptions=True, NotifyOnValidationError=True}" IsReadOnly="False" Width="140"/>
+                                                                <DataGridTextColumn Header="Rehber İskonto" Binding="{Binding GuideDiscountAmount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource TurkishMoneyConverter}, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="105"/>
+                                                                <DataGridTextColumn Header="Rehber Personel Fiyat Farkı KDV Hariç" Binding="{Binding GuidePriceDifference, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource TurkishMoneyConverter}, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="230"/>
+                                                                <DataGridTextColumn Header="Vergi Borcu" Binding="{Binding TaxDebt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource TurkishMoneyConverter}, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="100"/>
+                                                                <DataGridTextColumn Header="SGK Borcu" Binding="{Binding SocialSecurityDebt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource TurkishMoneyConverter}, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="100"/>
                                                                 <DataGridCheckBoxColumn Header="Asgari Ücret Desteği Kullan" Binding="{Binding MinimumWageSupportEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="155"/>
-                                                                <DataGridTextColumn Header="Asgari Ücret Desteği" Binding="{Binding MinimumWageSupport, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="125">
+                                                                <DataGridTextColumn Header="Asgari Ücret Desteği" Binding="{Binding MinimumWageSupport, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource TurkishMoneyConverter}, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="125">
                                                                     <DataGridTextColumn.ElementStyle>
                                                                         <Style TargetType="{x:Type TextBlock}">
                                                                             <Style.Triggers>
@@ -878,7 +880,7 @@
                                                                         </Style>
                                                                     </DataGridTextColumn.EditingElementStyle>
                                                                 </DataGridTextColumn>
-                                                                <DataGridTextColumn Header="Denetim Cezası" Binding="{Binding InspectionPenalty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="105"/>
+                                                                <DataGridTextColumn Header="Denetim Cezası" Binding="{Binding InspectionPenalty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource TurkishMoneyConverter}, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="105"/>
                                                             </DataGrid.Columns>
                                                         </DataGrid>
                                                         <Button x:Name="UpdateHybridRoutesButton" Content="TABLO DEĞİŞİKLİKLERİNİ KAYDET" Click="UpdateHybridRoutesButton_Click" IsEnabled="False" Style="{StaticResource ModernButton}" HorizontalAlignment="Left" Margin="0,8,0,0" Padding="16,6" ToolTip="Onayla: hat kaynak bilgilerini ve bu aya ait tablo girdilerini kaydet. Önceki resmî hakedişler değişmez."/>
@@ -1055,6 +1057,13 @@
                                                 <TextBlock x:Name="RouteNameLabel" Text="Hattın Adı" Style="{StaticResource FieldLabel}"/>
                                                 <TextBox x:Name="RouteNameTextBox" Style="{StaticResource FieldTextBox}" Margin="0,4,0,6"/>
 
+                                                <TextBlock Text="Taşıma Günlük Fiyatı" Style="{StaticResource FieldLabel}"/>
+                                                <TextBox x:Name="RouteDailyPriceTextBox" Style="{StaticResource FieldTextBox}" Margin="0,4,0,6"/>
+                                                <TextBlock Text="Sözleşme Bedeli" Style="{StaticResource FieldLabel}"/>
+                                                <TextBox x:Name="RouteContractAmountTextBox" Style="{StaticResource FieldTextBox}" Margin="0,4,0,6"/>
+                                                <TextBlock Text="Sözleşme Tarihi" Style="{StaticResource FieldLabel}"/>
+                                                <DatePicker x:Name="RouteContractDatePicker" Style="{StaticResource FieldDatePicker}" Margin="0,4,0,6"/>
+
                                                 <TextBlock Text="Döneme Esas Taşıma Hakediş Gün Sayısı (Döneme Esas THGS)" TextWrapping="Wrap" Style="{StaticResource FieldLabel}"/>
                                                 <TextBox x:Name="RouteTransportWorkDaysTextBox"
                                                          ToolTip="Hakediş Oluştur tablosunda hat ilk seçildiğinde Taşıma Gün alanına aktarılır. Tablodaki dönemsel düzenlemeler korunur."
@@ -1136,32 +1145,19 @@
                         <Grid Margin="0,6,0,0">
                             <Grid.ColumnDefinitions><ColumnDefinition Width="170"/><ColumnDefinition/></Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="Firma Adı / Ticari Unvan" Style="{StaticResource FieldLabel}" Margin="0,4"/>
                             <TextBox x:Name="ContractorNameTextBox" Grid.Row="0" Grid.Column="1" Margin="4" Style="{StaticResource FieldTextBox}"/>
                             <TextBlock Grid.Row="1" Grid.Column="0" Text="TC / Vergi No" Style="{StaticResource FieldLabel}" Margin="0,4"/>
                             <TextBox x:Name="ContractorTaxTextBox" Grid.Row="1" Grid.Column="1" Margin="4" Style="{StaticResource FieldTextBox}"/>
-                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Adres" Style="{StaticResource FieldLabel}" Margin="0,4"/>
-                            <TextBox x:Name="ContractorAddressTextBox" Grid.Row="2" Grid.Column="1" Margin="4" Height="42" TextWrapping="Wrap" AcceptsReturn="True" Style="{StaticResource FieldTextBox}"/>
                         </Grid>
                         <StackPanel Margin="0,8,0,0">
                             <TextBlock Text="Ek uygulama bilgisi" Style="{StaticResource CardSubtitle}"/>
                             <Grid>
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="170"/><ColumnDefinition/></Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                                <TextBlock Grid.Row="0" Text="Telefon" Style="{StaticResource FieldLabel}" Margin="0,4"/>
-                                <DockPanel Grid.Row="0" Grid.Column="1" Margin="4" LastChildFill="True">
-                                    <TextBlock Text="0" VerticalAlignment="Center" Margin="0,0,6,0" Style="{StaticResource FieldLabel}"/>
-                                    <TextBox x:Name="ContractorPhoneTextBox" MaxLength="10" TextChanged="ContractorPhoneTextBox_TextChanged" DataObject.Pasting="ContractorPhoneTextBox_Pasting" ToolTip="5 ile başlayan 10 haneli telefon numarası girin. Baştaki 0 sabittir." Style="{StaticResource FieldTextBox}"/>
-                                </DockPanel>
-                                <TextBlock Grid.Row="1" Text="E-posta" Style="{StaticResource FieldLabel}" Margin="0,4"/>
-                                <TextBox x:Name="ContractorEmailTextBox" Grid.Row="1" Grid.Column="1" Margin="4" Style="{StaticResource FieldTextBox}"/>
-                                <TextBlock Grid.Row="2" Text="Banka Hesap No / IBAN" Style="{StaticResource FieldLabel}" Margin="0,4"/>
-                                <TextBox x:Name="ContractorBankTextBox" Grid.Row="2" Grid.Column="1" Margin="4" Style="{StaticResource FieldTextBox}"/>
-                                <TextBlock Grid.Row="3" Text="Yetkili Kişi" Style="{StaticResource FieldLabel}" Margin="0,4"/>
-                                <TextBox x:Name="ContractorContactTextBox" Grid.Row="3" Grid.Column="1" Margin="4" Style="{StaticResource FieldTextBox}"/>
+                                <TextBlock Text="Banka Hesap No / IBAN" Style="{StaticResource FieldLabel}" Margin="0,4"/>
+                                <TextBox x:Name="ContractorBankTextBox" Grid.Column="1" Margin="4" Style="{StaticResource FieldTextBox}"/>
                             </Grid>
                         </StackPanel>
                         <Border Style="{StaticResource StatusBanner}" Margin="4,8,4,0" Padding="8,7">

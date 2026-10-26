@@ -52,7 +52,9 @@ public sealed record RouteData(
     string TenderNumber = "",
     string ContractorTaxOrIdentityNumber = "",
     string ContractNumber = "",
-    TransportationProgramType ProgramType = TransportationProgramType.SpecialEducation);
+    TransportationProgramType ProgramType = TransportationProgramType.SpecialEducation,
+    decimal? ContractAmount = null,
+    DateOnly? ContractDate = null);
 
 public sealed record ProgressPaymentHistoryData(
     Guid Id,

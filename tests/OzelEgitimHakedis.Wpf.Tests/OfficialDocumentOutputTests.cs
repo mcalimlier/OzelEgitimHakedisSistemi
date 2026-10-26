@@ -338,7 +338,7 @@ public sealed class OfficialDocumentOutputTests
     [InlineData(false, "tr-TR")]
     [InlineData(true, "tr-TR")]
     [InlineData(true, "en-US")]
-    public void PaymentSelectionAndRecalculation_ShouldPreserveOfficialReportNet(bool selectRoute, string culture)
+    public void PaymentSelectionAndRecalculation_RequiresCentPrecisionAndProducesOfficialReportNet(bool selectRoute, string culture)
     {
         RunOnSta(() =>
         {
@@ -359,6 +359,9 @@ public sealed class OfficialDocumentOutputTests
             }
 
             var preview = new object?[] { null, null, null };
+            Assert.False((bool)InvokeEditor(window, "TryCreateHistoryCorrectionPreview", preview)!);
+            EditorField<TextBox>(window, "DailyPriceTextBox").Text = "19.539,16";
+            preview = [null, null, null];
             Assert.True((bool)InvokeEditor(window, "TryCreateHistoryCorrectionPreview", preview)!, preview[2]?.ToString());
             var recalculated = payment with
             {
@@ -367,12 +370,12 @@ public sealed class OfficialDocumentOutputTests
             };
             var context = CreateDocumentContext(recalculated);
 
-            Assert.Equal(332516.08m, context.ReportNetPayable);
-            Assert.Equal(19539.1608m, recalculated.Input.DailyPrice);
-            Assert.Equal(332516.074511856m, recalculated.Calculation.NetPayable);
+            Assert.Equal(332516.06m, context.ReportNetPayable);
+            Assert.Equal(19539.16m, recalculated.Input.DailyPrice);
+            Assert.Equal(332516.0611932m, recalculated.Calculation.NetPayable);
             var output = OehsOfficialDocumentFactory.BuildSeparate(context)
                 .Single(document => document.Kind == OehsOfficialDocumentKind.HakedisRaporu);
-            Assert.Equal("332.516,08 TL", GetCellTextAt((FixedPage)output.Document.Pages[0].Child, 476d, 796d));
+            Assert.Equal("332.516,06 TL", GetCellTextAt((FixedPage)output.Document.Pages[0].Child, 476d, 796d));
         });
     }
 
@@ -417,9 +420,17 @@ public sealed class OfficialDocumentOutputTests
             if (path is "history" or "archive")
             {
                 var preview = new object?[] { null, null, null };
-                Assert.True((bool)InvokeEditor(window, path == "archive"
-                    ? "TryCreateArchiveCorrectionPreview" : "TryCreateHistoryCorrectionPreview", preview)!, preview[2]?.ToString());
-                Assert.Equal(input, Assert.IsType<ProgressPaymentInput>(preview[0]));
+                var method = path == "archive" ? "TryCreateArchiveCorrectionPreview" : "TryCreateHistoryCorrectionPreview";
+                Assert.False((bool)InvokeEditor(window, method, preview)!);
+                foreach (var (field, _) in expected)
+                    EditorField<TextBox>(window, field).Text = "12.536,48";
+                preview = [null, null, null];
+                Assert.True((bool)InvokeEditor(window, method, preview)!, preview[2]?.ToString());
+                var updated = Assert.IsType<ProgressPaymentInput>(preview[0]);
+                Assert.Equal(12536.48m, updated.DailyPrice);
+                Assert.Equal(12536.48m, updated.PriceDifference);
+                Assert.Equal(12536.48m, updated.GuidePriceDifference);
+                Assert.Equal(12536.48m, updated.SocialSecurityDebt);
             }
         });
     }
@@ -519,7 +530,7 @@ public sealed class OfficialDocumentOutputTests
     [Theory]
     [InlineData(TransportationProgramType.SpecialEducation, 100, "₺100,00")]
     [InlineData(TransportationProgramType.SpecialEducation, -100, "₺-100,00")]
-    [InlineData(TransportationProgramType.BasicOrSecondary, 100, "₺106,95")]
+    [InlineData(TransportationProgramType.BasicOrSecondary, 100, "₺100,00")]
     public void Icmal_ShouldIncludePriceDifferenceOnlyMonth(TransportationProgramType program, decimal difference, string expectedTotal)
     {
         RunOnSta(() =>
@@ -535,6 +546,90 @@ public sealed class OfficialDocumentOutputTests
             Assert.Equal(expectedTotal, GetCellTextAt(page, 593d, 167d));
             Assert.Equal(expectedTotal, GetCellTextAt(page, 593d, 519d));
             Assert.Equal(string.Empty, GetCellTextAt(page, 89d, 199d));
+        });
+    }
+
+    [Theory]
+    [InlineData(TransportationProgramType.BasicOrSecondary, 100, 0, "100,00 TL")]
+    [InlineData(TransportationProgramType.BasicOrSecondary, 0, 0, "0,00 TL")]
+    [InlineData(TransportationProgramType.SpecialEducation, 100, 25, "125,00 TL")]
+    [InlineData(TransportationProgramType.SpecialEducation, -100, 25, "-75,00 TL")]
+    public void HakedisRaporu_B_ShouldShowCurrentManualPriceDifferencesNotDeductions(
+        TransportationProgramType program, decimal transportDifference, decimal guideDifference, string expected)
+    {
+        RunOnSta(() =>
+        {
+            var input = new ProgressPaymentInput(1m, 1000m, 0m, transportDifference, 100000m,
+                true, 50m, 0m, 0m, ProgramType: program, GuidePriceDifference: guideDifference);
+            var payment = CreatePayment(input);
+            Assert.NotEqual(0m, payment.Calculation.TotalDeductions);
+            var output = OehsOfficialDocumentFactory.BuildSeparate(CreateDocumentContext(payment))
+                .Single(document => document.Kind == OehsOfficialDocumentKind.HakedisRaporu);
+            var page = (FixedPage)output.Document.Pages[0].Child;
+
+            Assert.Equal("B", GetCellTextAt(page, 67d, 201d));
+            Assert.Equal("Fiyat Farkı Tutarı", GetCellTextAt(page, 120d, 201d));
+            Assert.Equal(expected, GetCellTextAt(page, 476d, 201d));
+
+            var directory = Directory.CreateTempSubdirectory("oehs-report-b-");
+            try
+            {
+                var path = Path.Combine(directory.FullName, "report.pdf");
+                PdfVectorWriter.Save(output.Document, path);
+                using var pdf = UglyToad.PdfPig.PdfDocument.Open(path);
+                Assert.Equal(WithoutWhitespace(expected),
+                    WithoutWhitespace(PdfTextInRectangle(pdf.GetPage(1), new Rect(476d, 201d, 250d, 29d))));
+            }
+            finally
+            {
+                directory.Delete(recursive: true);
+            }
+        });
+    }
+
+    [Theory]
+    [InlineData(0, "₺0,00", "₺1.000,00")]
+    [InlineData(100, "₺100,00", "₺1.100,00")]
+    public void BasicIcmal_ShouldNotAddDeductionsToManualPriceDifferenceOrMonthlyTotal(
+        decimal difference, string expectedDifference, string expectedTotal)
+    {
+        RunOnSta(() =>
+        {
+            var input = new ProgressPaymentInput(1m, 1000m, 0m, difference, 100000m,
+                true, 50m, 0m, 0m, ProgramType: TransportationProgramType.BasicOrSecondary);
+            var payment = CreatePayment(input);
+            Assert.True(payment.Calculation.TotalDeductions > 0m);
+            var output = OehsOfficialDocumentFactory.BuildSeparate(CreateDocumentContext(payment))
+                .Single(document => document.Kind == OehsOfficialDocumentKind.HakedisIcmali);
+            var page = (FixedPage)output.Document.Pages[0].Child;
+
+            Assert.Equal(expectedDifference, GetCellTextAt(page, 486d, 167d));
+            Assert.Equal(expectedTotal, GetCellTextAt(page, 593d, 167d));
+            Assert.Equal(expectedTotal, GetCellTextAt(page, 593d, 519d));
+        });
+    }
+
+    [Fact]
+    public void SpecialIcmal_ShouldShowCurrentJulyManualPriceDifferences()
+    {
+        RunOnSta(() =>
+        {
+            var input = new ProgressPaymentInput(1m, 1000m, 0m, 100m, 100000m,
+                true, 50m, 0m, 0m, ProgramType: TransportationProgramType.SpecialEducation)
+                with { GuidePriceDifference = 25m };
+            var payment = CreatePayment(input) with { PeriodDate = new DateOnly(2027, 7, 31) };
+            var context = CreateDocumentContext(payment) with
+            {
+                PeriodDate = payment.PeriodDate,
+                ContractEndDate = new DateOnly(2027, 7, 31)
+            };
+            var output = OehsOfficialDocumentFactory.BuildSeparate(context)
+                .Single(document => document.Kind == OehsOfficialDocumentKind.HakedisIcmali);
+            var page = (FixedPage)output.Document.Pages[0].Child;
+
+            Assert.Equal("Hizmet Alımı İşi Temmuz 2027", GetCellTextAt(page, 89d, 167d));
+            Assert.Equal("₺125,00", GetCellTextAt(page, 486d, 167d));
+            Assert.Equal("₺1.125,00", GetCellTextAt(page, 593d, 167d));
         });
     }
 
@@ -596,7 +691,7 @@ public sealed class OfficialDocumentOutputTests
     private static object CreateRoute(ProgressPaymentInput input) =>
         Activator.CreateInstance(typeof(MainWindow).GetNestedType("RouteDraft", BindingFlags.NonPublic)!,
             "01", "Hat 01", input.DailyPrice, input.GuideDailyPrice,
-            input.WorkDays, "IHALE-01", "12345678901", "Firma", "SOZ-01", input.ProgramType)!;
+            input.WorkDays, "IHALE-01", "12345678901", "Firma", "SOZ-01", input.ProgramType, input.ContractAmount, null)!;
 
     private static T EditorField<T>(MainWindow window, string name) =>
         (T)typeof(MainWindow).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)!.GetValue(window)!;
@@ -1014,8 +1109,8 @@ public sealed class OfficialDocumentOutputTests
                 Assert.IsType<FixedPage>(basicJulyIcmal.Document.Pages[0].Child));
             Assert.Contains("Hizmet Alımı İşi Temmuz 2027", basicJulyIcmalText, StringComparison.Ordinal);
             Assert.Contains("₺100,00", basicJulyIcmalText, StringComparison.Ordinal); // base service
-            Assert.Contains("₺15,64", basicJulyIcmalText, StringComparison.Ordinal); // price difference + source deduction block
-            Assert.Contains("₺115,64", basicJulyIcmalText, StringComparison.Ordinal); // total counted once
+            Assert.Contains("₺10,00", basicJulyIcmalText, StringComparison.Ordinal); // entered price difference
+            Assert.Contains("₺110,00", basicJulyIcmalText, StringComparison.Ordinal); // total counted once
 
             var basicPayment = Assert.Single(
                 basicOutputs.Where(output => output.Kind == OehsOfficialDocumentKind.HakedisRaporu));

@@ -34,7 +34,7 @@ public partial class MainWindow
             c.Address,c.Phone,c.Email,c.BankAccountNumber,c.ContactPerson,c.ProgramType,c.VatExempt)).ToArray(),
         _progressHistory.ToArray(),_contracts.ToArray(),_calculationConstants,_calculationConstantsHistory.ToArray(),SavedHybridPaymentDrafts.ToArray());
     private static RouteData ToCoreRoute(RouteDraft r) => new(r.RouteNumber,r.Name,r.DailyPrice,
-        r.GuideDailyPrice,r.TransportWorkDays,r.TenderNumber,r.ContractorTaxOrIdentityNumber,r.ContractNumber,r.ProgramType);
+        r.GuideDailyPrice,r.TransportWorkDays,r.TenderNumber,r.ContractorTaxOrIdentityNumber,r.ContractNumber,r.ProgramType,r.ContractAmount,r.ContractDate);
     private List<ProgressPaymentArchive> ReadOperationArchives()
     {
         var result=new List<ProgressPaymentArchive>();

@@ -18,7 +18,7 @@ public partial class MainWindow
             HasGuideStaff(route.ProgramType)?route.GuideDailyPrice:0m);
         var contract=ProgressTenderListBox.SelectedItem as ContractDraftData;
         var firm=FindContractor(route.ContractorTaxOrIdentityNumber,route.ProgramType);
-        row.Configure(route.ProgramType,contract?.ContractAmount??0m,firm?.VatExempt??contract?.VatExempt??false,
+        row.Configure(route.ProgramType,route.ContractAmount??contract?.ContractAmount??0m,firm?.VatExempt??contract?.VatExempt??false,
             _calculationConstants??ProgressPaymentCalculationConstants.Defaults);
         row.PropertyChanged+=HybridRow_PropertyChanged;
     }
@@ -107,6 +107,14 @@ public partial class MainWindow
         }
     }
     private void HybridGrid_LoadingRow(object sender,DataGridRowEventArgs e) => e.Row.Header=(e.Row.GetIndex()+1).ToString(System.Globalization.CultureInfo.CurrentCulture);
+    private void HybridGrid_Loaded(object sender, System.Windows.RoutedEventArgs e)
+    {
+        if (sender is not DataGrid grid) return;
+        foreach (var column in grid.Columns.OfType<DataGridBoundColumn>())
+            if (column.Binding is System.Windows.Data.Binding binding && binding.Converter is TurkishMoneyConverter &&
+                !binding.ValidationRules.OfType<MoneyPrecisionValidation>().Any())
+                binding.ValidationRules.Add(new MoneyPrecisionValidation());
+    }
     private void HybridGrid_CellEditEnding(object sender,DataGridCellEditEndingEventArgs e) =>
         Dispatcher.BeginInvoke(new Action(RefreshHybridTotals));
     private void RefreshHybridTotals()

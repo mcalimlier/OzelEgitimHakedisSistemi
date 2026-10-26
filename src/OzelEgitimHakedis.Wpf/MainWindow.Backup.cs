@@ -28,7 +28,7 @@ public partial class MainWindow
         !string.IsNullOrWhiteSpace(RouteNameTextBox.Text) || !string.IsNullOrWhiteSpace(ContractorNameTextBox.Text) ||
         !string.IsNullOrWhiteSpace(ContractorTaxTextBox.Text) ||
         TryParseDecimal(WorkDaysTextBox.Text,out var days)&&days!=0 ||
-        TryParseDecimal(PriceDifferenceTextBox.Text,out var difference)&&difference!=0 ||
+        TurkishMoneyInput.TryParse(PriceDifferenceTextBox.Text,out var difference)&&difference!=0 ||
         TryParseDecimal(GuideWorkDaysTextBox.Text,out var guideDays)&&guideDays!=0 ||
         _multiRoutePaymentRows.Count>0;
     private async void BackupRestore_Click(object sender,RoutedEventArgs e)

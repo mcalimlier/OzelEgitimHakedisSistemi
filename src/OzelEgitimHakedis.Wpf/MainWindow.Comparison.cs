@@ -48,8 +48,7 @@ public partial class MainWindow
             {
                 var old=new Contractor(firm.Name,firm.TaxOrIdentityNumber,firm.Address,NormalizePhoneNumber(firm.Phone),firm.Email,firm.BankAccountNumber,firm.ContactPerson,firm.ProgramType,firm.VatExempt);
                 var next=old with {Name=ContractorNameTextBox.Text.Trim(),TaxOrIdentityNumber=ContractorTaxTextBox.Text.Trim(),
-                    Address=ContractorAddressTextBox.Text.Trim(),Phone=NormalizePhoneNumber(ContractorPhoneTextBox.Text),Email=ContractorEmailTextBox.Text.Trim(),
-                    BankAccountNumber=ContractorBankTextBox.Text.Trim(),ContactPerson=ContractorContactTextBox.Text.Trim(),VatExempt=ContractorVatExemptCheckBox.IsChecked==true};
+                    BankAccountNumber=ContractorBankTextBox.Text.Trim(),VatExempt=ContractorVatExemptCheckBox.IsChecked==true};
                 return PaymentOperationsService.CompareFields(old,next,"Firma");
             }
         }

@@ -235,6 +235,7 @@ public partial class MainWindow
             {
                 _editingRoute = updated;
                 RouteNameTextBox.Text = updated.Name;
+                RouteDailyPriceTextBox.Text = FormatCalculationInput(updated.DailyPrice);
                 RouteTransportWorkDaysTextBox.Text = updated.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
                 RouteGuideDailyPriceTextBox.Text = FormatCalculationInput(updated.GuideDailyPrice);
             }

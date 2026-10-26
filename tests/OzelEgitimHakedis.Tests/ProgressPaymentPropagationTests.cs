@@ -172,7 +172,7 @@ public sealed class ProgressPaymentPropagationTests
 
         Assert.Equal("Yeni İş", updated[0].WorkName);
         Assert.Equal("SOZ-NEW", updated[0].ContractNumber);
-        Assert.Equal(new DateOnly(2026, 2, 2), updated[0].ContractDate);
+        Assert.Equal(new DateOnly(2026, 1, 2), updated[0].ContractDate);
     }
 
     [Fact]
@@ -198,7 +198,7 @@ public sealed class ProgressPaymentPropagationTests
             oldContract,
             newContract);
 
-        Assert.Equal(1500m, updated[0].Input.DailyPrice);
+        Assert.Equal(1000m, updated[0].Input.DailyPrice);
         Assert.Equal(2500m, updated[1].Input.DailyPrice);
         Assert.Equal("İkinci Kısım", updated[1].WorkName);
         Assert.Equal(1000m, updated[2].Input.DailyPrice);

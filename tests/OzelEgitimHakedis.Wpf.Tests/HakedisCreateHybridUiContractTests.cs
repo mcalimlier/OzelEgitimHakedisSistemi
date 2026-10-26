@@ -192,6 +192,115 @@ public sealed partial class HakedisCreateHybridUiContractTests
     }
 
     [Fact]
+    public void LiveRoutePreview_ShouldDetectContractChangeAndPreserveUnchangedPeriodInputs()
+    {
+        RunOnSta(() =>
+        {
+            var window=CreateEditorHarness();
+            var archive=ArchiveProgressEditorContextTests.CreateArchive();
+            var input=archive.ProgressPayment.Input with { WorkDays=9m,DailyPrice=1200m,ContractAmount=100000m };
+            var payment=archive.ProgressPayment with { Input=input,Calculation=ProgressPaymentCalculator.Calculate(input),
+                TenderNumber="IHALE-01",ContractNumber="SOZ-01",ContractorTaxOrIdentityNumber="12345678901",ContractDate=new DateOnly(2026,1,1) };
+            Collection(window,"_progressHistory").Add(payment);
+            var route=Activator.CreateInstance(typeof(MainWindow).GetNestedType("RouteDraft",BindingFlags.NonPublic)!,
+                "01","Hat 01",1000m,0m,20m,"IHALE-01","12345678901","Firma","SOZ-01",input.ProgramType,100000m,new DateOnly(2026,1,1))!;
+            Collection(window,"_routes").Add(route);SetField(window,"_editingRoute",route);
+            SetField(window,"_historyCorrectionTargetId",payment.Id);
+            var section=typeof(MainWindow).GetNestedType("HistoryCorrectionSection",BindingFlags.NonPublic)!;
+            SetField(window,"_historyCorrectionSection",Enum.Parse(section,"Route"));
+            Field<TextBox>(window,"RouteNumberTextBox").Text="01";Field<TextBox>(window,"RouteNameTextBox").Text="Hat 01";
+            Field<TextBox>(window,"RouteTransportWorkDaysTextBox").Text="20";Field<TextBox>(window,"RouteDailyPriceTextBox").Text="1.000,00";
+            Field<TextBox>(window,"RouteGuideDailyPriceTextBox").Text="0";Field<TextBox>(window,"RouteContractAmountTextBox").Text="125.000,00";
+            Field<DatePicker>(window,"RouteContractDatePicker").SelectedDate=new DateTime(2026,1,2);
+            Assert.True((bool)Invoke(window,"HistoryCorrectionInputsDiffer")!);
+            var args=new object?[]{null,null,null};
+            var method=typeof(MainWindow).GetMethod("TryCreateHistoryCorrectionPreview",BindingFlags.NonPublic|BindingFlags.Instance)!;
+            Assert.True((bool)method.Invoke(window,args)!);
+            var preview=Assert.IsType<ProgressPaymentInput>(args[0]);
+            Assert.Equal(9m,preview.WorkDays);Assert.Equal(1200m,preview.DailyPrice);Assert.Equal(125000m,preview.ContractAmount);
+            Assert.Equal(10800m,Assert.IsType<ProgressPaymentCalculation>(args[1]).ServiceAmount);
+        });
+    }
+
+    [Fact]
+    public void ArchiveRoutePreview_ShouldDetectContractChangeAndPreserveUnchangedPeriodInputs()
+    {
+        RunOnSta(() =>
+        {
+            var window=CreateEditorHarness();
+            var archive=ArchiveProgressEditorContextTests.CreateArchive();
+            var input=archive.ProgressPayment.Input with { WorkDays=9m, DailyPrice=1200m, ContractAmount=100000m };
+            archive=archive with { Route=archive.Route with { ContractAmount=100000m, ContractDate=new DateOnly(2026,1,1) },
+                ProgressPayment=archive.ProgressPayment with { Input=input,Calculation=ProgressPaymentCalculator.Calculate(input),ContractDate=new DateOnly(2026,1,1) } };
+            SetField(window,"_editingArchiveSnapshot",archive);
+            var section=typeof(MainWindow).GetNestedType("ArchiveCorrectionSection",BindingFlags.NonPublic)!;
+            SetField(window,"_archiveCorrectionSection",Enum.Parse(section,"Route"));
+            Field<TextBox>(window,"RouteNumberTextBox").Text=archive.Route.RouteNumber;
+            Field<TextBox>(window,"RouteNameTextBox").Text=archive.Route.Name;
+            Field<TextBox>(window,"RouteTransportWorkDaysTextBox").Text="20";
+            Field<TextBox>(window,"RouteDailyPriceTextBox").Text="1.000,00";
+            Field<TextBox>(window,"RouteGuideDailyPriceTextBox").Text="0";
+            Field<TextBox>(window,"RouteContractAmountTextBox").Text="125.000,00";
+            Field<DatePicker>(window,"RouteContractDatePicker").SelectedDate=new DateTime(2026,1,2);
+            Assert.True((bool)Invoke(window,"ArchiveCorrectionInputsDiffer")!);
+            var args=new object?[]{null,null,null};
+            var method=typeof(MainWindow).GetMethod("TryCreateArchiveCorrectionPreview",BindingFlags.NonPublic|BindingFlags.Instance)!;
+            Assert.True((bool)method.Invoke(window,args)!);
+            var preview=Assert.IsType<ProgressPaymentInput>(args[0]);
+            Assert.Equal(9m,preview.WorkDays);Assert.Equal(1200m,preview.DailyPrice);Assert.Equal(125000m,preview.ContractAmount);
+            Assert.Equal(10800m,Assert.IsType<ProgressPaymentCalculation>(args[1]).ServiceAmount);
+        });
+    }
+
+    [Fact]
+    public void RouteEditor_ShouldRejectThirdDecimalForEachMoneyField()
+    {
+        RunOnSta(() =>
+        {
+            var temp=Directory.CreateTempSubdirectory("oehs-route-invalid-");
+            try
+            {
+            var root=Path.Combine(temp.FullName,"data");
+            var window=CreateHybridUpdateHarness(root);
+            var contract=(ContractDraftData)Collection(window,"_contracts")[0]!;
+            var firm=Collection(window,"_contractors")[0]!;
+            var tender=Field<ComboBox>(window,"RouteTenderListBox");
+            tender.Items.Add(contract);tender.SelectedItem=contract;
+            var contractors=Field<ComboBox>(window,"RouteContractorListBox");
+            contractors.ItemsSource=new[]{firm};contractors.SelectedItem=firm;
+            Field<TextBox>(window,"RouteNumberTextBox").Text="02";
+            Field<TextBox>(window,"RouteNameTextBox").Text="Kuzey";
+            Field<TextBox>(window,"RouteTransportWorkDaysTextBox").Text="20";
+            Field<TextBox>(window,"RouteDailyPriceTextBox").Text="1.234,56";
+            Field<TextBox>(window,"RouteContractAmountTextBox").Text="12.536,48";
+            Field<TextBox>(window,"RouteGuideDailyPriceTextBox").Text="100,00";
+            Field<DatePicker>(window,"RouteContractDatePicker").SelectedDate=new DateTime(2026,1,1);
+            foreach(var fieldName in new[]{"RouteDailyPriceTextBox","RouteContractAmountTextBox","RouteGuideDailyPriceTextBox"})
+            {
+                var field=Field<TextBox>(window,fieldName);var original=field.Text;field.Text="12,345";
+                Invoke(window,"AddRouteButton_Click",window,new RoutedEventArgs());
+                Assert.Single(Collection(window,"_routes"));
+                var expected=fieldName switch { "RouteDailyPriceTextBox"=>"Taşıma Günlük Fiyatı", "RouteContractAmountTextBox"=>"Sözleşme Bedeli", _=>"Rehber Personel Günlük Fiyat" };
+                Assert.Contains(expected,Field<TextBlock>(window,"RouteValidationMessageTextBlock").Text);
+                field.Text=original;
+            }
+            var progressTender=Field<ComboBox>(window,"ProgressTenderListBox");
+            progressTender.Items.Clear();progressTender.ItemsSource=Collection(window,"_contracts");
+            var progressRoutes=Field<ListBox>(window,"ProgressRouteComboBox");
+            progressRoutes.Items.Clear();progressRoutes.ItemsSource=Collection(window,"_routes");
+            Field<ComboBox>(window,"ProgressPeriodMonthComboBox").Items.Clear();
+            Invoke(window,"AddRouteButton_Click",window,new RoutedEventArgs());
+            var saved=new OehsProgramScopedApplicationDataStore(root).Load();
+            var added=Assert.Single(saved.Routes.Where(x=>x.RouteNumber=="02"));
+            Assert.Equal(1234.56m,added.DailyPrice);
+            Assert.Equal(12536.48m,added.ContractAmount);
+            Assert.Equal(new DateOnly(2026,1,1),added.ContractDate);
+            }
+            finally { temp.Delete(true); }
+        });
+    }
+
+    [Fact]
     public void ContractMetadataEdit_ShouldPreserveARoutesOwnDailyPrice()
     {
         RunOnSta(() =>
@@ -336,6 +445,99 @@ public sealed partial class HakedisCreateHybridUiContractTests
         });
     }
 
+    [Theory]
+    [InlineData("DailyPrice")]
+    [InlineData("DiscountAmount")]
+    [InlineData("PriceDifference")]
+    [InlineData("GuideDailyPrice")]
+    [InlineData("GuideDiscountAmount")]
+    [InlineData("GuidePriceDifference")]
+    [InlineData("TaxDebt")]
+    [InlineData("SocialSecurityDebt")]
+    [InlineData("MinimumWageSupport")]
+    [InlineData("InspectionPenalty")]
+    public void HybridCurrencyCell_ShouldRejectMisgroupedAmountsWithoutChangingValue(string property)
+    {
+        RunOnSta(() =>
+        {
+            var layout=LoadLayoutFragment(NamedElement(LoadMainWindowXaml(),"ProgressPanel"));
+            var grid=(DataGrid)layout.FindName("MultiRoutePaymentGrid");
+            var column=grid.Columns.OfType<DataGridBoundColumn>().Single(column=>(column.Binding as Binding)?.Path?.Path==property);
+            var binding=(Binding)column.Binding;
+            var row=new MainWindow.MultiRoutePaymentDraftRow();
+            binding.Source=row;
+            var editor=new TextBox();
+            layout.Children.Add(editor);
+            var expression=BindingOperations.SetBinding(editor,TextBox.TextProperty,binding);
+            editor.SetCurrentValue(TextBox.TextProperty,"12.536,48");
+            expression.UpdateSource();
+            Assert.False(Validation.GetHasError(editor));
+            Assert.Equal(12536.48m,(decimal)typeof(MainWindow.MultiRoutePaymentDraftRow).GetProperty(property)!.GetValue(row)!);
+            editor.SetCurrentValue(TextBox.TextProperty,"12.53,48");
+            expression.UpdateSource();
+            Assert.True(Validation.GetHasError(editor));
+            Assert.Equal(12536.48m,(decimal)typeof(MainWindow.MultiRoutePaymentDraftRow).GetProperty(property)!.GetValue(row)!);
+        });
+    }
+
+    [Fact]
+    public void HybridCurrencyCell_RealGridCommitShouldPreserveEnteredKurus()
+    {
+        RunOnSta(() =>
+        {
+            var layout=LoadLayoutFragment(NamedElement(LoadMainWindowXaml(),"ProgressPanel"));
+            var grid=(DataGrid)layout.FindName("MultiRoutePaymentGrid");
+            ((Border)layout.FindName("MultiRouteEntryBorder")).Visibility=Visibility.Visible;
+            var controller=CreateEditorHarness();
+            grid.Loaded += (_,e) => Invoke(controller,"HybridGrid_Loaded",grid,e);
+            var row=new MainWindow.MultiRoutePaymentDraftRow();
+            grid.ItemsSource=new[] { row };
+            var column=grid.Columns.OfType<DataGridBoundColumn>().Single(c=>(c.Binding as Binding)?.Path?.Path=="PriceDifference");
+            var host=new Window{Content=layout,Width=1920,Height=1080,ShowInTaskbar=false};
+            try
+            {
+                host.Show();
+                grid.ScrollIntoView(row,column);
+                host.UpdateLayout();
+                grid.CurrentCell=new DataGridCellInfo(row,column);
+                ((DataGridCell)column.GetCellContent(row).Parent).Focus();
+                Assert.True(grid.BeginEdit());
+                grid.UpdateLayout();
+                var editor=Assert.IsType<TextBox>(column.GetCellContent(row));
+                editor.Text="12.53,48";
+                Assert.False(grid.CommitEdit(DataGridEditingUnit.Cell,true));
+                Assert.Equal(0m,row.PriceDifference);
+                editor.Text="12.536,";
+                Assert.False(grid.CommitEdit(DataGridEditingUnit.Cell,true));
+                editor.Text="12.536,48";
+                Assert.True(grid.CommitEdit(DataGridEditingUnit.Cell,true));
+                Assert.Equal(12536.48m,row.PriceDifference);
+                Assert.True(grid.BeginEdit());
+                grid.UpdateLayout();
+                editor=Assert.IsType<TextBox>(column.GetCellContent(row));
+                editor.Text="12.536,487";
+                Assert.False(grid.CommitEdit(DataGridEditingUnit.Cell,true));
+                Assert.Equal(12536.48m,row.PriceDifference);
+                editor.Text=" 12.536,487";
+                Assert.False(grid.CommitEdit(DataGridEditingUnit.Cell,true));
+                editor.Text="12.536,480";
+                Assert.False(grid.CommitEdit(DataGridEditingUnit.Cell,true));
+                editor.Text="12.536,49";
+                Assert.True(grid.CommitEdit(DataGridEditingUnit.Cell,true));
+                Assert.Equal(12536.49m,row.PriceDifference);
+
+                row.PriceDifference=12536.487m; // Pre-existing legacy value may be kept unchanged.
+                Assert.True(grid.BeginEdit());
+                grid.UpdateLayout();
+                editor=Assert.IsType<TextBox>(column.GetCellContent(row));
+                Assert.Equal("12.536,487",editor.Text);
+                Assert.True(grid.CommitEdit(DataGridEditingUnit.Cell,true));
+                Assert.Equal(12536.487m,row.PriceDifference);
+            }
+            finally { host.Close(); }
+        });
+    }
+
     [Fact]
     public void RecordPeriodsAndPaymentActions_ShouldUseSharedPeriodControlsAndSingleEditEntry()
     {
@@ -398,54 +600,46 @@ public sealed partial class HakedisCreateHybridUiContractTests
     }
 
     [Fact]
-    public void ContractorPhone_ShouldKeepFixedZeroOutsideEditableNationalNumber()
+    public void ContractorPanel_ShouldNotOfferRemovedContactFields()
     {
-        var document=LoadMainWindowXaml();var input=NamedElement(document,"ContractorPhoneTextBox");
-        Assert.Equal("10",(string?)input.Attribute("MaxLength"));
-        Assert.Contains(input.Parent!.Elements(),e=>e.Name.LocalName=="TextBlock"&&(string?)e.Attribute("Text")=="0");
-        RunOnSta(()=>
-        {
-            var window=CreateEditorHarness();
-            var box=Field<TextBox>(window,"ContractorPhoneTextBox");
-            box.TextChanged+=(sender,e)=>Invoke(window,"ContractorPhoneTextBox_TextChanged",sender,e);
-            Invoke(window,"SetContractorPhoneText","05321234567");
-            Assert.Equal("5321234567",box.Text);
-            Assert.False((bool)Invoke(window,"ContractorPhoneDiffers","05321234567")!);
-            box.Text="05321234567";Assert.Equal("5321234567",box.Text);
-            box.Text="abc";Assert.Equal("5321234567",box.Text);
-            box.Text="";box.Text="5";
-            Assert.False((bool)Invoke(window,"ValidateContractorPhone")!);
-            box.Text="5327654321";
-            Assert.True((bool)Invoke(window,"ValidateContractorPhone")!);
-            var normalize=typeof(MainWindow).GetMethod("NormalizePhoneNumber",BindingFlags.NonPublic|BindingFlags.Static)!;
-            Assert.Equal("05327654321",normalize.Invoke(null,new object[]{box.Text}));
-            Invoke(window,"SetContractorPhoneText","+90 532 123 45 67");Assert.Equal("5321234567",box.Text);
-            Invoke(window,"SetContractorPhoneText","00905321234567");Assert.Equal("5321234567",box.Text);
-        });
+        var document = LoadMainWindowXaml();
+        foreach (var name in new[] { "ContractorAddressTextBox", "ContractorPhoneTextBox", "ContractorEmailTextBox", "ContractorContactTextBox" })
+            Assert.DoesNotContain(document.Descendants(), element => (string?)element.Attribute(XName.Get("Name", "http://schemas.microsoft.com/winfx/2006/xaml")) == name);
     }
 
     [Fact]
-    public void ContractorPhonePaste_ShouldRejectOverlongClipboardInsteadOfTruncating()
+    public void ContractorEdit_ShouldPreserveLegacyContactDetails()
     {
-        RunOnSta(()=>
+        RunOnSta(() =>
         {
-            var window=CreateEditorHarness();var box=Field<TextBox>(window,"ContractorPhoneTextBox");
-            box.MaxLength=10;
-            box.TextChanged+=(sender,e)=>Invoke(window,"ContractorPhoneTextBox_TextChanged",sender,e);
-            var paste=typeof(MainWindow).GetMethod("ContractorPhoneTextBox_Pasting",BindingFlags.NonPublic|BindingFlags.Instance);
-            if(paste is not null) DataObject.AddPastingHandler(box,(sender,e)=>paste.Invoke(window,new object[]{sender,e}));
-            var host=new Window{Content=box,Width=300,Height=100,ShowInTaskbar=false};
+            var directory = Directory.CreateTempSubdirectory("oehs-contractor-legacy-");
             try
             {
-                host.Show();box.Focus();
-                Clipboard.SetText("53212345678");box.Paste();
-                Assert.Equal("",box.Text);
-                Clipboard.SetText("05321234567");box.Paste();Assert.Equal("",box.Text);
-                Clipboard.SetText("5321234567");box.Paste();Assert.Equal("5321234567",box.Text);
+                var root = Path.Combine(directory.FullName, "data");
+                var window = CreateHybridUpdateHarness(root);
+                Field<ComboBox>(window, "ProgressTenderListBox").Items.Clear();
+                Field<ListBox>(window, "ProgressRouteComboBox").Items.Clear();
+                Field<ComboBox>(window, "ProgressPeriodMonthComboBox").Items.Clear();
+                var firms = Collection(window, "_contractors");
+                firms.Clear();
+                var legacy = Activator.CreateInstance(typeof(MainWindow).GetNestedType("ContractorDraft", BindingFlags.NonPublic)!,
+                    "Eski firma", "12345678901", "Eski adres", "05321234567", "firma@example.com", "TR01", "Yetkili", TransportationProgramType.SpecialEducation, false)!;
+                firms.Add(legacy);
+                Invoke(window, "EditContractorButton_Click", new Button { Tag = legacy }, new RoutedEventArgs());
+                Field<TextBox>(window, "ContractorNameTextBox").Text = "Yeni firma";
+                Invoke(window, "SaveContractorButton_Click", window, new RoutedEventArgs());
+                var saved = Assert.Single(new OehsProgramScopedApplicationDataStore(root).Load().Contractors!);
+                Assert.Equal("Yeni firma", saved.Name);
+                Assert.Equal("Eski adres", saved.Address);
+                Assert.Equal("05321234567", saved.Phone);
+                Assert.Equal("firma@example.com", saved.Email);
+                Assert.Equal("Yetkili", saved.ContactPerson);
             }
-            finally {host.Close();Clipboard.Clear();}
+            finally { directory.Delete(true); }
         });
     }
+
+
 
     [Fact]
     public void ContractorComparison_ShouldIgnorePrefixPresentationOnlyChanges()
@@ -492,36 +686,6 @@ public sealed partial class HakedisCreateHybridUiContractTests
         });
     }
 
-    [Fact]
-    public void ContractorPhoneSave_ShouldRejectPartialAndPersistSingleDomesticPrefix()
-    {
-        RunOnSta(()=>
-        {
-            var directory=Directory.CreateTempSubdirectory("oehs-phone-save-");
-            try
-            {
-                var root=Path.Combine(directory.FullName,"data");var window=CreateHybridUpdateHarness(root);
-                Field<ComboBox>(window,"ProgressTenderListBox").Items.Clear();
-                Field<ListBox>(window,"ProgressRouteComboBox").Items.Clear();
-                Field<ComboBox>(window,"ProgressPeriodMonthComboBox").Items.Clear();
-                var program=Field<ComboBox>(window,"TransportProgramTypeComboBox");
-                program.Items.Add(new ComboBoxItem{Tag="SpecialEducation"});program.SelectedIndex=0;
-                Field<TextBox>(window,"ContractorNameTextBox").Text="Telefon test firması";
-                Field<TextBox>(window,"ContractorTaxTextBox").Text="99999999990";
-                Field<TextBox>(window,"ContractorPhoneTextBox").Text="532";
-                Invoke(window,"SaveContractorButton_Click",window,new RoutedEventArgs());
-                Assert.Single(Collection(window,"_contractors").Cast<object>());
-                Assert.Contains("10 hane",Field<TextBlock>(window,"ContractorStatusTextBlock").Text,StringComparison.Ordinal);
-                Field<TextBox>(window,"ContractorPhoneTextBox").Text="5321234567";
-                Invoke(window,"SaveContractorButton_Click",window,new RoutedEventArgs());
-                var saved=new OehsProgramScopedApplicationDataStore(root).Load();
-                var firm=Assert.Single(saved.Contractors!.Where(f=>f.TaxOrIdentityNumber=="99999999990"));
-                Assert.Equal("05321234567",firm.Phone);
-                Assert.Equal("",Field<TextBox>(window,"ContractorPhoneTextBox").Text);
-            }
-            finally {directory.Delete(true);}
-        });
-    }
 
     [Fact]
     public void HybridCaptions_ShouldExactlyMatchTheirSourceFields()
@@ -832,6 +996,60 @@ public sealed partial class HakedisCreateHybridUiContractTests
                 }
                 finally {temp.Delete(true);}
             }
+        });
+    }
+
+    [Fact]
+    public void HybridCalculation_ShouldPersistEachRoutesContractAmountAndDate()
+    {
+        RunOnSta(() =>
+        {
+            var temp=Directory.CreateTempSubdirectory("oehs-route-contracts-");
+            try
+            {
+                foreach(var program in new[]{TransportationProgramType.SpecialEducation,TransportationProgramType.BasicOrSecondary})
+                {
+                var root=Path.Combine(temp.FullName,program.ToString());
+                var window=CreateEditorHarness();
+                SetField(window,"_dataStore",new OehsProgramScopedApplicationDataStore(root));
+                SetField(window,"_archiveStore",new ProgressPaymentArchiveStore(Path.Combine(temp.FullName,"archives")));
+                SetField(window,"_calculationConstantsHistory",new System.Collections.Generic.List<ProgressPaymentCalculationConstantsChange>());
+                var contract=ArchiveProgressEditorContextTests.CreateArchive().Contract with { ProgramType=program };
+                Collection(window,"_contracts").Add(contract);
+                Collection(window,"_contractors").Add(Activator.CreateInstance(typeof(MainWindow).GetNestedType("ContractorDraft",BindingFlags.NonPublic)!,"Firma","12345678901","","","","","",program,false)!);
+                var tender=Field<ComboBox>(window,"ProgressTenderListBox");tender.Items.Add(contract);tender.SelectedItem=contract;
+                var selector=Field<ListBox>(window,"ProgressRouteComboBox");
+                var routeType=typeof(MainWindow).GetNestedType("RouteDraft",BindingFlags.NonPublic)!;
+                for(var i=0;i<2;i++)
+                {
+                    var route=Activator.CreateInstance(routeType,(i+1).ToString("00",CultureInfo.InvariantCulture),"Hat",1000m+i*500m,0m,20m,"IHALE-01","12345678901","Firma","SOZ-01",contract.ProgramType,100000m+i*50000m,new DateOnly(2026,1,1+i))!;
+                    Collection(window,"_routes").Add(route);selector.Items.Add(route);selector.SelectedItems.Add(route);
+                }
+                var month=Field<ComboBox>(window,"ProgressPeriodMonthComboBox");
+                var period=new ProgressPaymentMonthOption(new DateOnly(2026,10,1),new DateOnly(2026,10,31));month.Items.Add(period);month.SelectedItem=period;
+                Invoke(window,"UpdateHybridRouteDraftRows");
+                Invoke(window,"CalculateProgressButton_Click",window,new RoutedEventArgs());
+                var payments=new OehsProgramScopedApplicationDataStore(root).Load().ProgressPayments!.OrderBy(x=>x.RouteNumber).ToArray();
+                Assert.Equal(2,payments.Length);
+                Assert.Equal(1000m,payments[0].Input.DailyPrice);Assert.Equal(100000m,payments[0].Input.ContractAmount);Assert.Equal(new DateOnly(2026,1,1),payments[0].ContractDate);
+                Assert.Equal(1500m,payments[1].Input.DailyPrice);Assert.Equal(150000m,payments[1].Input.ContractAmount);Assert.Equal(new DateOnly(2026,1,2),payments[1].ContractDate);
+                for(var i=0;i<payments.Length;i++)
+                {
+                    var context=Assert.IsType<OehsOfficialDocumentContext>(Invoke(window,"BuildOfficialDocumentContextForPayment",payments[i]));
+                    var report=OehsOfficialDocumentFactory.BuildSeparate(context).Single(x=>x.Kind==OehsOfficialDocumentKind.HizmetIsleriHakedisRaporu);
+                    var path=Path.Combine(temp.FullName,$"{program}-{i}.pdf");
+                    PdfVectorWriter.Save(report.Document,path);
+                    using var pdf=UglyToad.PdfPig.PdfDocument.Open(path);
+                    var page=pdf.GetPage(1);
+                    string InRect(Rect rect)=>string.Concat(page.Letters.Where(letter=>
+                        letter.BoundingBox.Left>=rect.Left*0.75-0.5 && letter.BoundingBox.Right<=rect.Right*0.75+0.5 &&
+                        letter.BoundingBox.Bottom>=page.Height-rect.Bottom*0.75-0.5 && letter.BoundingBox.Top<=page.Height-rect.Top*0.75+0.5).Select(letter=>letter.Value));
+                    Assert.Contains(i==0?"100.000,00":"150.000,00",InRect(new Rect(398,293,350,25)),StringComparison.Ordinal);
+                    Assert.Contains(i==0?"01.01.2026":"02.01.2026",InRect(new Rect(398,347,350,25)),StringComparison.Ordinal);
+                }
+                }
+            }
+            finally {temp.Delete(true);}
         });
     }
 
@@ -1368,7 +1586,8 @@ public sealed partial class HakedisCreateHybridUiContractTests
             new XAttribute(XNamespace.Xmlns + "x", XamlNamespace),
             new XAttribute(XNamespace.Xml+"lang","tr-TR"),
             new XElement(presentation + "Grid.Resources", resources.Elements(),
-                new XElement(local + "ContractWorkNameConverter",new XAttribute(XamlNamespace+"Key","ContractWorkNameConverter"))), fragment);
+                new XElement(local + "ContractWorkNameConverter",new XAttribute(XamlNamespace+"Key","ContractWorkNameConverter")),
+                new XElement(local + "TurkishMoneyConverter",new XAttribute(XamlNamespace+"Key","TurkishMoneyConverter"))), fragment);
         return (Grid)XamlReader.Parse(root.ToString());
     }
 
@@ -1814,7 +2033,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
         decimal transportDays = 20m, decimal dailyPrice = 1000m, decimal guidePrice = 0m) =>
         Activator.CreateInstance(typeof(MainWindow).GetNestedType("RouteDraft", BindingFlags.NonPublic)!,
             number, name, dailyPrice, guidePrice, transportDays, tender, identity, "Same name", "SOZ-01",
-            program)!;
+            program, null, null)!;
 
     private static T Field<T>(MainWindow window, string name) =>
         (T)typeof(MainWindow).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)!.GetValue(window)!;

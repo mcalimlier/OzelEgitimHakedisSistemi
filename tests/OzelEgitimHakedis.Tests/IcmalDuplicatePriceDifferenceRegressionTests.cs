@@ -49,8 +49,8 @@ public sealed class IcmalDuplicatePriceDifferenceRegressionTests
         Assert.Equal(7365.35m, priceDifference);
         Assert.Equal(319991.9228m, monthlyTotal);
         Assert.Equal(319991.9228m, serviceBase + priceDifference);
-        // Basic's icmal difference column additionally preserves the source deduction block,
-        // while the duplicated I component itself must appear only once.
+        // Preserve the historical workbook's erroneous sums as discrepancy evidence;
+        // the icmal must use priceDifference and monthlyTotal above, not these values.
         Assert.Equal(26840.390568144m, priceDifference + payment.Calculation.TotalDeductions);
         Assert.Equal(339466.963368144m, serviceBase + priceDifference + payment.Calculation.TotalDeductions);
         Assert.NotEqual(346832.313368144m, serviceBase + priceDifference + payment.Calculation.TotalDeductions);

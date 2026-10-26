@@ -27,7 +27,7 @@ public static class ProgressPaymentPropagationService
         var appliedConstants = constants ?? ProgressPaymentCalculationConstants.Defaults;
         var updated = history
             .Select(item => IsHistoryForContract(item, oldContract)
-                ? RebuildForContract(item, newContract, appliedConstants, oldContract.TransportDailyPrice != newContract.TransportDailyPrice)
+                ? RebuildForContract(item, newContract, appliedConstants)
                 : item)
             .ToArray();
 
@@ -97,7 +97,7 @@ public static class ProgressPaymentPropagationService
                         || string.Equals(item.ContractNumber, oldRoute.ContractNumber, StringComparison.OrdinalIgnoreCase));
 
                 return sameRoute
-                    ? RebuildForRoute(item, newRoute, contractor, newIdentity, appliedConstants)
+                    ? RebuildForRoute(item, oldRoute, newRoute, contractor, newIdentity, appliedConstants)
                     : item;
             })
             .ToArray();
@@ -109,17 +109,14 @@ public static class ProgressPaymentPropagationService
     private static ProgressPaymentHistoryData RebuildForContract(
         ProgressPaymentHistoryData item,
         ContractDraftData contract,
-        ProgressPaymentCalculationConstants constants,
-        bool updateTransportPrice)
+        ProgressPaymentCalculationConstants constants)
     {
         var hasGuide = contract.ProgramType == TransportationProgramType.SpecialEducation;
         var input = item.Input with
         {
-            ContractAmount = contract.ContractAmount,
             // VAT exemption is now a firm-level choice. Editing contract terms must not
             // rewrite the VAT decision captured in an already-issued progress payment.
             IsVatExempt = item.Input.IsVatExempt,
-            DailyPrice = updateTransportPrice ? contract.TransportDailyPrice : item.Input.DailyPrice,
             ProgramType = contract.ProgramType,
             GuideWorkDays = hasGuide ? item.Input.GuideWorkDays : 0,
             GuideDailyPrice = hasGuide ? item.Input.GuideDailyPrice : 0m,
@@ -137,7 +134,6 @@ public static class ProgressPaymentPropagationService
             TenderNumber = contract.TenderNumber,
             ContractNumber = contract.ContractNumber,
             TenderDate = contract.TenderDate,
-            ContractDate = contract.ContractDate,
             ContractStartDate = contract.StartDate,
             ContractEndDate = contract.EndDate
         };
@@ -145,6 +141,7 @@ public static class ProgressPaymentPropagationService
 
     private static ProgressPaymentHistoryData RebuildForRoute(
         ProgressPaymentHistoryData item,
+        RouteData oldRoute,
         RouteData route,
         Contractor contractor,
         string normalizedIdentity,
@@ -152,12 +149,13 @@ public static class ProgressPaymentPropagationService
     {
         var input = item.Input with
         {
-            WorkDays = route.TransportWorkDays,
-            DailyPrice = route.DailyPrice,
+            WorkDays = oldRoute.TransportWorkDays != route.TransportWorkDays ? route.TransportWorkDays : item.Input.WorkDays,
+            DailyPrice = oldRoute.DailyPrice != route.DailyPrice ? route.DailyPrice : item.Input.DailyPrice,
+            ContractAmount = oldRoute.ContractAmount != route.ContractAmount ? route.ContractAmount ?? item.Input.ContractAmount : item.Input.ContractAmount,
             GuideWorkDays = route.ProgramType == TransportationProgramType.BasicOrSecondary ? 0 : item.Input.GuideWorkDays,
             GuideDailyPrice = route.ProgramType == TransportationProgramType.BasicOrSecondary
                 ? 0m
-                : route.GuideDailyPrice,
+                : oldRoute.GuideDailyPrice != route.GuideDailyPrice ? route.GuideDailyPrice : item.Input.GuideDailyPrice,
             ProgramType = route.ProgramType,
             GuideDiscountAmount = route.ProgramType == TransportationProgramType.BasicOrSecondary ? 0m : item.Input.GuideDiscountAmount,
             GuidePriceDifference = route.ProgramType == TransportationProgramType.BasicOrSecondary ? 0m : item.Input.GuidePriceDifference,
@@ -168,6 +166,7 @@ public static class ProgressPaymentPropagationService
         {
             Input = input,
             Calculation = ProgressPaymentCalculator.Calculate(input, constants),
+            ContractDate = oldRoute.ContractDate != route.ContractDate ? route.ContractDate ?? item.ContractDate : item.ContractDate,
             RouteNumber = route.RouteNumber,
             RouteName = route.Name,
             TenderNumber = route.TenderNumber,

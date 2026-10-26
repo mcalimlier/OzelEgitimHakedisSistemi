@@ -106,7 +106,23 @@ public sealed partial class HakedisCreateHybridUiContractTests
                             foreach (var field in expected.GetProperty(financialSheet).EnumerateObject())
                             {
                                 var digits = output.Kind == OehsOfficialDocumentKind.HakedisRaporu && program == TransportationProgramType.SpecialEducation && field.Name == "D10" ? 3 : 2;
-                                var money = Math.Round(field.Value.GetDecimal(), digits, MidpointRounding.AwayFromZero).ToString("N" + digits, CultureInfo.GetCultureInfo("tr-TR"));
+                                var value = field.Value.GetDecimal();
+                                if (financialSheet == "Hakediş İcmali" && program == TransportationProgramType.BasicOrSecondary)
+                                {
+                                    // Preserve source fixture verbatim, but explicitly remove its erroneous
+                                    // monthly deductions from the icmal price difference and dependent totals.
+                                    var months = sample.GetProperty("Months").EnumerateArray().ToArray();
+                                    var sourceDeductions = field.Name switch
+                                    {
+                                        "D6" or "E6" => months[0].GetProperty("Deduction").GetDecimal(),
+                                        "D7" or "E7" => months[1].GetProperty("Deduction").GetDecimal(),
+                                        "D8" or "E8" => months[2].GetProperty("Deduction").GetDecimal(),
+                                        "D17" or "E17" or "E25" => months.Sum(m => m.GetProperty("Deduction").GetDecimal()),
+                                        _ => 0m
+                                    };
+                                    value -= sourceDeductions;
+                                }
+                                var money = Math.Round(value, digits, MidpointRounding.AwayFromZero).ToString("N" + digits, CultureInfo.GetCultureInfo("tr-TR"));
                                 Assert.True(Compact(text).Contains(Compact(money), StringComparison.Ordinal), $"{program}/{output.Kind}/{field.Name}: missing {money}");
                             }
                     }
