@@ -1,4 +1,12 @@
-# Özel Eğitim Hakediş Sistemi (OEHS)
+# Taşımalı Eğitim Hakediş Yönetim Sistemi (TEHYS)
+
+Temel Eğitim ve Özel Eğitim taşıma hakedişleri için güncel Windows uygulaması.
+**Çalıştırılabilir paket:** [GitHub Releases — en güncel sürüm](https://github.com/mcalimlier/OzelEgitimHakedisSistemi/releases/latest).
+Assets bölümünden `TEHYS-0.1.1-win-x64.zip` indirin, tamamen çıkarın ve `TEHYS.exe` açın.
+Excel veya ayrıca .NET kurulumu gerekmez. İlk kullanımda resmî belge imzacılarını kendi kurumunuza göre düzenleyin.
+Kaynak proje/modül adları ve mevcut veri klasörleri uyumluluk için korunur.
+
+Dağıtımı yeniden üretmek için `scripts/Publish-Tehys.ps1` çalıştırılır; yayın klasörü yalnız EXE, kullanım belgesi ve üçüncü taraf lisanslarını içerir, kişisel kayıtlar pakete alınmaz.
 
 OEHS, özel eğitim hizmetleri için sözleşme/ihale bilgilerini, hatları, yüklenicileri, hakediş hesaplarını, geçmiş kayıtları ve resmî rapor çıktısını Windows masaüstü uygulamasında yönetmek amacıyla geliştirilmektedir.
 

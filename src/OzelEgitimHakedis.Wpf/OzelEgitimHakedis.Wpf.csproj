@@ -8,8 +8,8 @@
     <RootNamespace>OzelEgitimHakedis.Wpf</RootNamespace>
     <UseAppHost>true</UseAppHost>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Product>Özel Eğitim Hakediş Sistemi</Product>
-    <Description>Özel Eğitim Hakediş Sistemi</Description>
+    <Product>Taşımalı Eğitim Hakediş Yönetim Sistemi (TEHYS)</Product>
+    <Description>Özel Eğitim ve Temel Eğitim taşıma hakedişleri</Description>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\OzelEgitimHakedis.Core\OzelEgitimHakedis.Core.csproj" />
