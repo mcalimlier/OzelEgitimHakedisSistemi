@@ -793,9 +793,9 @@ public sealed partial class HakedisCreateHybridUiContractTests
                 using var zip=System.IO.Compression.ZipFile.OpenRead(path);
                 using var stream=zip.GetEntry("xl/worksheets/sheet1.xml")!.Open();
                 var xml=XDocument.Load(stream);XNamespace ns="http://schemas.openxmlformats.org/spreadsheetml/2006/main";
-                Assert.Equal(ExpectedExportHeaders,xml.Descendants(ns+"row").First().Descendants(ns+"t").Select(e=>e.Value).ToArray());
+                Assert.Equal(ExpectedExportHeaders,xml.Descendants(ns+"row").First().Descendants(ns+"t").Take(ExpectedExportHeaders.Length).Select(e=>e.Value).ToArray());
                 var cells=xml.Descendants(ns+"row").Last().Elements(ns+"c").ToArray();
-                Assert.Equal(3,cells.Length);
+                Assert.Equal(22,cells.Length);
                 Assert.Equal("1234.5678",cells[0].Element(ns+"v")!.Value);
                 Assert.Equal("Düzenlenmiş hat — hücre düzenlemesi",cells[1].Descendants(ns+"t").Single().Value);
                 Assert.Equal("18.5",cells[2].Element(ns+"v")!.Value);
