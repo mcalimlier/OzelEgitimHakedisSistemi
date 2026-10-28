@@ -1,9 +1,51 @@
 using OzelEgitimHakedis.Core.Models;
+using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 
 namespace OzelEgitimHakedis.Core.Services;
 
 public static class OehsOutputPathService
 {
+    // Four-document exports must fit Windows paths even for long cooperative and batch names.
+    // Identity is kept in a stable folder key instead of repeating names in every directory.
+    public static string BuildOfficialPdfDirectory(string root, ProgressPaymentHistoryData payment)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(root);
+        ArgumentNullException.ThrowIfNull(payment);
+        var identity = JsonSerializer.Serialize(new[]
+        {
+            OehsIdentityService.NormalizeIdentity(payment.TenderNumber),
+            OehsIdentityService.NormalizeIdentity(payment.ContractorTaxOrIdentityNumber),
+            string.IsNullOrWhiteSpace(payment.ContractorTaxOrIdentityNumber) ? payment.ContractorName?.Trim() : "",
+            payment.ContractNumber, payment.RouteNumber, payment.BatchRouteNumbers,
+            payment.ProgressPaymentNumber?.ToString(CultureInfo.InvariantCulture)
+        });
+        var key = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(identity)))[..16];
+        var program = payment.Input.ProgramType == TransportationProgramType.SpecialEducation ? "OE" : "TE";
+        var period = payment.PeriodDate?.ToString("yyyy-MM", CultureInfo.InvariantCulture) ?? "Donemsiz";
+        return Path.Combine(root, "Ciktilar", "Hakedisler", $"{program}_{period}_{key}");
+    }
+
+    public static string BuildOfficialPdfFilePath(string root, ProgressPaymentHistoryData payment, string suffix)
+    {
+        var directory = BuildOfficialPdfDirectory(root, payment);
+        var tender = OehsFileNameService.SanitizeFileName(payment.TenderNumber?.Replace('/', '-'), "Ihale");
+        var contractor = OehsFileNameService.SanitizeFileName(payment.ContractorName, "Yuklenici", 180);
+        var name = tender + "-" + contractor;
+        var ending = "_" + OehsFileNameService.SanitizeFileName(suffix, "Belge") + ".pdf";
+        var available = 240 - Path.GetFullPath(directory).Length - 1 - ending.Length;
+        if (available < 20)
+            throw new PathTooLongException("PDF kayıt klasörü çok uzun. Daha kısa bir çıktı kökü seçin.");
+        if (name.Length > available)
+        {
+            var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(name)))[..10];
+            name = name[..(available - 11)].TrimEnd('.', ' ') + "-" + hash;
+        }
+        return Path.Combine(directory, name + ending);
+    }
+
     public static string DesktopRoot => OehsRuntimePaths.DesktopRoot;
 
     public static string PdfRoot =>

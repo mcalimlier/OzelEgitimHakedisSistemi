@@ -96,11 +96,12 @@ public static class OehsFileNameService
         return $"{name}-{hash}";
     }
 
-    public static string SanitizeFileName(string? value, string fallback = "Kayitsiz") =>
-        Safe(value, fallback);
+    public static string SanitizeFileName(string? value, string fallback = "Kayitsiz", int maxLength = MaxPartLength) =>
+        Safe(value, fallback, maxLength);
 
-    private static string Safe(string? value, string fallback)
+    private static string Safe(string? value, string fallback, int maxLength = MaxPartLength)
     {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxLength);
         if (string.IsNullOrWhiteSpace(value))
             return fallback;
 
@@ -120,8 +121,8 @@ public static class OehsFileNameService
         if (ReservedWindowsNames.Contains(deviceStem))
             sanitized = "_" + sanitized;
 
-        if (sanitized.Length > MaxPartLength)
-            sanitized = sanitized[..MaxPartLength].TrimEnd('.', ' ');
+        if (sanitized.Length > maxLength)
+            sanitized = sanitized[..maxLength].TrimEnd('.', ' ');
 
         return string.IsNullOrWhiteSpace(sanitized) ? fallback : sanitized;
     }

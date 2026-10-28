@@ -272,13 +272,17 @@ internal static class OehsOfficialDocumentFactory
         AddText(page, ":", x + 326, 117, 14, 19, 9.5, true, TextAlignment.Center);
         AddText(page, (c.PeriodDate?.Year ?? c.GeneratedDate.Year).ToString(Turkish), x + 366, 117, 360, 19, 9.5, false, TextAlignment.Left);
 
-        AddText(page, BuildWorkTitle(c, includeRouteNumber: false, includeStudentSuffix: true), x + 356, 151, w - 360, 22, 8.6, true, TextAlignment.Left);
-        AddText(page, "Yapılan Hizmetin Adı", x + 2, 173, 310, 22, 9.5, true, TextAlignment.Left);
-        AddText(page, ":", x + 324, 173, 14, 22, 9.5, true, TextAlignment.Center);
-        var serviceName = string.IsNullOrWhiteSpace(c.WorkName)
-            ? BuildWorkTitle(c, includeRouteNumber: false, includeStudentSuffix: true)
-            : c.WorkName.Trim();
-        AddText(page, serviceName, x + 356, 173, w - 360, 22, 8.6, true, TextAlignment.Left);
+        AddText(page, $"İKN: {c.TenderNumber}", x + 356, 151, w - 360, 20, 8.6, false, TextAlignment.Left);
+        AddText(page, "Yapılan Hizmetin Adı", x + 2, 173, 310, 62, 9.5, true, TextAlignment.Left);
+        AddText(page, ":", x + 324, 173, 14, 62, 9.5, true, TextAlignment.Center);
+        var serviceName = BuildWorkTitle(c, includeRouteNumber: false, includeStudentSuffix: true);
+        // Older snapshots can carry a separate contract work description; retain it
+        // alongside the route title, without repeating the same derived name.
+        if (!string.IsNullOrWhiteSpace(c.WorkName)
+            && !string.Equals(c.WorkName.Trim(), serviceName, StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(c.WorkName.Trim(), c.RouteName.Trim(), StringComparison.OrdinalIgnoreCase))
+            serviceName += "\n" + c.WorkName.Trim();
+        AddText(page, serviceName, x + 356, 173, w - 360, 62, 8.6, true, TextAlignment.Left);
 
         var info = new (string Label, string Value)[]
         {
@@ -286,7 +290,7 @@ internal static class OehsOfficialDocumentFactory
             ("Yüklenicinin Adı / Ticari Unvanı", c.ContractorName),
             ("Sözleşme Bedeli", FormatMoney(c.ContractAmount)),
             ("İhale Tarihi", FormatDate(c.TenderDate)),
-            ("Sözleşme Tarihi ve No.su", FormatContractContext(c)),
+            ("Sözleşme Tarihi ve No.su", FormatDate(c.ContractDate)),
             ("Sözleşmenin Sayıştayca Tescil Tarihi ve No'su", "Tescile Dahil Değil"),
             ("Tescilin Yükleniciye Tebliğ Tarihi", "Tescile Dahil Değil"),
             ("İşyeri Teslim Tarihi", FormatDate(c.ContractStartDate)),
@@ -298,13 +302,14 @@ internal static class OehsOfficialDocumentFactory
         var infoY = 239d;
         foreach (var row in info)
         {
-            AddText(page, row.Label, x + 2, infoY, 320, 25, 9.3, true, TextAlignment.Left);
-            AddText(page, ":", x + 324, infoY, 14, 25, 9.3, true, TextAlignment.Center);
-            AddText(page, row.Value, x + 356, infoY, w - 360, 25, 9.3, false, TextAlignment.Left);
-            infoY += 27;
+            var height = row.Label == "Yüklenicinin Adı / Ticari Unvanı" ? 42d : 25d;
+            AddText(page, row.Label, x + 2, infoY, 320, height, 9.3, true, TextAlignment.Left);
+            AddText(page, ":", x + 324, infoY, 14, height, 9.3, true, TextAlignment.Center);
+            AddText(page, row.Value, x + 356, infoY, w - 360, height, 9.3, false, TextAlignment.Left);
+            infoY += height + 2;
         }
 
-        var y = 578d;
+        var y = infoY + 15;
         var colWidths = new[] { 160d, 190d, 170d, w - 160d - 190d - 170d };
         var headings = new[]
         {
@@ -370,6 +375,7 @@ internal static class OehsOfficialDocumentFactory
         // Draw the white form frame before its contents; otherwise it covers the title.
         AddCell(page, "", x, 38, w, 414, 9, false, TextAlignment.Left, White, new Thickness(0));
         AddText(page, "HİZMET İŞLERİ KABUL TUTANAĞI", x, 40, w, 22, 15, true, TextAlignment.Center);
+        AddText(page, $"İKN: {c.TenderNumber}", x, 18, w, 18, 8.6, false, TextAlignment.Left);
 
         var servicePeriod = ProgressPaymentAcceptancePeriodService.BuildServicePeriod(
             c.PeriodDate ?? c.GeneratedDate,
@@ -380,13 +386,13 @@ internal static class OehsOfficialDocumentFactory
         {
             ("İşin adı", BuildWorkTitle(c, includeRouteNumber: false, includeStudentSuffix: true), 112),
             ("Yüklenicinin adı/ticari unvanı", c.ContractorName, 35),
-            ("Sözleşme tarihi", FormatContractContext(c), 35),
+            ("Sözleşme tarihi", FormatDate(c.ContractDate), 35),
             ("Sözleşme bedeli", FormatMoney(c.ContractAmount), 35),
             ("Sözleşmeye göre işin süresi (takvim günü)", FormatAcceptanceDuration(c), 35),
             ("Sözleşmeye göre işin bitirilmesi gereken tarih", FormatDate(endDate), 35),
             ("Varsa süre uzatımları", "", 35),
             ("Süre uzatımı dahil işin bitirilmesi gereken tarih", FormatDate(endDate), 35),
-            ("İşin bitirildiği tarih", FormatLongDate(endDate), 35)
+            ("İşin bitirildiği tarih", FormatLongDate(servicePeriod.End), 35)
         };
 
         var y = 60d;
@@ -690,9 +696,6 @@ internal static class OehsOfficialDocumentFactory
                 ? c.ContractWorkDays.ToString(Turkish)
                 : $"{c.ContractWorkDays} İş Günü";
 
-
-    private static string FormatContractContext(OehsOfficialDocumentContext context) =>
-        $"{FormatDate(context.ContractDate)}{(string.IsNullOrWhiteSpace(context.ContractNumber) || context.ContractNumber.StartsWith("INTERNAL-", StringComparison.OrdinalIgnoreCase) ? string.Empty : " / No: " + context.ContractNumber)}\nİKN: {context.TenderNumber}";
 
     private static string FormatDate(DateOnly? date) =>
         date?.ToString("dd.MM.yyyy", Turkish) ?? "-";

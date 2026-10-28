@@ -29,10 +29,15 @@ public partial class MainWindow
         return current == row.Payment ? current : null;
     }
 
-    private static string OutputDirectoryForPayment(ProgressPaymentHistoryData payment) =>
-        OehsOutputPathService.BuildPdfDirectoryForContractor(payment.TenderNumber ?? string.Empty,
+    private static string OutputDirectoryForPayment(ProgressPaymentHistoryData payment)
+    {
+        var current = OehsOutputPathService.BuildOfficialPdfDirectory(OehsRuntimePaths.DesktopRoot, payment);
+        if (Directory.Exists(current) && Directory.EnumerateFiles(current, "*.pdf").Any()) return current;
+        var legacy = OehsOutputPathService.BuildPdfDirectoryForContractor(payment.TenderNumber ?? string.Empty,
             payment.ContractorName ?? string.Empty, payment.ContractorTaxOrIdentityNumber ?? string.Empty,
             payment.RouteNumber ?? string.Empty, payment.Input.ProgramType, payment.BatchRouteNumbers, payment.PeriodDate);
+        return Directory.Exists(legacy) ? legacy : current;
+    }
 
     private static string OutputPeriodText(ProgressPaymentHistoryData payment) => payment.PeriodDate.HasValue
         ? PanelSearchCulture.TextInfo.ToTitleCase(payment.PeriodDate.Value.ToString("MMMM yyyy", PanelSearchCulture))

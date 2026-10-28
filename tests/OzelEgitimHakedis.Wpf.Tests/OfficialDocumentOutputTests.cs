@@ -18,7 +18,7 @@ using Xunit;
 
 namespace OzelEgitimHakedis.Wpf.Tests;
 
-public sealed class OfficialDocumentOutputTests
+public sealed partial class OfficialDocumentOutputTests
 {
     [Fact]
     public void OfficialPdf_ShouldKeepIknWithoutPrintingInternalContractId()
@@ -44,7 +44,7 @@ public sealed class OfficialDocumentOutputTests
     [Theory]
     [InlineData(TransportationProgramType.SpecialEducation)]
     [InlineData(TransportationProgramType.BasicOrSecondary)]
-    public void OfficialPdfs_ShouldPrintTenderAndContractIdentifiersInContractRows(TransportationProgramType program)
+    public void OfficialPdfs_ShouldPrintOnlyDateInContractRows(TransportationProgramType program)
     {
         RunOnSta(() =>
         {
@@ -66,12 +66,13 @@ public sealed class OfficialDocumentOutputTests
                     using var pdf = UglyToad.PdfPig.PdfDocument.Open(path);
                     var page = pdf.GetPage(1);
                     var row = output.Kind == OehsOfficialDocumentKind.HizmetIsleriHakedisRaporu
-                        ? new Rect(398, 347, 350, 25)
+                        ? new Rect(398, 364, 350, 25)
                         : new Rect(360, 207, 383, 35);
                     var contractText = PdfTextInRectangle(page, row);
                     Assert.Contains("15.08.2026", contractText, StringComparison.Ordinal);
-                    Assert.Contains("SOZ-2026-0042", contractText, StringComparison.Ordinal);
-                    Assert.Contains("İKN: 2026/1009876", contractText, StringComparison.Ordinal);
+                    Assert.DoesNotContain("SOZ-2026-0042", contractText, StringComparison.Ordinal);
+                    Assert.DoesNotContain("İKN", contractText, StringComparison.Ordinal);
+                    Assert.Contains("2026/1009876", page.Text, StringComparison.Ordinal);
                 }
             }
             finally
@@ -993,7 +994,7 @@ public sealed class OfficialDocumentOutputTests
             Assert.Contains("Örnek Yüklenici", serviceReportText, StringComparison.Ordinal);
             Assert.Contains("100.000,00 TL", serviceReportText, StringComparison.Ordinal);
             Assert.Contains("25.08.2026", serviceReportText, StringComparison.Ordinal);
-            Assert.Contains("TEST-SOZ", serviceReportText, StringComparison.Ordinal);
+            Assert.DoesNotContain("TEST-SOZ", serviceReportText, StringComparison.Ordinal);
             Assert.Contains("İKN: TEST-IHALE", serviceReportText, StringComparison.Ordinal);
             Assert.Contains("180 İş Günü", serviceReportText, StringComparison.Ordinal);
             Assert.Contains("Tescile Dahil Değil", serviceReportText, StringComparison.Ordinal);
@@ -1123,7 +1124,7 @@ public sealed class OfficialDocumentOutputTests
             Assert.Contains("Sözleşmeye göre işin süresi (takvim günü)", acceptanceMappingText, StringComparison.Ordinal);
             Assert.Contains("180 İş Günü", acceptanceMappingText, StringComparison.Ordinal);
             Assert.Contains("30.06.2027", acceptanceMappingText, StringComparison.Ordinal);
-            Assert.Contains("30 Haziran 2027 Çarşamba", acceptanceMappingText, StringComparison.Ordinal);
+            Assert.Contains("31 Ekim 2026 Cumartesi", acceptanceMappingText, StringComparison.Ordinal);
             Assert.DoesNotContain("Tescile Dahil Değil", acceptanceMappingText, StringComparison.Ordinal);
             Assert.DoesNotContain("Avans verilmeyecektir.", acceptanceMappingText, StringComparison.Ordinal);
             Assert.DoesNotContain("Yoktur.", acceptanceMappingText, StringComparison.Ordinal);

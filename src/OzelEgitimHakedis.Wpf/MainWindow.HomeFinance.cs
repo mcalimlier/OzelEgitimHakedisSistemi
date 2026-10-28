@@ -14,7 +14,8 @@ public partial class MainWindow
         HomeDeductionsValue.Text = FormatMoney(payments.Sum(p => p.Calculation.TotalDeductions));
         HomeVatValue.Text = FormatMoney(payments.Sum(p => p.Calculation.Vat));
         HomeTransportValue.Text = FormatMoney(payments.Sum(p => p.Calculation.ServiceAmount));
-        HomeDifferenceValue.Text = FormatMoney(payments.Sum(p => p.Calculation.CombinedPriceDifferenceExcludingVat));
+        // Show exactly the entered transport difference, independently of discounts and guide inputs.
+        HomeDifferenceValue.Text = FormatMoney(payments.Sum(p => p.Input.PriceDifference));
         HomeRoutesValue.Text = $"{payments.Length} / {rows.Count}";
         var missing = rows.Count - payments.Length;
         HomeRoutesCaption.Text = rows.Count == 0 ? "Dönem kapsamında hat yok" : missing == 0

@@ -4408,16 +4408,7 @@ public partial class MainWindow : Window
         if (pdfPaths.Count != 4)
             throw new ArgumentException("Arşiv meta verisi için dört PDF dosyasının da yolu gerekir.", nameof(pdfPaths));
 
-        var tender = latest.TenderNumber ?? string.Empty;
-        var route = latest.RouteNumber ?? string.Empty;
-        var documentFolder = OehsOutputPathService.BuildPdfDirectoryForContractor(
-            tender,
-            latest.ContractorName ?? string.Empty,
-            latest.ContractorTaxOrIdentityNumber ?? string.Empty,
-            route,
-            latest.Input.ProgramType,
-            latest.BatchRouteNumbers,
-            latest.PeriodDate);
+        var documentFolder = Path.GetDirectoryName(Path.GetFullPath(pdfPaths[0]))!;
         Directory.CreateDirectory(documentFolder);
 
         var fileNames = pdfPaths.Select(Path.GetFileName).ToArray();
@@ -6185,14 +6176,7 @@ public partial class MainWindow : Window
     }
 
     private static string GetHistoryArchiveFolder(ProgressPaymentHistoryData item) =>
-        OehsOutputPathService.BuildPdfDirectoryForContractor(
-            item.TenderNumber ?? string.Empty,
-            item.ContractorName ?? string.Empty,
-            item.ContractorTaxOrIdentityNumber ?? string.Empty,
-            item.RouteNumber ?? string.Empty,
-            item.Input.ProgramType,
-            item.BatchRouteNumbers,
-            item.PeriodDate);
+        OutputDirectoryForPayment(item);
 
     private void OpenHistoryFolderButton_Click(object sender, RoutedEventArgs e)
     {
@@ -7644,28 +7628,7 @@ public partial class MainWindow : Window
             if (context is null) return;
             var latest = _homeOutputPayment ?? GetSelectedOutputPayment();
             if (latest is null) return;
-            var targetFolder = OehsOutputPathService.BuildPdfDirectoryForContractor(
-                latest.TenderNumber ?? string.Empty,
-                latest.ContractorName ?? string.Empty,
-                latest.ContractorTaxOrIdentityNumber ?? string.Empty,
-                latest.RouteNumber ?? string.Empty,
-                latest.Input.ProgramType,
-                latest.BatchRouteNumbers,
-                latest.PeriodDate);
-
-            var baseTargetPath = latest.ProgressPaymentNumber.HasValue && latest.PeriodDate.HasValue
-                ? OehsOutputPathService.BuildContractorPdfFilePath(
-                    latest.TenderNumber ?? string.Empty,
-                    latest.ContractorName ?? string.Empty,
-                    latest.ContractorTaxOrIdentityNumber ?? string.Empty,
-                    latest.RouteNumber ?? string.Empty,
-                    latest.ProgressPaymentNumber.Value,
-                    latest.PeriodDate.Value,
-                    latest.Input.ProgramType,
-                    latest.BatchRouteNumbers)
-                : Path.Combine(targetFolder, "OEHS_Hakedis.pdf");
-
-            var baseName = Path.GetFileNameWithoutExtension(baseTargetPath);
+            var targetFolder = OehsOutputPathService.BuildOfficialPdfDirectory(OehsRuntimePaths.DesktopRoot, latest);
             Directory.CreateDirectory(targetFolder);
 
             var outputs = OehsOfficialDocumentFactory.BuildSeparate(context);
@@ -7673,7 +7636,7 @@ public partial class MainWindow : Window
                 throw new InvalidOperationException("Dört resmî PDF şablonunun tamamı üretilemedi.");
 
             var targetPaths = outputs
-                .Select(output => Path.Combine(targetFolder, $"{baseName}_{output.FileSuffix}.pdf"))
+                .Select(output => OehsOutputPathService.BuildOfficialPdfFilePath(OehsRuntimePaths.DesktopRoot, latest, output.FileSuffix))
                 .ToArray();
 
             var existingPaths = targetPaths.Where(File.Exists).ToArray();
@@ -7699,9 +7662,9 @@ public partial class MainWindow : Window
 
             // Create all four new PDFs in a private staging folder first. No final
             // output is touched unless every file was generated and minimally checked.
-            stagingFolder = Path.Combine(targetFolder, ".oehs-pdf-staging-" + Guid.NewGuid().ToString("N"));
+            stagingFolder = Path.Combine(Path.GetTempPath(), "oehs-pdf-" + Guid.NewGuid().ToString("N"));
             var stagedPaths = outputs
-                .Select(output => Path.Combine(stagingFolder, $"{baseName}_{output.FileSuffix}.pdf"))
+                .Select((output, index) => Path.Combine(stagingFolder, $"{index}.pdf"))
                 .ToArray();
 
             for (var index = 0; index < outputs.Count; index++)
@@ -7717,7 +7680,7 @@ public partial class MainWindow : Window
 
             foreach (var targetPath in existingPaths)
             {
-                var backupPath = Path.Combine(backupFolder, Path.GetFileName(targetPath));
+                var backupPath = Path.Combine(backupFolder, $"{originals.Count}.pdf");
                 File.Copy(targetPath, backupPath, overwrite: false);
                 originals[targetPath] = backupPath;
             }

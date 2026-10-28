@@ -246,7 +246,7 @@
    <Setter Property="ItemContainerStyle" Value="{StaticResource HomeComboItem}"/>
    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ComboBox"><Grid>
     <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="5"/>
-    <ContentPresenter Margin="10,3,30,3" VerticalAlignment="Center" IsHitTestVisible="False" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"/>
+    <ContentPresenter Margin="10,3,30,3" VerticalAlignment="Center" IsHitTestVisible="False" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}"/>
     <Path Data="M0,0 L5,5 10,0" Stroke="#C6D9F0" StrokeThickness="1.5" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,12,0"/>
     <ToggleButton Focusable="False" ClickMode="Press" IsChecked="{Binding IsDropDownOpen,RelativeSource={RelativeSource TemplatedParent},Mode=TwoWay}"><ToggleButton.Template><ControlTemplate TargetType="ToggleButton"><Border Background="Transparent"/></ControlTemplate></ToggleButton.Template></ToggleButton>
     <Popup Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" Focusable="False"><Border Background="#0B2946" BorderBrush="#315371" BorderThickness="1" MinWidth="{Binding ActualWidth,RelativeSource={RelativeSource TemplatedParent}}" MaxHeight="280"><ScrollViewer CanContentScroll="True"><ItemsPresenter/></ScrollViewer></Border></Popup>
@@ -296,7 +296,7 @@
       </Grid>
       <Viewbox Height="39" Stretch="Uniform" StretchDirection="DownOnly" HorizontalAlignment="Left" Margin="0,8,0,0"><TextBlock x:Name="HomeTransportValue" Text="0,00 ₺" Foreground="#F4F7FF" FontFamily="Segoe UI" FontSize="30" FontWeight="Bold"/></Viewbox>
      </StackPanel></Grid></Border>
-<Border Style="{StaticResource HomeFinanceCard}" ToolTip="Taşıma ve rehber fiyat farkı; iskontolar sonrası, KDV hariç."><Grid><Border Width="4" Background="#F4C247" CornerRadius="2" HorizontalAlignment="Left"/><StackPanel Margin="13,12,10,10">
+<Border Style="{StaticResource HomeFinanceCard}" ToolTip="Girilen taşıma fiyat farkı toplamı; iskonto düşülmeden, KDV hariç. Rehber fiyat farkı bu karta dahil değildir."><Grid><Border Width="4" Background="#F4C247" CornerRadius="2" HorizontalAlignment="Left"/><StackPanel Margin="13,12,10,10">
       <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="32"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><ContentControl x:Name="HomeDifferenceIcon" Style="{StaticResource HomeFinanceIcon}" Content="{StaticResource HomeDifferenceGeometry}" Foreground="#F4F7FF"/>
        <TextBlock Grid.Column="1" Text="Fiyat Farkı" Foreground="#F4F7FF" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center" Margin="6,0,0,0"/>
       </Grid>

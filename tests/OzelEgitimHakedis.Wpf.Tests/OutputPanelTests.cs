@@ -66,7 +66,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
         {
             var window = PrepareOutputPanel(); var payment = (ProgressPaymentHistoryData)Collection(window, "_progressHistory")[0]!;
             Invoke(window, "UpdateReportView");
-            var target = OehsOutputPathService.BuildPdfDirectoryForContractor(payment.TenderNumber!, payment.ContractorName!, payment.ContractorTaxOrIdentityNumber!, payment.RouteNumber!, payment.Input.ProgramType, payment.BatchRouteNumbers, payment.PeriodDate);
+            var target = OehsOutputPathService.BuildOfficialPdfDirectory(OehsRuntimePaths.DesktopRoot, payment);
             Assert.Contains(target, Field<TextBlock>(window, "ReportPdfTargetTextBlock").Text, StringComparison.OrdinalIgnoreCase);
         });
     }
