@@ -16,6 +16,11 @@ public sealed class OehsFreshStartServiceTests
         File.WriteAllText(dataFile, "{\"old\":true}");
         File.WriteAllText(backupFile, "{\"oldBackup\":true}");
         File.WriteAllText(tempFile, "temporary");
+        var specialFile = Path.Combine(temp.DataRoot, "oehs-special-education.json");
+        var basicFile = Path.Combine(temp.DataRoot, "oehs-basic-secondary.json");
+        File.WriteAllText(specialFile, "{\"special\":true}");
+        File.WriteAllText(specialFile + ".bak", "{\"specialBackup\":true}");
+        File.WriteAllText(basicFile, "{\"basic\":true}");
 
         var outputFile = Path.Combine(temp.DesktopRoot, "Ciktilar", "Hakedisler", "old.pdf");
         Directory.CreateDirectory(Path.GetDirectoryName(outputFile)!);
@@ -27,6 +32,9 @@ public sealed class OehsFreshStartServiceTests
         Assert.False(File.Exists(dataFile));
         Assert.False(File.Exists(backupFile));
         Assert.False(File.Exists(tempFile));
+        Assert.False(File.Exists(specialFile));
+        Assert.False(File.Exists(specialFile + ".bak"));
+        Assert.False(File.Exists(basicFile));
         Assert.False(Directory.Exists(temp.DesktopRoot));
         Assert.True(File.Exists(Path.Combine(temp.DataRoot, ".fresh-start-version")));
 
@@ -34,6 +42,9 @@ public sealed class OehsFreshStartServiceTests
         Assert.Equal("{\"old\":true}", File.ReadAllText(Path.Combine(backupRoot, "oehs-data.json")));
         Assert.Equal("{\"oldBackup\":true}", File.ReadAllText(Path.Combine(backupRoot, "oehs-data.json.bak")));
         Assert.Equal("temporary", File.ReadAllText(Path.Combine(backupRoot, "oehs-data.json.tmp")));
+        Assert.Equal("{\"special\":true}", File.ReadAllText(Path.Combine(backupRoot, "oehs-special-education.json")));
+        Assert.Equal("{\"specialBackup\":true}", File.ReadAllText(Path.Combine(backupRoot, "oehs-special-education.json.bak")));
+        Assert.Equal("{\"basic\":true}", File.ReadAllText(Path.Combine(backupRoot, "oehs-basic-secondary.json")));
 
         var desktopBackup = Assert.Single(Directory.GetDirectories(temp.Root, "OzelEgitimHakedisSistemi.pre-reset-*"));
         Assert.Equal("old output", File.ReadAllText(Path.Combine(desktopBackup, "Ciktilar", "Hakedisler", "old.pdf")));

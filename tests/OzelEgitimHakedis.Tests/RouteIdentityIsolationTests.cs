@@ -25,6 +25,25 @@ public sealed class RouteIdentityIsolationTests
     }
 
     [Fact]
+    public void RouteAndPaymentKeys_ShouldRemainIndependentAcrossPrograms()
+    {
+        var specialRoute = OehsIdentityService.BuildRouteKey(
+            "IH-A", "01", "12345678901", "CONTRACT-1", TransportationProgramType.SpecialEducation);
+        var basicRoute = OehsIdentityService.BuildRouteKey(
+            "IH-A", "01", "12345678901", "CONTRACT-1", TransportationProgramType.BasicOrSecondary);
+
+        var specialPayment = OehsIdentityService.BuildProgressPaymentKey(
+            "IH-A", "01", "12345678901", 1, new DateOnly(2026, 10, 31), "CONTRACT-1",
+            TransportationProgramType.SpecialEducation);
+        var basicPayment = OehsIdentityService.BuildProgressPaymentKey(
+            "IH-A", "01", "12345678901", 1, new DateOnly(2026, 10, 31), "CONTRACT-1",
+            TransportationProgramType.BasicOrSecondary);
+
+        Assert.NotEqual(specialRoute, basicRoute);
+        Assert.NotEqual(specialPayment, basicPayment);
+    }
+
+    [Fact]
     public void ProgressPaymentKey_ShouldIncludeTenderRouteAndContractorIdentity()
     {
         var a = OehsIdentityService.BuildProgressPaymentKey(

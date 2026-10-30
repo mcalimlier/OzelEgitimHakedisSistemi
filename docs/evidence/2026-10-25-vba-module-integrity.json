@@ -1,0 +1,23 @@
+[
+  {
+    "Program": "SpecialEducation",
+    "SourceSha256": "C31CB024AC1EB59F3B88D2EE12234BE98D1F07056884374D8DAD108F674D7D1E",
+    "Module1BeforeSha256": "69DC64E3C2FF16A3660860EF9EC85AA343CC66B66D5E01172EA83393EC24E4BA",
+    "Module1AfterSha256": "69DC64E3C2FF16A3660860EF9EC85AA343CC66B66D5E01172EA83393EC24E4BA",
+    "OriginalUnchanged": true,
+    "DialogMode": "Known-dialog diagnostic adapter; original transfer Module1 unchanged",
+    "CopyCorrections": [
+      "AP3 November header",
+      "O4 first MATCH includes June"
+    ]
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "SourceSha256": "37A7818881AAE52E8B2FCF95F30A75E1F302DFCE1E91E2345F3473668A4D5296",
+    "Module1BeforeSha256": "234D848B1483696F1A2521E99A829D7563B7E0F7A03FC9AD4B8506E30B151F05",
+    "Module1AfterSha256": "234D848B1483696F1A2521E99A829D7563B7E0F7A03FC9AD4B8506E30B151F05",
+    "OriginalUnchanged": true,
+    "DialogMode": "Known-dialog diagnostic adapter; original transfer Module1 unchanged",
+    "CopyCorrections": "N3/Z3/AL3 full July period header"
+  }
+]

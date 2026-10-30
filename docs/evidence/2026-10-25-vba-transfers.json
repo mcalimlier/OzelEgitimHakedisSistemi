@@ -1,0 +1,492 @@
+[
+  {
+    "Program": "SpecialEducation",
+    "Period": "Ekim 2026",
+    "Macro": "HakedişToplamlariniAktar",
+    "Target": "E4",
+    "Sentinel": -999991,
+    "Expected": 58787.77,
+    "Actual": 58787.77,
+    "Pass": true
+  },
+  {
+    "Program": "SpecialEducation",
+    "Period": "Ekim 2026",
+    "Macro": "FiyatFarkıVerileriniAktar",
+    "Target": "Q4",
+    "Sentinel": -999991,
+    "Expected": 250.5,
+    "Actual": 250.5,
+    "Pass": true
+  },
+  {
+    "Program": "SpecialEducation",
+    "Period": "Ekim 2026",
+    "Macro": "RehberPersonelFiyatFarkıVerileriniAktar",
+    "Target": "AC4",
+    "Sentinel": -999991,
+    "Expected": 3500.0,
+    "Actual": 3500.0,
+    "Pass": true
+  },
+  {
+    "Program": "SpecialEducation",
+    "Period": "Ekim 2026",
+    "Macro": "KesintiBilgileriniAktarAktar",
+    "Target": "AO4",
+    "Sentinel": -999991,
+    "Expected": 25769.0616596,
+    "Actual": 25769.0616596,
+    "Pass": true
+  },
+  {
+    "Program": "SpecialEducation",
+    "Period": "Kasım 2026",
+    "Macro": "HakedişToplamlariniAktar",
+    "Target": "F4",
+    "Sentinel": -999991,
+    "Expected": 61233.02,
+    "Actual": 61233.02,
+    "Pass": true
+  },
+  {
+    "Program": "SpecialEducation",
+    "Period": "Kasım 2026",
+    "Macro": "FiyatFarkıVerileriniAktar",
+    "Target": "R4",
+    "Sentinel": -999991,
+    "Expected": 375.75,
+    "Actual": 375.75,
+    "Pass": true
+  },
+  {
+    "Program": "SpecialEducation",
+    "Period": "Kasım 2026",
+    "Macro": "RehberPersonelFiyatFarkıVerileriniAktar",
+    "Target": "AD4",
+    "Sentinel": -999991,
+    "Expected": 3500.0,
+    "Actual": 3500.0,
+    "Pass": true
+  },
+  {
+    "Program": "SpecialEducation",
+    "Period": "Kasım 2026",
+    "Macro": "KesintiBilgileriniAktarAktar",
+    "Target": "AP4",
+    "Sentinel": -999991,
+    "Expected": 25922.0201296,
+    "Actual": 25922.0201296,
+    "Pass": true
+  },
+  {
+    "Program": "SpecialEducation",
+    "Period": "Aralık 2026",
+    "Macro": "HakedişToplamlariniAktar",
+    "Target": "G4",
+    "Sentinel": -999991,
+    "Expected": 63678.27,
+    "Actual": 63678.27,
+    "Pass": true
+  },
+  {
+    "Program": "SpecialEducation",
+    "Period": "Aralık 2026",
+    "Macro": "FiyatFarkıVerileriniAktar",
+    "Target": "S4",
+    "Sentinel": -999991,
+    "Expected": 501.0,
+    "Actual": 501.0,
+    "Pass": true
+  },
+  {
+    "Program": "SpecialEducation",
+    "Period": "Aralık 2026",
+    "Macro": "RehberPersonelFiyatFarkıVerileriniAktar",
+    "Target": "AE4",
+    "Sentinel": -999991,
+    "Expected": 3500.0,
+    "Actual": 3500.0,
+    "Pass": true
+  },
+  {
+    "Program": "SpecialEducation",
+    "Period": "Aralık 2026",
+    "Macro": "KesintiBilgileriniAktarAktar",
+    "Target": "AQ4",
+    "Sentinel": -999991,
+    "Expected": 26074.9785996,
+    "Actual": 26074.9785996,
+    "Pass": true
+  },
+  {
+    "Program": "SpecialEducation",
+    "Period": "Ocak 2027",
+    "Macro": "HakedişToplamlariniAktar",
+    "Target": "H4",
+    "Sentinel": -999991,
+    "Expected": 66123.52,
+    "Actual": 66123.52,
+    "Pass": true
+  },
+  {
+    "Program": "SpecialEducation",
+    "Period": "Ocak 2027",
+    "Macro": "FiyatFarkıVerileriniAktar",
+    "Target": "T4",
+    "Sentinel": -999991,
+    "Expected": 626.25,
+    "Actual": 626.25,
+    "Pass": true
+  },
+  {
+    "Program": "SpecialEducation",
+    "Period": "Ocak 2027",
+    "Macro": "RehberPersonelFiyatFarkıVerileriniAktar",
+    "Target": "AF4",
+    "Sentinel": -999991,
+    "Expected": 3500.0,
+    "Actual": 3500.0,
+    "Pass": true
+  },
+  {
+    "Program": "SpecialEducation",
+    "Period": "Ocak 2027",
+    "Macro": "KesintiBilgileriniAktarAktar",
+    "Target": "AR4",
+    "Sentinel": -999991,
+    "Expected": 26227.9370696,
+    "Actual": 26227.9370696,
+    "Pass": true
+  },
+  {
+    "Program": "SpecialEducation",
+    "Period": "Mayıs 2027",
+    "Macro": "HakedişToplamlariniAktar",
+    "Target": "L4",
+    "Sentinel": -999991,
+    "Expected": 75904.52,
+    "Actual": 75904.52,
+    "Pass": true
+  },
+  {
+    "Program": "SpecialEducation",
+    "Period": "Mayıs 2027",
+    "Macro": "FiyatFarkıVerileriniAktar",
+    "Target": "X4",
+    "Sentinel": -999991,
+    "Expected": 1127.25,
+    "Actual": 1127.25,
+    "Pass": true
+  },
+  {
+    "Program": "SpecialEducation",
+    "Period": "Mayıs 2027",
+    "Macro": "RehberPersonelFiyatFarkıVerileriniAktar",
+    "Target": "AJ4",
+    "Sentinel": -999991,
+    "Expected": 3500.0,
+    "Actual": 3500.0,
+    "Pass": true
+  },
+  {
+    "Program": "SpecialEducation",
+    "Period": "Mayıs 2027",
+    "Macro": "KesintiBilgileriniAktarAktar",
+    "Target": "AV4",
+    "Sentinel": -999991,
+    "Expected": 26839.7709496,
+    "Actual": 26839.7709496,
+    "Pass": true
+  },
+  {
+    "Program": "SpecialEducation",
+    "Period": "Haziran 2027",
+    "Macro": "HakedişToplamlariniAktar",
+    "Target": "M4",
+    "Sentinel": -999991,
+    "Expected": 78349.77,
+    "Actual": 78349.77,
+    "Pass": true
+  },
+  {
+    "Program": "SpecialEducation",
+    "Period": "Haziran 2027",
+    "Macro": "FiyatFarkıVerileriniAktar",
+    "Target": "Y4",
+    "Sentinel": -999991,
+    "Expected": 1252.5,
+    "Actual": 1252.5,
+    "Pass": true
+  },
+  {
+    "Program": "SpecialEducation",
+    "Period": "Haziran 2027",
+    "Macro": "RehberPersonelFiyatFarkıVerileriniAktar",
+    "Target": "AK4",
+    "Sentinel": -999991,
+    "Expected": 3500.0,
+    "Actual": 3500.0,
+    "Pass": true
+  },
+  {
+    "Program": "SpecialEducation",
+    "Period": "Haziran 2027",
+    "Macro": "KesintiBilgileriniAktarAktar",
+    "Target": "AW4",
+    "Sentinel": -999991,
+    "Expected": 26992.7294196,
+    "Actual": 26992.7294196,
+    "Pass": true
+  },
+  {
+    "Program": "SpecialEducation",
+    "Period": "Temmuz 2027",
+    "Macro": "HakedişToplamlariniAktar",
+    "Target": "N4",
+    "Sentinel": -999991,
+    "Expected": 80795.02,
+    "Actual": 80795.02,
+    "Pass": true
+  },
+  {
+    "Program": "SpecialEducation",
+    "Period": "Temmuz 2027",
+    "Macro": "FiyatFarkıVerileriniAktar",
+    "Target": "Z4",
+    "Sentinel": -999991,
+    "Expected": 1377.75,
+    "Actual": 1377.75,
+    "Pass": true
+  },
+  {
+    "Program": "SpecialEducation",
+    "Period": "Temmuz 2027",
+    "Macro": "RehberPersonelFiyatFarkıVerileriniAktar",
+    "Target": "AL4",
+    "Sentinel": -999991,
+    "Expected": 3500.0,
+    "Actual": 3500.0,
+    "Pass": true
+  },
+  {
+    "Program": "SpecialEducation",
+    "Period": "Temmuz 2027",
+    "Macro": "KesintiBilgileriniAktarAktar",
+    "Target": "AX4",
+    "Sentinel": -999991,
+    "Expected": 27145.6878896,
+    "Actual": 27145.6878896,
+    "Pass": true
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "Period": "Ekim 2026",
+    "Macro": "HakedisTutarlariniAySutununaAktar",
+    "Target": "E4",
+    "Sentinel": -999991,
+    "Expected": 215181.2688,
+    "Actual": 215181.2688,
+    "Pass": true
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "Period": "Ekim 2026",
+    "Macro": "TasimaFiyatFarkiAktar",
+    "Target": "Q4",
+    "Sentinel": -999991,
+    "Expected": 250.5,
+    "Actual": 250.5,
+    "Pass": true
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "Period": "Ekim 2026",
+    "Macro": "KesintiToplamlariniAktar",
+    "Target": "AC4",
+    "Sentinel": -999991,
+    "Expected": 12814.011868224,
+    "Actual": 12814.011868224,
+    "Pass": true
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "Period": "Kasım 2026",
+    "Macro": "HakedisTutarlariniAySutununaAktar",
+    "Target": "F4",
+    "Sentinel": -999991,
+    "Expected": 234845.6796,
+    "Actual": 234845.6796,
+    "Pass": true
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "Period": "Kasım 2026",
+    "Macro": "TasimaFiyatFarkiAktar",
+    "Target": "R4",
+    "Sentinel": -999991,
+    "Expected": 375.75,
+    "Actual": 375.75,
+    "Pass": true
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "Period": "Kasım 2026",
+    "Macro": "KesintiToplamlariniAktar",
+    "Target": "AD4",
+    "Sentinel": -999991,
+    "Expected": 13991.166022608,
+    "Actual": 13991.166022608,
+    "Pass": true
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "Period": "Aralık 2026",
+    "Macro": "HakedisTutarlariniAySutununaAktar",
+    "Target": "G4",
+    "Sentinel": -999991,
+    "Expected": 254510.0904,
+    "Actual": 254510.0904,
+    "Pass": true
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "Period": "Aralık 2026",
+    "Macro": "TasimaFiyatFarkiAktar",
+    "Target": "S4",
+    "Sentinel": -999991,
+    "Expected": 501.0,
+    "Actual": 501.0,
+    "Pass": true
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "Period": "Aralık 2026",
+    "Macro": "KesintiToplamlariniAktar",
+    "Target": "AE4",
+    "Sentinel": -999991,
+    "Expected": 15168.320176992,
+    "Actual": 15168.320176992,
+    "Pass": true
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "Period": "Ocak 2027",
+    "Macro": "HakedisTutarlariniAySutununaAktar",
+    "Target": "H4",
+    "Sentinel": -999991,
+    "Expected": 274174.5012,
+    "Actual": 274174.5012,
+    "Pass": true
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "Period": "Ocak 2027",
+    "Macro": "TasimaFiyatFarkiAktar",
+    "Target": "T4",
+    "Sentinel": -999991,
+    "Expected": 626.25,
+    "Actual": 626.25,
+    "Pass": true
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "Period": "Ocak 2027",
+    "Macro": "KesintiToplamlariniAktar",
+    "Target": "AF4",
+    "Sentinel": -999991,
+    "Expected": 16345.474331376,
+    "Actual": 16345.474331376,
+    "Pass": true
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "Period": "Mayıs 2027",
+    "Macro": "HakedisTutarlariniAySutununaAktar",
+    "Target": "L4",
+    "Sentinel": -999991,
+    "Expected": 352832.1444,
+    "Actual": 352832.1444,
+    "Pass": true
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "Period": "Mayıs 2027",
+    "Macro": "TasimaFiyatFarkiAktar",
+    "Target": "X4",
+    "Sentinel": -999991,
+    "Expected": 1127.25,
+    "Actual": 1127.25,
+    "Pass": true
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "Period": "Mayıs 2027",
+    "Macro": "KesintiToplamlariniAktar",
+    "Target": "AJ4",
+    "Sentinel": -999991,
+    "Expected": 21054.090948912,
+    "Actual": 21054.090948912,
+    "Pass": true
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "Period": "Haziran 2027",
+    "Macro": "HakedisTutarlariniAySutununaAktar",
+    "Target": "M4",
+    "Sentinel": -999991,
+    "Expected": 372496.5552,
+    "Actual": 372496.5552,
+    "Pass": true
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "Period": "Haziran 2027",
+    "Macro": "TasimaFiyatFarkiAktar",
+    "Target": "Y4",
+    "Sentinel": -999991,
+    "Expected": 1252.5,
+    "Actual": 1252.5,
+    "Pass": true
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "Period": "Haziran 2027",
+    "Macro": "KesintiToplamlariniAktar",
+    "Target": "AK4",
+    "Sentinel": -999991,
+    "Expected": 22231.245103296,
+    "Actual": 22231.245103296,
+    "Pass": true
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "Period": "Temmuz 2027",
+    "Macro": "HakedisTutarlariniAySutununaAktar",
+    "Target": "N4",
+    "Sentinel": -999991,
+    "Expected": 392160.966,
+    "Actual": 392160.966,
+    "Pass": true
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "Period": "Temmuz 2027",
+    "Macro": "TasimaFiyatFarkiAktar",
+    "Target": "Z4",
+    "Sentinel": -999991,
+    "Expected": 1377.75,
+    "Actual": 1377.75,
+    "Pass": true
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "Period": "Temmuz 2027",
+    "Macro": "KesintiToplamlariniAktar",
+    "Target": "AL4",
+    "Sentinel": -999991,
+    "Expected": 23408.39925768,
+    "Actual": 23408.39925768,
+    "Pass": true
+  }
+]

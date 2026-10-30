@@ -1,0 +1,4286 @@
+{
+  "Sources": [
+    {
+      "File": "5-Taşıma Bordro GENEL (1).xlsx",
+      "Sha256": "1214d4a22611bd3c7b8332f2bc6fd1084497d8dd62165e9d3b264e87960ed669"
+    },
+    {
+      "File": "5-Taşıma Bordro.xlsx",
+      "Sha256": "cfe8ce2ddc2098072578560bebefa2c4b6443fc6a5edff3c8f23f78f1959ae27"
+    }
+  ],
+  "Samples": [
+    {
+      "File": "5-Taşıma Bordro GENEL (1).xlsx",
+      "Sheet": "Taşıma",
+      "Row": 2,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 1998,
+        "DiscountAmount": 0,
+        "PriceDifference": 1117.05,
+        "ContractAmount": 0,
+        "IsVatExempt": false,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G2",
+          "Property": "ServiceAmount",
+          "Value": 25974,
+          "Formula": "=E2*F2",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I2",
+          "Property": "TotalAmount",
+          "Value": 27091.05,
+          "Formula": "=E2*F2+J2-H2",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K2",
+          "Property": "Vat",
+          "Value": 2709.105,
+          "Formula": "=I2*10/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L2",
+          "Property": "Withholding",
+          "Value": 1354.5525,
+          "Formula": "=I2*5/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M2",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 28445.6025,
+          "Formula": "=I2+L2",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N2",
+          "Property": "GrossAmount",
+          "Value": 29800.155,
+          "Formula": "=I2+K2",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O2",
+          "Property": "StampTax",
+          "Value": 256.823154,
+          "Formula": "=I2*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P2",
+          "Property": "AdditionalGuarantee",
+          "Value": 67.023,
+          "Formula": "=J2*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T2",
+          "Property": "TotalDeductions",
+          "Value": 1678.3986539999999,
+          "Formula": "=L2+O2+P2+R2+S2+Q2",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U2",
+          "Property": "NetPayable",
+          "Value": 28121.756346,
+          "Formula": "=N2-T2",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro GENEL (1).xlsx",
+      "Sheet": "Taşıma",
+      "Row": 3,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 2128,
+        "DiscountAmount": 0,
+        "PriceDifference": 1189.73,
+        "ContractAmount": 0,
+        "IsVatExempt": false,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G3",
+          "Property": "ServiceAmount",
+          "Value": 27664,
+          "Formula": "=E3*F3",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I3",
+          "Property": "TotalAmount",
+          "Value": 28853.73,
+          "Formula": "=E3*F3+J3-H3",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K3",
+          "Property": "Vat",
+          "Value": 2885.373,
+          "Formula": "=I3*10/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L3",
+          "Property": "Withholding",
+          "Value": 1442.6865,
+          "Formula": "=I3*5/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M3",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 30296.4165,
+          "Formula": "=I3+L3",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N3",
+          "Property": "GrossAmount",
+          "Value": 31739.103,
+          "Formula": "=I3+K3",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O3",
+          "Property": "StampTax",
+          "Value": 273.5333604,
+          "Formula": "=I3*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P3",
+          "Property": "AdditionalGuarantee",
+          "Value": 71.38380000000001,
+          "Formula": "=J3*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T3",
+          "Property": "TotalDeductions",
+          "Value": 1787.6036604,
+          "Formula": "=L3+O3+P3+R3+S3+Q3",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U3",
+          "Property": "NetPayable",
+          "Value": 29951.4993396,
+          "Formula": "=N3-T3",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro GENEL (1).xlsx",
+      "Sheet": "Taşıma",
+      "Row": 4,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 1828,
+        "DiscountAmount": 0,
+        "PriceDifference": 1022,
+        "ContractAmount": 0,
+        "IsVatExempt": false,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G4",
+          "Property": "ServiceAmount",
+          "Value": 23764,
+          "Formula": "=E4*F4",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I4",
+          "Property": "TotalAmount",
+          "Value": 24786,
+          "Formula": "=E4*F4+J4-H4",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K4",
+          "Property": "Vat",
+          "Value": 2478.6,
+          "Formula": "=I4*10/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L4",
+          "Property": "Withholding",
+          "Value": 1239.3,
+          "Formula": "=I4*5/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M4",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 26025.3,
+          "Formula": "=I4+L4",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N4",
+          "Property": "GrossAmount",
+          "Value": 27264.6,
+          "Formula": "=I4+K4",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O4",
+          "Property": "StampTax",
+          "Value": 234.97128,
+          "Formula": "=I4*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P4",
+          "Property": "AdditionalGuarantee",
+          "Value": 61.32,
+          "Formula": "=J4*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T4",
+          "Property": "TotalDeductions",
+          "Value": 1535.5912799999999,
+          "Formula": "=L4+O4+P4+R4+S4+Q4",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U4",
+          "Property": "NetPayable",
+          "Value": 25729.008719999998,
+          "Formula": "=N4-T4",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro GENEL (1).xlsx",
+      "Sheet": "Taşıma",
+      "Row": 5,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 1828,
+        "DiscountAmount": 0,
+        "PriceDifference": 1022,
+        "ContractAmount": 0,
+        "IsVatExempt": false,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G5",
+          "Property": "ServiceAmount",
+          "Value": 23764,
+          "Formula": "=E5*F5",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I5",
+          "Property": "TotalAmount",
+          "Value": 24786,
+          "Formula": "=E5*F5+J5-H5",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K5",
+          "Property": "Vat",
+          "Value": 2478.6,
+          "Formula": "=I5*10/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L5",
+          "Property": "Withholding",
+          "Value": 1239.3,
+          "Formula": "=I5*5/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M5",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 26025.3,
+          "Formula": "=I5+L5",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N5",
+          "Property": "GrossAmount",
+          "Value": 27264.6,
+          "Formula": "=I5+K5",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O5",
+          "Property": "StampTax",
+          "Value": 234.97128,
+          "Formula": "=I5*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P5",
+          "Property": "AdditionalGuarantee",
+          "Value": 61.32,
+          "Formula": "=J5*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T5",
+          "Property": "TotalDeductions",
+          "Value": 1535.5912799999999,
+          "Formula": "=L5+O5+P5+R5+S5+Q5",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U5",
+          "Property": "NetPayable",
+          "Value": 25729.008719999998,
+          "Formula": "=N5-T5",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro GENEL (1).xlsx",
+      "Sheet": "Taşıma",
+      "Row": 6,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 2098,
+        "DiscountAmount": 0,
+        "PriceDifference": 1172.96,
+        "ContractAmount": 0,
+        "IsVatExempt": false,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G6",
+          "Property": "ServiceAmount",
+          "Value": 27274,
+          "Formula": "=E6*F6",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I6",
+          "Property": "TotalAmount",
+          "Value": 28446.96,
+          "Formula": "=E6*F6+J6-H6",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K6",
+          "Property": "Vat",
+          "Value": 2844.696,
+          "Formula": "=I6*10/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L6",
+          "Property": "Withholding",
+          "Value": 1422.348,
+          "Formula": "=I6*5/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M6",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 29869.307999999997,
+          "Formula": "=I6+L6",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N6",
+          "Property": "GrossAmount",
+          "Value": 31291.656,
+          "Formula": "=I6+K6",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O6",
+          "Property": "StampTax",
+          "Value": 269.67718080000003,
+          "Formula": "=I6*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P6",
+          "Property": "AdditionalGuarantee",
+          "Value": 70.3776,
+          "Formula": "=J6*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T6",
+          "Property": "TotalDeductions",
+          "Value": 1762.4027808,
+          "Formula": "=L6+O6+P6+R6+S6+Q6",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U6",
+          "Property": "NetPayable",
+          "Value": 29529.2532192,
+          "Formula": "=N6-T6",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro GENEL (1).xlsx",
+      "Sheet": "Taşıma",
+      "Row": 7,
+      "Input": {
+        "WorkDays": 5,
+        "DailyPrice": 2398,
+        "DiscountAmount": 0,
+        "PriceDifference": 515.64,
+        "ContractAmount": 0,
+        "IsVatExempt": false,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G7",
+          "Property": "ServiceAmount",
+          "Value": 11990,
+          "Formula": "=E7*F7",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I7",
+          "Property": "TotalAmount",
+          "Value": 12505.64,
+          "Formula": "=E7*F7+J7-H7",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K7",
+          "Property": "Vat",
+          "Value": 1250.5639999999999,
+          "Formula": "=I7*10/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L7",
+          "Property": "Withholding",
+          "Value": 625.2819999999999,
+          "Formula": "=I7*5/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M7",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 13130.921999999999,
+          "Formula": "=I7+L7",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N7",
+          "Property": "GrossAmount",
+          "Value": 13756.204,
+          "Formula": "=I7+K7",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O7",
+          "Property": "StampTax",
+          "Value": 118.5534672,
+          "Formula": "=I7*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P7",
+          "Property": "AdditionalGuarantee",
+          "Value": 30.9384,
+          "Formula": "=J7*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T7",
+          "Property": "TotalDeductions",
+          "Value": 774.7738671999999,
+          "Formula": "=L7+O7+P7+R7+S7+Q7",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U7",
+          "Property": "NetPayable",
+          "Value": 12981.4301328,
+          "Formula": "=N7-T7",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro GENEL (1).xlsx",
+      "Sheet": "Taşıma",
+      "Row": 8,
+      "Input": {
+        "WorkDays": 8,
+        "DailyPrice": 2446.9323,
+        "DiscountAmount": 0,
+        "PriceDifference": 841.87,
+        "ContractAmount": 0,
+        "IsVatExempt": false,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G8",
+          "Property": "ServiceAmount",
+          "Value": 19575.4584,
+          "Formula": "=E8*F8",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I8",
+          "Property": "TotalAmount",
+          "Value": 20417.3284,
+          "Formula": "=E8*F8+J8-H8",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K8",
+          "Property": "Vat",
+          "Value": 2041.73284,
+          "Formula": "=I8*10/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L8",
+          "Property": "Withholding",
+          "Value": 1020.86642,
+          "Formula": "=I8*5/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M8",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 21438.194819999997,
+          "Formula": "=I8+L8",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N8",
+          "Property": "GrossAmount",
+          "Value": 22459.06124,
+          "Formula": "=I8+K8",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O8",
+          "Property": "StampTax",
+          "Value": 193.556273232,
+          "Formula": "=I8*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P8",
+          "Property": "AdditionalGuarantee",
+          "Value": 50.5122,
+          "Formula": "=J8*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T8",
+          "Property": "TotalDeductions",
+          "Value": 1264.934893232,
+          "Formula": "=L8+O8+P8+R8+S8+Q8",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U8",
+          "Property": "NetPayable",
+          "Value": 21194.126346768,
+          "Formula": "=N8-T8",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro GENEL (1).xlsx",
+      "Sheet": "Taşıma",
+      "Row": 9,
+      "Input": {
+        "WorkDays": 2,
+        "DailyPrice": 2328,
+        "DiscountAmount": 0,
+        "PriceDifference": 200.23,
+        "ContractAmount": 0,
+        "IsVatExempt": false,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G9",
+          "Property": "ServiceAmount",
+          "Value": 4656,
+          "Formula": "=E9*F9",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I9",
+          "Property": "TotalAmount",
+          "Value": 4856.23,
+          "Formula": "=E9*F9+J9-H9",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K9",
+          "Property": "Vat",
+          "Value": 485.62299999999993,
+          "Formula": "=I9*10/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L9",
+          "Property": "Withholding",
+          "Value": 242.81149999999997,
+          "Formula": "=I9*5/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M9",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 5099.041499999999,
+          "Formula": "=I9+L9",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N9",
+          "Property": "GrossAmount",
+          "Value": 5341.852999999999,
+          "Formula": "=I9+K9",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O9",
+          "Property": "StampTax",
+          "Value": 46.037060399999994,
+          "Formula": "=I9*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P9",
+          "Property": "AdditionalGuarantee",
+          "Value": 12.013799999999998,
+          "Formula": "=J9*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T9",
+          "Property": "TotalDeductions",
+          "Value": 300.86236039999994,
+          "Formula": "=L9+O9+P9+R9+S9+Q9",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U9",
+          "Property": "NetPayable",
+          "Value": 5040.990639599999,
+          "Formula": "=N9-T9",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro GENEL (1).xlsx",
+      "Sheet": "Taşıma",
+      "Row": 10,
+      "Input": {
+        "WorkDays": 11,
+        "DailyPrice": 2486.2285,
+        "DiscountAmount": 0,
+        "PriceDifference": 283.87,
+        "ContractAmount": 0,
+        "IsVatExempt": false,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G10",
+          "Property": "ServiceAmount",
+          "Value": 27348.5135,
+          "Formula": "=E10*F10",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I10",
+          "Property": "TotalAmount",
+          "Value": 27632.3835,
+          "Formula": "=E10*F10+J10-H10",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K10",
+          "Property": "Vat",
+          "Value": 2763.23835,
+          "Formula": "=I10*10/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L10",
+          "Property": "Withholding",
+          "Value": 1381.619175,
+          "Formula": "=I10*5/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M10",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 29014.002675,
+          "Formula": "=I10+L10",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N10",
+          "Property": "GrossAmount",
+          "Value": 30395.62185,
+          "Formula": "=I10+K10",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O10",
+          "Property": "StampTax",
+          "Value": 261.95499558,
+          "Formula": "=I10*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P10",
+          "Property": "AdditionalGuarantee",
+          "Value": 17.0322,
+          "Formula": "=J10*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T10",
+          "Property": "TotalDeductions",
+          "Value": 1660.6063705800002,
+          "Formula": "=L10+O10+P10+R10+S10+Q10",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U10",
+          "Property": "NetPayable",
+          "Value": 28735.01547942,
+          "Formula": "=N10-T10",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro GENEL (1).xlsx",
+      "Sheet": "Taşıma",
+      "Row": 12,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 2930,
+        "DiscountAmount": 0,
+        "PriceDifference": 1638.12,
+        "ContractAmount": 0,
+        "IsVatExempt": true,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G12",
+          "Property": "ServiceAmount",
+          "Value": 38090,
+          "Formula": "=E12*F12",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I12",
+          "Property": "TotalAmount",
+          "Value": 39728.12,
+          "Formula": "=E12*F12+J12-H12",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K12",
+          "Property": "Vat",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L12",
+          "Property": "Withholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M12",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 39728.12,
+          "Formula": "=I12+L12",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N12",
+          "Property": "GrossAmount",
+          "Value": 39728.12,
+          "Formula": "=I12+K12",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O12",
+          "Property": "StampTax",
+          "Value": 376.6225776,
+          "Formula": "=I12*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P12",
+          "Property": "AdditionalGuarantee",
+          "Value": 98.2872,
+          "Formula": "=J12*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T12",
+          "Property": "TotalDeductions",
+          "Value": 474.9097776,
+          "Formula": "=S12+R12+P12+O12+L12+Q12",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U12",
+          "Property": "NetPayable",
+          "Value": 39253.210222400005,
+          "Formula": "=N12-T12",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro GENEL (1).xlsx",
+      "Sheet": "Taşıma",
+      "Row": 13,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 2015,
+        "DiscountAmount": 0,
+        "PriceDifference": 1126.55,
+        "ContractAmount": 0,
+        "IsVatExempt": true,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G13",
+          "Property": "ServiceAmount",
+          "Value": 26195,
+          "Formula": "=E13*F13",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I13",
+          "Property": "TotalAmount",
+          "Value": 27321.55,
+          "Formula": "=E13*F13+J13-H13",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K13",
+          "Property": "Vat",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L13",
+          "Property": "Withholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M13",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 27321.55,
+          "Formula": "=I13+L13",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N13",
+          "Property": "GrossAmount",
+          "Value": 27321.55,
+          "Formula": "=I13+K13",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O13",
+          "Property": "StampTax",
+          "Value": 259.008294,
+          "Formula": "=I13*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P13",
+          "Property": "AdditionalGuarantee",
+          "Value": 67.59299999999999,
+          "Formula": "=J13*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T13",
+          "Property": "TotalDeductions",
+          "Value": 326.60129399999994,
+          "Formula": "=S13+R13+P13+O13+L13+Q13",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U13",
+          "Property": "NetPayable",
+          "Value": 26994.948706,
+          "Formula": "=N13-T13",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro GENEL (1).xlsx",
+      "Sheet": "Taşıma",
+      "Row": 14,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 1600,
+        "DiscountAmount": 0,
+        "PriceDifference": 894.53,
+        "ContractAmount": 0,
+        "IsVatExempt": true,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G14",
+          "Property": "ServiceAmount",
+          "Value": 20800,
+          "Formula": "=E14*F14",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I14",
+          "Property": "TotalAmount",
+          "Value": 21694.53,
+          "Formula": "=E14*F14+J14-H14",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K14",
+          "Property": "Vat",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L14",
+          "Property": "Withholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M14",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 21694.53,
+          "Formula": "=I14+L14",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N14",
+          "Property": "GrossAmount",
+          "Value": 21694.53,
+          "Formula": "=I14+K14",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O14",
+          "Property": "StampTax",
+          "Value": 205.6641444,
+          "Formula": "=I14*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P14",
+          "Property": "AdditionalGuarantee",
+          "Value": 53.671800000000005,
+          "Formula": "=J14*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T14",
+          "Property": "TotalDeductions",
+          "Value": 259.3359444,
+          "Formula": "=S14+R14+P14+O14+L14+Q14",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U14",
+          "Property": "NetPayable",
+          "Value": 21435.194055599997,
+          "Formula": "=N14-T14",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro GENEL (1).xlsx",
+      "Sheet": "Taşıma",
+      "Row": 16,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 1665,
+        "DiscountAmount": 0,
+        "PriceDifference": 930.87,
+        "ContractAmount": 0,
+        "IsVatExempt": true,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G16",
+          "Property": "ServiceAmount",
+          "Value": 21645,
+          "Formula": "=E16*F16",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I16",
+          "Property": "TotalAmount",
+          "Value": 22575.87,
+          "Formula": "=E16*F16+J16-H16",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K16",
+          "Property": "Vat",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L16",
+          "Property": "Withholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M16",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 22575.87,
+          "Formula": "=I16+L16",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N16",
+          "Property": "GrossAmount",
+          "Value": 22575.87,
+          "Formula": "=I16+K16",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O16",
+          "Property": "StampTax",
+          "Value": 214.0192476,
+          "Formula": "=I16*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P16",
+          "Property": "AdditionalGuarantee",
+          "Value": 55.8522,
+          "Formula": "=J16*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T16",
+          "Property": "TotalDeductions",
+          "Value": 269.8714476,
+          "Formula": "=S16+R16+P16+O16+L16+Q16",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U16",
+          "Property": "NetPayable",
+          "Value": 22305.9985524,
+          "Formula": "=N16-T16",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro GENEL (1).xlsx",
+      "Sheet": "Taşıma",
+      "Row": 17,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 2540,
+        "DiscountAmount": 0,
+        "PriceDifference": 1420.07,
+        "ContractAmount": 0,
+        "IsVatExempt": true,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G17",
+          "Property": "ServiceAmount",
+          "Value": 33020,
+          "Formula": "=E17*F17",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I17",
+          "Property": "TotalAmount",
+          "Value": 34440.07,
+          "Formula": "=E17*F17+J17-H17",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K17",
+          "Property": "Vat",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L17",
+          "Property": "Withholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M17",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 34440.07,
+          "Formula": "=I17+L17",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N17",
+          "Property": "GrossAmount",
+          "Value": 34440.07,
+          "Formula": "=I17+K17",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O17",
+          "Property": "StampTax",
+          "Value": 326.49186360000004,
+          "Formula": "=I17*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P17",
+          "Property": "AdditionalGuarantee",
+          "Value": 85.2042,
+          "Formula": "=J17*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T17",
+          "Property": "TotalDeductions",
+          "Value": 411.69606360000006,
+          "Formula": "=S17+R17+P17+O17+L17+Q17",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U17",
+          "Property": "NetPayable",
+          "Value": 34028.3739364,
+          "Formula": "=N17-T17",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro GENEL (1).xlsx",
+      "Sheet": "Taşıma",
+      "Row": 18,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 1930,
+        "DiscountAmount": 0,
+        "PriceDifference": 1079.03,
+        "ContractAmount": 0,
+        "IsVatExempt": true,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G18",
+          "Property": "ServiceAmount",
+          "Value": 25090,
+          "Formula": "=E18*F18",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I18",
+          "Property": "TotalAmount",
+          "Value": 26169.03,
+          "Formula": "=E18*F18+J18-H18",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K18",
+          "Property": "Vat",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L18",
+          "Property": "Withholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M18",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 26169.03,
+          "Formula": "=I18+L18",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N18",
+          "Property": "GrossAmount",
+          "Value": 26169.03,
+          "Formula": "=I18+K18",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O18",
+          "Property": "StampTax",
+          "Value": 248.0824044,
+          "Formula": "=I18*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P18",
+          "Property": "AdditionalGuarantee",
+          "Value": 64.7418,
+          "Formula": "=J18*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T18",
+          "Property": "TotalDeductions",
+          "Value": 312.8242044,
+          "Formula": "=S18+R18+P18+O18+L18+Q18",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U18",
+          "Property": "NetPayable",
+          "Value": 25856.2057956,
+          "Formula": "=N18-T18",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro GENEL (1).xlsx",
+      "Sheet": "Taşıma",
+      "Row": 20,
+      "Input": {
+        "WorkDays": 2,
+        "DailyPrice": 2249,
+        "DiscountAmount": 0,
+        "PriceDifference": 494.68,
+        "ContractAmount": 0,
+        "IsVatExempt": true,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G20",
+          "Property": "ServiceAmount",
+          "Value": 4498,
+          "Formula": "=E20*F20",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I20",
+          "Property": "TotalAmount",
+          "Value": 4992.68,
+          "Formula": "=E20*F20+J20-H20",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K20",
+          "Property": "Vat",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L20",
+          "Property": "Withholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M20",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 4992.68,
+          "Formula": "=I20",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N20",
+          "Property": "GrossAmount",
+          "Value": 4992.68,
+          "Formula": "=I20+K20",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O20",
+          "Property": "StampTax",
+          "Value": 47.33060640000001,
+          "Formula": "=I20*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P20",
+          "Property": "AdditionalGuarantee",
+          "Value": 29.680799999999998,
+          "Formula": "=J20*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T20",
+          "Property": "TotalDeductions",
+          "Value": 77.0114064,
+          "Formula": "=S20+R20+P20+O20+L20",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U20",
+          "Property": "NetPayable",
+          "Value": 4915.6685936,
+          "Formula": "=N20-T20",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro GENEL (1).xlsx",
+      "Sheet": "Taşıma",
+      "Row": 21,
+      "Input": {
+        "WorkDays": 11,
+        "DailyPrice": 2608.1601,
+        "DiscountAmount": 0,
+        "PriceDifference": 3155.29,
+        "ContractAmount": 0,
+        "IsVatExempt": true,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G21",
+          "Property": "ServiceAmount",
+          "Value": 28689.7611,
+          "Formula": "=E21*F21",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I21",
+          "Property": "TotalAmount",
+          "Value": 31845.0511,
+          "Formula": "=E21*F21+J21-H21",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K21",
+          "Property": "Vat",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L21",
+          "Property": "Withholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M21",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": true,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N21",
+          "Property": "GrossAmount",
+          "Value": 31845.0511,
+          "Formula": "=I21+K21",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O21",
+          "Property": "StampTax",
+          "Value": 301.89108442800006,
+          "Formula": "=I21*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P21",
+          "Property": "AdditionalGuarantee",
+          "Value": 189.3174,
+          "Formula": "=J21*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T21",
+          "Property": "TotalDeductions",
+          "Value": 491.208484428,
+          "Formula": "=S21+R21+P21+O21+L21",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U21",
+          "Property": "NetPayable",
+          "Value": 31353.842615572,
+          "Formula": "=N21-T21",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro GENEL (1).xlsx",
+      "Sheet": "Taşıma",
+      "Row": 23,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 2810,
+        "DiscountAmount": 0,
+        "PriceDifference": 1571.03,
+        "ContractAmount": 0,
+        "IsVatExempt": false,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G23",
+          "Property": "ServiceAmount",
+          "Value": 36530,
+          "Formula": "=E23*F23",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I23",
+          "Property": "TotalAmount",
+          "Value": 38101.03,
+          "Formula": "=E23*F23+J23-H23",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K23",
+          "Property": "Vat",
+          "Value": 3810.103,
+          "Formula": "=I23*10/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L23",
+          "Property": "Withholding",
+          "Value": 1905.0515,
+          "Formula": "=I23*5/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M23",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 38101.03,
+          "Formula": "=I23",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": true
+        },
+        {
+          "Cell": "N23",
+          "Property": "GrossAmount",
+          "Value": 41911.133,
+          "Formula": "=I23+K23",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O23",
+          "Property": "StampTax",
+          "Value": 361.1977644,
+          "Formula": "=I23*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P23",
+          "Property": "AdditionalGuarantee",
+          "Value": 94.26180000000001,
+          "Formula": "=J23*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T23",
+          "Property": "TotalDeductions",
+          "Value": 2360.5110644,
+          "Formula": "=S23+R23+P23+O23+L23",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U23",
+          "Property": "NetPayable",
+          "Value": 39550.6219356,
+          "Formula": "=N23-T23",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro GENEL (1).xlsx",
+      "Sheet": "Özel Eğitim",
+      "Row": 2,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 2320,
+        "DiscountAmount": 0,
+        "PriceDifference": 1403.573,
+        "ContractAmount": 0,
+        "IsVatExempt": true,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "GuideWorkDays": 17,
+        "GuideDailyPrice": 1362.49,
+        "GuideDiscountAmount": 0,
+        "GuidePriceDifference": 0,
+        "ProgramType": 0
+      },
+      "Expected": [
+        {
+          "Cell": "H2",
+          "Property": "ServiceAmount",
+          "Value": 30160,
+          "Formula": "=D2*E2",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I2",
+          "Property": "GuideServiceAmount",
+          "Value": 23162.33,
+          "Formula": "=F2*G2+K2",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L2",
+          "Property": "TotalAmount",
+          "Value": 54725.903,
+          "Formula": "=H2+I2+J2",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M2",
+          "Property": "TransportVat",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N2",
+          "Property": "TransportWithholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O2",
+          "Property": "GuideVat",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P2",
+          "Property": "GuideWithholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "Q2",
+          "Property": "GrossAmount",
+          "Value": 54725.903,
+          "Formula": "=L2+M2+O2",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "R2",
+          "Property": "AdditionalGuarantee",
+          "Value": 84.21438,
+          "Formula": "=(J2+K2)*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "S2",
+          "Property": "StampTax",
+          "Value": 518.80156044,
+          "Formula": "=L2*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "V2",
+          "Property": "NetPayable",
+          "Value": 54122.88705956,
+          "Formula": "=Q2-S2-R2-P2-N2-T2-U2",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro GENEL (1).xlsx",
+      "Sheet": "Özel Eğitim",
+      "Row": 3,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 2184,
+        "DiscountAmount": 0,
+        "PriceDifference": 1321.2946,
+        "ContractAmount": 0,
+        "IsVatExempt": true,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "GuideWorkDays": 17,
+        "GuideDailyPrice": 1362.49,
+        "GuideDiscountAmount": 0,
+        "GuidePriceDifference": 0,
+        "ProgramType": 0
+      },
+      "Expected": [
+        {
+          "Cell": "H3",
+          "Property": "ServiceAmount",
+          "Value": 28392,
+          "Formula": "=D3*E3",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I3",
+          "Property": "GuideServiceAmount",
+          "Value": 23162.33,
+          "Formula": "=F3*G3+K3",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L3",
+          "Property": "TotalAmount",
+          "Value": 52875.6246,
+          "Formula": "=H3+I3+J3",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M3",
+          "Property": "TransportVat",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N3",
+          "Property": "TransportWithholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O3",
+          "Property": "GuideVat",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P3",
+          "Property": "GuideWithholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "Q3",
+          "Property": "GrossAmount",
+          "Value": 52875.6246,
+          "Formula": "=L3+M3+O3",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "R3",
+          "Property": "AdditionalGuarantee",
+          "Value": 79.27767599999999,
+          "Formula": "=(J3+K3)*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "S3",
+          "Property": "StampTax",
+          "Value": 501.26092120800007,
+          "Formula": "=L3*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "V3",
+          "Property": "NetPayable",
+          "Value": 52295.086002792006,
+          "Formula": "=Q3-S3-R3-P3-N3-T3-U3",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro GENEL (1).xlsx",
+      "Sheet": "Özel Eğitim",
+      "Row": 4,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 1894,
+        "DiscountAmount": 0,
+        "PriceDifference": 1145.848,
+        "ContractAmount": 0,
+        "IsVatExempt": true,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "GuideWorkDays": 17,
+        "GuideDailyPrice": 1362.49,
+        "GuideDiscountAmount": 0,
+        "GuidePriceDifference": 0,
+        "ProgramType": 0
+      },
+      "Expected": [
+        {
+          "Cell": "H4",
+          "Property": "ServiceAmount",
+          "Value": 24622,
+          "Formula": "=D4*E4",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I4",
+          "Property": "GuideServiceAmount",
+          "Value": 23162.33,
+          "Formula": "=F4*G4+K4",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L4",
+          "Property": "TotalAmount",
+          "Value": 48930.178,
+          "Formula": "=H4+I4+J4",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M4",
+          "Property": "TransportVat",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N4",
+          "Property": "TransportWithholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O4",
+          "Property": "GuideVat",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P4",
+          "Property": "GuideWithholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "Q4",
+          "Property": "GrossAmount",
+          "Value": 48930.178,
+          "Formula": "=L4",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "R4",
+          "Property": "AdditionalGuarantee",
+          "Value": 68.75088,
+          "Formula": "=(J4+K4)*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "S4",
+          "Property": "StampTax",
+          "Value": 463.85808744,
+          "Formula": "=L4*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "V4",
+          "Property": "NetPayable",
+          "Value": 48397.56903256,
+          "Formula": "=Q4-S4-R4-P4-N4-T4-U4",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro.xlsx",
+      "Sheet": "Taşıma",
+      "Row": 2,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 1998,
+        "DiscountAmount": 0,
+        "PriceDifference": 1117.05,
+        "ContractAmount": 0,
+        "IsVatExempt": false,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G2",
+          "Property": "ServiceAmount",
+          "Value": 25974,
+          "Formula": "=E2*F2",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I2",
+          "Property": "TotalAmount",
+          "Value": 27091.05,
+          "Formula": "=E2*F2+J2-H2",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K2",
+          "Property": "Vat",
+          "Value": 2709.105,
+          "Formula": "=I2*10/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L2",
+          "Property": "Withholding",
+          "Value": 1354.5525,
+          "Formula": "=I2*5/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M2",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 28445.6025,
+          "Formula": "=I2+L2",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N2",
+          "Property": "GrossAmount",
+          "Value": 29800.155,
+          "Formula": "=I2+K2",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O2",
+          "Property": "StampTax",
+          "Value": 256.823154,
+          "Formula": "=I2*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P2",
+          "Property": "AdditionalGuarantee",
+          "Value": 67.023,
+          "Formula": "=J2*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T2",
+          "Property": "TotalDeductions",
+          "Value": 1678.3986539999999,
+          "Formula": "=L2+O2+P2+R2+S2+Q2",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U2",
+          "Property": "NetPayable",
+          "Value": 28121.756346,
+          "Formula": "=N2-T2",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro.xlsx",
+      "Sheet": "Taşıma",
+      "Row": 3,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 2128,
+        "DiscountAmount": 0,
+        "PriceDifference": 1189.73,
+        "ContractAmount": 0,
+        "IsVatExempt": false,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G3",
+          "Property": "ServiceAmount",
+          "Value": 27664,
+          "Formula": "=E3*F3",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I3",
+          "Property": "TotalAmount",
+          "Value": 28853.73,
+          "Formula": "=E3*F3+J3-H3",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K3",
+          "Property": "Vat",
+          "Value": 2885.373,
+          "Formula": "=I3*10/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L3",
+          "Property": "Withholding",
+          "Value": 1442.6865,
+          "Formula": "=I3*5/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M3",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 30296.4165,
+          "Formula": "=I3+L3",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N3",
+          "Property": "GrossAmount",
+          "Value": 31739.103,
+          "Formula": "=I3+K3",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O3",
+          "Property": "StampTax",
+          "Value": 273.5333604,
+          "Formula": "=I3*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P3",
+          "Property": "AdditionalGuarantee",
+          "Value": 71.38380000000001,
+          "Formula": "=J3*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T3",
+          "Property": "TotalDeductions",
+          "Value": 1787.6036604,
+          "Formula": "=L3+O3+P3+R3+S3+Q3",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U3",
+          "Property": "NetPayable",
+          "Value": 29951.4993396,
+          "Formula": "=N3-T3",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro.xlsx",
+      "Sheet": "Taşıma",
+      "Row": 4,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 1828,
+        "DiscountAmount": 0,
+        "PriceDifference": 1022,
+        "ContractAmount": 0,
+        "IsVatExempt": false,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G4",
+          "Property": "ServiceAmount",
+          "Value": 23764,
+          "Formula": "=E4*F4",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I4",
+          "Property": "TotalAmount",
+          "Value": 24786,
+          "Formula": "=E4*F4+J4-H4",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K4",
+          "Property": "Vat",
+          "Value": 2478.6,
+          "Formula": "=I4*10/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L4",
+          "Property": "Withholding",
+          "Value": 1239.3,
+          "Formula": "=I4*5/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M4",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 26025.3,
+          "Formula": "=I4+L4",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N4",
+          "Property": "GrossAmount",
+          "Value": 27264.6,
+          "Formula": "=I4+K4",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O4",
+          "Property": "StampTax",
+          "Value": 234.97128,
+          "Formula": "=I4*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P4",
+          "Property": "AdditionalGuarantee",
+          "Value": 61.32,
+          "Formula": "=J4*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T4",
+          "Property": "TotalDeductions",
+          "Value": 1535.5912799999999,
+          "Formula": "=L4+O4+P4+R4+S4+Q4",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U4",
+          "Property": "NetPayable",
+          "Value": 25729.008719999998,
+          "Formula": "=N4-T4",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro.xlsx",
+      "Sheet": "Taşıma",
+      "Row": 5,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 1828,
+        "DiscountAmount": 0,
+        "PriceDifference": 1022,
+        "ContractAmount": 0,
+        "IsVatExempt": false,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G5",
+          "Property": "ServiceAmount",
+          "Value": 23764,
+          "Formula": "=E5*F5",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I5",
+          "Property": "TotalAmount",
+          "Value": 24786,
+          "Formula": "=E5*F5+J5-H5",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K5",
+          "Property": "Vat",
+          "Value": 2478.6,
+          "Formula": "=I5*10/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L5",
+          "Property": "Withholding",
+          "Value": 1239.3,
+          "Formula": "=I5*5/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M5",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 26025.3,
+          "Formula": "=I5+L5",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N5",
+          "Property": "GrossAmount",
+          "Value": 27264.6,
+          "Formula": "=I5+K5",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O5",
+          "Property": "StampTax",
+          "Value": 234.97128,
+          "Formula": "=I5*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P5",
+          "Property": "AdditionalGuarantee",
+          "Value": 61.32,
+          "Formula": "=J5*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T5",
+          "Property": "TotalDeductions",
+          "Value": 1535.5912799999999,
+          "Formula": "=L5+O5+P5+R5+S5+Q5",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U5",
+          "Property": "NetPayable",
+          "Value": 25729.008719999998,
+          "Formula": "=N5-T5",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro.xlsx",
+      "Sheet": "Taşıma",
+      "Row": 6,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 2098,
+        "DiscountAmount": 0,
+        "PriceDifference": 1172.96,
+        "ContractAmount": 0,
+        "IsVatExempt": false,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G6",
+          "Property": "ServiceAmount",
+          "Value": 27274,
+          "Formula": "=E6*F6",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I6",
+          "Property": "TotalAmount",
+          "Value": 28446.96,
+          "Formula": "=E6*F6+J6-H6",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K6",
+          "Property": "Vat",
+          "Value": 2844.696,
+          "Formula": "=I6*10/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L6",
+          "Property": "Withholding",
+          "Value": 1422.348,
+          "Formula": "=I6*5/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M6",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 29869.307999999997,
+          "Formula": "=I6+L6",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N6",
+          "Property": "GrossAmount",
+          "Value": 31291.656,
+          "Formula": "=I6+K6",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O6",
+          "Property": "StampTax",
+          "Value": 269.67718080000003,
+          "Formula": "=I6*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P6",
+          "Property": "AdditionalGuarantee",
+          "Value": 70.3776,
+          "Formula": "=J6*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T6",
+          "Property": "TotalDeductions",
+          "Value": 1762.4027808,
+          "Formula": "=L6+O6+P6+R6+S6+Q6",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U6",
+          "Property": "NetPayable",
+          "Value": 29529.2532192,
+          "Formula": "=N6-T6",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro.xlsx",
+      "Sheet": "Taşıma",
+      "Row": 7,
+      "Input": {
+        "WorkDays": 5,
+        "DailyPrice": 2398,
+        "DiscountAmount": 0,
+        "PriceDifference": 515.64,
+        "ContractAmount": 0,
+        "IsVatExempt": false,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G7",
+          "Property": "ServiceAmount",
+          "Value": 11990,
+          "Formula": "=E7*F7",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I7",
+          "Property": "TotalAmount",
+          "Value": 12505.64,
+          "Formula": "=E7*F7+J7-H7",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K7",
+          "Property": "Vat",
+          "Value": 1250.5639999999999,
+          "Formula": "=I7*10/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L7",
+          "Property": "Withholding",
+          "Value": 625.2819999999999,
+          "Formula": "=I7*5/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M7",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 13130.921999999999,
+          "Formula": "=I7+L7",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N7",
+          "Property": "GrossAmount",
+          "Value": 13756.204,
+          "Formula": "=I7+K7",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O7",
+          "Property": "StampTax",
+          "Value": 118.5534672,
+          "Formula": "=I7*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P7",
+          "Property": "AdditionalGuarantee",
+          "Value": 30.9384,
+          "Formula": "=J7*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T7",
+          "Property": "TotalDeductions",
+          "Value": 774.7738671999999,
+          "Formula": "=L7+O7+P7+R7+S7+Q7",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U7",
+          "Property": "NetPayable",
+          "Value": 12981.4301328,
+          "Formula": "=N7-T7",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro.xlsx",
+      "Sheet": "Taşıma",
+      "Row": 8,
+      "Input": {
+        "WorkDays": 8,
+        "DailyPrice": 2446.9323,
+        "DiscountAmount": 0,
+        "PriceDifference": 841.87,
+        "ContractAmount": 0,
+        "IsVatExempt": false,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G8",
+          "Property": "ServiceAmount",
+          "Value": 19575.4584,
+          "Formula": "=E8*F8",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I8",
+          "Property": "TotalAmount",
+          "Value": 20417.3284,
+          "Formula": "=E8*F8+J8-H8",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K8",
+          "Property": "Vat",
+          "Value": 2041.73284,
+          "Formula": "=I8*10/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L8",
+          "Property": "Withholding",
+          "Value": 1020.86642,
+          "Formula": "=I8*5/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M8",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 21438.194819999997,
+          "Formula": "=I8+L8",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N8",
+          "Property": "GrossAmount",
+          "Value": 22459.06124,
+          "Formula": "=I8+K8",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O8",
+          "Property": "StampTax",
+          "Value": 193.556273232,
+          "Formula": "=I8*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P8",
+          "Property": "AdditionalGuarantee",
+          "Value": 50.5122,
+          "Formula": "=J8*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T8",
+          "Property": "TotalDeductions",
+          "Value": 1264.934893232,
+          "Formula": "=L8+O8+P8+R8+S8+Q8",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U8",
+          "Property": "NetPayable",
+          "Value": 21194.126346768,
+          "Formula": "=N8-T8",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro.xlsx",
+      "Sheet": "Taşıma",
+      "Row": 9,
+      "Input": {
+        "WorkDays": 2,
+        "DailyPrice": 2328,
+        "DiscountAmount": 0,
+        "PriceDifference": 200.23,
+        "ContractAmount": 0,
+        "IsVatExempt": false,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G9",
+          "Property": "ServiceAmount",
+          "Value": 4656,
+          "Formula": "=E9*F9",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I9",
+          "Property": "TotalAmount",
+          "Value": 4856.23,
+          "Formula": "=E9*F9+J9-H9",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K9",
+          "Property": "Vat",
+          "Value": 485.62299999999993,
+          "Formula": "=I9*10/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L9",
+          "Property": "Withholding",
+          "Value": 242.81149999999997,
+          "Formula": "=I9*5/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M9",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 5099.041499999999,
+          "Formula": "=I9+L9",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N9",
+          "Property": "GrossAmount",
+          "Value": 5341.852999999999,
+          "Formula": "=I9+K9",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O9",
+          "Property": "StampTax",
+          "Value": 46.037060399999994,
+          "Formula": "=I9*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P9",
+          "Property": "AdditionalGuarantee",
+          "Value": 12.013799999999998,
+          "Formula": "=J9*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T9",
+          "Property": "TotalDeductions",
+          "Value": 300.86236039999994,
+          "Formula": "=L9+O9+P9+R9+S9+Q9",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U9",
+          "Property": "NetPayable",
+          "Value": 5040.990639599999,
+          "Formula": "=N9-T9",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro.xlsx",
+      "Sheet": "Taşıma",
+      "Row": 10,
+      "Input": {
+        "WorkDays": 11,
+        "DailyPrice": 2486.2285,
+        "DiscountAmount": 0,
+        "PriceDifference": 283.87,
+        "ContractAmount": 0,
+        "IsVatExempt": false,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G10",
+          "Property": "ServiceAmount",
+          "Value": 27348.5135,
+          "Formula": "=E10*F10",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I10",
+          "Property": "TotalAmount",
+          "Value": 27632.3835,
+          "Formula": "=E10*F10+J10-H10",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K10",
+          "Property": "Vat",
+          "Value": 2763.23835,
+          "Formula": "=I10*10/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L10",
+          "Property": "Withholding",
+          "Value": 1381.619175,
+          "Formula": "=I10*5/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M10",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 29014.002675,
+          "Formula": "=I10+L10",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N10",
+          "Property": "GrossAmount",
+          "Value": 30395.62185,
+          "Formula": "=I10+K10",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O10",
+          "Property": "StampTax",
+          "Value": 261.95499558,
+          "Formula": "=I10*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P10",
+          "Property": "AdditionalGuarantee",
+          "Value": 17.0322,
+          "Formula": "=J10*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T10",
+          "Property": "TotalDeductions",
+          "Value": 1660.6063705800002,
+          "Formula": "=L10+O10+P10+R10+S10+Q10",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U10",
+          "Property": "NetPayable",
+          "Value": 28735.01547942,
+          "Formula": "=N10-T10",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro.xlsx",
+      "Sheet": "Taşıma",
+      "Row": 12,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 2930,
+        "DiscountAmount": 0,
+        "PriceDifference": 1638.12,
+        "ContractAmount": 0,
+        "IsVatExempt": true,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G12",
+          "Property": "ServiceAmount",
+          "Value": 38090,
+          "Formula": "=E12*F12",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I12",
+          "Property": "TotalAmount",
+          "Value": 39728.12,
+          "Formula": "=E12*F12+J12-H12",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K12",
+          "Property": "Vat",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L12",
+          "Property": "Withholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M12",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 39728.12,
+          "Formula": "=I12+L12",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N12",
+          "Property": "GrossAmount",
+          "Value": 39728.12,
+          "Formula": "=I12+K12",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O12",
+          "Property": "StampTax",
+          "Value": 376.6225776,
+          "Formula": "=I12*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P12",
+          "Property": "AdditionalGuarantee",
+          "Value": 98.2872,
+          "Formula": "=J12*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T12",
+          "Property": "TotalDeductions",
+          "Value": 474.9097776,
+          "Formula": "=S12+R12+P12+O12+L12+Q12",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U12",
+          "Property": "NetPayable",
+          "Value": 39253.210222400005,
+          "Formula": "=N12-T12",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro.xlsx",
+      "Sheet": "Taşıma",
+      "Row": 13,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 2015,
+        "DiscountAmount": 0,
+        "PriceDifference": 1126.55,
+        "ContractAmount": 0,
+        "IsVatExempt": true,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G13",
+          "Property": "ServiceAmount",
+          "Value": 26195,
+          "Formula": "=E13*F13",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I13",
+          "Property": "TotalAmount",
+          "Value": 27321.55,
+          "Formula": "=E13*F13+J13-H13",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K13",
+          "Property": "Vat",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L13",
+          "Property": "Withholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M13",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 27321.55,
+          "Formula": "=I13+L13",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N13",
+          "Property": "GrossAmount",
+          "Value": 27321.55,
+          "Formula": "=I13+K13",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O13",
+          "Property": "StampTax",
+          "Value": 259.008294,
+          "Formula": "=I13*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P13",
+          "Property": "AdditionalGuarantee",
+          "Value": 67.59299999999999,
+          "Formula": "=J13*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T13",
+          "Property": "TotalDeductions",
+          "Value": 326.60129399999994,
+          "Formula": "=S13+R13+P13+O13+L13+Q13",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U13",
+          "Property": "NetPayable",
+          "Value": 26994.948706,
+          "Formula": "=N13-T13",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro.xlsx",
+      "Sheet": "Taşıma",
+      "Row": 14,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 1600,
+        "DiscountAmount": 0,
+        "PriceDifference": 894.53,
+        "ContractAmount": 0,
+        "IsVatExempt": true,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G14",
+          "Property": "ServiceAmount",
+          "Value": 20800,
+          "Formula": "=E14*F14",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I14",
+          "Property": "TotalAmount",
+          "Value": 21694.53,
+          "Formula": "=E14*F14+J14-H14",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K14",
+          "Property": "Vat",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L14",
+          "Property": "Withholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M14",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 21694.53,
+          "Formula": "=I14+L14",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N14",
+          "Property": "GrossAmount",
+          "Value": 21694.53,
+          "Formula": "=I14+K14",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O14",
+          "Property": "StampTax",
+          "Value": 205.6641444,
+          "Formula": "=I14*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P14",
+          "Property": "AdditionalGuarantee",
+          "Value": 53.671800000000005,
+          "Formula": "=J14*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T14",
+          "Property": "TotalDeductions",
+          "Value": 259.3359444,
+          "Formula": "=S14+R14+P14+O14+L14+Q14",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U14",
+          "Property": "NetPayable",
+          "Value": 21435.194055599997,
+          "Formula": "=N14-T14",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro.xlsx",
+      "Sheet": "Taşıma",
+      "Row": 16,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 1665,
+        "DiscountAmount": 0,
+        "PriceDifference": 930.87,
+        "ContractAmount": 0,
+        "IsVatExempt": true,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G16",
+          "Property": "ServiceAmount",
+          "Value": 21645,
+          "Formula": "=E16*F16",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I16",
+          "Property": "TotalAmount",
+          "Value": 22575.87,
+          "Formula": "=E16*F16+J16-H16",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K16",
+          "Property": "Vat",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L16",
+          "Property": "Withholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M16",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 22575.87,
+          "Formula": "=I16+L16",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N16",
+          "Property": "GrossAmount",
+          "Value": 22575.87,
+          "Formula": "=I16+K16",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O16",
+          "Property": "StampTax",
+          "Value": 214.0192476,
+          "Formula": "=I16*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P16",
+          "Property": "AdditionalGuarantee",
+          "Value": 55.8522,
+          "Formula": "=J16*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T16",
+          "Property": "TotalDeductions",
+          "Value": 269.8714476,
+          "Formula": "=S16+R16+P16+O16+L16+Q16",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U16",
+          "Property": "NetPayable",
+          "Value": 22305.9985524,
+          "Formula": "=N16-T16",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro.xlsx",
+      "Sheet": "Taşıma",
+      "Row": 17,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 2540,
+        "DiscountAmount": 0,
+        "PriceDifference": 1420.07,
+        "ContractAmount": 0,
+        "IsVatExempt": true,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G17",
+          "Property": "ServiceAmount",
+          "Value": 33020,
+          "Formula": "=E17*F17",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I17",
+          "Property": "TotalAmount",
+          "Value": 34440.07,
+          "Formula": "=E17*F17+J17-H17",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K17",
+          "Property": "Vat",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L17",
+          "Property": "Withholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M17",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 34440.07,
+          "Formula": "=I17+L17",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N17",
+          "Property": "GrossAmount",
+          "Value": 34440.07,
+          "Formula": "=I17+K17",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O17",
+          "Property": "StampTax",
+          "Value": 326.49186360000004,
+          "Formula": "=I17*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P17",
+          "Property": "AdditionalGuarantee",
+          "Value": 85.2042,
+          "Formula": "=J17*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T17",
+          "Property": "TotalDeductions",
+          "Value": 411.69606360000006,
+          "Formula": "=S17+R17+P17+O17+L17+Q17",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U17",
+          "Property": "NetPayable",
+          "Value": 34028.3739364,
+          "Formula": "=N17-T17",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro.xlsx",
+      "Sheet": "Taşıma",
+      "Row": 18,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 1930,
+        "DiscountAmount": 0,
+        "PriceDifference": 1079.03,
+        "ContractAmount": 0,
+        "IsVatExempt": true,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G18",
+          "Property": "ServiceAmount",
+          "Value": 25090,
+          "Formula": "=E18*F18",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I18",
+          "Property": "TotalAmount",
+          "Value": 26169.03,
+          "Formula": "=E18*F18+J18-H18",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K18",
+          "Property": "Vat",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L18",
+          "Property": "Withholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M18",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 26169.03,
+          "Formula": "=I18+L18",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N18",
+          "Property": "GrossAmount",
+          "Value": 26169.03,
+          "Formula": "=I18+K18",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O18",
+          "Property": "StampTax",
+          "Value": 248.0824044,
+          "Formula": "=I18*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P18",
+          "Property": "AdditionalGuarantee",
+          "Value": 64.7418,
+          "Formula": "=J18*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T18",
+          "Property": "TotalDeductions",
+          "Value": 312.8242044,
+          "Formula": "=S18+R18+P18+O18+L18+Q18",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U18",
+          "Property": "NetPayable",
+          "Value": 25856.2057956,
+          "Formula": "=N18-T18",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro.xlsx",
+      "Sheet": "Taşıma",
+      "Row": 20,
+      "Input": {
+        "WorkDays": 2,
+        "DailyPrice": 2249,
+        "DiscountAmount": 0,
+        "PriceDifference": 494.68,
+        "ContractAmount": 0,
+        "IsVatExempt": true,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G20",
+          "Property": "ServiceAmount",
+          "Value": 4498,
+          "Formula": "=E20*F20",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I20",
+          "Property": "TotalAmount",
+          "Value": 4992.68,
+          "Formula": "=E20*F20+J20-H20",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K20",
+          "Property": "Vat",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L20",
+          "Property": "Withholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M20",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 4992.68,
+          "Formula": "=I20",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N20",
+          "Property": "GrossAmount",
+          "Value": 4992.68,
+          "Formula": "=I20+K20",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O20",
+          "Property": "StampTax",
+          "Value": 47.33060640000001,
+          "Formula": "=I20*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P20",
+          "Property": "AdditionalGuarantee",
+          "Value": 29.680799999999998,
+          "Formula": "=J20*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T20",
+          "Property": "TotalDeductions",
+          "Value": 77.0114064,
+          "Formula": "=S20+R20+P20+O20+L20",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U20",
+          "Property": "NetPayable",
+          "Value": 4915.6685936,
+          "Formula": "=N20-T20",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro.xlsx",
+      "Sheet": "Taşıma",
+      "Row": 21,
+      "Input": {
+        "WorkDays": 11,
+        "DailyPrice": 2608.1601,
+        "DiscountAmount": 0,
+        "PriceDifference": 3155.29,
+        "ContractAmount": 0,
+        "IsVatExempt": true,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G21",
+          "Property": "ServiceAmount",
+          "Value": 28689.7611,
+          "Formula": "=E21*F21",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I21",
+          "Property": "TotalAmount",
+          "Value": 31845.0511,
+          "Formula": "=E21*F21+J21-H21",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K21",
+          "Property": "Vat",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L21",
+          "Property": "Withholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M21",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": true,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N21",
+          "Property": "GrossAmount",
+          "Value": 31845.0511,
+          "Formula": "=I21+K21",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O21",
+          "Property": "StampTax",
+          "Value": 301.89108442800006,
+          "Formula": "=I21*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P21",
+          "Property": "AdditionalGuarantee",
+          "Value": 189.3174,
+          "Formula": "=J21*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T21",
+          "Property": "TotalDeductions",
+          "Value": 491.208484428,
+          "Formula": "=S21+R21+P21+O21+L21",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U21",
+          "Property": "NetPayable",
+          "Value": 31353.842615572,
+          "Formula": "=N21-T21",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro.xlsx",
+      "Sheet": "Taşıma",
+      "Row": 23,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 2810,
+        "DiscountAmount": 0,
+        "PriceDifference": 1571.03,
+        "ContractAmount": 0,
+        "IsVatExempt": false,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "ProgramType": 1
+      },
+      "Expected": [
+        {
+          "Cell": "G23",
+          "Property": "ServiceAmount",
+          "Value": 36530,
+          "Formula": "=E23*F23",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I23",
+          "Property": "TotalAmount",
+          "Value": 38101.03,
+          "Formula": "=E23*F23+J23-H23",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "K23",
+          "Property": "Vat",
+          "Value": 3810.103,
+          "Formula": "=I23*10/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L23",
+          "Property": "Withholding",
+          "Value": 1905.0515,
+          "Formula": "=I23*5/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M23",
+          "Property": "InvoiceAmountAfterWithholding",
+          "Value": 38101.03,
+          "Formula": "=I23",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": true
+        },
+        {
+          "Cell": "N23",
+          "Property": "GrossAmount",
+          "Value": 41911.133,
+          "Formula": "=I23+K23",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O23",
+          "Property": "StampTax",
+          "Value": 361.1977644,
+          "Formula": "=I23*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P23",
+          "Property": "AdditionalGuarantee",
+          "Value": 94.26180000000001,
+          "Formula": "=J23*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "T23",
+          "Property": "TotalDeductions",
+          "Value": 2360.5110644,
+          "Formula": "=S23+R23+P23+O23+L23",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "U23",
+          "Property": "NetPayable",
+          "Value": 39550.6219356,
+          "Formula": "=N23-T23",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro.xlsx",
+      "Sheet": "Özel Eğitim",
+      "Row": 2,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 2320,
+        "DiscountAmount": 0,
+        "PriceDifference": 1403.573,
+        "ContractAmount": 0,
+        "IsVatExempt": true,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "GuideWorkDays": 17,
+        "GuideDailyPrice": 1362.49,
+        "GuideDiscountAmount": 0,
+        "GuidePriceDifference": 0,
+        "ProgramType": 0
+      },
+      "Expected": [
+        {
+          "Cell": "H2",
+          "Property": "ServiceAmount",
+          "Value": 30160,
+          "Formula": "=D2*E2",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I2",
+          "Property": "GuideServiceAmount",
+          "Value": 23162.33,
+          "Formula": "=F2*G2+K2",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L2",
+          "Property": "TotalAmount",
+          "Value": 54725.903,
+          "Formula": "=H2+I2+J2",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M2",
+          "Property": "TransportVat",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N2",
+          "Property": "TransportWithholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O2",
+          "Property": "GuideVat",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P2",
+          "Property": "GuideWithholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "Q2",
+          "Property": "GrossAmount",
+          "Value": 54725.903,
+          "Formula": "=L2+M2+O2",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "R2",
+          "Property": "AdditionalGuarantee",
+          "Value": 84.21438,
+          "Formula": "=(J2+K2)*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "S2",
+          "Property": "StampTax",
+          "Value": 518.80156044,
+          "Formula": "=L2*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "V2",
+          "Property": "NetPayable",
+          "Value": 54122.88705956,
+          "Formula": "=Q2-S2-R2-P2-N2-T2-U2",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro.xlsx",
+      "Sheet": "Özel Eğitim",
+      "Row": 3,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 2184,
+        "DiscountAmount": 0,
+        "PriceDifference": 1321.2946,
+        "ContractAmount": 0,
+        "IsVatExempt": true,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "GuideWorkDays": 17,
+        "GuideDailyPrice": 1362.49,
+        "GuideDiscountAmount": 0,
+        "GuidePriceDifference": 0,
+        "ProgramType": 0
+      },
+      "Expected": [
+        {
+          "Cell": "H3",
+          "Property": "ServiceAmount",
+          "Value": 28392,
+          "Formula": "=D3*E3",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I3",
+          "Property": "GuideServiceAmount",
+          "Value": 23162.33,
+          "Formula": "=F3*G3+K3",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L3",
+          "Property": "TotalAmount",
+          "Value": 52875.6246,
+          "Formula": "=H3+I3+J3",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M3",
+          "Property": "TransportVat",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N3",
+          "Property": "TransportWithholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O3",
+          "Property": "GuideVat",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P3",
+          "Property": "GuideWithholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "Q3",
+          "Property": "GrossAmount",
+          "Value": 52875.6246,
+          "Formula": "=L3+M3+O3",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "R3",
+          "Property": "AdditionalGuarantee",
+          "Value": 79.27767599999999,
+          "Formula": "=(J3+K3)*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "S3",
+          "Property": "StampTax",
+          "Value": 501.26092120800007,
+          "Formula": "=L3*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "V3",
+          "Property": "NetPayable",
+          "Value": 52295.086002792006,
+          "Formula": "=Q3-S3-R3-P3-N3-T3-U3",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    },
+    {
+      "File": "5-Taşıma Bordro.xlsx",
+      "Sheet": "Özel Eğitim",
+      "Row": 4,
+      "Input": {
+        "WorkDays": 13,
+        "DailyPrice": 1894,
+        "DiscountAmount": 0,
+        "PriceDifference": 1145.848,
+        "ContractAmount": 0,
+        "IsVatExempt": true,
+        "TaxDebt": 0,
+        "SocialSecurityDebt": 0,
+        "MinimumWageSupport": 0,
+        "InspectionPenalty": 0,
+        "GuideWorkDays": 17,
+        "GuideDailyPrice": 1362.49,
+        "GuideDiscountAmount": 0,
+        "GuidePriceDifference": 0,
+        "ProgramType": 0
+      },
+      "Expected": [
+        {
+          "Cell": "H4",
+          "Property": "ServiceAmount",
+          "Value": 24622,
+          "Formula": "=D4*E4",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "I4",
+          "Property": "GuideServiceAmount",
+          "Value": 23162.33,
+          "Formula": "=F4*G4+K4",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "L4",
+          "Property": "TotalAmount",
+          "Value": 48930.178,
+          "Formula": "=H4+I4+J4",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "M4",
+          "Property": "TransportVat",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "N4",
+          "Property": "TransportWithholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "O4",
+          "Property": "GuideVat",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "P4",
+          "Property": "GuideWithholding",
+          "Value": 0,
+          "Formula": null,
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "Q4",
+          "Property": "GrossAmount",
+          "Value": 48930.178,
+          "Formula": "=L4",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "R4",
+          "Property": "AdditionalGuarantee",
+          "Value": 68.75088,
+          "Formula": "=(J4+K4)*6/100",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "S4",
+          "Property": "StampTax",
+          "Value": 463.85808744,
+          "Formula": "=L4*9.48/1000",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        },
+        {
+          "Cell": "V4",
+          "Property": "NetPayable",
+          "Value": 48397.56903256,
+          "Formula": "=Q4-S4-R4-P4-N4-T4-U4",
+          "ReferenceMissing": false,
+          "SourceInvoiceVariant": false
+        }
+      ]
+    }
+  ]
+}

@@ -5,10 +5,20 @@ public sealed record OehsApplicationData(
     IReadOnlyList<RouteData> Routes,
     IReadOnlyList<Contractor> Contractors,
     IReadOnlyList<ProgressPaymentHistoryData>? ProgressPayments = null,
-    IReadOnlyList<ContractDraftData>? Contracts = null)
+    IReadOnlyList<ContractDraftData>? Contracts = null,
+    ProgressPaymentCalculationConstants? CalculationConstants = null,
+    IReadOnlyList<ProgressPaymentCalculationConstantsChange>? CalculationConstantsHistory = null,
+    IReadOnlyList<HybridPaymentDraftData>? HybridPaymentDrafts = null)
 {
     public static OehsApplicationData Empty =>
-        new(null, Array.Empty<RouteData>(), Array.Empty<Contractor>(), null, Array.Empty<ContractDraftData>());
+        new(
+            null,
+            Array.Empty<RouteData>(),
+            Array.Empty<Contractor>(),
+            Array.Empty<ProgressPaymentHistoryData>(),
+            Array.Empty<ContractDraftData>(),
+            CalculationConstants: null,
+            CalculationConstantsHistory: Array.Empty<ProgressPaymentCalculationConstantsChange>());
 }
 
 public sealed record ContractDraftData(
@@ -25,17 +35,26 @@ public sealed record ContractDraftData(
     string ContractorTaxOrIdentityNumber = "",
     string BankAccountNumber = "",
     int ContractWorkDays = 0,
-    decimal TransportDailyPrice = 0m);
+    decimal TransportDailyPrice = 0m,
+    TransportationProgramType ProgramType = TransportationProgramType.SpecialEducation)
+{
+    public string ProgramDisplayText => ProgramType == TransportationProgramType.BasicOrSecondary
+        ? "Temel Eğitim/Ortaöğretim Taşıma" : "Özel Eğitim Taşıma";
+    public string DisplayText => $"{TenderNumber} • {ProgramDisplayText}";
+}
 
 public sealed record RouteData(
     string RouteNumber,
     string Name,
     decimal DailyPrice,
-    int GuideWorkDays = 0,
     decimal GuideDailyPrice = 0m,
-    int TransportWorkDays = 0,
+    decimal TransportWorkDays = 0m,
     string TenderNumber = "",
-    string ContractorTaxOrIdentityNumber = "");
+    string ContractorTaxOrIdentityNumber = "",
+    string ContractNumber = "",
+    TransportationProgramType ProgramType = TransportationProgramType.SpecialEducation,
+    decimal? ContractAmount = null,
+    DateOnly? ContractDate = null);
 
 public sealed record ProgressPaymentHistoryData(
     Guid Id,
@@ -55,4 +74,15 @@ public sealed record ProgressPaymentHistoryData(
     DateOnly? ContractStartDate = null,
     DateOnly? ContractEndDate = null,
     string? BankAccountNumber = null,
-    string? ContractorTaxOrIdentityNumber = null);
+    string? ContractorTaxOrIdentityNumber = null,
+    Guid? BatchId = null,
+    string? BatchDisplayName = null,
+    string? BatchRouteNumbers = null);
+/// <summary>Confirmed, period-specific grid input; never an issued payment or archive.</summary>
+public sealed record HybridPaymentDraftData(
+    string RouteKey,
+    DateOnly PeriodMonth,
+    ProgressPaymentInput Input,
+    bool MinimumWageSupportEnabled = true,
+    RouteData? SourceRoute = null,
+    DateTime SavedAt = default);

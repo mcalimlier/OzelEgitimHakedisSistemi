@@ -60,6 +60,32 @@ public sealed class OehsApplicationDataStoreTests
     }
 
     [Fact]
+    public void Save_ShouldPreserveKnownGoodBackupWhenPrimaryBecomesCorrupt()
+    {
+        using var temp = new TempDirectory();
+        var file = Path.Combine(temp.Path, "oehs-data.json");
+        var store = new OehsApplicationDataStore(file);
+
+        store.Save(CreateData("FIRST"));
+        store.Save(CreateData("SECOND"));
+        var goodBackup = File.ReadAllText(file + ".bak");
+
+        File.WriteAllText(file, "{broken");
+
+        var exception = Assert.Throws<OehsApplicationDataStoreException>(
+            () => store.Save(CreateData("THIRD")));
+
+        Assert.Contains("yedek korunarak", exception.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(goodBackup, File.ReadAllText(file + ".bak"));
+        Assert.Equal("{broken", File.ReadAllText(file));
+
+        // Recovery still selects the preserved FIRST backup and restores the primary.
+        var recovered = store.Load();
+        Assert.Equal("FIRST", recovered.Contracts?[0].TenderNumber);
+        Assert.Contains("FIRST", File.ReadAllText(file), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Load_ShouldThrowControlledExceptionWhenPrimaryAndBackupAreCorrupt()
     {
         using var temp = new TempDirectory();
@@ -71,6 +97,39 @@ public sealed class OehsApplicationDataStoreTests
         File.WriteAllText(file + ".bak", "{also-broken");
 
         Assert.Throws<OehsApplicationDataStoreException>(() => store.Load());
+    }
+
+
+    [Fact]
+    public void SaveAndLoad_ShouldPersistCalculationConstantsAndAuditHistory()
+    {
+        using var temp = new TempDirectory();
+        var file = Path.Combine(temp.Path, "oehs-data.json");
+        var store = new OehsApplicationDataStore(file);
+        var previous = ProgressPaymentCalculationConstants.Defaults;
+        var current = previous with { TransportVatRate = 0.12m, StampTaxRate = 0.008m };
+        var change = new ProgressPaymentCalculationConstantsChange(
+            new DateTime(2026, 10, 15, 12, 30, 0, DateTimeKind.Utc),
+            "Test Kullanıcısı",
+            "Oran güncelleme testi",
+            previous,
+            current);
+        var data = CreateData("TEST") with
+        {
+            CalculationConstants = current,
+            CalculationConstantsHistory = new[] { change }
+        };
+
+        store.Save(data);
+        var loaded = store.Load();
+
+        Assert.Equal(current, loaded.CalculationConstants);
+        var loadedChange = Assert.Single(loaded.CalculationConstantsHistory!);
+        Assert.Equal(change.ChangedAtUtc, loadedChange.ChangedAtUtc);
+        Assert.Equal(change.ChangedBy, loadedChange.ChangedBy);
+        Assert.Equal(change.Reason, loadedChange.Reason);
+        Assert.Equal(change.Previous, loadedChange.Previous);
+        Assert.Equal(change.Current, loadedChange.Current);
     }
 
     private static OehsApplicationData CreateData(string tender) =>

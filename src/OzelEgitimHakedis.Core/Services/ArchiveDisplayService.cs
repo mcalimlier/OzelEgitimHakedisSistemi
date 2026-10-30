@@ -33,11 +33,19 @@ public static class ArchiveDisplayService
                 var progressDisplay = archive.ProgressPayment.ProgressPaymentNumber?.ToString(System.Globalization.CultureInfo.CurrentCulture) ?? "-";
                 var period = archive.ProgressPayment.PeriodDate ?? DateOnly.MaxValue;
 
+                var monthLabel = period == DateOnly.MaxValue
+                    ? "Dönem belirtilmemiş"
+                    : System.Globalization.CultureInfo.GetCultureInfo("tr-TR").TextInfo.ToTitleCase(
+                        period.ToString("MMMM yyyy", System.Globalization.CultureInfo.GetCultureInfo("tr-TR")));
+                var title = !string.IsNullOrWhiteSpace(archive.ProgressPayment.BatchDisplayName)
+                    ? $"{archive.ProgressPayment.BatchDisplayName} • Hat {archive.ProgressPayment.RouteNumber ?? "-"} • Hakediş {progressDisplay}"
+                    : $"İhale/Dosya: {archive.ProgressPayment.TenderNumber ?? "-"} • Hat {archive.ProgressPayment.RouteNumber ?? "-"} • Hakediş {progressDisplay}";
+
                 validRows.Add(new LoadedRow(
                     new ArchiveDisplayRow(
                         file.FullName,
-                        $"İhale/Dosya: {archive.ProgressPayment.TenderNumber ?? "-"} • Hat {archive.ProgressPayment.RouteNumber ?? "-"} • Hakediş {progressDisplay}",
-                        $"Dönem: {period.ToString("dd.MM.yyyy", System.Globalization.CultureInfo.CurrentCulture)} • Yüklenici: {archive.Contractor.Name}",
+                        title,
+                        $"Dönem: {monthLabel} • Yüklenici: {archive.Contractor.Name}",
                         archive.ProgressPayment.Calculation.NetPayable.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("tr-TR")) + " ₺",
                         $"v{archive.Revision:00}"),
                     period,

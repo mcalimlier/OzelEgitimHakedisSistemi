@@ -1,0 +1,207 @@
+{
+  "ReferenceDate": "2026-10-25",
+  "Pairs": [
+    {
+      "Program": "SpecialEducation",
+      "Kind": "01_Hakedis_Raporu",
+      "Excel": {
+        "File": ".superpowers/icmal-2026-10-25/final-pdfs/SpecialEducation_Excel_Hakediş_Raporu.pdf",
+        "Sha256": "7a8d1c73595eb6ccebc229e62a3b77b1d2cc3a02dc829e75f429f0f2e75b69a8",
+        "Pages": 1,
+        "SizePoints": [
+          595.3200073242188,
+          841.9199829101562
+        ]
+      },
+      "OEHS": {
+        "File": ".superpowers/icmal-2026-10-25/final-pdfs/SpecialEducation_OEHS_01_Hakedis_Raporu.pdf",
+        "Sha256": "4bab5bdc6df29285b6a16cf21b1257500aaa7d00045d5b664cb7bd35304ecd9c",
+        "Pages": 1,
+        "SizePoints": [
+          595.2760009765625,
+          841.8900146484375
+        ]
+      },
+      "ComparedFinancialFields": 21,
+      "DeclaredSourceExceptions": [
+        "Source signature date is frozen at 24.06.2026; OEHS correctly prints the reference generation date 25.10.2026. Not counted as an equal source field."
+      ]
+    },
+    {
+      "Program": "SpecialEducation",
+      "Kind": "02_Hizmet_Isleri_Hakedis_Raporu",
+      "Excel": {
+        "File": ".superpowers/icmal-2026-10-25/final-pdfs/SpecialEducation_Excel_Hizmetişleri_Hakediş_Raporu.pdf",
+        "Sha256": "c430a1039dc7582ed37bdc8b96b2df76686e287400110e3a0674e20f4f9b44a3",
+        "Pages": 1,
+        "SizePoints": [
+          595.3200073242188,
+          841.9199829101562
+        ]
+      },
+      "OEHS": {
+        "File": ".superpowers/icmal-2026-10-25/final-pdfs/SpecialEducation_OEHS_02_Hizmet_Isleri_Hakedis_Raporu.pdf",
+        "Sha256": "7d40fd900f328db73a0d51921efc68f6a80563c2743ccba8fea9fd70fbbe5b3b",
+        "Pages": 1,
+        "SizePoints": [
+          595.2760009765625,
+          841.8900146484375
+        ]
+      },
+      "ComparedFinancialFields": 0,
+      "DeclaredSourceExceptions": []
+    },
+    {
+      "Program": "SpecialEducation",
+      "Kind": "03_Hizmet_Isleri_Kabul_Tutanagi",
+      "Excel": {
+        "File": ".superpowers/icmal-2026-10-25/final-pdfs/SpecialEducation_Excel_Hizmet_İşleri_K._Tutanağı.pdf",
+        "Sha256": "e5059114d7251b4872fd12f2091772b7f76f8ff28d7d20b66298a399250087cf",
+        "Pages": 1,
+        "SizePoints": [
+          595.3200073242188,
+          841.9199829101562
+        ]
+      },
+      "OEHS": {
+        "File": ".superpowers/icmal-2026-10-25/final-pdfs/SpecialEducation_OEHS_03_Hizmet_Isleri_Kabul_Tutanagi.pdf",
+        "Sha256": "6004edf0835b7b9e8f200424cc021a53fae6225db0a2accdf7806a7ebc6764d2",
+        "Pages": 1,
+        "SizePoints": [
+          595.2760009765625,
+          841.8900146484375
+        ]
+      },
+      "ComparedFinancialFields": 0,
+      "DeclaredSourceExceptions": []
+    },
+    {
+      "Program": "SpecialEducation",
+      "Kind": "04_Hakedis_Icmali",
+      "Excel": {
+        "File": ".superpowers/icmal-2026-10-25/final-pdfs/SpecialEducation_Excel_Hakediş_İcmali.pdf",
+        "Sha256": "43457e42037258c512e5563b5517266207570fb9c418e466f1707ccd3425d9af",
+        "Pages": 1,
+        "SizePoints": [
+          595.3200073242188,
+          841.9199829101562
+        ]
+      },
+      "OEHS": {
+        "File": ".superpowers/icmal-2026-10-25/final-pdfs/SpecialEducation_OEHS_04_Hakedis_Icmali.pdf",
+        "Sha256": "aaea24f54e8e6cd929249a3e5e517611b6b6bbe30702ac641999e35b7b834d43",
+        "Pages": 1,
+        "SizePoints": [
+          595.2760009765625,
+          841.8900146484375
+        ]
+      },
+      "ComparedFinancialFields": 16,
+      "DeclaredSourceExceptions": []
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "Kind": "01_Hakedis_Raporu",
+      "Excel": {
+        "File": ".superpowers/icmal-2026-10-25/final-pdfs/BasicOrSecondary_Excel_Hakediş_Raporu.pdf",
+        "Sha256": "d5e80dfafa29b7feb95ea2cf8d7d184260808552ddab498cff8b36df3803d2a6",
+        "Pages": 1,
+        "SizePoints": [
+          595.3200073242188,
+          841.9199829101562
+        ]
+      },
+      "OEHS": {
+        "File": ".superpowers/icmal-2026-10-25/final-pdfs/BasicOrSecondary_OEHS_01_Hakedis_Raporu.pdf",
+        "Sha256": "385275bea33c1d69c3716bd13b6ce6e7f0e9e55cb651cd5ffd2efc610ad299d0",
+        "Pages": 1,
+        "SizePoints": [
+          595.2760009765625,
+          841.8900146484375
+        ]
+      },
+      "ComparedFinancialFields": 21,
+      "DeclaredSourceExceptions": []
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "Kind": "02_Hizmet_Isleri_Hakedis_Raporu",
+      "Excel": {
+        "File": ".superpowers/icmal-2026-10-25/final-pdfs/BasicOrSecondary_Excel_Hizmet_İşleri_Hakediş_Raporu.pdf",
+        "Sha256": "3294013e0c73f3908fe3527ab42f5187bc51f1ea5661e6f66e6e8d3c29aac8d3",
+        "Pages": 1,
+        "SizePoints": [
+          595.3200073242188,
+          841.9199829101562
+        ]
+      },
+      "OEHS": {
+        "File": ".superpowers/icmal-2026-10-25/final-pdfs/BasicOrSecondary_OEHS_02_Hizmet_Isleri_Hakedis_Raporu.pdf",
+        "Sha256": "27f938e24a9e358590e50516a819b7dd8609b2a5075341532ae2e6f77ffbd19f",
+        "Pages": 1,
+        "SizePoints": [
+          595.2760009765625,
+          841.8900146484375
+        ]
+      },
+      "ComparedFinancialFields": 0,
+      "DeclaredSourceExceptions": []
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "Kind": "03_Hizmet_Isleri_Kabul_Tutanagi",
+      "Excel": {
+        "File": ".superpowers/icmal-2026-10-25/final-pdfs/BasicOrSecondary_Excel_Hizmet_İşleri_K._Tutanağı.pdf",
+        "Sha256": "ebf6505cc0122b24de5cf85566f4ba2aa805af35eb8894623cb5f052e373b508",
+        "Pages": 1,
+        "SizePoints": [
+          595.3200073242188,
+          841.9199829101562
+        ]
+      },
+      "OEHS": {
+        "File": ".superpowers/icmal-2026-10-25/final-pdfs/BasicOrSecondary_OEHS_03_Hizmet_Isleri_Kabul_Tutanagi.pdf",
+        "Sha256": "58ccc25c7997e0204d110e3293793883dbc1c751846e5ace4405665794d51113",
+        "Pages": 1,
+        "SizePoints": [
+          595.2760009765625,
+          841.8900146484375
+        ]
+      },
+      "ComparedFinancialFields": 0,
+      "DeclaredSourceExceptions": []
+    },
+    {
+      "Program": "BasicOrSecondary",
+      "Kind": "04_Hakedis_Icmali",
+      "Excel": {
+        "File": ".superpowers/icmal-2026-10-25/final-pdfs/BasicOrSecondary_Excel_Hakediş_İcmali.pdf",
+        "Sha256": "294b4b4a20939016d0054b742b60d0741dafdabd017b55d2cb461fa0cb5ee98b",
+        "Pages": 1,
+        "SizePoints": [
+          595.3200073242188,
+          841.9199829101562
+        ]
+      },
+      "OEHS": {
+        "File": ".superpowers/icmal-2026-10-25/final-pdfs/BasicOrSecondary_OEHS_04_Hakedis_Icmali.pdf",
+        "Sha256": "9225c92c08d1724ff0a917eb6be782a052a01a6e214c4d2059ddc134c371a3db",
+        "Pages": 1,
+        "SizePoints": [
+          595.2760009765625,
+          841.8900146484375
+        ]
+      },
+      "ComparedFinancialFields": 16,
+      "DeclaredSourceExceptions": []
+    }
+  ],
+  "FinancialFields": 74,
+  "Method": "A4 page counts and text fields; paired rendered visual review recorded separately.",
+  "VisualReview": {
+    "PairsInspected": 8,
+    "BlockingOehsLayoutDefects": 0,
+    "SourceDateExceptionCount": 1,
+    "Method": "Latest 16 PDFs rendered; all eight side-by-side page pairs inspected. Last reference-export rerun rendered pixel-identically."
+  }
+}

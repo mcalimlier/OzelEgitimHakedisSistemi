@@ -1,8 +1,10 @@
 using PdfSharp.Drawing;
 using PdfSharp.Pdf;
+using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -15,6 +17,12 @@ using WpfRectangle = System.Windows.Shapes.Rectangle;
 using WpfEllipse = System.Windows.Shapes.Ellipse;
 
 namespace OzelEgitimHakedis.Wpf;
+
+/// <summary>PDF metni ayrılan alana eksiksiz yerleştirilemediğinde oluşur.</summary>
+public sealed class PdfDocumentLayoutException : InvalidOperationException
+{
+    public PdfDocumentLayoutException(string message) : base(message) { }
+}
 
 /// <summary>
 /// FixedDocument içeriğini tam sayfa ekran görüntüsüne çevirmeden PDF'e aktarır.
@@ -220,13 +228,25 @@ public static class PdfVectorWriter
         // "KESİNTİLER VE MAHSUPLAR" cell in the official Hakediş Raporu.
         if (block.RenderTransform is RotateTransform rotation && Math.Abs(rotation.Angle % 360) > 0.001)
         {
-            var transform = block.TransformToAncestor(page);
-            var center = transform.Transform(new Point(block.ActualWidth / 2d, block.ActualHeight / 2d));
+            // Use the declared layout slot rather than ActualWidth/ActualHeight.
+            // FixedPage text blocks may not have completed WPF measure/arrange before
+            // vector export; ActualWidth/ActualHeight can therefore be zero or stale.
+            // RenderTransform rotates around this slot's center, which is also the
+            // intended center of the merged vertical-heading cell.
+            var left = FixedPage.GetLeft(block);
+            var top = FixedPage.GetTop(block);
+            if (double.IsNaN(left)) left = 0;
+            if (double.IsNaN(top)) top = 0;
+            var width = block.Width;
+            var height = block.Height;
+            if (double.IsNaN(width) || width <= 0) width = block.ActualWidth;
+            if (double.IsNaN(height) || height <= 0) height = block.ActualHeight;
+            var center = new Point(left + width / 2d, top + height / 2d);
             var localRect = new XRect(
-                ToPoint(center.X - block.ActualWidth / 2d),
-                ToPoint(center.Y - block.ActualHeight / 2d),
-                ToPoint(block.ActualWidth),
-                ToPoint(block.ActualHeight));
+                ToPoint(center.X - width / 2d),
+                ToPoint(center.Y - height / 2d),
+                ToPoint(width),
+                ToPoint(height));
 
             var state = gfx.Save();
             try
@@ -241,9 +261,54 @@ public static class PdfVectorWriter
             return;
         }
 
-        if (!TryBounds(page, block, out var rect))
-            return;
+        if (!TryTextBounds(page, block, out var rect))
+            throw TextOverflow(text, rect, "geçerli bir metin alanı yok");
         DrawTextBlockContent(gfx, block, text, rect);
+    }
+
+    private static bool TryTextBounds(FixedPage page, TextBlock block, out XRect rect)
+    {
+        rect = default;
+        if (VisualTreeHelper.GetParent(block) is not Visual)
+            return false;
+
+        // TextBlock.RenderSize can exceed the arranged slot for NoWrap or
+        // overflowing content. Conversely, a centered table cell's natural
+        // text height is smaller than the usable area. Use the actual slot,
+        // which already excludes the border and its padding, in both cases.
+        var slot = LayoutInformation.GetLayoutSlot(block);
+        var margin = block.Margin;
+        var slotWidth = Math.Max(0, slot.Width - margin.Left - margin.Right);
+        var slotHeight = Math.Max(0, slot.Height - margin.Top - margin.Bottom);
+        var width = Math.Min(slotWidth, block.MaxWidth);
+        var height = Math.Min(slotHeight, block.MaxHeight);
+        if (!double.IsNaN(block.Width)) width = Math.Min(width, block.Width);
+        else if (block.HorizontalAlignment != HorizontalAlignment.Stretch)
+            width = Math.Min(width, block.ActualWidth);
+        if (!double.IsNaN(block.Height)) height = Math.Min(height, block.Height);
+        if (width <= 0 || height <= 0)
+            return false;
+
+        var left = slot.Left + margin.Left + (block.HorizontalAlignment switch
+        {
+            HorizontalAlignment.Right => slotWidth - width,
+            HorizontalAlignment.Center or HorizontalAlignment.Stretch => (slotWidth - width) / 2d,
+            _ => 0
+        });
+        var top = slot.Top + margin.Top + (block.VerticalAlignment switch
+        {
+            VerticalAlignment.Bottom => slotHeight - height,
+            VerticalAlignment.Center or VerticalAlignment.Stretch => (slotHeight - height) / 2d,
+            _ => 0
+        });
+        // Convert the allocated parent-space slot to block-local coordinates,
+        // then use the block's complete transform chain. Starting at its parent
+        // would omit the block's own RenderTransform (for example a translation).
+        var layoutOffset = VisualTreeHelper.GetOffset(block);
+        var bounds = block.TransformToAncestor(page).TransformBounds(
+            new Rect(left - layoutOffset.X, top - layoutOffset.Y, width, height));
+        rect = new XRect(ToPoint(bounds.X), ToPoint(bounds.Y), ToPoint(bounds.Width), ToPoint(bounds.Height));
+        return true;
     }
 
     private static void DrawTextBlockContent(XGraphics gfx, TextBlock block, string text, XRect rect)
@@ -264,10 +329,17 @@ public static class PdfVectorWriter
             : Math.Max(fontSize * 1.18, font.GetHeight());
 
         var lines = block.TextWrapping == TextWrapping.NoWrap
-            ? text.Replace("\r", string.Empty).Split('\n').ToList()
+            ? text.Replace("\r", string.Empty, StringComparison.Ordinal).Split('\n')
+                .Select(line => new WrappedLine(line, IsLastLineOfParagraph: true))
+                .ToList()
             : WrapText(gfx, text, font, Math.Max(1, rect.Width));
 
         var totalTextHeight = lines.Count * lineHeight;
+        if (totalTextHeight > rect.Height + 0.5)
+            throw TextOverflow(text, rect, FormattableString.Invariant($"gereken yükseklik {totalTextHeight:0.##} pt"));
+        if (lines.Any(line => gfx.MeasureString(line.Text, font).Width > rect.Width + 0.5))
+            throw TextOverflow(text, rect, "satır genişliği yetersiz");
+
         var y = rect.Top;
         if (block.VerticalAlignment == VerticalAlignment.Center)
             y += Math.Max(0, (rect.Height - totalTextHeight) / 2d);
@@ -276,12 +348,25 @@ public static class PdfVectorWriter
 
         foreach (var line in lines)
         {
-            if (y + lineHeight > rect.Bottom + 0.5)
-                break;
-
-            DrawTextLine(gfx, line, font, brush, new XRect(rect.Left, y, rect.Width, lineHeight), block.TextAlignment);
+            DrawTextLine(
+                gfx,
+                line.Text,
+                font,
+                brush,
+                new XRect(rect.Left, y, rect.Width, lineHeight),
+                block.TextAlignment,
+                line.IsLastLineOfParagraph);
             y += lineHeight;
         }
+    }
+
+    private static PdfDocumentLayoutException TextOverflow(string text, XRect rect, string reason)
+    {
+        var excerpt = text.Replace('\r', ' ').Replace('\n', ' ');
+        if (excerpt.Length > 100)
+            excerpt = excerpt[..100] + "...";
+        return new PdfDocumentLayoutException(FormattableString.Invariant(
+            $"PDF belge düzeni: \"{excerpt}\" metni ayrılan alana sığmıyor ({rect.Width:0.##} × {rect.Height:0.##} pt, konum {rect.X:0.##}, {rect.Y:0.##}; {reason}). Alanı genişletin veya metni kısaltın."));
     }
 
     private static XFont CreateFont(string family, double size, XFontStyleEx style)
@@ -313,47 +398,84 @@ public static class PdfVectorWriter
         return first.Length == 0 ? "Arial" : first;
     }
 
-    private static List<string> WrapText(XGraphics gfx, string text, XFont font, double width)
+    private readonly record struct WrappedLine(string Text, bool IsLastLineOfParagraph);
+
+    private static List<WrappedLine> WrapText(XGraphics gfx, string text, XFont font, double width)
     {
-        var result = new List<string>();
-        foreach (var paragraph in text.Replace("\r", string.Empty).Split('\n'))
+        var result = new List<WrappedLine>();
+        foreach (var paragraph in text.Replace("\r", string.Empty, StringComparison.Ordinal).Split('\n'))
         {
             if (paragraph.Length == 0)
             {
-                result.Add(string.Empty);
+                result.Add(new WrappedLine(string.Empty, IsLastLineOfParagraph: true));
                 continue;
             }
 
+            var paragraphLines = new List<string>();
             var words = paragraph.Split(' ', StringSplitOptions.None);
             var line = string.Empty;
             foreach (var word in words)
             {
                 var candidate = line.Length == 0 ? word : line + " " + word;
-                if (line.Length == 0 || gfx.MeasureString(candidate, font).Width <= width)
+                if (gfx.MeasureString(candidate, font).Width <= width)
                 {
                     line = candidate;
                     continue;
                 }
 
-                result.Add(line);
-                line = word;
+                if (line.Length > 0)
+                    paragraphLines.Add(line);
+                line = string.Empty;
+                // Break an overlong word at text-element boundaries, retaining
+                // every character without splitting surrogate pairs or accents.
+                var elements = StringInfo.GetTextElementEnumerator(word);
+                while (elements.MoveNext())
+                {
+                    var element = elements.GetTextElement();
+                    if (line.Length > 0 && gfx.MeasureString(line + element, font).Width > width)
+                    {
+                        paragraphLines.Add(line);
+                        line = string.Empty;
+                    }
+                    line += element;
+                }
             }
-            result.Add(line);
+            paragraphLines.Add(line);
+
+            for (var index = 0; index < paragraphLines.Count; index++)
+            {
+                result.Add(new WrappedLine(
+                    paragraphLines[index],
+                    IsLastLineOfParagraph: index == paragraphLines.Count - 1));
+            }
         }
         return result;
     }
 
-    private static void DrawTextLine(XGraphics gfx, string line, XFont font, XBrush brush, XRect rect, TextAlignment alignment)
+    private static void DrawTextLine(
+        XGraphics gfx,
+        string line,
+        XFont font,
+        XBrush brush,
+        XRect rect,
+        TextAlignment alignment,
+        bool isLastLineOfParagraph)
     {
-        if (alignment == TextAlignment.Justify)
+        // Justify all wrapped lines except the last line of each paragraph.
+        // Stretching the final line across the page causes extreme word spacing
+        // for short sentences such as the acceptance statement.
+        if (alignment == TextAlignment.Justify && !isLastLineOfParagraph)
         {
             DrawJustifiedLine(gfx, line, font, brush, rect);
             return;
         }
 
+        var effectiveAlignment = alignment == TextAlignment.Justify
+            ? TextAlignment.Left
+            : alignment;
         var format = new XStringFormat
         {
-            Alignment = alignment switch
+            Alignment = effectiveAlignment switch
             {
                 TextAlignment.Center => XStringAlignment.Center,
                 TextAlignment.Right => XStringAlignment.Far,
