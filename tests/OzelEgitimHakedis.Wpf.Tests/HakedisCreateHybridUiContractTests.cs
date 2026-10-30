@@ -110,10 +110,11 @@ public sealed partial class HakedisCreateHybridUiContractTests
                 Assert.Equal(2,saved.Routes.Count);
                 var first = saved.Routes.Single(route => route.RouteNumber == "01");
                 Assert.Equal("Yeni Merkez",first.Name);
-                Assert.Equal(18.5m,first.TransportWorkDays);
+                Assert.Equal(20m,first.TransportWorkDays);
+                Assert.Equal(18.5m,rows[0].WorkDays);
                 Assert.Equal(1234.5678m,first.DailyPrice);
                 Assert.Equal(333.25m,first.GuideDailyPrice);
-                Assert.Equal(14m,saved.Routes.Single(route=>route.RouteNumber=="02").TransportWorkDays);
+                Assert.Equal(20m,saved.Routes.Single(route=>route.RouteNumber=="02").TransportWorkDays);
                 Assert.Empty(saved.ProgressPayments!);
                 using var json = System.Text.Json.JsonDocument.Parse(System.Text.Json.JsonSerializer.Serialize(saved));
                 var drafts = json.RootElement.GetProperty("HybridPaymentDrafts");
@@ -221,7 +222,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
             var section=typeof(MainWindow).GetNestedType("HistoryCorrectionSection",BindingFlags.NonPublic)!;
             SetField(window,"_historyCorrectionSection",Enum.Parse(section,"Route"));
             Field<TextBox>(window,"RouteNumberTextBox").Text="01";Field<TextBox>(window,"RouteNameTextBox").Text="Hat 01";
-            Field<TextBox>(window,"RouteTransportWorkDaysTextBox").Text="20";Field<TextBox>(window,"RouteDailyPriceTextBox").Text="1.000,00";
+            Field<TextBox>(window,"RouteDailyPriceTextBox").Text="1.000,00";
             Field<TextBox>(window,"RouteGuideDailyPriceTextBox").Text="0";Field<TextBox>(window,"RouteContractAmountTextBox").Text="125.000,00";
             Field<DatePicker>(window,"RouteContractDatePicker").SelectedDate=new DateTime(2026,1,2);
             Assert.True((bool)Invoke(window,"HistoryCorrectionInputsDiffer")!);
@@ -249,7 +250,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
             SetField(window,"_archiveCorrectionSection",Enum.Parse(section,"Route"));
             Field<TextBox>(window,"RouteNumberTextBox").Text=archive.Route.RouteNumber;
             Field<TextBox>(window,"RouteNameTextBox").Text=archive.Route.Name;
-            Field<TextBox>(window,"RouteTransportWorkDaysTextBox").Text="20";
+
             Field<TextBox>(window,"RouteDailyPriceTextBox").Text="1.000,00";
             Field<TextBox>(window,"RouteGuideDailyPriceTextBox").Text="0";
             Field<TextBox>(window,"RouteContractAmountTextBox").Text="125.000,00";
@@ -282,7 +283,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
             contractors.ItemsSource=new[]{firm};contractors.SelectedItem=firm;
             Field<TextBox>(window,"RouteNumberTextBox").Text="02";
             Field<TextBox>(window,"RouteNameTextBox").Text="Kuzey";
-            Field<TextBox>(window,"RouteTransportWorkDaysTextBox").Text="20";
+
             Field<TextBox>(window,"RouteDailyPriceTextBox").Text="1.234,56";
             Field<TextBox>(window,"RouteContractAmountTextBox").Text="12.536,48";
             Field<TextBox>(window,"RouteGuideDailyPriceTextBox").Text="100,00";
@@ -709,8 +710,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
             || string.Equals((string?)e.Attribute("Binding"),"{Binding "+path+"}",StringComparison.Ordinal)).Attribute("Header")!;
         Assert.Equal((string?)NamedElement(document,"RouteGuideDailyPriceLabel").Attribute("Text"),Header("GuideDailyPrice"));
         Assert.Equal((string?)NamedElement(document,"ProgressGuideWorkDaysLabel").Attribute("Text"),Header("GuideWorkDays"));
-        var days=NamedElement(document,"RouteTransportWorkDaysTextBox").ElementsBeforeSelf().Last(e=>e.Name.LocalName=="TextBlock");
-        Assert.Equal((string?)days.Attribute("Text"),Header("WorkDays"));
+        Assert.Equal((string?)NamedElement(document,"WorkDaysLabel").Attribute("Text"),Header("WorkDays"));
         Assert.Equal((string?)NamedElement(document,"NetPayableLabel").Attribute("Text"),Header("NetPayableText"));
     }
 
@@ -983,7 +983,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
                     Invoke(window,"UpdateHybridRouteDraftRows");
                     var rows=Field<System.Collections.ObjectModel.ObservableCollection<MainWindow.MultiRoutePaymentDraftRow>>(window,"_multiRoutePaymentRows");
                     for(var index=0;index<count;index++)
-                    {Assert.Equal(16.5m+index,rows[index].WorkDays);Assert.Equal(0m,rows[index].GuideWorkDays);rows[index].PriceDifference=100+index*50;rows[index].TaxDebt=3+index*4;}
+                    {Assert.Equal(0m,rows[index].WorkDays);rows[index].WorkDays=16.5m+index;Assert.Equal(0m,rows[index].GuideWorkDays);rows[index].PriceDifference=100+index*50;rows[index].TaxDebt=3+index*4;}
                     foreach(var name in InvalidSharedInputNames)
                         Field<TextBox>(window,name).Text="geçersiz ortak alan";
                     Invoke(window,"CalculateProgressButton_Click",window,new RoutedEventArgs());
@@ -1232,7 +1232,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
     [Theory]
     [InlineData(TransportationProgramType.SpecialEducation)]
     [InlineData(TransportationProgramType.BasicOrSecondary)]
-    public void HybridRows_ShouldImportEachRoutePeriodDaysAndKeepEditedDraft(TransportationProgramType program)
+    public void HybridRows_ShouldStartWithNoPeriodDaysAndKeepEditedDraft(TransportationProgramType program)
     {
         RunOnSta(() =>
         {
@@ -1246,14 +1246,14 @@ public sealed partial class HakedisCreateHybridUiContractTests
             Invoke(window, "UpdateHybridRouteDraftRows");
             var rows = Field<System.Collections.ObjectModel.ObservableCollection<MainWindow.MultiRoutePaymentDraftRow>>(window, "_multiRoutePaymentRows");
             var first = Assert.Single(rows);
-            Assert.Equal(18.5m, first.WorkDays);
+            Assert.Equal(0m, first.WorkDays);
             Assert.Equal(0m, first.GuideWorkDays);
-            Assert.Equal(18500m, first.Preview!.ServiceAmount);
+            Assert.Equal(0m, first.Preview!.ServiceAmount);
             first.WorkDays = 17m;
             first.GuideWorkDays = program == TransportationProgramType.SpecialEducation ? 15m : 0m;
             routes.SelectedItems.Add(secondRoute);
             Invoke(window, "UpdateHybridRouteDraftRows");
-            Assert.Equal(12m, rows.Single(row => row.RouteNumber == "02").WorkDays);
+            Assert.Equal(0m, rows.Single(row => row.RouteNumber == "02").WorkDays);
             routes.SelectedItems.Remove(firstRoute);
             Invoke(window, "UpdateHybridRouteDraftRows");
             routes.SelectedItems.Add(firstRoute);
@@ -1280,7 +1280,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
             Invoke(window,"UpdateHybridRouteDraftRows");
             Assert.Equal(Visibility.Visible,Field<Border>(window,"MultiRouteEntryBorder").Visibility);
             var rows=Field<System.Collections.ObjectModel.ObservableCollection<MainWindow.MultiRoutePaymentDraftRow>>(window,"_multiRoutePaymentRows");
-            var first=Assert.Single(rows);Assert.Equal(20,first.WorkDays);Assert.Equal(0,first.PriceDifference);
+            var first=Assert.Single(rows);Assert.Equal(0,first.WorkDays);Assert.Equal(0,first.PriceDifference);
             first.WorkDays=22;first.PriceDifference=150;first.TaxDebt=10;
             var grid=Field<DataGrid>(window,"MultiRoutePaymentGrid");
             var expression=BindingOperations.SetBinding(grid,FrameworkElement.TagProperty,new Binding(nameof(first.WorkDays)){Source=first});
@@ -1289,7 +1289,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
             Assert.Single(rows);
             Validation.ClearInvalid(expression);
             Invoke(window,"UpdateHybridRouteDraftRows");
-            Assert.Equal(2,rows.Count);Assert.Equal(22,rows[0].WorkDays);Assert.Equal(20,rows[1].WorkDays);
+            Assert.Equal(2,rows.Count);Assert.Equal(22,rows[0].WorkDays);Assert.Equal(0,rows[1].WorkDays);
             rows[1].WorkDays=18;rows[1].PriceDifference=30;
             Field<TextBox>(window,"PriceDifferenceTextBox").Text="999";
             routes.SelectedItems.Clear();routes.SelectedItems.Add(b);Invoke(window,"UpdateHybridRouteDraftRows");
@@ -1840,7 +1840,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
             routes.Add(CreateRoute("01", "Merkez", "12345678901"));
             Invoke(window, "UpdateContractSelectors");
 
-            Assert.Contains("Merkez Hattı Öğrenci Taşıma İşi", Field<TextBlock>(window, "HomeSelectedTenderSummaryTextBlock").Text, StringComparison.Ordinal);
+            Assert.Contains("Özel Eğitim Taşıma", Field<TextBlock>(window, "HomeSelectedTenderSummaryTextBlock").Text, StringComparison.Ordinal);
             var titles = converter.Titles;
             Assert.Equal("Merkez Hattı Öğrenci Taşıma İşi", titles[contract]);
             Assert.Equal("Merkez Hattı Öğrenci Taşıma İşi", displayedTitle.Text);
@@ -1852,7 +1852,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
             titles = converter.Titles;
             Assert.Equal("Yeni Merkez Hattı Öğrenci Taşıma İşi", titles[contract]);
             Assert.Equal("Yeni Merkez Hattı Öğrenci Taşıma İşi", displayedTitle.Text);
-            Assert.Contains("Yeni Merkez Hattı Öğrenci Taşıma İşi", Field<TextBlock>(window, "HomeSelectedTenderSummaryTextBlock").Text, StringComparison.Ordinal);
+            Assert.DoesNotContain("Yeni Merkez", Field<TextBlock>(window, "HomeSelectedTenderSummaryTextBlock").Text, StringComparison.Ordinal);
 
             routes.Clear();
             Invoke(window, "UpdateRouteListView");
@@ -1867,10 +1867,16 @@ public sealed partial class HakedisCreateHybridUiContractTests
     [Theory]
     [InlineData("HomeTenderListBox")]
     [InlineData("ContractsListBox")]
-    public void ContractListWorkTitle_ShouldBindToRouteDerivedPresentation(string listName)
+    public void ContractLists_ShouldUseContextAppropriatePresentation(string listName)
     {
         var list = LoadMainWindowXaml().Descendants()
             .Single(element => (string?)element.Attribute(XamlNamespace + "Name") == listName);
+        if (listName == "HomeTenderListBox")
+        {
+            Assert.DoesNotContain(list.Descendants(), element => element.Name.LocalName == "MultiBinding");
+            Assert.Contains(list.Descendants(), element => (string?)element.Attribute("Text") == "{Binding ProgramDisplayText}");
+            return;
+        }
         var binding = Assert.Single(list.Descendants().Where(element => element.Name.LocalName == "MultiBinding"));
         Assert.Equal("{StaticResource ContractWorkNameConverter}", (string?)binding.Attribute("Converter"));
         // ComboBox popup items cannot rely on finding their Window visually.
@@ -2183,7 +2189,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
             .ToArray();
         Assert.Contains("Hat", routeTableHeaders);
         Assert.Contains("Hattın Adı", routeTableHeaders);
-        Assert.Contains("Söz. Gün", routeTableHeaders);
+        Assert.DoesNotContain("Söz. Gün", routeTableHeaders);
         Assert.Contains("Günlük Fiyat", routeTableHeaders);
         Assert.Contains("Durum", routeTableHeaders);
         Assert.Contains("ProgressRouteRelationTextBlock", named.Keys);

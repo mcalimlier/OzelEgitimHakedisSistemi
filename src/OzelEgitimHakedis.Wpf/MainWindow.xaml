@@ -258,8 +258,8 @@
   <StackPanel>
    <TextBlock Text="ANA EKRAN" Foreground="White" FontSize="21" FontWeight="SemiBold" Margin="0,0,0,14"/>
    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="1.05*"/><ColumnDefinition Width="1.2*"/><ColumnDefinition Width="0.85*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-    <StackPanel Margin="0,0,12,0"><TextBlock Text="Program" Foreground="#DCE7F5" Margin="0,0,0,7"/><ComboBox x:Name="HomeProgramComboBox" Style="{StaticResource HomeFilterCombo}" SelectionChanged="HomeFilter_Changed"><ComboBoxItem Content="Özel Eğitim" Tag="SpecialEducation"/><ComboBoxItem Content="Temel / Ortaöğretim" Tag="BasicOrSecondary"/></ComboBox></StackPanel>
-    <StackPanel Grid.Column="1" Margin="0,0,12,0"><TextBlock Text="İKN" Foreground="#DCE7F5" Margin="0,0,0,7"/><ComboBox x:Name="HomeTenderListBox" Style="{StaticResource HomeFilterCombo}" SelectionChanged="HomeTenderListBox_SelectionChanged" ToolTip="Boş seçim tüm ihaleleri kapsar."><ComboBox.ItemTemplate><DataTemplate><StackPanel><TextBlock Text="{Binding TenderNumber}"/><TextBlock FontSize="10" TextTrimming="CharacterEllipsis"><TextBlock.Text><MultiBinding Converter="{StaticResource ContractWorkNameConverter}" Mode="OneWay"><Binding/><Binding Path="Titles" Source="{StaticResource ContractWorkNameConverter}"/></MultiBinding></TextBlock.Text></TextBlock></StackPanel></DataTemplate></ComboBox.ItemTemplate></ComboBox></StackPanel>
+    <StackPanel Margin="0,0,12,0"><TextBlock Text="Program" Foreground="#DCE7F5" Margin="0,0,0,7"/><ComboBox x:Name="HomeProgramComboBox" Style="{StaticResource HomeFilterCombo}" SelectionChanged="HomeFilter_Changed"><ComboBoxItem Content="Özel Eğitim Taşıma" Tag="SpecialEducation"/><ComboBoxItem Content="Temel Eğitim/Ortaöğretim Taşıma" Tag="BasicOrSecondary"/></ComboBox></StackPanel>
+    <StackPanel Grid.Column="1" Margin="0,0,12,0"><TextBlock Text="İKN" Foreground="#DCE7F5" Margin="0,0,0,7"/><ComboBox x:Name="HomeTenderListBox" Style="{StaticResource HomeFilterCombo}" SelectionChanged="HomeTenderListBox_SelectionChanged" ToolTip="Boş seçim tüm ihaleleri kapsar."><ComboBox.ItemTemplate><DataTemplate><StackPanel><TextBlock Text="{Binding TenderNumber}" FontSize="11.5" FontWeight="SemiBold"/><TextBlock Text="{Binding ProgramDisplayText}" FontSize="10" TextTrimming="CharacterEllipsis" ToolTip="{Binding ProgramDisplayText}"/></StackPanel></DataTemplate></ComboBox.ItemTemplate></ComboBox></StackPanel>
     <StackPanel Grid.Column="2" Margin="0,0,10,0"><TextBlock Text="Hakediş Dönemi" Foreground="#DCE7F5" Margin="0,0,0,7"/><ComboBox x:Name="HomePeriodMonthComboBox" Height="36" DisplayMemberPath="DisplayText" SelectionChanged="HomeFilter_Changed" Style="{StaticResource HomeFilterCombo}"/></StackPanel>
     <Button Grid.Column="3" Content="Tüm ihaleler" Click="HomeAllTenders_Click" Style="{StaticResource SecondaryButton}" VerticalAlignment="Bottom" Height="36"/>
    </Grid>
@@ -339,7 +339,7 @@
     <TextBlock x:Name="HomePaymentAmounts" Foreground="#C5D7E7" TextWrapping="Wrap"/>
     <ItemsControl x:Name="HomeIssuesList" Margin="0,6,0,0"><ItemsControl.ItemTemplate><DataTemplate><Button Content="{Binding Message}" Tag="{Binding}" Click="HomeIssue_Click" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Margin="0,2" ToolTip="İlgili kaydı aç"/></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
     <Expander Header="İmzacı ve hesaplama ayrıntıları" Foreground="#C5D7E7" Margin="0,8,0,0"><TextBlock x:Name="HomePaymentDetails" Foreground="#C5D7E7" TextWrapping="Wrap" Margin="0,6"/></Expander>
-    <WrapPanel Margin="0,10,0,0"><Button Content="Hakedişi aç" Click="HomeNextAction_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,6"/><Button x:Name="HomePreviewButton" Content="Belgeleri önizle" Tag="Preview" Click="HomeOutput_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,6" IsEnabled="False"/><Button x:Name="HomeSavePdfsButton" Content="Dört PDF'yi kaydet" Tag="Save" Click="HomeOutput_Click" Style="{StaticResource ModernButton}" Margin="0,0,0,6" IsEnabled="False"/></WrapPanel>
+    <WrapPanel Margin="0,10,0,0"><Button Content="Hakedişi aç" Click="HomeNextAction_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,6"/><Button x:Name="HomePreviewButton" Content="Belgeleri önizle" Tag="Preview" Click="HomeOutput_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,6" IsEnabled="False"/><Button x:Name="HomeSavePdfsButton" Content="Dört belgeyi tek PDF kaydet" Tag="Save" Click="HomeOutput_Click" Style="{StaticResource ModernButton}" Margin="0,0,0,6" IsEnabled="False"/></WrapPanel>
    </StackPanel></Border>
 
   </StackPanel>
@@ -378,8 +378,8 @@
                     <StackPanel Grid.Column="0" Margin="0,0,10,12">
                         <TextBlock Text="Taşıma programı *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                         <ComboBox x:Name="TransportProgramTypeComboBox" Height="34" SelectionChanged="TransportProgramTypeComboBox_SelectionChanged" Style="{StaticResource FieldComboBox}" TabIndex="0">
-                            <ComboBoxItem Content="Özel Eğitim" Tag="SpecialEducation"/>
-                            <ComboBoxItem Content="Temel / Ortaöğretim" Tag="BasicOrSecondary"/>
+                            <ComboBoxItem Content="Özel Eğitim Taşıma" Tag="SpecialEducation"/>
+                            <ComboBoxItem Content="Temel Eğitim/Ortaöğretim Taşıma" Tag="BasicOrSecondary"/>
                         </ComboBox>
                     </StackPanel>
                     <StackPanel Grid.Column="1" Margin="0,0,10,12">
@@ -427,7 +427,7 @@
                         <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                             <StackPanel Margin="0,0,14,0">
                                 <TextBlock Text="{Binding TenderNumber, StringFormat='İKN: {0}'}" Foreground="#F4C247" FontSize="14" FontWeight="Bold" TextWrapping="Wrap"/>
-                                <TextBlock Foreground="White" Margin="0,4,0,0" TextWrapping="Wrap"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Text" Value="Özel Eğitim"/><Style.Triggers><DataTrigger Binding="{Binding ProgramType}" Value="BasicOrSecondary"><Setter Property="Text" Value="Temel / Ortaöğretim"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
+                                <TextBlock Foreground="White" Margin="0,4,0,0" TextWrapping="Wrap"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Text" Value="Özel Eğitim Taşıma"/><Style.Triggers><DataTrigger Binding="{Binding ProgramType}" Value="BasicOrSecondary"><Setter Property="Text" Value="Temel Eğitim/Ortaöğretim Taşıma"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
                                 <TextBlock Foreground="#C5D7E7" TextWrapping="Wrap" Margin="0,4,0,0"><TextBlock.Text><MultiBinding Converter="{StaticResource ContractWorkNameConverter}" Mode="OneWay"><Binding/><Binding Path="Titles" Source="{StaticResource ContractWorkNameConverter}"/></MultiBinding></TextBlock.Text></TextBlock>
                                 <WrapPanel Margin="0,5,0,0"><TextBlock Text="{Binding StartDate, StringFormat='Hizmet: {0:dd.MM.yyyy}'}" Foreground="#C5D7E7"/><TextBlock Text="{Binding EndDate, StringFormat=' — {0:dd.MM.yyyy}'}" Foreground="#C5D7E7"/></WrapPanel>
                             </StackPanel>
@@ -514,7 +514,7 @@
                                                 </Grid>
                                                 <TextBlock Grid.Row="1" Text="İhale / dosya numarası" Foreground="#D5E1EC" FontSize="10.5" Margin="0,6,0,0"/>
                                                 <ComboBox Grid.Row="2" x:Name="ProgressTenderListBox" Height="34" Margin="0,3,0,0" SelectionChanged="ProgressTenderListBox_SelectionChanged" Style="{StaticResource FieldComboBox}" ToolTip="İhale / dosya numarasını seçin">
-                                                    <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding TenderNumber}" FontSize="11.5" FontWeight="SemiBold"/></DataTemplate></ComboBox.ItemTemplate>
+                                                    <ComboBox.ItemTemplate><DataTemplate><StackPanel><TextBlock Text="{Binding TenderNumber}" FontSize="11.5" FontWeight="SemiBold"/><TextBlock Text="{Binding ProgramDisplayText}" FontSize="10" TextTrimming="CharacterEllipsis" ToolTip="{Binding ProgramDisplayText}"/></StackPanel></DataTemplate></ComboBox.ItemTemplate>
                                                 </ComboBox>
                                                 <TextBlock Grid.Row="3" Text="Günlük fiyat, sözleşme bedeli ve tarihi hat kaydından alınır." Foreground="#C5D7E7" FontSize="10.5" TextWrapping="Wrap" Margin="0,6,0,0"/>
                                             </Grid>
@@ -564,16 +564,15 @@
                                                         <ColumnDefinition Width="48"/>
                                                         <ColumnDefinition Width="1.55*"/>
                                                         <ColumnDefinition Width="1.8*"/>
-                                                        <ColumnDefinition Width="92"/>
+
                                                         <ColumnDefinition Width="92"/>
                                                         <ColumnDefinition Width="84"/>
                                                     </Grid.ColumnDefinitions>
                                                     <TextBlock Grid.Column="0" Text="Seç" Foreground="#F4C247" FontSize="10.5" FontWeight="Bold" Padding="5,4" Background="#123A5D"/>
                                                     <TextBlock Grid.Column="1" Text="Hat" Foreground="#F4C247" FontSize="10.5" FontWeight="Bold" Padding="5,4" Background="#123A5D"/>
                                                     <TextBlock x:Name="ProgressRouteNameLabel" Grid.Column="2" Text="Hattın Adı" Foreground="#F4C247" FontSize="10.5" FontWeight="Bold" Padding="5,4" Background="#123A5D"/>
-                                                    <TextBlock Grid.Column="3" Text="Söz. Gün" Foreground="#F4C247" FontSize="10.5" FontWeight="Bold" Padding="5,4" Background="#123A5D"/>
-                                                    <TextBlock Grid.Column="4" Text="Günlük Fiyat" Foreground="#F4C247" FontSize="10.5" FontWeight="Bold" Padding="5,4" Background="#123A5D"/>
-                                                    <TextBlock Grid.Column="5" Text="Durum" Foreground="#F4C247" FontSize="10.5" FontWeight="Bold" Padding="5,4" Background="#123A5D"/>
+                                                    <TextBlock Grid.Column="3" Text="Günlük Fiyat" Foreground="#F4C247" FontSize="10.5" FontWeight="Bold" Padding="5,4" Background="#123A5D"/>
+                                                    <TextBlock Grid.Column="4" Text="Durum" Foreground="#F4C247" FontSize="10.5" FontWeight="Bold" Padding="5,4" Background="#123A5D"/>
                                                 </Grid>
                                                 <ListBox x:Name="ProgressRouteComboBox" Height="112" Margin="0,0,0,0" SelectionMode="Extended" SelectionChanged="ProgressRouteComboBox_SelectionChanged" BorderBrush="#A7B8C8" Background="#FFFFFF" Foreground="#172B3A" ScrollViewer.VerticalScrollBarVisibility="Auto">
                                                     <ListBox.ItemContainerStyle>
@@ -601,16 +600,15 @@
                                                                     <ColumnDefinition Width="48"/>
                                                                     <ColumnDefinition Width="1.55*"/>
                                                                     <ColumnDefinition Width="1.8*"/>
-                                                                    <ColumnDefinition Width="92"/>
+
                                                                     <ColumnDefinition Width="92"/>
                                                                     <ColumnDefinition Width="84"/>
                                                                 </Grid.ColumnDefinitions>
                                                                 <CheckBox Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected, Mode=TwoWay}" ToolTip="Bu hattı hakediş seçimine dahil et"/>
                                                                 <TextBlock Grid.Column="1" Text="{Binding RouteNumber}" Foreground="#17324A" FontSize="11" VerticalAlignment="Center" Padding="5,3" TextTrimming="CharacterEllipsis"/>
                                                                 <TextBlock Grid.Column="2" Text="{Binding Name}" Foreground="#17324A" FontSize="11" VerticalAlignment="Center" Padding="5,3" TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}"/>
-                                                                <TextBlock Grid.Column="3" Text="{Binding TransportWorkDays, StringFormat={}{0:N0}}" Foreground="#17324A" FontSize="11" VerticalAlignment="Center" Padding="5,3" TextAlignment="Right"/>
-                                                                <TextBlock Grid.Column="4" Text="{Binding DailyPrice, StringFormat={}{0:N2} ₺}" Foreground="#17324A" FontSize="11" VerticalAlignment="Center" Padding="5,3" TextAlignment="Right"/>
-                                                                <TextBlock Grid.Column="5" FontSize="10" FontWeight="Bold" VerticalAlignment="Center" Padding="5,3" TextAlignment="Center">
+                                                                <TextBlock Grid.Column="3" Text="{Binding DailyPrice, StringFormat={}{0:N2} ₺}" Foreground="#17324A" FontSize="11" VerticalAlignment="Center" Padding="5,3" TextAlignment="Right"/>
+                                                                <TextBlock Grid.Column="4" FontSize="10" FontWeight="Bold" VerticalAlignment="Center" Padding="5,3" TextAlignment="Center">
                                                                     <TextBlock.Style>
                                                                         <Style TargetType="{x:Type TextBlock}">
                                                                             <Setter Property="Text" Value="FİYAT VAR"/>
@@ -711,7 +709,7 @@
                                                                   FontSize="10.5"
                                                                   VerticalAlignment="Center"
                                                                   Margin="0,0,6,0"
-                                                                  ToolTip="Temel/Ortaöğretim modelinde asgari ücret desteği kesintisini etkinleştirir."
+                                                                  ToolTip="Temel Eğitim/Ortaöğretim Taşıma modelinde asgari ücret desteği kesintisini etkinleştirir."
                                                                   Visibility="Collapsed"
                                                                   IsChecked="True"
                                                                   Checked="MinimumWageSupportEnabledCheckBox_Changed"
@@ -726,7 +724,7 @@
                                                     <TextBox x:Name="InspectionPenaltyTextBox" Grid.Row="7" Grid.Column="3" Margin="4.5" Style="{StaticResource PremiumFieldTextBox}"/>
                                                     <TextBlock x:Name="ManualAdditionalGuaranteeLabel" Grid.Row="8" Grid.Column="0" Text="Ek Kesin Teminat (Hesaplanan)" Foreground="#D8E4EF" Style="{StaticResource FieldLabel}" Margin="0,4.5"/>
                                                     <TextBox x:Name="ManualAdditionalGuaranteeTextBox" Grid.Row="8" Grid.Column="1" Margin="4.5" Style="{StaticResource PremiumFieldTextBox}" Text="0,00 ₺" IsReadOnly="True" ToolTip="Tutar seçili programın kaynak Excel formülüne göre hesaplanır; elle giriş kullanılmaz."/>
-                                                    <TextBlock x:Name="GuaranteeRuleHintTextBlock" Grid.Row="8" Grid.Column="2" Grid.ColumnSpan="2" Text="Temel/Ortaöğretim: I × %6 • Özel Eğitim: (I × %6) + (R × %6)" Foreground="#FFD180" TextWrapping="Wrap" VerticalAlignment="Center" Margin="7,4.5"/>
+                                                    <TextBlock x:Name="GuaranteeRuleHintTextBlock" Grid.Row="8" Grid.Column="2" Grid.ColumnSpan="2" Text="Temel Eğitim/Ortaöğretim Taşıma: I × %6 • Özel Eğitim Taşıma: (I × %6) + (R × %6)" Foreground="#FFD180" TextWrapping="Wrap" VerticalAlignment="Center" Margin="7,4.5"/>
                                                 </Grid>
                                                 <Border x:Name="MultiRouteEntryBorder" Visibility="Collapsed" Style="{StaticResource Card}" Padding="7" Margin="4.5,7,0,0">
                                                     <StackPanel>
@@ -734,6 +732,7 @@
                                                         <TextBlock Text="Her hat kendi satırında düzenlenir. EXCEL’E AKTAR ile görünen tabloyu güncel değerleriyle Excel dosyası olarak kaydedebilirsiniz. Günlük fiyatlar hat kaydından gelir. Net tutarlar canlı önizlenir; HAKEDİŞ HESAPLA/KAYDET doğrulama sonrası kalıcı kayıt yapar. Takvim sınırı puantaj doğrulaması yerine geçmez." Foreground="#C5D7E7" FontSize="11" TextWrapping="Wrap" Margin="0,3,0,6"/>
                                                         <WrapPanel Margin="0,0,0,8"><TextBlock Text="Gösterilen alanlar" Foreground="#C5D7E7" VerticalAlignment="Center" Margin="0,0,8,0"/><ComboBox x:Name="HybridColumnView" Width="185" SelectedIndex="0" SelectionChanged="HybridColumnView_SelectionChanged" Style="{StaticResource FieldComboBox}"><ComboBoxItem Content="Tüm alanlar" Tag="All"/><ComboBoxItem Content="Taşıma bilgileri" Tag="Transport"/><ComboBoxItem Content="Rehber bilgileri" Tag="Guide"/><ComboBoxItem Content="Kesintiler" Tag="Deductions"/></ComboBox><Button x:Name="HybridExportExcelButton" Content="EXCEL’E AKTAR" Click="HybridExportExcelButton_Click" Style="{StaticResource ModernButton}" Margin="8,0,0,0"/></WrapPanel><DataGrid x:Name="MultiRoutePaymentGrid"
                                                                   LoadingRow="HybridGrid_LoadingRow"
+                                                                  BeginningEdit="HybridGrid_BeginningEdit"
                                                                   Loaded="HybridGrid_Loaded"
 
                                                                   CellEditEnding="HybridGrid_CellEditEnding"
@@ -799,7 +798,9 @@
                                                                 </Style>
                                                             </DataGrid.CellStyle>
                                                             <DataGrid.Columns>
+
                                                                 <DataGridTextColumn Header="Hat" Binding="{Binding RouteDisplayText}" IsReadOnly="True" Width="190"/>
+                                                                <DataGridTemplateColumn Header="Dönem içi değişiklik" Width="170"><DataGridTemplateColumn.CellTemplate><DataTemplate><Button Content="{Binding PeriodChangeButtonText}" ToolTip="{Binding PeriodSummary}" Tag="{Binding}" Click="HybridPeriodChange_Click" Padding="5,2"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
                                                                 <DataGridTextColumn Header="Hattın Adı" Binding="{Binding RouteName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="170"/>
 <DataGridTextColumn Header="Ele Geçen" Binding="{Binding NetPayableText}" IsReadOnly="True" Width="125"/>
                                                                 <DataGridTextColumn Header="Döneme Esas Taşıma Hakediş Gün Sayısı (Döneme Esas THGS)" Binding="{Binding WorkDays, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True, NotifyOnValidationError=True}" Width="180"/>
@@ -913,6 +914,7 @@
                                             <TextBlock Text="İŞLEMLER" Foreground="{StaticResource Gold500Brush}" FontSize="11.5" FontWeight="Bold"/>
                                             <TextBlock Text="Girdi ve hesap özetini kontrol ettikten sonra işlemi seçin." Style="{StaticResource CardSubtitle}" Margin="0,3,0,6"/>
                                             <WrapPanel>
+                                                <Button Content="Dönem içi değişiklik" Click="HybridPeriodChange_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,6" ToolTip="Seçili hattın taşıma ve rehber gün, fiyat ve fiyat farkı bölümlerini düzenleyin."/>
                                                 <Button x:Name="CalculateProgressButton" Content="HAKEDİŞ HESAPLA/KAYDET" ToolTip="Hesaplama ile seçili hatların hakedişleri doğrulanır ve başarılıysa kayıt oluşturulur. Önizleme için canlı taslak netlerini inceleyin." Click="CalculateProgressButton_Click" Style="{StaticResource ModernButton}" MinWidth="245" Margin="0,0,8,6"/>
                                                 <Button x:Name="CancelProgressEditButton" Content="DÜZENLEME İPTAL" Click="CancelProgressEditButton_Click" Style="{StaticResource SecondaryButton}" MinWidth="170" Margin="0,0,8,6" Visibility="Collapsed"/>
                                                 <Button x:Name="LiveCalculationTraceButton" Content="CANLI HESAP DÖKÜMÜ" Click="TemporaryCalculationTraceButton_Click" Style="{StaticResource SecondaryButton}" Height="33" MinWidth="185" Margin="0,0,8,6"/>
@@ -936,7 +938,7 @@
                 <ComboBox x:Name="RouteTenderListBox" Height="42" SelectionChanged="RouteTenderListBox_SelectionChanged" Style="{StaticResource FieldComboBox}" TabIndex="0">
                     <ComboBox.ItemTemplate><DataTemplate><StackPanel>
                         <TextBlock Text="{Binding TenderNumber}" FontWeight="SemiBold"/>
-                        <TextBlock FontSize="10"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Text" Value="Özel Eğitim"/><Style.Triggers><DataTrigger Binding="{Binding ProgramType}" Value="BasicOrSecondary"><Setter Property="Text" Value="Temel / Ortaöğretim"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
+                        <TextBlock FontSize="10"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Text" Value="Özel Eğitim Taşıma"/><Style.Triggers><DataTrigger Binding="{Binding ProgramType}" Value="BasicOrSecondary"><Setter Property="Text" Value="Temel Eğitim/Ortaöğretim Taşıma"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
                     </StackPanel></DataTemplate></ComboBox.ItemTemplate>
                 </ComboBox>
             </StackPanel>
@@ -960,11 +962,10 @@
                 <StackPanel Margin="0,0,10,12"><TextBlock Text="Hat no *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/><TextBox x:Name="RouteNumberTextBox" Height="34" Style="{StaticResource FieldTextBox}" TabIndex="2"/></StackPanel>
                 <StackPanel Grid.Column="1" Grid.ColumnSpan="2" Margin="0,0,0,12"><TextBlock x:Name="RouteNameLabel" Text="Hattın adı *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/><TextBox x:Name="RouteNameTextBox" Height="34" Style="{StaticResource FieldTextBox}" TabIndex="3"/></StackPanel>
                 <StackPanel Grid.Row="1" Margin="0,0,10,12"><TextBlock Text="Taşıma günlük fiyatı *" Height="34" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/><TextBox x:Name="RouteDailyPriceTextBox" Height="34" Style="{StaticResource FieldTextBox}" TabIndex="4"/></StackPanel>
-                <StackPanel x:Name="RouteWorkDaysField" Grid.Row="1" Grid.Column="1" Margin="0,0,10,12"><TextBlock Text="Döneme Esas Taşıma Hakediş Gün Sayısı (Döneme Esas THGS)" Height="34" TextWrapping="Wrap" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/><TextBox x:Name="RouteTransportWorkDaysTextBox" Height="34" Style="{StaticResource FieldTextBox}" TabIndex="5" ToolTip="Döneme Esas THGS. Hat ilk seçildiğinde hakediş satırına aktarılır; dönem tablosundaki düzenlemeler korunur."/></StackPanel>
-                <StackPanel x:Name="RouteGuideFieldPanel" Grid.Row="1" Grid.Column="2" Margin="0,0,0,12"><TextBlock x:Name="RouteGuideDailyPriceLabel" Text="Rehber Personel Günlük Fiyat" Height="34" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/><TextBox x:Name="RouteGuideDailyPriceTextBox" Height="34" Style="{StaticResource FieldTextBox}" TabIndex="6"/></StackPanel>
+                <StackPanel x:Name="RouteGuideFieldPanel" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,0,0,12"><TextBlock x:Name="RouteGuideDailyPriceLabel" Text="Rehber Personel Günlük Fiyat" Height="34" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/><TextBox x:Name="RouteGuideDailyPriceTextBox" Height="34" Style="{StaticResource FieldTextBox}" TabIndex="6"/></StackPanel>
                 <StackPanel Grid.Row="2" Margin="0,0,10,0"><TextBlock Text="Sözleşme bedeli *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/><TextBox x:Name="RouteContractAmountTextBox" Height="34" Style="{StaticResource FieldTextBox}" TabIndex="7"/></StackPanel>
                 <StackPanel Grid.Row="2" Grid.Column="1" Margin="0,0,10,0"><TextBlock Text="Sözleşme tarihi *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/><DatePicker x:Name="RouteContractDatePicker" Height="34" Style="{StaticResource FieldDatePicker}" DateValidationError="RouteDate_InvalidInput" SelectedDateChanged="TenderDate_Changed" TabIndex="8"/></StackPanel>
-                <TextBlock Grid.Row="2" Grid.Column="2" Text="Günlük fiyatlarda 4 ondalık basamak kullanılabilir. Hakediş günlerini dönem tablosunda ayrıca özelleştirebilirsiniz." Style="{StaticResource CardSubtitle}" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                <TextBlock Grid.Row="2" Grid.Column="2" Text="Günlük fiyatlarda 4 ondalık basamak kullanılabilir. Hakediş günlerini yalnız Seçili Hatlar–Excel Hibrit Giriş tablosunda girin." Style="{StaticResource CardSubtitle}" TextWrapping="Wrap" VerticalAlignment="Center"/>
             </Grid>
             <TextBlock x:Name="RouteStatusTextBlock" Foreground="#C5D7E7" TextWrapping="Wrap" Margin="0,10,0,0"/>
             <WrapPanel Margin="0,12,0,0">
@@ -1017,7 +1018,7 @@
                     <StackPanel Margin="0,0,10,12">
                         <TextBlock Text="Taşıma programı *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                         <ComboBox x:Name="ContractorProgramComboBox" Height="34" Style="{StaticResource FieldComboBox}" SelectedIndex="{Binding SelectedIndex, ElementName=TransportProgramTypeComboBox, Mode=TwoWay}" TabIndex="0">
-                            <ComboBoxItem Content="Özel Eğitim" Tag="SpecialEducation"/><ComboBoxItem Content="Temel / Ortaöğretim" Tag="BasicOrSecondary"/>
+                            <ComboBoxItem Content="Özel Eğitim Taşıma" Tag="SpecialEducation"/><ComboBoxItem Content="Temel Eğitim/Ortaöğretim Taşıma" Tag="BasicOrSecondary"/>
                         </ComboBox>
                         <TextBlock x:Name="ContractorEditingProgramTextBlock" Visibility="Collapsed" Height="34" Padding="0,8,0,0" Foreground="White" FontWeight="SemiBold" TextWrapping="Wrap"/>
                     </StackPanel>
@@ -1084,7 +1085,7 @@
 <Grid x:Name="RecordsPanel" Visibility="Collapsed"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition/></Grid.RowDefinitions>
     <Grid Margin="0,0,0,10"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="230"/></Grid.ColumnDefinitions>
         <StackPanel><TextBlock Text="KAYITLAR VE ARŞİV" Style="{StaticResource PageTitle}"/><TextBlock Text="Hakediş kayıtları ve saklanan revizyonlar tek yerde." Style="{StaticResource PageSubtitle}" TextWrapping="Wrap"/></StackPanel>
-        <StackPanel Grid.Column="1" Margin="12,0,0,0"><TextBlock Text="Eğitim türü" Foreground="#526779"/><ComboBox x:Name="RecordsProgramComboBox" SelectedIndex="0" Style="{StaticResource FieldComboBox}" SelectionChanged="RecordsDateFilter_Changed" Height="34"><ComboBoxItem Content="Özel Eğitim" Tag="SpecialEducation"/><ComboBoxItem Content="Temel / Ortaöğretim" Tag="BasicOrSecondary"/></ComboBox></StackPanel>
+        <StackPanel Grid.Column="1" Margin="12,0,0,0"><TextBlock Text="Eğitim türü" Foreground="#526779"/><ComboBox x:Name="RecordsProgramComboBox" SelectedIndex="0" Style="{StaticResource FieldComboBox}" SelectionChanged="RecordsDateFilter_Changed" Height="34"><ComboBoxItem Content="Özel Eğitim Taşıma" Tag="SpecialEducation"/><ComboBoxItem Content="Temel Eğitim/Ortaöğretim Taşıma" Tag="BasicOrSecondary"/></ComboBox></StackPanel>
     </Grid>
     <TabControl x:Name="RecordsTabs" Grid.Row="1" SelectionChanged="RecordsTabs_SelectionChanged" Background="White" BorderThickness="0" Padding="0,8,0,0">
         <TabControl.Resources><Style TargetType="TabItem"><Setter Property="Foreground" Value="White"/><Setter Property="Background" Value="#103554"/><Setter Property="Padding" Value="18,8"/><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="TabItem"><Border Background="{TemplateBinding Background}" CornerRadius="7,7,0,0" Padding="{TemplateBinding Padding}" Margin="0,0,6,0"><ContentPresenter ContentSource="Header"/></Border><ControlTemplate.Triggers><Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="#F4C247"/><Setter Property="Foreground" Value="#08223A"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter></Style></TabControl.Resources>
@@ -1266,7 +1267,7 @@
                 <ComboBox x:Name="OutputTenderListBox" Height="42" Style="{StaticResource FieldComboBox}" SelectionChanged="OutputTenderListBox_SelectionChanged" TabIndex="0">
                     <ComboBox.ItemTemplate><DataTemplate><StackPanel>
                         <TextBlock Text="{Binding TenderNumber}" FontWeight="SemiBold"/>
-                        <TextBlock FontSize="10"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Text" Value="Özel Eğitim"/><Style.Triggers><DataTrigger Binding="{Binding ProgramType}" Value="BasicOrSecondary"><Setter Property="Text" Value="Temel / Ortaöğretim"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
+                        <TextBlock FontSize="10"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Text" Value="Özel Eğitim Taşıma"/><Style.Triggers><DataTrigger Binding="{Binding ProgramType}" Value="BasicOrSecondary"><Setter Property="Text" Value="Temel Eğitim/Ortaöğretim Taşıma"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
                     </StackPanel></DataTemplate></ComboBox.ItemTemplate>
                 </ComboBox>
             </StackPanel>
@@ -1319,14 +1320,14 @@
     </StackPanel></ScrollViewer>
     <Border Grid.Row="2" Style="{StaticResource Card}" Padding="10" Margin="0,8,0,0"><StackPanel>
         <WrapPanel>
-            <Button x:Name="SaveReportsPdfsButton" Click="CreateSaveAllRouteDocumentsButton_Click" Style="{StaticResource ModernButton}" IsEnabled="False" Height="38" MinWidth="195" Margin="0,0,8,5" TabIndex="3"><StackPanel Orientation="Horizontal"><TextBlock Text="&#xE74E;" FontFamily="Segoe MDL2 Assets" Margin="0,0,8,0"/><TextBlock Text="4 PDF'Yİ KAYDET"/></StackPanel></Button>
+            <Button x:Name="SaveReportsPdfsButton" Click="CreateSaveAllRouteDocumentsButton_Click" Style="{StaticResource ModernButton}" IsEnabled="False" Height="38" MinWidth="195" Margin="0,0,8,5" TabIndex="3"><StackPanel Orientation="Horizontal"><TextBlock Text="&#xE74E;" FontFamily="Segoe MDL2 Assets" Margin="0,0,8,0"/><TextBlock Text="TEK PDF KAYDET"/></StackPanel></Button>
             <Button x:Name="PreviewReportsButton" Click="PreviewAllRouteDocumentsButton_Click" Style="{StaticResource SecondaryButton}" IsEnabled="False" Height="38" MinWidth="135" Margin="0,0,8,5" TabIndex="4"><StackPanel Orientation="Horizontal"><TextBlock Text="&#xE8A7;" FontFamily="Segoe MDL2 Assets" Margin="0,0,8,0"/><TextBlock Text="ÖNİZLE"/></StackPanel></Button>
             <Button x:Name="PrintReportsButton" Click="PrintAllRouteDocumentsButton_Click" Style="{StaticResource SecondaryButton}" IsEnabled="False" Height="38" MinWidth="120" Margin="0,0,8,5" TabIndex="5"><StackPanel Orientation="Horizontal"><TextBlock Text="&#xE749;" FontFamily="Segoe MDL2 Assets" Margin="0,0,8,0"/><TextBlock Text="YAZDIR"/></StackPanel></Button>
             <Button x:Name="OpenReportsFolderButton" Click="OpenReportsFolder_Click" Style="{StaticResource SecondaryButton}" IsEnabled="False" Height="38" MinWidth="175" Margin="0,0,0,5" TabIndex="6"><StackPanel Orientation="Horizontal"><TextBlock Text="&#xE8B7;" FontFamily="Segoe MDL2 Assets" Margin="0,0,8,0"/><TextBlock Text="PDF KLASÖRÜNÜ AÇ"/></StackPanel></Button>
         </WrapPanel>
         <TextBlock x:Name="ReportPdfTargetTextBlock" Text="Kayıt seçildiğinde PDF klasörü burada gösterilir." Foreground="#C5D7E7" FontSize="10.5" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
         <TextBlock x:Name="ReportOperationStatusTextBlock" Foreground="LightSteelBlue" TextWrapping="Wrap" Margin="0,4,0,0"/>
-        <TextBlock Text="Dört belge A4 düzeninde, dört ayrı, tek sayfalı PDF olarak kaydedilir." Foreground="#C5D7E7" FontSize="10" Margin="0,3,0,0" TextWrapping="Wrap"/>
+        <TextBlock Text="Dört belge tek PDF dosyasında sırasıyla kaydedilir: Hakediş Raporu, Hizmet İşleri Hakediş Raporu, Kabul Tutanağı, Hakediş İcmali." Foreground="#C5D7E7" FontSize="10" Margin="0,3,0,0" TextWrapping="Wrap"/>
     </StackPanel></Border>
 </Grid>
 

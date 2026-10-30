@@ -7,7 +7,7 @@ namespace OzelEgitimHakedis.Wpf;
 
 public partial class MainWindow
 {
-    public sealed class MultiRoutePaymentDraftRow : INotifyPropertyChanged
+    public sealed partial class MultiRoutePaymentDraftRow : INotifyPropertyChanged
     {
         private readonly decimal[] _amounts = new decimal[11];
         private bool _minimumWageSupportEnabled = true;
@@ -23,11 +23,11 @@ public partial class MainWindow
         private string _routeName = string.Empty;
         public bool HasChanges => _acceptedAmounts is not null &&
             (!_amounts.SequenceEqual(_acceptedAmounts) || _minimumWageSupport != _acceptedSupport ||
-             _minimumWageSupportEnabled != _acceptedSupportEnabled || RouteName != _acceptedName);
+             _minimumWageSupportEnabled != _acceptedSupportEnabled || RouteName != _acceptedName || PeriodChangesDiffer());
         private bool _hasSource;
         private string _sourceName = string.Empty;
-        private decimal _sourceDays, _sourcePrice, _sourceGuidePrice;
-        public void ReconcileSource(string name, decimal days, decimal price, decimal guidePrice)
+        private decimal _sourcePrice, _sourceGuidePrice;
+        public void ReconcileSource(string name, decimal price, decimal guidePrice)
         {
             if (_hasSource)
             {
@@ -38,16 +38,16 @@ public partial class MainWindow
                     if (!edited) set(nextSource);
                     if (_acceptedAmounts is not null) _acceptedAmounts[index] = nextSource;
                 }
-                Merge(0, _sourceDays, days, value => WorkDays = value);
-                Merge(1, _sourcePrice, price, value => DailyPrice = value);
-                Merge(5, _sourceGuidePrice, guidePrice, value => GuideDailyPrice = value);
+                // Work days belong to the monthly hybrid draft, never to route master data.
+                if (!HasPeriodChanges) Merge(1, _sourcePrice, price, value => DailyPrice = value);
+                if (!HasPeriodChanges) Merge(5, _sourceGuidePrice, guidePrice, value => GuideDailyPrice = value);
                 if (_sourceName != name)
                 {
                     if (RouteName == _acceptedName) RouteName = name;
                     _acceptedName = name;
                 }
             }
-            _sourceName = name; _sourceDays = days; _sourcePrice = price; _sourceGuidePrice = guidePrice;
+            _sourceName = name; _sourcePrice = price; _sourceGuidePrice = guidePrice;
             _hasSource = true;
             Changed(nameof(HasChanges));
         }
@@ -57,10 +57,12 @@ public partial class MainWindow
             _acceptedSupport = _minimumWageSupport;
             _acceptedSupportEnabled = _minimumWageSupportEnabled;
             _acceptedName = RouteName;
+            AcceptPeriodChanges();
             Changed(nameof(HasChanges));
         }
         public void LoadInput(ProgressPaymentInput input, bool minimumWageSupportEnabled)
         {
+            _transportPeriods = null; _guidePeriods = null;
             WorkDays = input.WorkDays; DailyPrice = input.DailyPrice;
             DiscountAmount = input.DiscountAmount; PriceDifference = input.PriceDifference;
             GuideWorkDays = input.GuideWorkDays; GuideDailyPrice = input.GuideDailyPrice;
@@ -69,6 +71,9 @@ public partial class MainWindow
             InspectionPenalty = input.InspectionPenalty;
             MinimumWageSupportEnabled = minimumWageSupportEnabled;
             MinimumWageSupport = input.MinimumWageSupport;
+            _transportPeriods = input.TransportPeriods?.ToArray(); _guidePeriods = input.GuidePeriods?.ToArray();
+            _hasPeriodChanges = input.HasPeriodChanges;
+            Changed(string.Empty);
         }
         public event PropertyChangedEventHandler? PropertyChanged;
         public string RouteKey { get; set; } = string.Empty;
@@ -113,7 +118,8 @@ public partial class MainWindow
             InspectionPenalty,_program==TransportationProgramType.SpecialEducation?GuideWorkDays:0m,
             _program==TransportationProgramType.SpecialEducation?GuideDailyPrice:0m,
             _program==TransportationProgramType.SpecialEducation?GuideDiscountAmount:0m,
-            _program==TransportationProgramType.SpecialEducation?GuidePriceDifference:0m,_program);
+            _program==TransportationProgramType.SpecialEducation?GuidePriceDifference:0m,_program,
+            _transportPeriods, _program==TransportationProgramType.SpecialEducation?_guidePeriods:null, HasPeriodChanges);
         public ProgressPaymentCalculation? Preview
         {
             get

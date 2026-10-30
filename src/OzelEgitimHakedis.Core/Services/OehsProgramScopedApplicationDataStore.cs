@@ -71,7 +71,7 @@ public sealed class OehsProgramScopedApplicationDataStore
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or OehsApplicationDataStoreException)
         {
             throw new OehsApplicationDataStoreException(
-                "Özel Eğitim ve Temel/Ortaöğretim verileri güvenli biçimde kaydedilemedi; önceki program dosyaları korunmaya çalışıldı.",
+                "Özel Eğitim Taşıma ve Temel Eğitim/Ortaöğretim Taşıma verileri güvenli biçimde kaydedilemedi; önceki program dosyaları korunmaya çalışıldı.",
                 ex);
         }
         finally

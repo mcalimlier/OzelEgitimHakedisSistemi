@@ -41,7 +41,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
             Assert.True(end.ActualWidth >= 140, $"End date is only {end.ActualWidth}px at {width}px");
             Assert.Equal(start.ActualHeight, end.ActualHeight);
             Assert.Equal(start.ActualHeight, ((TextBox)layout.FindName("ContractWorkDaysTextBox")).ActualHeight);
-            Assert.Contains(VisualDescendants<TextBlock>(items), t => t.Text == "Temel / Ortaöğretim");
+            Assert.Contains(VisualDescendants<TextBlock>(items), t => t.Text == "Temel Eğitim/Ortaöğretim Taşıma");
             SavePaymentDetailsPreview(layout, "tender-" + width.ToString("0", CultureInfo.InvariantCulture) + ".png");
         });
     }

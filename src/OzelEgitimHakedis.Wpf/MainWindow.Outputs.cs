@@ -101,7 +101,7 @@ public partial class MainWindow
             var issues = PaymentIssues(payment);
             ready = issues.Count == 0;
             ReportDetailTitleTextBlock.Text = $"{OutputPeriodText(payment)} • Hakediş No {payment.ProgressPaymentNumber?.ToString(CultureInfo.CurrentCulture) ?? "—"}";
-            var program = payment.Input.ProgramType == TransportationProgramType.SpecialEducation ? "Özel Eğitim" : "Temel / Ortaöğretim";
+            var program = payment.Input.ProgramType == TransportationProgramType.SpecialEducation ? "Özel Eğitim Taşıma" : "Temel Eğitim/Ortaöğretim Taşıma";
             ReportDetailMetaTextBlock.Text = $"{program}\nYüklenici: {payment.ContractorName ?? "—"}\nHat {payment.RouteNumber}: {payment.RouteName ?? "—"}";
             var folder = OutputDirectoryForPayment(payment);
             ReportPdfTargetTextBlock.Text = $"Klasör: {folder}"; ReportPdfTargetTextBlock.ToolTip = folder;
@@ -124,7 +124,7 @@ public partial class MainWindow
         var payment = GetSelectedOutputPayment();
         if (payment is null) { ShowOutputStatus("Önce bir hakediş kaydı seçin.", warning: true); return; }
         var folder = OutputDirectoryForPayment(payment);
-        if (!Directory.Exists(folder)) { ShowOutputStatus("Bu kayıt için klasör henüz oluşturulmadı. Önce dört PDF'yi kaydedin.", warning: true); return; }
+        if (!Directory.Exists(folder)) { ShowOutputStatus("Bu kayıt için klasör henüz oluşturulmadı. Önce birleşik PDF'yi kaydedin.", warning: true); return; }
         try { Process.Start(new ProcessStartInfo { FileName = folder, UseShellExecute = true }); }
         catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
         { ShowOutputStatus($"Klasör açılamadı: {ex.Message}", warning: true); }

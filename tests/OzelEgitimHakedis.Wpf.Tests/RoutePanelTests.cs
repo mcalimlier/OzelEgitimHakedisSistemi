@@ -86,7 +86,6 @@ public sealed partial class HakedisCreateHybridUiContractTests
         Field<TextBox>(window, "RouteNameTextBox").Text = "Kuzey İlkokulu";
         Field<TextBox>(window, "RouteDailyPriceTextBox").Text = "2.446,9323";
         Field<TextBox>(window, "RouteContractAmountTextBox").Text = "100.000,00";
-        Field<TextBox>(window, "RouteTransportWorkDaysTextBox").Text = "20,5";
         Field<TextBox>(window, "RouteGuideDailyPriceTextBox").Text = "1.362,49";
         var date = Field<DatePicker>(window, "RouteContractDatePicker");
         date.DateValidationError += (sender, e) => Invoke(window, "RouteDate_InvalidInput", sender!, e);
@@ -111,7 +110,6 @@ public sealed partial class HakedisCreateHybridUiContractTests
             ((TextBox)layout.FindName("RouteNameTextBox")).Text = "Merkez ve çevre köylerden Atatürk İlkokuluna taşıma hattı";
             ((TextBox)layout.FindName("RouteDailyPriceTextBox")).Text = "2.446,9323";
             ((TextBox)layout.FindName("RouteGuideDailyPriceTextBox")).Text = "1.362,49";
-            ((TextBox)layout.FindName("RouteTransportWorkDaysTextBox")).Text = "20,5";
             ((TextBox)layout.FindName("RouteContractAmountTextBox")).Text = "100.000,00";
             ((DatePicker)layout.FindName("RouteContractDatePicker")).SelectedDate = new DateTime(2026, 1, 1);
             var list = (ItemsControl)layout.FindName("RoutesListBox"); list.Items.Add(CreateRoute("01", "Merkez ve çevre köylerden Atatürk İlkokuluna öğrenci taşıma hizmeti", "12345678901", dailyPrice: 2446.9323m, guidePrice: 1362.49m));
@@ -150,7 +148,7 @@ public sealed partial class HakedisCreateHybridUiContractTests
                 Field<ComboBox>(window, "RouteTenderListBox").SelectedIndex = 0; Field<ComboBox>(window, "RouteContractorListBox").SelectedIndex = 0;
                 Invoke(window, "AddRouteButton_Click", window, new RoutedEventArgs());
                 var added = Assert.Single(new OehsProgramScopedApplicationDataStore(temp.FullName).Load().Routes, route => route.RouteNumber == "02");
-                Assert.Equal(program, added.ProgramType); Assert.Equal(2446.9323m, added.DailyPrice); Assert.Equal(20.5m, added.TransportWorkDays);
+                Assert.Equal(program, added.ProgramType); Assert.Equal(2446.9323m, added.DailyPrice); Assert.Equal(0m, added.TransportWorkDays);
                 Assert.Equal(program == TransportationProgramType.SpecialEducation ? 1362.49m : 0m, added.GuideDailyPrice);
                 Assert.Equal(100000m, added.ContractAmount); Assert.Equal(new DateOnly(2026, 1, 1), added.ContractDate);
             }
@@ -262,7 +260,6 @@ public sealed partial class HakedisCreateHybridUiContractTests
             var route = CreateRoute("01", "Hat", "12345678901", program, guidePrice: 123.4567m); Collection(window, "_routes").Add(route);
             Invoke(window, "EditRouteButton_Click", new Button { Tag = route }, new RoutedEventArgs());
             Assert.Equal(expected, Field<StackPanel>(window, "RouteGuideFieldPanel").Visibility);
-            Assert.Equal(program == TransportationProgramType.SpecialEducation ? 1 : 2, Grid.GetColumnSpan(Field<StackPanel>(window, "RouteWorkDaysField")));
         });
     }
 

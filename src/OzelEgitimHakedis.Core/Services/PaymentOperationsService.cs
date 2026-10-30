@@ -141,7 +141,7 @@ public static class PaymentOperationsService
         null => "—", DateOnly date => date.ToString("dd.MM.yyyy", Turkish),
         decimal number => number.ToString("0.############################", Turkish),
         bool boolean => boolean ? "Evet" : "Hayır",
-        TransportationProgramType program => program == TransportationProgramType.SpecialEducation ? "Özel Eğitim" : "Temel / Ortaöğretim",
+        TransportationProgramType program => program == TransportationProgramType.SpecialEducation ? "Özel Eğitim Taşıma" : "Temel Eğitim/Ortaöğretim Taşıma",
         _ => Convert.ToString(value, Turkish) ?? "—"
     };
     public static string DescribeRates(ProgressPaymentCalculationConstants? c) => c is null ? "Eski kayıtta oran bilgisi yok" :

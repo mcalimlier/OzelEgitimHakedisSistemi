@@ -19,7 +19,7 @@ public sealed class MonthlyProgressPaymentIdentityServiceTests
             UnorderedRouteNumbers,
             new DateOnly(2026, 10, 31));
 
-        Assert.Equal("Özel Eğitim | İKN 2026-454 • Sözleşme S-2026 | A Firması | Q1+Q2+Q3 | Ekim 2026", name);
+        Assert.Equal("Özel Eğitim Taşıma | İKN 2026-454 • Sözleşme S-2026 | A Firması | Q1+Q2+Q3 | Ekim 2026", name);
     }
 
     [Fact]

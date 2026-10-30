@@ -46,13 +46,13 @@ public static class PaymentCalculationDetailsService
             Add("Kayıtlı oranlar", "Damga vergisi oranı (%)", "Hakedişle saklanan oran × 100", rates.StampTaxRate * 100m);
             Add("Kayıtlı oranlar", "Ek kesin teminat oranı (%)", "Hakedişle saklanan oran × 100", rates.AdditionalGuaranteeRate * 100m);
         }
-        Add("Taşıma", "Taşıma hizmet tutarı", $"{N(input.WorkDays)} × {N(input.DailyPrice)}", result.ServiceAmount);
+        Add("Taşıma", "Taşıma hizmet tutarı", PaymentRatePeriodService.Formula(input.TransportPeriods, input.WorkDays, input.DailyPrice), result.ServiceAmount);
         Add("Taşıma", "Taşıma net fiyat farkı", $"{N(input.PriceDifference)} − {N(input.DiscountAmount)}", result.PriceDifferenceExcludingVat);
         Add("Taşıma", "Taşıma matrahı", "Taşıma hizmet tutarı + taşıma net fiyat farkı", result.TransportNetAmount);
         Add("Taşıma", "Taşıma KDV", input.IsVatExempt ? "KDV istisnası: 0" : $"Taşıma matrahı × {Rate(rates?.TransportVatRate)}", result.TransportVat);
         Add("Taşıma", "Taşıma tevkifatı", input.IsVatExempt ? "KDV istisnası: 0" : $"Taşıma KDV × {Rate(rates?.TransportWithholdingShare)}", result.TransportWithholding);
         Add("Taşıma", "Taşıma brütü", "Taşıma matrahı + taşıma KDV", result.TransportGrossAmount);
-        Add("Rehber", "Rehber hizmet tutarı", input.ProgramType == TransportationProgramType.BasicOrSecondary ? "Bu programda rehber hizmeti yok" : $"{N(input.GuideWorkDays)} × {N(input.GuideDailyPrice)}", result.GuideServiceAmount);
+        Add("Rehber", "Rehber hizmet tutarı", input.ProgramType == TransportationProgramType.BasicOrSecondary ? "Bu programda rehber hizmeti yok" : PaymentRatePeriodService.Formula(input.GuidePeriods, input.GuideWorkDays, input.GuideDailyPrice), result.GuideServiceAmount);
         Add("Rehber", "Rehber net fiyat farkı", "Rehber fiyat farkı − rehber iskonto (temel/ortaöğretimde 0)", result.GuidePriceDifferenceExcludingVat);
         Add("Rehber", "Rehber matrahı", "Rehber hizmet tutarı + rehber net fiyat farkı", result.GuideNetAmount);
         Add("Rehber", "Rehber KDV", input.IsVatExempt ? "KDV istisnası: 0" : $"Rehber matrahı × {Rate(rates?.GuideVatRate)}", result.GuideVat);

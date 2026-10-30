@@ -223,7 +223,7 @@ public partial class MainWindow : Window
             ? _editingArchiveSnapshot!.Contract.ProgramType
             : FindContractorByKey(_editingContractorKey)?.ProgramType;
         ContractorEditingProgramTextBlock.Text = program == TransportationProgramType.BasicOrSecondary
-            ? "Temel / Ortaöğretim" : program.HasValue ? "Özel Eğitim" : string.Empty;
+            ? "Temel Eğitim/Ortaöğretim Taşıma" : program.HasValue ? "Özel Eğitim Taşıma" : string.Empty;
     }
 
     private void SetRouteEditorMode(bool editing, bool archiveCorrection = false)
@@ -246,6 +246,7 @@ public partial class MainWindow : Window
 
     private void SetProgressEditorMode(bool editing, bool archiveCorrection = false)
     {
+        RefreshPeriodInputReadOnly();
         CalculateProgressButton.Content = editing ? "DÜZENLE" : "HAKEDİŞ HESAPLA/KAYDET";
         SinglePaymentFieldsGrid.Visibility = editing ? Visibility.Visible : Visibility.Collapsed;
         CancelProgressEditButton.Visibility = editing ? Visibility.Visible : Visibility.Collapsed;
@@ -755,7 +756,7 @@ public partial class MainWindow : Window
             LoadSignatoriesIntoFields();
 
             MessageBox.Show(
-                "İmzacı bilgileri kaydedildi. Yeni oluşturulacak dört resmî PDF bu bilgileri kullanacaktır. Önceden oluşturulmuş PDF dosyaları otomatik değişmez; gerekiyorsa yeniden oluşturun.",
+                "İmzacı bilgileri kaydedildi. Yeni oluşturulacak dört resmî belge bu bilgileri kullanacaktır. Önceden oluşturulmuş PDF dosyaları otomatik değişmez; gerekiyorsa yeniden oluşturun.",
                 "OEHS — İmzacı Ayarları Kaydedildi",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
@@ -1108,7 +1109,8 @@ public partial class MainWindow : Window
         RouteGuideDailyPriceLabel.Visibility = visibility;
         RouteGuideDailyPriceTextBox.Visibility = visibility;
         RouteGuideFieldPanel.Visibility = visibility;
-        Grid.SetColumnSpan(RouteWorkDaysField, visible ? 1 : 2);
+        if (RouteDailyPriceTextBox.Parent is FrameworkElement pricePanel)
+            Grid.SetColumnSpan(pricePanel, visible ? 1 : 3);
 
         if (!visible)
         {
@@ -1164,14 +1166,14 @@ public partial class MainWindow : Window
                 MinimumWageSupportTextBox.IsEnabled =
                     MinimumWageSupportEnabledCheckBox.IsChecked == true;
 
-                // Temel/Ortaöğretim için yeni giriş varsayılanı sıfırdır.
+                // Temel Eğitim/Ortaöğretim Taşıma için yeni giriş varsayılanı sıfırdır.
                 // Kayıt yüklenirken pozitif tutar varsa yukarıda etkinleştirilir.
                 if (!MinimumWageSupportTextBox.IsEnabled)
                     MinimumWageSupportTextBox.Text = "0";
             }
             else
             {
-                // Özel Eğitim'de mevcut giriş davranışı korunur; destek alanı
+                // Özel Eğitim Taşıma'de mevcut giriş davranışı korunur; destek alanı
                 // onay kutusu olmadan doğrudan kullanılabilir.
                 MinimumWageSupportEnabledCheckBox.IsChecked = true;
                 MinimumWageSupportTextBox.IsEnabled = hasContract;
@@ -1353,6 +1355,7 @@ public partial class MainWindow : Window
         // prior-month adjustments could reappear when selected again.
         _multiRouteDraftCache.ResetAll(row =>
         {
+            row.ClearPeriodChanges();
             row.WorkDays = 0;
             row.DiscountAmount = 0m;
             row.PriceDifference = 0m;
@@ -1383,6 +1386,7 @@ public partial class MainWindow : Window
                 row.DailyPrice = draftRoute.DailyPrice;
                 row.GuideDailyPrice = HasGuideStaff(draftRoute.ProgramType) ? draftRoute.GuideDailyPrice : 0m;
             }
+            if (draftRoute is not null) SuggestPeriodDailyPrices(row, draftRoute);
             RestoreSavedHybridInput(row);
             row.AcceptChanges();
         });
@@ -1644,7 +1648,7 @@ public partial class MainWindow : Window
             return;
         }
         HomeSelectedTenderSummaryTextBlock.Text =
-            $"İKN {contract.TenderNumber} • {GetContractWorkName(contract)} • " +
+            $"İKN {contract.TenderNumber} • {contract.ProgramDisplayText} • " +
             $"{contract.StartDate:dd.MM.yyyy}–{contract.EndDate:dd.MM.yyyy} • " +
             $"{_routes.Count(x => IsRouteForContract(x, contract))} hat";
     }
@@ -1678,7 +1682,7 @@ public partial class MainWindow : Window
             TenderNumberTextBox, ContractNumberTextBox,
             ContractAmountTextBox, ContractWorkDaysTextBox, ContractTransportDailyPriceTextBox,
             ContractorNameTextBox, ContractorTaxTextBox, ContractorBankTextBox,
-            RouteNumberTextBox, RouteNameTextBox, RouteTransportWorkDaysTextBox, RouteDailyPriceTextBox, RouteContractAmountTextBox,
+            RouteNumberTextBox, RouteNameTextBox, RouteDailyPriceTextBox, RouteContractAmountTextBox,
             RouteGuideDailyPriceTextBox,
             WorkDaysTextBox, DailyPriceTextBox, GuideWorkDaysTextBox, GuideDailyPriceTextBox,
             DiscountTextBox, GuideDiscountTextBox, PriceDifferenceTextBox, GuidePriceDifferenceTextBox,
@@ -1807,7 +1811,6 @@ public partial class MainWindow : Window
                 DecimalDiffers(RouteDailyPriceTextBox, archive.Route.DailyPrice) ||
                 DecimalDiffers(RouteContractAmountTextBox, archive.Route.ContractAmount ?? archive.ProgressPayment.Input.ContractAmount) ||
                 DatePickerDiffers(RouteContractDatePicker, archive.Route.ContractDate ?? archive.ProgressPayment.ContractDate ?? archive.Contract.ContractDate) ||
-                RouteWorkDaysDiffer(RouteTransportWorkDaysTextBox, archive.Route.TransportWorkDays) ||
                 DecimalDiffers(RouteGuideDailyPriceTextBox, archive.Route.GuideDailyPrice),
 
             ArchiveCorrectionSection.ProgressPayment =>
@@ -1856,11 +1859,6 @@ public partial class MainWindow : Window
                 break;
 
             case ArchiveCorrectionSection.Route:
-                if (!TurkishMoneyInput.TryParseWorkDays(RouteTransportWorkDaysTextBox.Text, out var transportWorkDays) || transportWorkDays < 0)
-                {
-                    message = "Döneme Esas THGS değerini sıfır veya daha büyük, en fazla 20 ondalık basamaklı bir sayı olarak girin.";
-                    return false;
-                }
                 if (!TurkishMoneyInput.TryParseCalculationAmount(RouteDailyPriceTextBox.Text, out var routePrice) || routePrice < 0 ||
                     !TurkishMoneyInput.TryParseCents(RouteContractAmountTextBox.Text, out var routeAmount) || routeAmount < 0 ||
                     !RouteContractDatePicker.SelectedDate.HasValue || !HasValidTenderDateText(RouteContractDatePicker))
@@ -1875,10 +1873,9 @@ public partial class MainWindow : Window
                 }
                 input = input with
                 {
-                    WorkDays = archive.Route.TransportWorkDays != transportWorkDays ? transportWorkDays : input.WorkDays,
-                    DailyPrice = archive.Route.DailyPrice != routePrice ? routePrice : input.DailyPrice,
+                    DailyPrice = (!input.HasPeriodChanges && input.TransportPeriods is null) && archive.Route.DailyPrice != routePrice ? routePrice : input.DailyPrice,
                     ContractAmount = (archive.Route.ContractAmount ?? input.ContractAmount) != routeAmount ? routeAmount : input.ContractAmount,
-                    GuideDailyPrice = archive.Route.GuideDailyPrice != guideDailyPrice ? guideDailyPrice : input.GuideDailyPrice
+                    GuideDailyPrice = (!input.HasPeriodChanges && input.GuidePeriods is null) && archive.Route.GuideDailyPrice != guideDailyPrice ? guideDailyPrice : input.GuideDailyPrice
                 };
                 break;
 
@@ -1943,6 +1940,7 @@ public partial class MainWindow : Window
 
         try
         {
+            input = AttachEditingPeriods(input);
             calculation = ProgressPaymentCalculator.Calculate(input, _calculationConstants);
             return true;
         }
@@ -2107,7 +2105,6 @@ public partial class MainWindow : Window
                 DecimalDiffers(RouteDailyPriceTextBox, route.DailyPrice) ||
                 DecimalDiffers(RouteContractAmountTextBox, route.ContractAmount ?? item.Input.ContractAmount) ||
                 DatePickerDiffers(RouteContractDatePicker, route.ContractDate ?? item.ContractDate) ||
-                RouteWorkDaysDiffer(RouteTransportWorkDaysTextBox, route.TransportWorkDays) ||
                 DecimalDiffers(RouteGuideDailyPriceTextBox, route.GuideDailyPrice),
 
             HistoryCorrectionSection.ProgressPayment =>
@@ -2172,11 +2169,6 @@ public partial class MainWindow : Window
                     message = "Hat No ve hat adı zorunludur.";
                     return false;
                 }
-                if (!TurkishMoneyInput.TryParseWorkDays(RouteTransportWorkDaysTextBox.Text, out var transportWorkDays) || transportWorkDays < 0)
-                {
-                    message = "Döneme Esas THGS değerini sıfır veya daha büyük, en fazla 20 ondalık basamaklı bir sayı olarak girin.";
-                    return false;
-                }
                 if (!TurkishMoneyInput.TryParseCalculationAmount(RouteDailyPriceTextBox.Text, out var routePrice) || routePrice < 0 ||
                     !TurkishMoneyInput.TryParseCents(RouteContractAmountTextBox.Text, out var routeAmount) || routeAmount < 0 ||
                     !RouteContractDatePicker.SelectedDate.HasValue || !HasValidTenderDateText(RouteContractDatePicker))
@@ -2191,10 +2183,9 @@ public partial class MainWindow : Window
                 }
                 input = item.Input with
                 {
-                    WorkDays = _editingRoute?.TransportWorkDays != transportWorkDays ? transportWorkDays : item.Input.WorkDays,
-                    DailyPrice = _editingRoute?.DailyPrice != routePrice ? routePrice : item.Input.DailyPrice,
+                    DailyPrice = (!item.Input.HasPeriodChanges && item.Input.TransportPeriods is null) && _editingRoute?.DailyPrice != routePrice ? routePrice : item.Input.DailyPrice,
                     ContractAmount = (_editingRoute?.ContractAmount ?? item.Input.ContractAmount) != routeAmount ? routeAmount : item.Input.ContractAmount,
-                    GuideDailyPrice = _editingRoute?.GuideDailyPrice != guideDailyPrice ? guideDailyPrice : item.Input.GuideDailyPrice
+                    GuideDailyPrice = (!item.Input.HasPeriodChanges && item.Input.GuidePeriods is null) && _editingRoute?.GuideDailyPrice != guideDailyPrice ? guideDailyPrice : item.Input.GuideDailyPrice
                 };
                 break;
 
@@ -2259,6 +2250,7 @@ public partial class MainWindow : Window
 
         try
         {
+            input = AttachEditingPeriods(input);
             calculation = ProgressPaymentCalculator.Calculate(input, _calculationConstants);
             return true;
         }
@@ -2614,7 +2606,6 @@ public partial class MainWindow : Window
                 _editingRoute = null;
                 RouteNumberTextBox.Clear();
                 RouteNameTextBox.Clear();
-                RouteTransportWorkDaysTextBox.Clear();
                 RouteGuideDailyPriceTextBox.Clear();
                 ClearRouteValidationVisuals();
                 RouteStatusTextBlock.Text = "Arşiv hattı güncellendi; giriş alanları temizlendi.";
@@ -2850,7 +2841,6 @@ public partial class MainWindow : Window
         if (!TurkishMoneyInput.TryParseCalculationAmount(RouteDailyPriceTextBox.Text, out var routeDailyPrice) || routeDailyPrice < 0) errors.Add(RouteDailyPriceTextBox);
         if (!TurkishMoneyInput.TryParseCents(RouteContractAmountTextBox.Text, out var routeContractAmount) || routeContractAmount < 0) errors.Add(RouteContractAmountTextBox);
         if (!RouteContractDatePicker.SelectedDate.HasValue || !HasValidTenderDateText(RouteContractDatePicker)) errors.Add(RouteContractDatePicker);
-        if (!TurkishMoneyInput.TryParseWorkDays(RouteTransportWorkDaysTextBox.Text, out var transportWorkDays) || transportWorkDays < 0) errors.Add(RouteTransportWorkDaysTextBox);
         var hasGuide = HasGuideStaff(archive.Contract.ProgramType);
         var guideDailyPrice = 0m;
         if (hasGuide)
@@ -2872,17 +2862,15 @@ public partial class MainWindow : Window
             DailyPrice = routeDailyPrice,
             ContractAmount = routeContractAmount,
             ContractDate = DateOnly.FromDateTime(RouteContractDatePicker.SelectedDate!.Value),
-            TransportWorkDays = transportWorkDays,
             GuideDailyPrice = hasGuide ? guideDailyPrice : 0m,
             ProgramType = archive.Contract.ProgramType
         };
 
         var input = archive.ProgressPayment.Input with
         {
-            WorkDays = archive.Route.TransportWorkDays != transportWorkDays ? transportWorkDays : archive.ProgressPayment.Input.WorkDays,
-            DailyPrice = archive.Route.DailyPrice != routeDailyPrice ? routeDailyPrice : archive.ProgressPayment.Input.DailyPrice,
+            DailyPrice = (!archive.ProgressPayment.Input.HasPeriodChanges && archive.ProgressPayment.Input.TransportPeriods is null) && archive.Route.DailyPrice != routeDailyPrice ? routeDailyPrice : archive.ProgressPayment.Input.DailyPrice,
             ContractAmount = (archive.Route.ContractAmount ?? archive.ProgressPayment.Input.ContractAmount) != routeContractAmount ? routeContractAmount : archive.ProgressPayment.Input.ContractAmount,
-            GuideDailyPrice = hasGuide ? (archive.Route.GuideDailyPrice != guideDailyPrice ? guideDailyPrice : archive.ProgressPayment.Input.GuideDailyPrice) : 0m,
+            GuideDailyPrice = hasGuide ? ((!archive.ProgressPayment.Input.HasPeriodChanges && archive.ProgressPayment.Input.GuidePeriods is null) && archive.Route.GuideDailyPrice != guideDailyPrice ? guideDailyPrice : archive.ProgressPayment.Input.GuideDailyPrice) : 0m,
             GuideDiscountAmount = hasGuide ? archive.ProgressPayment.Input.GuideDiscountAmount : 0m,
             GuidePriceDifference = hasGuide ? archive.ProgressPayment.Input.GuidePriceDifference : 0m,
             MinimumWageSupport = archive.ProgressPayment.Input.MinimumWageSupport,
@@ -2955,7 +2943,7 @@ public partial class MainWindow : Window
             !TryGetSelectedTransportationProgramType(out _))
         {
             MarkInvalid(ContractorProgramComboBox);
-            ShowContractorValidation("Önce TAŞIMA PROGRAMI alanından Özel Eğitim veya Temel / Ortaöğretim programını seçin. Firma kaydedilmedi.");
+            ShowContractorValidation("Önce TAŞIMA PROGRAMI alanından Özel Eğitim Taşıma veya Temel Eğitim/Ortaöğretim Taşıma programını seçin. Firma kaydedilmedi.");
             return;
         }
 
@@ -3308,7 +3296,7 @@ public partial class MainWindow : Window
             ? "Bekleniyor" : TenderNumberTextBox.Text.Trim();
 
         ContractSummaryContractTextBlock.Text = GetSelectedTransportationProgramType() == TransportationProgramType.BasicOrSecondary
-            ? "Temel/Ortaöğretim Taşıma"
+            ? "Temel Eğitim/Ortaöğretim Taşıma"
             : "Özel Eğitim Taşıma";
 
         ContractSummaryAmountTextBlock.Text = TurkishMoneyInput.TryParse(ContractAmountTextBox.Text, out var summaryAmount)
@@ -3431,11 +3419,6 @@ public partial class MainWindow : Window
             errors.Add("Sözleşme Tarihi");
             MarkInvalid(RouteContractDatePicker);
         }
-        if (!TurkishMoneyInput.TryParseWorkDays(RouteTransportWorkDaysTextBox.Text, out var transportWorkDays) || transportWorkDays < 0)
-        {
-            errors.Add("Döneme Esas Taşıma Hakediş Gün Sayısı (Döneme Esas THGS)");
-            MarkInvalid(RouteTransportWorkDaysTextBox);
-        }
         var hasGuide = HasGuideStaff(contract?.ProgramType ?? TransportationProgramType.SpecialEducation);
         var guideDailyPrice = 0m;
         if (hasGuide)
@@ -3457,7 +3440,7 @@ public partial class MainWindow : Window
             routeName,
             routeDailyPrice,
             hasGuide ? guideDailyPrice : 0m,
-            transportWorkDays,
+            _editingRoute?.TransportWorkDays ?? 0m,
             contract!.TenderNumber,
             OehsIdentityService.NormalizeIdentity(contractor!.TaxOrIdentityNumber),
             contractor.Name,
@@ -3633,7 +3616,7 @@ public partial class MainWindow : Window
             RouteDailyPriceTextBox,
             RouteContractAmountTextBox,
             RouteContractDatePicker,
-            RouteTransportWorkDaysTextBox,
+
             RouteGuideDailyPriceTextBox
         })
             ClearInvalid(control);
@@ -3736,7 +3719,6 @@ public partial class MainWindow : Window
         RouteDailyPriceTextBox.Text = FormatCalculationInput(route.DailyPrice);
         RouteContractAmountTextBox.Text = FormatCalculationInput(route.ContractAmount ?? 0m);
         RouteContractDatePicker.SelectedDate = route.ContractDate?.ToDateTime(TimeOnly.MinValue);
-        RouteTransportWorkDaysTextBox.Text = route.TransportWorkDays.ToString(CultureInfo.GetCultureInfo("tr-TR"));
         RouteGuideDailyPriceTextBox.Text = FormatCalculationInput(route.GuideDailyPrice);
         ApplyRouteProgramFields(route.ProgramType);
         RouteSelectedTenderTextBlock.Text = contract is null ? "İhale bulunamadı" : $"İKN: {contract.TenderNumber}";
@@ -3892,7 +3874,7 @@ public partial class MainWindow : Window
         if (_editingContractTender is null &&
             !TryGetSelectedTransportationProgramType(out _))
         {
-            ShowContractValidation("Önce TAŞIMA PROGRAMI alanından Özel Eğitim veya Temel / Ortaöğretim programını seçin.");
+            ShowContractValidation("Önce TAŞIMA PROGRAMI alanından Özel Eğitim Taşıma veya Temel Eğitim/Ortaöğretim Taşıma programını seçin.");
             return;
         }
 
@@ -4405,8 +4387,8 @@ public partial class MainWindow : Window
     {
         ArgumentNullException.ThrowIfNull(latest);
         ArgumentNullException.ThrowIfNull(pdfPaths);
-        if (pdfPaths.Count != 4)
-            throw new ArgumentException("Arşiv meta verisi için dört PDF dosyasının da yolu gerekir.", nameof(pdfPaths));
+        if (pdfPaths.Count is not (1 or 4))
+            throw new ArgumentException("Arşiv meta verisi için bir birleşik PDF veya dört eski PDF gerekir.", nameof(pdfPaths));
 
         var documentFolder = Path.GetDirectoryName(Path.GetFullPath(pdfPaths[0]))!;
         Directory.CreateDirectory(documentFolder);
@@ -4466,8 +4448,8 @@ public partial class MainWindow : Window
         panel.Children.Add(new TextBlock
         {
             Text = fileName.Contains(Environment.NewLine, StringComparison.Ordinal)
-                ? "Dört resmî belge ayrı PDF dosyaları olarak oluşturuldu. Yazıcı kullanılmadı; dosyalar vektör tabanlı belge motoruyla OEHS kayıt klasörüne kaydedildi."
-                : "PDF başarıyla oluşturuldu. Bu işlemde yazıcı kullanılmadı; dosya doğrudan OEHS kayıt klasörüne kaydedildi.",
+                ? "Dört resmî belge tek PDF dosyasında oluşturuldu. Yazıcı kullanılmadı; dosyalar vektör tabanlı belge motoruyla OEHS kayıt klasörüne kaydedildi."
+                : "Dört belge belirtilen sırayla tek PDF dosyasında oluşturuldu. Bu işlemde yazıcı kullanılmadı; dosya doğrudan OEHS kayıt klasörüne kaydedildi.",
             FontSize = 13.5,
             Foreground = System.Windows.Media.Brushes.DimGray,
             TextWrapping = TextWrapping.Wrap,
@@ -4744,8 +4726,9 @@ public partial class MainWindow : Window
                 hasGuide ? row.GuideDailyPrice : 0m,
                 hasGuide ? row.GuideDiscountAmount : 0m,
                 hasGuide ? row.GuidePriceDifference : 0m,
-                contract.ProgramType);
+                contract.ProgramType, row.TransportPeriods, hasGuide ? row.GuidePeriods : null, row.HasPeriodChanges);
 
+            input = AttachEditingPeriods(input);
             var calculation = ProgressPaymentCalculator.Calculate(input, _calculationConstants);
             var routeProgressNumber = MonthlyProgressPaymentIdentityService.SuggestNextRouteNumber(
                 _progressHistory,
@@ -4928,7 +4911,7 @@ public partial class MainWindow : Window
         }
 
         // Asgari ücret desteği her iki kaynak Excel'de de kesinti alanıdır.
-        // Temel/Ortaöğretim'de tutar yalnızca kullanıcı onay kutusunu açtıysa alınır.
+        // Temel Eğitim/Ortaöğretim Taşıma'de tutar yalnızca kullanıcı onay kutusunu açtıysa alınır.
         if (!TryParseDecimalOrZero(MinimumWageSupportTextBox.Text, out minimumWageSupport) ||
             minimumWageSupport < 0)
         {
@@ -5020,6 +5003,7 @@ public partial class MainWindow : Window
                 guideDiscount,
                 guidePriceDifference,
                 selectedContract.ProgramType);
+            input = AttachEditingPeriods(input);
 
             int? progressNumber = null;
             if (int.TryParse(
@@ -5615,6 +5599,7 @@ public partial class MainWindow : Window
                     g, h, j, i, selectedRouteAmount, IsVatExemptForCurrentFirm(selectedContract),
                     taxDebt, socialSecurityDebt, minimumWageSupport, inspectionPenalty,
                     p, q, s, r, selectedContract.ProgramType);
+                input = AttachEditingPeriods(input);
                 var result = ProgressPaymentCalculator.Calculate(input, _calculationConstants);
                 var constants = result.AppliedConstants ?? _calculationConstants;
                 var vatLabel = IsVatExemptForCurrentFirm(selectedContract) ? "KDV muaf" : "KDV dahil";
@@ -6108,6 +6093,7 @@ public partial class MainWindow : Window
             var archive = ProgressPaymentArchiveStore.Load(row.FullPath);
             ClearLiveHistoryCorrectionContext();
             _editingArchiveSourcePath = row.FullPath;
+            _periodEditingId = null; _periodEditingInput = null;
             _editingArchiveSnapshot = archive;
             _archiveCorrectionSection = ArchiveCorrectionSection.None;
 
@@ -6410,7 +6396,6 @@ public partial class MainWindow : Window
             RouteDailyPriceTextBox.Text = FormatCalculationInput(archive.Route.DailyPrice);
             RouteContractAmountTextBox.Text = FormatCalculationInput(archive.Route.ContractAmount ?? archive.ProgressPayment.Input.ContractAmount);
             RouteContractDatePicker.SelectedDate = (archive.Route.ContractDate ?? archive.ProgressPayment.ContractDate ?? archive.Contract.ContractDate)?.ToDateTime(TimeOnly.MinValue);
-            RouteTransportWorkDaysTextBox.Text = archive.Route.TransportWorkDays.ToString(CultureInfo.GetCultureInfo("tr-TR"));
             RouteGuideDailyPriceTextBox.Text = FormatCalculationInput(archive.Route.GuideDailyPrice);
             ApplyRouteProgramFields(archive.Contract.ProgramType);
             RouteNumberTextBox.IsReadOnly = false;
@@ -6477,7 +6462,6 @@ public partial class MainWindow : Window
         RouteDailyPriceTextBox.Text = FormatCalculationInput(route.DailyPrice);
         RouteContractAmountTextBox.Text = FormatCalculationInput(route.ContractAmount ?? item.Input.ContractAmount);
         RouteContractDatePicker.SelectedDate = (route.ContractDate ?? item.ContractDate)?.ToDateTime(TimeOnly.MinValue);
-        RouteTransportWorkDaysTextBox.Text = route.TransportWorkDays.ToString(CultureInfo.GetCultureInfo("tr-TR"));
         RouteGuideDailyPriceTextBox.Text = FormatCalculationInput(route.GuideDailyPrice);
         SetRouteEditorMode(true);
         ApplyRouteProgramFields(route.ProgramType);
@@ -6543,6 +6527,7 @@ public partial class MainWindow : Window
             UpdateProgressContractorAndRoutes(contract);
         }
 
+        _periodEditingId = null; _periodEditingInput = null;
         _editingHistoryId = item.Id;
         _historyOperationProgram = item.Input.ProgramType;
         var historyRouteKey = OehsIdentityService.BuildRouteKey(
@@ -6784,14 +6769,14 @@ public partial class MainWindow : Window
                 RouteName = route.Name,
                 MinimumWageSupportEnabled =
                     route.ProgramType != TransportationProgramType.BasicOrSecondary,
-                // Seed a new period draft from the route's Döneme Esas THGS.
-                // Cached per-route edits above remain authoritative.
-                WorkDays = route.TransportWorkDays,
+                // Work days are entered only in this period-specific hybrid row.
+                WorkDays = 0m,
                 DailyPrice = route.DailyPrice,
                 GuideWorkDays = 0,
                 GuideDailyPrice = hasGuide ? route.GuideDailyPrice : 0m
             };
 
+            SuggestPeriodDailyPrices(row, route);
             RestoreSavedHybridInput(row);
             ConfigureHybridRow(row, route);
             row.AcceptChanges();
@@ -6867,8 +6852,8 @@ public partial class MainWindow : Window
         ManualAdditionalGuaranteeTextBox.Text = FormatMoney(0m);
         ManualAdditionalGuaranteeLabel.Text = "Ek Kesin Teminat (Hesaplanan)";
         GuaranteeRuleHintTextBlock.Text = selectedProgram == TransportationProgramType.BasicOrSecondary
-            ? "Temel/Ortaöğretim: kaynak Excel formülü = I × %6"
-            : "Özel Eğitim: kaynak Excel formülü = (I × %6) + (R × %6)";
+            ? "Temel Eğitim/Ortaöğretim Taşıma: kaynak Excel formülü = I × %6"
+            : "Özel Eğitim Taşıma: kaynak Excel formülü = (I × %6) + (R × %6)";
         var selectedRoutes = ProgressRouteComboBox.SelectedItems.OfType<RouteDraft>().ToArray();
         if (selectedRoutes.Length > 1)
         {
@@ -7631,13 +7616,11 @@ public partial class MainWindow : Window
             var targetFolder = OehsOutputPathService.BuildOfficialPdfDirectory(OehsRuntimePaths.DesktopRoot, latest);
             Directory.CreateDirectory(targetFolder);
 
-            var outputs = OehsOfficialDocumentFactory.BuildSeparate(context);
-            if (outputs.Count != 4)
-                throw new InvalidOperationException("Dört resmî PDF şablonunun tamamı üretilemedi.");
+            var outputs = new[] { OehsOfficialDocumentFactory.BuildCombined(context) };
+            if (outputs[0].Pages.Count != 4)
+                throw new InvalidOperationException("Birleşik PDF için dört resmî belge sayfası gerekir.");
 
-            var targetPaths = outputs
-                .Select(output => OehsOutputPathService.BuildOfficialPdfFilePath(OehsRuntimePaths.DesktopRoot, latest, output.FileSuffix))
-                .ToArray();
+            var targetPaths = new[] { OehsOutputPathService.BuildPaymentDocumentsPdfFilePath(OehsRuntimePaths.DesktopRoot, latest) };
 
             var existingPaths = targetPaths.Where(File.Exists).ToArray();
             if (existingPaths.Length > 0)
@@ -7660,16 +7643,16 @@ public partial class MainWindow : Window
                     return;
             }
 
-            // Create all four new PDFs in a private staging folder first. No final
-            // output is touched unless every file was generated and minimally checked.
+            // Stage the combined four-page PDF before replacing the final file.
+            // Retain the original for rollback if publishing the new file fails.
             stagingFolder = Path.Combine(Path.GetTempPath(), "oehs-pdf-" + Guid.NewGuid().ToString("N"));
             var stagedPaths = outputs
                 .Select((output, index) => Path.Combine(stagingFolder, $"{index}.pdf"))
                 .ToArray();
 
-            for (var index = 0; index < outputs.Count; index++)
+            for (var index = 0; index < outputs.Length; index++)
             {
-                PdfVectorWriter.Save(outputs[index].Document, stagedPaths[index]);
+                PdfVectorWriter.Save(outputs[index], stagedPaths[index]);
                 if (!File.Exists(stagedPaths[index]) || new FileInfo(stagedPaths[index]).Length < 500)
                     throw new IOException($"PDF dosyası doğrulanamadı: {Path.GetFileName(stagedPaths[index])}");
             }
@@ -7734,13 +7717,13 @@ public partial class MainWindow : Window
             }
 
             CalculationStatusTextBlock.Text =
-                $"Dört resmî PDF dosyası oluşturuldu: {Path.GetFileName(targetPaths[0])} (+3 dosya).";
+                $"Dört sayfalı tek PDF oluşturuldu: {Path.GetFileName(targetPaths[0])}.";
 
             if (!metadataSaved && _homeOutputPayment is not null)
             {
                 MessageBox.Show(
                     this,
-                    "Dört PDF dosyası oluşturuldu; ancak arşiv bilgi dosyası güncellenemedi. PDF dosyaları kayıt klasöründedir. Arşiv bilgi dosyası hatası:\n\n" + metadataError,
+                    "Dört sayfalı PDF oluşturuldu; ancak arşiv bilgi dosyası güncellenemedi. PDF kayıt klasöründedir. Arşiv bilgi dosyası hatası:\n\n" + metadataError,
                     "OEHS — PDF Kaydedildi, Arşiv Bilgisi Uyarısı",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
@@ -7752,8 +7735,8 @@ public partial class MainWindow : Window
             else
             {
                 RefreshOutputSelection(clearOperationStatus: false);
-                ShowOutputStatus(metadataSaved ? "Dört PDF kaydedildi. PDF klasörünü aç düğmesiyle dosyalara ulaşabilirsiniz."
-                    : $"Dört PDF kaydedildi; arşiv bilgi kaydı tamamlanamadı: {metadataError}", warning: !metadataSaved);
+                ShowOutputStatus(metadataSaved ? "Dört sayfalı tek PDF kaydedildi. PDF klasörünü aç düğmesiyle dosyalara ulaşabilirsiniz."
+                    : $"Dört sayfalı tek PDF kaydedildi; arşiv bilgi kaydı tamamlanamadı: {metadataError}", warning: !metadataSaved);
             }
         }
         catch (Exception ex)
@@ -7833,7 +7816,7 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
             InspectionPenaltyTextBox,
             DiscountTextBox,
             PriceDifferenceTextBox,
-            RouteTransportWorkDaysTextBox,
+
             RouteGuideDailyPriceTextBox
         })
         {
@@ -7860,6 +7843,7 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
 
     private void ClearProgressEntryFields(bool clearTenderSelection = true)
     {
+        _periodEditingId = null; _periodEditingInput = null;
         foreach (var textBox in new[]
         {
             WorkDaysTextBox, DailyPriceTextBox, GuideWorkDaysTextBox, GuideDailyPriceTextBox,
@@ -8095,7 +8079,7 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         public string ServiceSummaryText => $"Taşıma {TransportWorkDays} gün • Rehber günlük {GuideDailyPrice:N2} ₺";
         public string RelationshipText => $"İKN: {TenderNumber} • Yüklenici: {ContractorName}";
         public string PanelTitleText => $"Hat {RouteNumber} — {Name}";
-        public string PanelTransportText => $"Taşıma: {TransportWorkDays.ToString(CultureInfo.GetCultureInfo("tr-TR"))} gün × {FormatCalculationInput(DailyPrice)} ₺ / gün";
+        public string PanelTransportText => $"Taşıma günlük fiyatı: {FormatCalculationInput(DailyPrice)} ₺ / gün";
         public string PanelGuideText => HasGuideStaff(ProgramType) ? $"Rehber günlük: {FormatCalculationInput(GuideDailyPrice)} ₺" : string.Empty;
         public string PanelContractText => $"Sözleşme: {(ContractAmount.HasValue ? FormatMoney(ContractAmount.Value) : "belirtilmedi")} • Tarih: {ContractDate?.ToString("dd.MM.yyyy", CultureInfo.GetCultureInfo("tr-TR")) ?? "belirtilmedi"}";
         public string DisplayText => string.IsNullOrWhiteSpace(ContractorName)
@@ -8115,7 +8099,7 @@ private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = W
         bool VatExempt = false)
     {
         public string VatExemptText => VatExempt ? "KDV İstisnası: VAR" : "KDV İstisnası: YOK";
-        public string ProgramDisplayText => ProgramType == TransportationProgramType.BasicOrSecondary ? "Temel / Ortaöğretim" : "Özel Eğitim";
+        public string ProgramDisplayText => ProgramType == TransportationProgramType.BasicOrSecondary ? "Temel Eğitim/Ortaöğretim Taşıma" : "Özel Eğitim Taşıma";
         public string BankDisplayText => string.IsNullOrWhiteSpace(BankAccountNumber) ? "Banka bilgisi girilmedi" : $"Banka / IBAN: {BankAccountNumber}";
     }
 

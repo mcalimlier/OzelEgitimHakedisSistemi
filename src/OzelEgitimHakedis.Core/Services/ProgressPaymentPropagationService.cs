@@ -149,13 +149,12 @@ public static class ProgressPaymentPropagationService
     {
         var input = item.Input with
         {
-            WorkDays = oldRoute.TransportWorkDays != route.TransportWorkDays ? route.TransportWorkDays : item.Input.WorkDays,
-            DailyPrice = oldRoute.DailyPrice != route.DailyPrice ? route.DailyPrice : item.Input.DailyPrice,
+            DailyPrice = (!item.Input.HasPeriodChanges && item.Input.TransportPeriods is null) && oldRoute.DailyPrice != route.DailyPrice ? route.DailyPrice : item.Input.DailyPrice,
             ContractAmount = oldRoute.ContractAmount != route.ContractAmount ? route.ContractAmount ?? item.Input.ContractAmount : item.Input.ContractAmount,
             GuideWorkDays = route.ProgramType == TransportationProgramType.BasicOrSecondary ? 0 : item.Input.GuideWorkDays,
             GuideDailyPrice = route.ProgramType == TransportationProgramType.BasicOrSecondary
                 ? 0m
-                : oldRoute.GuideDailyPrice != route.GuideDailyPrice ? route.GuideDailyPrice : item.Input.GuideDailyPrice,
+                : (!item.Input.HasPeriodChanges && item.Input.GuidePeriods is null) && oldRoute.GuideDailyPrice != route.GuideDailyPrice ? route.GuideDailyPrice : item.Input.GuideDailyPrice,
             ProgramType = route.ProgramType,
             GuideDiscountAmount = route.ProgramType == TransportationProgramType.BasicOrSecondary ? 0m : item.Input.GuideDiscountAmount,
             GuidePriceDifference = route.ProgramType == TransportationProgramType.BasicOrSecondary ? 0m : item.Input.GuidePriceDifference,

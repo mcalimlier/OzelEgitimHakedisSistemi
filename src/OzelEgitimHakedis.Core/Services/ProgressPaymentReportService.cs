@@ -44,7 +44,7 @@ public static class ProgressPaymentReportService
     {
         ArgumentNullException.ThrowIfNull(payment);
 
-        var transportAmount = payment.Input.WorkDays * payment.Input.DailyPrice
+        var transportAmount = PaymentRatePeriodService.ServiceAmount(payment.Input.TransportPeriods, payment.Input.WorkDays, payment.Input.DailyPrice)
                               - payment.Input.DiscountAmount;
 
         // Temel/Ortaöğretim Excel'inde rehber personel alanı bulunmaz.
@@ -54,7 +54,7 @@ public static class ProgressPaymentReportService
             return transportAmount;
 
         return transportAmount
-               + payment.Input.GuideWorkDays * payment.Input.GuideDailyPrice
+               + PaymentRatePeriodService.ServiceAmount(payment.Input.GuidePeriods, payment.Input.GuideWorkDays, payment.Input.GuideDailyPrice)
                - payment.Input.GuideDiscountAmount;
     }
 

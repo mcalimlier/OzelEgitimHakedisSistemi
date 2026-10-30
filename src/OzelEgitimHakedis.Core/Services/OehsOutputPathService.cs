@@ -8,6 +8,10 @@ namespace OzelEgitimHakedis.Core.Services;
 
 public static class OehsOutputPathService
 {
+    public static string BuildPaymentDocumentsPdfFilePath(string root, ProgressPaymentHistoryData payment) =>
+        BuildOfficialPdfFilePath(root, payment, "Ödemeye Ait Evraklar")
+            .Replace("_Ödemeye Ait Evraklar.pdf", "-Ödemeye Ait Evraklar.pdf", StringComparison.Ordinal);
+
     // Four-document exports must fit Windows paths even for long cooperative and batch names.
     // Identity is kept in a stable folder key instead of repeating names in every directory.
     public static string BuildOfficialPdfDirectory(string root, ProgressPaymentHistoryData payment)

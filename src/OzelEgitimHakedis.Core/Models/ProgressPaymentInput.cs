@@ -15,7 +15,12 @@ public sealed record ProgressPaymentInput(
     decimal GuideDailyPrice = 0m,
     decimal GuideDiscountAmount = 0m,
     decimal GuidePriceDifference = 0m,
-    TransportationProgramType ProgramType = TransportationProgramType.SpecialEducation)
+    TransportationProgramType ProgramType = TransportationProgramType.SpecialEducation,
+    IReadOnlyList<PaymentRatePeriod>? TransportPeriods = null,
+    IReadOnlyList<PaymentRatePeriod>? GuidePeriods = null,
+    bool HasPeriodChanges = false)
 {
     public bool IncludeVat => !IsVatExempt;
 }
+
+public sealed record PaymentRatePeriod(decimal WorkDays, decimal DailyPrice, decimal PriceDifference = 0m, string Description = "");

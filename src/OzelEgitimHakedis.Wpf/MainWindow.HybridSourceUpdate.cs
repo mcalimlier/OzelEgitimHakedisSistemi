@@ -25,7 +25,14 @@ public partial class MainWindow
         ReconcileSavedHybridSources();
         var saved = SavedHybridPaymentDrafts.LastOrDefault(draft =>
             draft.PeriodMonth == month && string.Equals(draft.RouteKey, row.RouteKey, StringComparison.Ordinal));
-        if (saved is not null) row.LoadInput(saved.Input, saved.MinimumWageSupportEnabled);
+        var issued = _progressHistory.Where(p => PaymentOperationsService.RouteKey(p) == row.RouteKey &&
+            p.PeriodDate is {} date && date.Year == month.Year && date.Month == month.Month)
+            .OrderByDescending(p => PeriodChangeTimestamp(p.CreatedAt)).FirstOrDefault();
+        var issuedHasChanges = issued is not null && (issued.Input.HasPeriodChanges || issued.Input.TransportPeriods is not null || issued.Input.GuidePeriods is not null);
+        if (saved is not null && (issued is null || saved.SavedAt == default && !issuedHasChanges || PeriodChangeTimestamp(saved.SavedAt) >= PeriodChangeTimestamp(issued.CreatedAt)))
+            row.LoadInput(saved.Input, saved.MinimumWageSupportEnabled);
+        else if (issued is not null)
+            row.LoadInput(issued.Input, issued.Input.MinimumWageSupport != 0 || issued.Input.ProgramType == TransportationProgramType.SpecialEducation);
     }
 
     private void RestoreHybridInputsForSelectedPeriod()
@@ -51,9 +58,8 @@ public partial class MainWindow
             var old = saved.SourceRoute;
             var input = saved.Input with
             {
-                WorkDays = old is not null && old.TransportWorkDays != source.TransportWorkDays ? source.TransportWorkDays : saved.Input.WorkDays,
-                DailyPrice = old is not null && old.DailyPrice != source.DailyPrice ? source.DailyPrice : saved.Input.DailyPrice,
-                GuideDailyPrice = old is not null && old.GuideDailyPrice != source.GuideDailyPrice ? source.GuideDailyPrice : saved.Input.GuideDailyPrice
+                DailyPrice = (!saved.Input.HasPeriodChanges && saved.Input.TransportPeriods is null) && old is not null && old.DailyPrice != source.DailyPrice ? source.DailyPrice : saved.Input.DailyPrice,
+                GuideDailyPrice = (!saved.Input.HasPeriodChanges && saved.Input.GuidePeriods is null) && old is not null && old.GuideDailyPrice != source.GuideDailyPrice ? source.GuideDailyPrice : saved.Input.GuideDailyPrice
             };
             SavedHybridPaymentDrafts[i] = saved with { Input = input, SourceRoute = source };
         }
@@ -165,7 +171,7 @@ public partial class MainWindow
             }
             updates.Add((index, _routes[index] with
             {
-                Name = row.RouteName.Trim(), TransportWorkDays = input.WorkDays,
+                Name = row.RouteName.Trim(),
                 DailyPrice = input.DailyPrice, GuideDailyPrice = input.GuideDailyPrice
             }, row));
         }
@@ -183,7 +189,7 @@ public partial class MainWindow
                 SavedHybridPaymentDrafts.RemoveAll(draft => draft.PeriodMonth == month &&
                     string.Equals(draft.RouteKey, update.Row.RouteKey, StringComparison.Ordinal));
                 SavedHybridPaymentDrafts.Add(new(update.Row.RouteKey, month, update.Row.CreateInput(),
-                    update.Row.MinimumWageSupportEnabled,ToCoreRoute(update.Route)));
+                    update.Row.MinimumWageSupportEnabled,ToCoreRoute(update.Route),DateTime.UtcNow));
             }
             if (!SavePersistedData(showErrorDialog: false))
             {
@@ -236,7 +242,6 @@ public partial class MainWindow
                 _editingRoute = updated;
                 RouteNameTextBox.Text = updated.Name;
                 RouteDailyPriceTextBox.Text = FormatCalculationInput(updated.DailyPrice);
-                RouteTransportWorkDaysTextBox.Text = updated.TransportWorkDays.ToString(CultureInfo.CurrentCulture);
                 RouteGuideDailyPriceTextBox.Text = FormatCalculationInput(updated.GuideDailyPrice);
             }
         }

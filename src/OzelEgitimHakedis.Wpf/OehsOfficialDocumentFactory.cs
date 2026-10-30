@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -470,11 +470,11 @@ internal static class OehsOfficialDocumentFactory
             var hasReportableAmount = isLookupMonth && monthPayments.Any(payment =>
             {
                 var input = payment.Input;
-                return input.WorkDays * input.DailyPrice != 0m
+                return PaymentRatePeriodService.ServiceAmount(input.TransportPeriods,input.WorkDays,input.DailyPrice) != 0m
                        || input.DiscountAmount != 0m
                        || input.PriceDifference != 0m
                        || input.ProgramType == TransportationProgramType.SpecialEducation
-                       && (input.GuideWorkDays * input.GuideDailyPrice != 0m
+                       && (PaymentRatePeriodService.ServiceAmount(input.GuidePeriods,input.GuideWorkDays,input.GuideDailyPrice) != 0m
                            || input.GuideDiscountAmount != 0m
                            || input.GuidePriceDifference != 0m);
             });

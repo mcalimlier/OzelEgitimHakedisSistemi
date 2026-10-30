@@ -47,7 +47,8 @@ public sealed class ProgressPaymentCalculator
                 GuideWorkDays = 0,
                 GuideDailyPrice = 0m,
                 GuideDiscountAmount = 0m,
-                GuidePriceDifference = 0m
+                GuidePriceDifference = 0m,
+                GuidePeriods = null
             };
             constants = constants with
             {
@@ -56,6 +57,7 @@ public sealed class ProgressPaymentCalculator
             };
         }
 
+        PaymentRatePeriodService.Validate(input);
         if (input.WorkDays < 0 || input.GuideWorkDays < 0)
             throw new ArgumentOutOfRangeException(nameof(input), "İş günü negatif olamaz.");
 
@@ -85,7 +87,7 @@ public sealed class ProgressPaymentCalculator
         // M = L/2
         // N = K+M
         // O = K+L
-        var transportServiceAmount = input.WorkDays * input.DailyPrice;
+        var transportServiceAmount = PaymentRatePeriodService.ServiceAmount(input.TransportPeriods, input.WorkDays, input.DailyPrice);
         var transportPriceDifference = input.PriceDifference - input.DiscountAmount;
         var transportNetAmount = transportServiceAmount + transportPriceDifference;
 
@@ -95,7 +97,7 @@ public sealed class ProgressPaymentCalculator
         // V = IF(E="Hayır", U*9/10, 0)
         // W = T+V
         // X = T+U
-        var guideServiceAmount = input.GuideWorkDays * input.GuideDailyPrice;
+        var guideServiceAmount = PaymentRatePeriodService.ServiceAmount(input.GuidePeriods, input.GuideWorkDays, input.GuideDailyPrice);
         var guidePriceDifference = input.GuidePriceDifference - input.GuideDiscountAmount;
         var guideNetAmount = guideServiceAmount + guidePriceDifference;
 

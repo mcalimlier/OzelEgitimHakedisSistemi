@@ -14,7 +14,7 @@ public partial class MainWindow
     private void ConfigureHybridRow(MultiRoutePaymentDraftRow row,RouteDraft route)
     {
         row.PropertyChanged-=HybridRow_PropertyChanged;
-        row.ReconcileSource(route.Name,route.TransportWorkDays,route.DailyPrice,
+        row.ReconcileSource(route.Name,route.DailyPrice,
             HasGuideStaff(route.ProgramType)?route.GuideDailyPrice:0m);
         var contract=ProgressTenderListBox.SelectedItem as ContractDraftData;
         var firm=FindContractor(route.ContractorTaxOrIdentityNumber,route.ProgramType);
@@ -35,11 +35,11 @@ public partial class MainWindow
             lines.Add("");lines.Add(row.RouteDisplayText);
             var input=row.CreateInput();var result=row.Preview;
             if(result is null) {lines.Add("Girdiler geçerli değil; bu satır kaydedilemez.");continue;}
-            lines.Add($"Taşıma: {input.WorkDays} gün × {input.DailyPrice} = {FormatMoney(result.ServiceAmount)}");
+            lines.Add($"Taşıma: {PaymentRatePeriodService.Formula(input.TransportPeriods,input.WorkDays,input.DailyPrice)} = {FormatMoney(result.ServiceAmount)}");
             lines.Add($"Taşıma fiyat farkı: {input.PriceDifference} − iskonto {input.DiscountAmount} = {FormatMoney(result.PriceDifferenceExcludingVat)}");
             if(input.ProgramType==TransportationProgramType.SpecialEducation)
             {
-                lines.Add($"Rehber: {input.GuideWorkDays} gün × {input.GuideDailyPrice} = {FormatMoney(result.GuideServiceAmount)}");
+                lines.Add($"Rehber: {PaymentRatePeriodService.Formula(input.GuidePeriods,input.GuideWorkDays,input.GuideDailyPrice)} = {FormatMoney(result.GuideServiceAmount)}");
                 lines.Add($"Rehber fiyat farkı: {input.GuidePriceDifference} − iskonto {input.GuideDiscountAmount} = {FormatMoney(result.GuidePriceDifferenceExcludingVat)}");
             }
             lines.Add($"KDV: {FormatMoney(result.Vat)} · Tevkifat: {FormatMoney(result.Withholding)}");

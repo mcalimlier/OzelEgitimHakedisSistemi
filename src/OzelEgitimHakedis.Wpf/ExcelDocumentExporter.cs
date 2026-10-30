@@ -181,7 +181,7 @@ internal static class ExcelDocumentExporter
 
     private static string ProgramTypeLabel(TransportationProgramType type) =>
         type == TransportationProgramType.BasicOrSecondary
-            ? "Temel / Ortaöğretim Taşıma"
+            ? "Temel Eğitim/Ortaöğretim Taşıma"
             : "Özel Eğitim Taşıma";
 
     private static RowData Row(string a, string b, string c, string d) => new(false, a, b, c, d);

@@ -9,6 +9,7 @@ namespace OzelEgitimHakedis.Wpf;
 
 public partial class MainWindow
 {
+    private static readonly string[] PeriodExcelDetailHeader = { "Dönem içi hesap ayrıntısı" };
     private static readonly (string Header,Func<ProgressPaymentCalculation,decimal> Value)[] HybridCalculatedExcelColumns =
     {
         ("Taşıma Hizmet Tutarı (TL)",c=>c.ServiceAmount),
@@ -52,18 +53,21 @@ public partial class MainWindow
         var drafts=_multiRoutePaymentRows.ToArray();
         var calculations=drafts.Select(row=>row.Preview).ToArray();
         if(calculations.Any(c=>c is null))return false;
-        var columns=MultiRoutePaymentGrid.Columns.Where(c=>c.Visibility==Visibility.Visible).OrderBy(c=>c.DisplayIndex).ToArray();
+        var columns=MultiRoutePaymentGrid.Columns.Where(c=>c.Visibility==Visibility.Visible && c is DataGridBoundColumn).OrderBy(c=>c.DisplayIndex).ToArray();
         if(columns.Length==0) return false;
         var properties=columns.Select(c=>(c as DataGridBoundColumn)?.Binding as Binding)
             .Select(b=>b?.Path?.Path).ToArray();
         if(properties.Any(p=>p is null || typeof(MultiRoutePaymentDraftRow).GetProperty(p) is null)) return false;
         var hasVisibleNet=properties.Contains(nameof(MultiRoutePaymentDraftRow.NetPayableText));
         var calculatedColumns=HybridCalculatedExcelColumns.Where(c=>!hasVisibleNet || c.Header!="Net Ödenecek (TL)").ToArray();
-        var headers=columns.Select(c=>c.Header?.ToString()??"").Concat(calculatedColumns.Select(c=>c.Header)).ToArray();
+        var includePeriodDetails=drafts.Any(row=>row.HasPeriodChanges);
+        var headers=columns.Select(c=>c.Header?.ToString()??"").Concat(calculatedColumns.Select(c=>c.Header))
+            .Concat(includePeriodDetails?PeriodExcelDetailHeader:Array.Empty<string>()).ToArray();
         IReadOnlyList<object?>[] values=drafts.Select((row,index)=>(IReadOnlyList<object?>)properties.Select(p=>
             p==nameof(MultiRoutePaymentDraftRow.NetPayableText)?(object?)new ExcelDocumentExporter.TableMoney(calculations[index]!.NetPayable):
             typeof(MultiRoutePaymentDraftRow).GetProperty(p!)!.GetValue(row))
-            .Concat(calculatedColumns.Select(c=>(object?)new ExcelDocumentExporter.TableMoney(c.Value(calculations[index]!)))).ToArray()).ToArray();
+            .Concat(calculatedColumns.Select(c=>(object?)new ExcelDocumentExporter.TableMoney(c.Value(calculations[index]!))))
+            .Concat(includePeriodDetails?new object?[]{row.PeriodCalculationText}:Array.Empty<object?>()).ToArray()).ToArray();
         try
         {
             ExcelDocumentExporter.SaveTable(path,headers,values);

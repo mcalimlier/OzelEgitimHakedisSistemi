@@ -25,8 +25,8 @@ public static class OutputEvidenceStore
     }
     public static void Save(string root, Guid paymentId, string contextHash, IReadOnlyList<string> pdfPaths, TransportationProgramType? program = null)
     {
-        if (pdfPaths.Count != 4 || pdfPaths.Distinct(StringComparer.OrdinalIgnoreCase).Count() != 4)
-            throw new ArgumentException("Dört ayrı PDF dosyası gereklidir.", nameof(pdfPaths));
+        if (pdfPaths.Count is not (1 or 4) || pdfPaths.Distinct(StringComparer.OrdinalIgnoreCase).Count() != pdfPaths.Count)
+            throw new ArgumentException("Bir birleşik PDF veya dört eski belge dosyası gereklidir.", nameof(pdfPaths));
         var files = pdfPaths.ToDictionary(p => Path.GetRelativePath(root, p).Replace('\\','/'), p =>
         {
             _ = ResolveInside(root, Path.GetRelativePath(root, p));
@@ -44,7 +44,7 @@ public static class OutputEvidenceStore
             var path = EvidencePath(root, paymentId, program);
             if (!File.Exists(path)) return false;
             var evidence = JsonSerializer.Deserialize<OutputEvidence>(File.ReadAllText(path));
-            return evidence is not null && evidence.ContextHash == contextHash && evidence.Files.Count == 4 &&
+            return evidence is not null && evidence.ContextHash == contextHash && evidence.Files.Count is 1 or 4 &&
                 evidence.Files.All(f => File.Exists(ResolveInside(root, f.Key)) && FileHash(ResolveInside(root, f.Key)) == f.Value);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException or ArgumentException) { return false; }

@@ -50,7 +50,7 @@ public partial class MainWindow
             (result.Count==0?(rows.Count==0?" · Henüz arşiv yok.":" · Filtreye uyan arşiv yok."):"");
         return result;
     }
-    private static string ProgramLabel(TransportationProgramType? program) => program==TransportationProgramType.BasicOrSecondary?"Temel / Ortaöğretim":"Özel Eğitim";
+    private static string ProgramLabel(TransportationProgramType? program) => program==TransportationProgramType.BasicOrSecondary?"Temel Eğitim/Ortaöğretim Taşıma":"Özel Eğitim Taşıma";
     private void RecordsFilter_Changed(object sender,TextChangedEventArgs e) => RefreshRecordFilters();
     private void RecordsDateFilter_Changed(object sender,SelectionChangedEventArgs e) => RefreshRecordFilters();
     private void RecordsToggleFilter_Changed(object sender,RoutedEventArgs e) => RefreshRecordFilters();

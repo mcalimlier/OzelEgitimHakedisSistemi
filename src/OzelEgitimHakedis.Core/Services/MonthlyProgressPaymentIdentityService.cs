@@ -23,8 +23,8 @@ public static class MonthlyProgressPaymentIdentityService
             throw new ArgumentException("En az bir hat seçilmelidir.", nameof(routeNumbers));
 
         var programName = programType == TransportationProgramType.SpecialEducation
-            ? "Özel Eğitim"
-            : "Temel/Ortaöğretim";
+            ? "Özel Eğitim Taşıma"
+            : "Temel Eğitim/Ortaöğretim Taşıma";
         var contractPart = string.IsNullOrWhiteSpace(contractNumber)
             ? string.Empty
             : $" • Sözleşme {contractNumber.Trim()}";

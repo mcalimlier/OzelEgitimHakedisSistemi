@@ -38,9 +38,9 @@ public sealed record ContractDraftData(
     decimal TransportDailyPrice = 0m,
     TransportationProgramType ProgramType = TransportationProgramType.SpecialEducation)
 {
-    public string DisplayText => string.IsNullOrWhiteSpace(ContractorName)
-        ? $"{TenderNumber} • {WorkName}"
-        : $"{TenderNumber} • {ContractorName} • {WorkName}";
+    public string ProgramDisplayText => ProgramType == TransportationProgramType.BasicOrSecondary
+        ? "Temel Eğitim/Ortaöğretim Taşıma" : "Özel Eğitim Taşıma";
+    public string DisplayText => $"{TenderNumber} • {ProgramDisplayText}";
 }
 
 public sealed record RouteData(
@@ -84,4 +84,5 @@ public sealed record HybridPaymentDraftData(
     DateOnly PeriodMonth,
     ProgressPaymentInput Input,
     bool MinimumWageSupportEnabled = true,
-    RouteData? SourceRoute = null);
+    RouteData? SourceRoute = null,
+    DateTime SavedAt = default);

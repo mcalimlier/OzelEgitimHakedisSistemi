@@ -45,13 +45,11 @@ public partial class MainWindow
 
     private void ResetRouteDateValidation() => RouteContractDatePicker.SetValue(InvalidTenderDateInputProperty, false);
 
-    private static bool RouteWorkDaysDiffer(TextBox textBox, decimal expected) => string.IsNullOrWhiteSpace(textBox.Text)
-        ? expected != 0m : !TurkishMoneyInput.TryParseWorkDays(textBox.Text, out var actual) || actual != expected;
 
     private void ClearRouteEditorFields()
     {
         RouteNumberTextBox.Clear(); RouteNameTextBox.Clear(); RouteDailyPriceTextBox.Clear();
-        RouteContractAmountTextBox.Clear(); RouteTransportWorkDaysTextBox.Clear(); RouteGuideDailyPriceTextBox.Clear();
+        RouteContractAmountTextBox.Clear(); RouteGuideDailyPriceTextBox.Clear();
         RouteContractDatePicker.Text = string.Empty; RouteContractDatePicker.SelectedDate = null;
         ResetRouteDateValidation();
         ClearRouteValidationVisuals();

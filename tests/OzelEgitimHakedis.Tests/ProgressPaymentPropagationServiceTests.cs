@@ -75,7 +75,7 @@ public sealed class ProgressPaymentPropagationServiceTests
         var result = ProgressPaymentPropagationService.RecalculateForRouteChange(
             new[] { first, second }, original, changed, new Contractor("Firma", "12345678901", ProgramType: program));
 
-        Assert.Equal(8, result[0].Input.WorkDays);
+        Assert.Equal(first.Input.WorkDays, result[0].Input.WorkDays);
         Assert.Equal(1300m, result[0].Input.DailyPrice);
         Assert.Equal(150000m, result[0].Input.ContractAmount);
         Assert.Equal(new DateOnly(2025, 12, 20), result[0].ContractDate);
