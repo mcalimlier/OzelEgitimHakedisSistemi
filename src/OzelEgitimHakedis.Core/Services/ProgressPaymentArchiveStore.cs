@@ -24,11 +24,7 @@ public sealed class ProgressPaymentArchiveStore
 
     public ProgressPaymentArchiveStore(string? folderPath = null)
     {
-        _folderPath = folderPath ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
-            "OzelEgitimHakedisSistemi",
-            "Arsiv",
-            "Hakedisler");
+        _folderPath = folderPath ?? OehsRuntimePaths.ArchiveFolderPath;
     }
 
     public IReadOnlyList<FileInfo> List()
@@ -61,6 +57,10 @@ public sealed class ProgressPaymentArchiveStore
             if (archive.Contract is null || archive.Contractor is null || archive.Route is null || archive.ProgressPayment is null)
                 throw new ProgressPaymentArchiveException("Arşiv gerekli snapshot alanlarını içermiyor.");
 
+            ValidateArchiveIdentity(archive);
+            archive = CompleteMissingArchiveIdentity(archive);
+            ValidateArchiveIdentity(archive);
+
             return archive;
         }
         catch (ProgressPaymentArchiveException)
@@ -81,66 +81,105 @@ public sealed class ProgressPaymentArchiveStore
         }
     }
 
-    public string Replace(string filePath, ProgressPaymentArchive archive)
+    public static string SaveRevision(string sourcePath, ProgressPaymentArchive archive)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourcePath);
         ArgumentNullException.ThrowIfNull(archive);
+        ValidateArchiveIdentity(archive);
+        archive = CompleteMissingArchiveIdentity(archive);
+        ValidateArchiveIdentity(archive);
 
-        if (archive.Revision < 1)
-            throw new ArgumentOutOfRangeException(nameof(archive), "Revision 1 veya daha büyük olmalıdır.");
+        var fullSourcePath = Path.GetFullPath(sourcePath);
+        if (!File.Exists(fullSourcePath))
+            throw new ProgressPaymentArchiveException("Düzeltilecek mevcut arşiv bulunamadı; yeni revision oluşturulmadı.");
 
-        var fullPath = Path.GetFullPath(filePath);
-        if (!File.Exists(fullPath))
-            throw new ProgressPaymentArchiveException("Mevcut arşiv dosyası bulunamadı; yeni arşiv oluşturulmadı.");
+        var sourceArchive = Load(fullSourcePath);
+        if (sourceArchive.ProgressPayment.Id != archive.ProgressPayment.Id)
+        {
+            throw new ProgressPaymentArchiveException(
+                "Düzeltme aynı hakediş kimliğini korumalıdır. Kaynak arşiv değiştirilmedi.");
+        }
 
-        var folder = Path.GetDirectoryName(fullPath);
+        var folder = Path.GetDirectoryName(fullSourcePath);
         if (string.IsNullOrWhiteSpace(folder))
             throw new ProgressPaymentArchiveException("Arşiv dosya klasörü çözümlenemedi.");
 
         Directory.CreateDirectory(folder);
+        var targetBaseStem = BuildBaseStem(archive);
+        var archiveFiles = Directory
+            .EnumerateFiles(folder, "*.json", SearchOption.TopDirectoryOnly)
+            .Where(IsArchiveFile)
+            .ToArray();
 
-        // Düzeltme aynı revision'a aittir. Kimlik alanları (özellikle Hat No)
-        // değiştiğinde dosya adı da aynı revision korunarak yeni kimliğe taşınır;
-        // v02/v03 gibi yeni revision oluşturulmaz.
-        var targetPath = Path.Combine(folder, BuildFileStem(archive) + ".json");
-        var samePath = string.Equals(fullPath, targetPath, StringComparison.OrdinalIgnoreCase);
-
-        if (!samePath && File.Exists(targetPath))
+        // A changed route/tender/period must not collide with a different payment
+        // that already uses the target archive identity. The same logical payment
+        // can keep a revision chain while its identity fields are corrected.
+        foreach (var existingPath in archiveFiles.Where(file =>
+                     Path.GetFileNameWithoutExtension(file).StartsWith(
+                         targetBaseStem + "_v",
+                         StringComparison.OrdinalIgnoreCase)))
         {
-            throw new ProgressPaymentArchiveException(
-                "Düzeltme sonucu oluşacak arşiv dosyası zaten mevcut. Mevcut arşiv değiştirilmedi ve yeni revision oluşturulmadı.");
+            ProgressPaymentArchive existing;
+            try
+            {
+                existing = Load(existingPath);
+            }
+            catch (ProgressPaymentArchiveException ex)
+            {
+                throw new ProgressPaymentArchiveException(
+                    "Hedef arşiv kimliğinde okunamayan bir dosya var. Veri kaybını önlemek için yeni revision oluşturulmadı.",
+                    ex);
+            }
+
+            if (existing.ProgressPayment.Id != archive.ProgressPayment.Id)
+            {
+                throw new ProgressPaymentArchiveException(
+                    "Bu ihale/hat/hakediş/dönem kimliği başka bir arşiv kaydında kullanılıyor. Mevcut revisionlar korunuyor.");
+            }
         }
 
-        var json = JsonSerializer.Serialize(archive, JsonOptions);
-        var tempPath = Path.Combine(
-            folder,
-            Path.GetFileName(targetPath) + "." + Guid.NewGuid().ToString("N") + ".tmp");
+        var maxRevision = sourceArchive.Revision;
+        foreach (var existingPath in archiveFiles)
+        {
+            try
+            {
+                var existing = Load(existingPath);
+                if (existing.ProgressPayment.Id == archive.ProgressPayment.Id)
+                    maxRevision = Math.Max(maxRevision, existing.Revision);
+            }
+            catch (ProgressPaymentArchiveException)
+            {
+                // Unrelated malformed archives do not get overwritten. Target-identity
+                // malformed files have already been rejected by the check above.
+            }
+        }
 
+        if (sourceArchive.Revision < maxRevision)
+        {
+            throw new ProgressPaymentArchiveException(
+                $"Bu hakedişin daha yeni bir revision'ı (v{maxRevision:00}) var. Eski revision üzerinden düzeltme yapılamaz; en güncel arşiv kaydını çağırın.");
+        }
+
+        var nextRevision = checked(maxRevision + 1);
+        string targetPath;
+        ProgressPaymentArchive revised;
+        do
+        {
+            revised = archive with { Revision = nextRevision };
+            targetPath = Path.Combine(folder, BuildFileStem(revised) + ".json");
+            if (!File.Exists(targetPath))
+                break;
+
+            nextRevision = checked(nextRevision + 1);
+        }
+        while (true);
+
+        var json = JsonSerializer.Serialize(revised, JsonOptions);
+        var tempPath = targetPath + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {
             File.WriteAllText(tempPath, json);
-
-            if (samePath)
-            {
-                File.Move(tempPath, fullPath, overwrite: true);
-                return fullPath;
-            }
-
             File.Move(tempPath, targetPath, overwrite: false);
-
-            try
-            {
-                File.Delete(fullPath);
-            }
-            catch
-            {
-                // Eski dosya silinemiyorsa yeni hedefi geri al; böylece düzeltme
-                // tamamlanmış görünmeden önce eski kayıt korunur.
-                if (File.Exists(targetPath))
-                    File.Delete(targetPath);
-                throw;
-            }
-
             return targetPath;
         }
         catch (ProgressPaymentArchiveException)
@@ -149,16 +188,28 @@ public sealed class ProgressPaymentArchiveStore
         }
         catch (IOException ex)
         {
-            throw new ProgressPaymentArchiveException("Mevcut arşiv dosyası güncellenemedi.", ex);
+            throw new ProgressPaymentArchiveException(
+                "Yeni arşiv revision'ı kaydedilemedi; önceki revision korunuyor.",
+                ex);
         }
         catch (UnauthorizedAccessException ex)
         {
-            throw new ProgressPaymentArchiveException("Mevcut arşiv dosyasına yazma izni yok.", ex);
+            throw new ProgressPaymentArchiveException(
+                "Yeni arşiv revision'ı için yazma izni yok; önceki revision korunuyor.",
+                ex);
         }
         finally
         {
-            if (File.Exists(tempPath))
-                File.Delete(tempPath);
+            try
+            {
+                if (File.Exists(tempPath))
+                    File.Delete(tempPath);
+            }
+            catch (Exception cleanupException) when (
+                cleanupException is IOException or UnauthorizedAccessException)
+            {
+                // Preserve the primary write result even if an orphan temp file cannot be removed.
+            }
         }
     }
 
@@ -167,6 +218,9 @@ public sealed class ProgressPaymentArchiveStore
         ArgumentNullException.ThrowIfNull(archive);
         if (archive.Revision < 1)
             throw new ArgumentOutOfRangeException(nameof(archive), "Revision 1 veya daha büyük olmalıdır.");
+        ValidateArchiveIdentity(archive);
+        archive = CompleteMissingArchiveIdentity(archive);
+        ValidateArchiveIdentity(archive);
 
         Directory.CreateDirectory(_folderPath);
 
@@ -201,21 +255,23 @@ public sealed class ProgressPaymentArchiveStore
         }
         finally
         {
-            if (File.Exists(tempPath))
-                File.Delete(tempPath);
+            try
+            {
+                if (File.Exists(tempPath))
+                    File.Delete(tempPath);
+            }
+            catch (Exception cleanupException) when (
+                cleanupException is IOException or UnauthorizedAccessException)
+            {
+                // Preserve the primary write result even if an orphan temp file cannot be removed.
+            }
         }
     }
 
     public static string BuildFileStem(ProgressPaymentArchive archive)
     {
         ArgumentNullException.ThrowIfNull(archive);
-
-        var tender = SafeFilePart(archive.ProgressPayment.TenderNumber, "Ihale");
-        var route = SafeFilePart(archive.ProgressPayment.RouteNumber, "Hat");
-        var progress = archive.ProgressPayment.ProgressPaymentNumber?.ToString("00", System.Globalization.CultureInfo.InvariantCulture) ?? "Yeni";
-        var period = archive.ProgressPayment.PeriodDate?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) ?? "Donemsiz";
-
-        return $"OEHS_{tender}_Hat-{route}_Hakediş-{progress}_{period}_v{archive.Revision:00}";
+        return $"{BuildBaseStem(archive)}_v{archive.Revision:00}";
     }
 
     private int FindNextRevision(ProgressPaymentArchive archive, int minimumRevision = 1)
@@ -237,11 +293,20 @@ public sealed class ProgressPaymentArchiveStore
 
     private static string BuildBaseStem(ProgressPaymentArchive archive)
     {
+        var program = archive.ProgressPayment.Input.ProgramType == TransportationProgramType.SpecialEducation
+            ? "OzelEgitim"
+            : "TemelOrtaogretim";
         var tender = SafeFilePart(archive.ProgressPayment.TenderNumber, "Ihale");
+        var contractor = OehsFileNameService.BuildContractorFilePart(
+            archive.Contractor.Name,
+            archive.Contractor.TaxOrIdentityNumber);
+        var batchRoutes = SafeFilePart(
+            archive.ProgressPayment.BatchRouteNumbers ?? archive.ProgressPayment.RouteNumber,
+            "Hatlar");
         var route = SafeFilePart(archive.ProgressPayment.RouteNumber, "Hat");
         var progress = archive.ProgressPayment.ProgressPaymentNumber?.ToString("00", System.Globalization.CultureInfo.InvariantCulture) ?? "Yeni";
-        var period = archive.ProgressPayment.PeriodDate?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) ?? "Donemsiz";
-        return $"OEHS_{tender}_Hat-{route}_Hakediş-{progress}_{period}";
+        var period = archive.ProgressPayment.PeriodDate?.ToString("yyyy-MM", System.Globalization.CultureInfo.InvariantCulture) ?? "Donemsiz";
+        return $"OEHS_{program}_{tender}_Yuklenici-{contractor}_Hatlar-{batchRoutes}_Hat-{route}_Hakediş-{progress}_{period}";
     }
 
     private static int? ParseRevision(string fileName, string baseStem)
@@ -258,6 +323,161 @@ public sealed class ProgressPaymentArchiveStore
             out var revision)
             ? revision
             : null;
+    }
+
+    private static ProgressPaymentArchive CompleteMissingArchiveIdentity(ProgressPaymentArchive archive)
+    {
+        static string FirstPopulated(params string?[] values) =>
+            values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value))?.Trim() ?? string.Empty;
+
+        var tenderNumber = FirstPopulated(
+            archive.ProgressPayment.TenderNumber,
+            archive.Route.TenderNumber,
+            archive.Contract.TenderNumber);
+        var contractNumber = FirstPopulated(
+            archive.ProgressPayment.ContractNumber,
+            archive.Route.ContractNumber,
+            archive.Contract.ContractNumber);
+        var routeNumber = FirstPopulated(
+            archive.ProgressPayment.RouteNumber,
+            archive.Route.RouteNumber);
+        var contractorIdentity = FirstPopulated(
+            archive.ProgressPayment.ContractorTaxOrIdentityNumber,
+            archive.Route.ContractorTaxOrIdentityNumber,
+            archive.Contractor.TaxOrIdentityNumber);
+        var routeName = FirstPopulated(archive.Route.Name, archive.ProgressPayment.RouteName);
+
+        var contract = archive.Contract with
+        {
+            TenderNumber = FirstPopulated(archive.Contract.TenderNumber, tenderNumber),
+            ContractNumber = FirstPopulated(archive.Contract.ContractNumber, contractNumber)
+        };
+        var contractor = archive.Contractor with
+        {
+            Name = FirstPopulated(
+                archive.Contractor.Name,
+                archive.ProgressPayment.ContractorName,
+                contract.ContractorName),
+            TaxOrIdentityNumber = FirstPopulated(archive.Contractor.TaxOrIdentityNumber, contractorIdentity)
+        };
+        var route = archive.Route with
+        {
+            Name = routeName,
+            TenderNumber = FirstPopulated(archive.Route.TenderNumber, tenderNumber),
+            ContractNumber = FirstPopulated(archive.Route.ContractNumber, contractNumber),
+            RouteNumber = FirstPopulated(archive.Route.RouteNumber, routeNumber),
+            ContractorTaxOrIdentityNumber = FirstPopulated(
+                archive.Route.ContractorTaxOrIdentityNumber,
+                contractorIdentity)
+        };
+        var payment = archive.ProgressPayment with
+        {
+            TenderNumber = FirstPopulated(archive.ProgressPayment.TenderNumber, tenderNumber),
+            ContractNumber = FirstPopulated(archive.ProgressPayment.ContractNumber, contractNumber),
+            RouteNumber = FirstPopulated(archive.ProgressPayment.RouteNumber, routeNumber),
+            RouteName = FirstPopulated(archive.ProgressPayment.RouteName, routeName),
+            ContractorName = FirstPopulated(archive.ProgressPayment.ContractorName, contractor.Name),
+            ContractorTaxOrIdentityNumber = FirstPopulated(
+                archive.ProgressPayment.ContractorTaxOrIdentityNumber,
+                contractorIdentity)
+        };
+        var previousPayments = (archive.PreviousPayments ?? Array.Empty<ProgressPaymentHistoryData>())
+            .Select(previous => previous with
+            {
+                TenderNumber = FirstPopulated(previous.TenderNumber, tenderNumber),
+                ContractNumber = FirstPopulated(previous.ContractNumber, contractNumber),
+                RouteNumber = FirstPopulated(previous.RouteNumber, routeNumber),
+                ContractorTaxOrIdentityNumber = FirstPopulated(
+                    previous.ContractorTaxOrIdentityNumber,
+                    contractorIdentity)
+            })
+            .ToArray();
+
+        return archive with
+        {
+            Contract = contract,
+            Contractor = contractor,
+            Route = route,
+            ProgressPayment = payment,
+            PreviousPayments = previousPayments
+        };
+    }
+
+    private static void ValidateArchiveIdentity(ProgressPaymentArchive archive)
+    {
+        ArgumentNullException.ThrowIfNull(archive);
+
+        EnsureIdentityMatches(
+            "İhale numarası",
+            archive.Contract.TenderNumber,
+            archive.Route.TenderNumber,
+            archive.ProgressPayment.TenderNumber);
+
+        EnsureIdentityMatches(
+            "Sözleşme numarası",
+            archive.Contract.ContractNumber,
+            archive.Route.ContractNumber,
+            archive.ProgressPayment.ContractNumber);
+
+        EnsureIdentityMatches(
+            "Hat numarası",
+            archive.Route.RouteNumber,
+            archive.ProgressPayment.RouteNumber);
+
+        EnsureIdentityMatches(
+            "Yüklenici VKN/TCKN",
+            archive.Contractor.TaxOrIdentityNumber,
+            archive.Route.ContractorTaxOrIdentityNumber,
+            archive.ProgressPayment.ContractorTaxOrIdentityNumber);
+
+        foreach (var previous in archive.PreviousPayments ?? Array.Empty<ProgressPaymentHistoryData>())
+        {
+            EnsureIdentityMatches(
+                "Önceki hakediş ihale numarası",
+                archive.ProgressPayment.TenderNumber,
+                previous.TenderNumber);
+            EnsureIdentityMatches(
+                "Önceki hakediş sözleşme numarası",
+                archive.ProgressPayment.ContractNumber,
+                previous.ContractNumber);
+            EnsureIdentityMatches(
+                "Önceki hakediş hat numarası",
+                archive.ProgressPayment.RouteNumber,
+                previous.RouteNumber);
+            EnsureIdentityMatches(
+                "Önceki hakediş yüklenici VKN/TCKN",
+                archive.ProgressPayment.ContractorTaxOrIdentityNumber,
+                previous.ContractorTaxOrIdentityNumber);
+        }
+    }
+
+    private static void EnsureIdentityMatches(string label, params string?[] values)
+    {
+        var populated = values
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Select(value => value!.Trim())
+            .ToArray();
+
+        if (populated.Length <= 1)
+            return;
+
+        if (label.Contains("VKN/TCKN", StringComparison.Ordinal))
+        {
+            var normalized = populated
+                .Select(OehsIdentityService.NormalizeIdentity)
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
+            if (normalized.Length <= 1)
+                return;
+        }
+        else
+        {
+            if (populated.Distinct(StringComparer.OrdinalIgnoreCase).Count() <= 1)
+                return;
+        }
+
+        throw new ProgressPaymentArchiveException(
+            $"Arşiv kaydı tutarsız: {label} alanları birbiriyle uyuşmuyor. Yeni revision kaydedilmedi.");
     }
 
     private static bool IsArchiveFile(string path)

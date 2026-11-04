@@ -1,3 +1,7 @@
+> **GÜNCEL XLSM ÖNCELİĞİ:** Bu metin önceki analiz tarihindeki kaynaklara göre hazırlanmıştır. Son yüklenen Excel dosyalarıyla çelişen formül, hücre adresi, tutar veya test beklentisi güncel kural değildir. Geçerli kaynak kimliği ve formüller için [SON_XLSM_KAYNAK_PARITESI_2026-10-20.md](SON_XLSM_KAYNAK_PARITESI_2026-10-20.md) esas alınmalıdır. Bu tarihsel metin yalnızca geçmiş inceleme izi olarak korunur.
+
+---
+
 # OEHS — Excel v2 Taraması ve Uygulama Eşleştirmesi
 
 Tarih: 29.09.2026

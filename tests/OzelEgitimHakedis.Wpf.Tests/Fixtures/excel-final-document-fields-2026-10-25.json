@@ -1,0 +1,196 @@
+[
+  {
+    "Program": "SpecialEducation",
+    "SourceSha256": "C31CB024AC1EB59F3B88D2EE12234BE98D1F07056884374D8DAD108F674D7D1E",
+    "Input": {
+      "WorkDays": 16.0,
+      "DailyPrice": 2320.0,
+      "DiscountAmount": 1020.0,
+      "PriceDifference": 7530.0,
+      "ContractAmount": 100000.0,
+      "IsVatExempt": false,
+      "TaxDebt": 1200.0,
+      "SocialSecurityDebt": 12560.0,
+      "MinimumWageSupport": 1362.49,
+      "InspectionPenalty": 2500.0,
+      "GuideWorkDays": 23.0,
+      "GuideDailyPrice": 1362.49,
+      "GuideDiscountAmount": 800.0,
+      "GuidePriceDifference": 3500.0,
+      "ProgramType": 0,
+      "IncludeVat": true
+    },
+    "Months": [
+      {
+        "Offset": 0,
+        "Amount": 57222.33,
+        "Difference": 1500.0,
+        "GuideDifference": 3500.0,
+        "Deduction": 16728.1770884
+      },
+      {
+        "Offset": 1,
+        "Amount": 101124.7,
+        "Difference": 7530.0,
+        "GuideDifference": 3500.0,
+        "Deduction": 29963.898156
+      },
+      {
+        "Offset": 2,
+        "Amount": 77667.27,
+        "Difference": 7530.0,
+        "GuideDifference": 3500.0,
+        "Deduction": 27328.784319600003
+      }
+    ],
+    "Contract": {
+      "Amount": 764629.97,
+      "WorkDays": 181,
+      "TenderDate": "2026-09-01",
+      "ContractDate": "2026-09-14",
+      "Start": "2026-09-14",
+      "End": "2027-06-25"
+    },
+    "GeneratedDate": "2026-10-25",
+    "Expected": {
+      "Hakediş Raporu": {
+        "D6": 224984.3,
+        "D7": 11030.0,
+        "D8": 236014.3,
+        "D10": 158347.03,
+        "D11": 77667.27,
+        "D12": 11170.454000000002,
+        "D13": 88837.724,
+        "D14": 0.0,
+        "D15": 736.2857196000001,
+        "D16": 8308.208600000002,
+        "D17": 12560.0,
+        "D18": 0.0,
+        "D19": 0.0,
+        "D20": 0.0,
+        "D21": 661.8,
+        "D22": 1200.0,
+        "D23": 0.0,
+        "D24": 2500.0,
+        "D25": 1362.49,
+        "D26": 27328.784319600003,
+        "D28": 61508.94
+      },
+      "Hakediş İcmali": {
+        "C6": 52222.33,
+        "D6": 5000.0,
+        "E6": 57222.33,
+        "C7": 90094.7,
+        "D7": 11030.0,
+        "E7": 101124.7,
+        "C8": 66637.27,
+        "D8": 11030.0,
+        "E8": 77667.27,
+        "C17": 208954.3,
+        "D17": 27060.0,
+        "E17": 236014.3,
+        "E21": 29963.898156,
+        "E22": 27328.784319600003,
+        "E23": 57292.6824756,
+        "E25": 178721.6175244
+      }
+    }
+  },
+  {
+    "Program": "BasicOrSecondary",
+    "SourceSha256": "37A7818881AAE52E8B2FCF95F30A75E1F302DFCE1E91E2345F3473668A4D5296",
+    "Input": {
+      "WorkDays": 16.0,
+      "DailyPrice": 19539.1608,
+      "DiscountAmount": 0.0,
+      "PriceDifference": 7365.35,
+      "ContractAmount": 100000.0,
+      "IsVatExempt": false,
+      "TaxDebt": 0.0,
+      "SocialSecurityDebt": 0.0,
+      "MinimumWageSupport": 0.0,
+      "InspectionPenalty": 0.0,
+      "GuideWorkDays": 0.0,
+      "GuideDailyPrice": 0.0,
+      "GuideDiscountAmount": 0.0,
+      "GuidePriceDifference": 0.0,
+      "ProgramType": 1,
+      "IncludeVat": true
+    },
+    "Months": [
+      {
+        "Offset": 0,
+        "Amount": 261374.44040000002,
+        "Difference": 7365.349999999999,
+        "GuideDifference": 0,
+        "Deduction": 15988.472714992002
+      },
+      {
+        "Offset": 1,
+        "Amount": 437226.8876,
+        "Difference": 7365.349999999999,
+        "GuideDifference": 0,
+        "Deduction": 26448.176274448004
+      },
+      {
+        "Offset": 2,
+        "Amount": 319991.9228,
+        "Difference": 7365.349999999999,
+        "GuideDifference": 0,
+        "Deduction": 19475.040568144002
+      }
+    ],
+    "Contract": {
+      "Amount": 2643686.0,
+      "WorkDays": 181,
+      "TenderDate": "2026-08-26",
+      "ContractDate": "2026-09-14",
+      "Start": "2026-09-14",
+      "End": "2027-06-25"
+    },
+    "GeneratedDate": "2026-10-25",
+    "Expected": {
+      "Hakediş Raporu": {
+        "D6": 1011227.9008000001,
+        "D7": 7365.349999999999,
+        "D8": 1018593.2508,
+        "D10": 698601.328,
+        "D11": 319991.9228,
+        "D12": 31999.192280000003,
+        "D13": 351991.11508,
+        "D14": 0.0,
+        "D15": 3033.523428144,
+        "D16": 15999.596140000001,
+        "D17": 0.0,
+        "D18": 0.0,
+        "D19": 0.0,
+        "D20": 0.0,
+        "D21": 441.921,
+        "D22": 0.0,
+        "D23": 0.0,
+        "D24": 0.0,
+        "D25": 0.0,
+        "D26": 19475.040568144,
+        "D28": 332516.08
+      },
+      "Hakediş İcmali": {
+        "C6": 254009.09040000002,
+        "D6": 23353.822714992002,
+        "E6": 277362.913114992,
+        "C7": 429861.53760000004,
+        "D7": 33813.526274448006,
+        "E7": 463675.06387444807,
+        "C8": 312626.5728,
+        "D8": 26840.390568144,
+        "E8": 339466.963368144,
+        "C17": 996497.2008,
+        "D17": 84007.73955758402,
+        "E17": 1080504.940357584,
+        "E21": 26448.176274448004,
+        "E22": 19475.040568144002,
+        "E23": 45923.21684259201,
+        "E25": 1034581.723514992
+      }
+    }
+  }
+]

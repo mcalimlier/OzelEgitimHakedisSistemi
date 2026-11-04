@@ -1,0 +1,29 @@
+{
+  "NativeDpi": 120,
+  "WpfDpi": 120,
+  "Awareness": "PerMonitorV2",
+  "Width": 1096,
+  "Height": 594.4,
+  "HybridRowCount": 6,
+  "InputBounds": [
+    {
+      "X": 30,
+      "Y": 140.2,
+      "Width": 312.09538461538466,
+      "Height": 34
+    },
+    {
+      "X": 367.09538461538466,
+      "Y": 140.2,
+      "Width": 280.18153846153837,
+      "Height": 34
+    },
+    {
+      "X": 671.276923076923,
+      "Y": 140.2,
+      "Width": 377.92307692307696,
+      "Height": 34
+    }
+  ],
+  "Method": "Shown native HWND; actual OS monitor DPI; no simulated scale or WM_DPICHANGED injection"
+}

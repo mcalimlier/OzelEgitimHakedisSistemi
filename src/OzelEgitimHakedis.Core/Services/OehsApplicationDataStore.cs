@@ -24,10 +24,7 @@ public sealed class OehsApplicationDataStore
 
     public OehsApplicationDataStore(string? filePath = null)
     {
-        _filePath = filePath ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "OEHS",
-            "oehs-data.json");
+        _filePath = filePath ?? OehsRuntimePaths.ApplicationDataFilePath;
     }
 
     public OehsApplicationData Load()
@@ -94,7 +91,23 @@ public sealed class OehsApplicationDataStore
         try
         {
             if (File.Exists(_filePath))
+            {
+                try
+                {
+                    // Never replace a known-good backup with a primary file that became
+                    // corrupt after startup. Validate the existing primary before rotating it.
+                    _ = ReadFile(_filePath);
+                }
+                catch (Exception primaryException) when (
+                    primaryException is IOException or UnauthorizedAccessException or JsonException)
+                {
+                    throw new OehsApplicationDataStoreException(
+                        "Mevcut OEHS ana veri dosyası kaydetme öncesi doğrulanamadı. Veri kaybını önlemek için yedek korunarak kayıt durduruldu.",
+                        primaryException);
+                }
+
                 File.Copy(_filePath, BackupFilePath, overwrite: true);
+            }
 
             File.WriteAllText(temporaryPath, json);
             File.Move(temporaryPath, _filePath, overwrite: true);
@@ -109,8 +122,16 @@ public sealed class OehsApplicationDataStore
         }
         finally
         {
-            if (File.Exists(temporaryPath))
-                File.Delete(temporaryPath);
+            try
+            {
+                if (File.Exists(temporaryPath))
+                    File.Delete(temporaryPath);
+            }
+            catch (Exception cleanupException) when (
+                cleanupException is IOException or UnauthorizedAccessException)
+            {
+                // A leftover .tmp file is recoverable; it must not mask the real save result.
+            }
         }
     }
 

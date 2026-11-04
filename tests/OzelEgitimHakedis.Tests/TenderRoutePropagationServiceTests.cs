@@ -12,7 +12,7 @@ public sealed class TenderRoutePropagationServiceTests
         var routes = new[]
         {
             new RouteData(
-                "1", "Hat 1", 2608.26m, 30, 1362.49m, 29,
+                "1", "Hat 1", 2608.26m, 1362.49m, 29,
                 "OLD", "12345678901")
         };
 
@@ -23,7 +23,6 @@ public sealed class TenderRoutePropagationServiceTests
         Assert.Equal("NEW", route.TenderNumber);
         Assert.Equal(2608.26m, route.DailyPrice);
         Assert.Equal(29, route.TransportWorkDays);
-        Assert.Equal(30, route.GuideWorkDays);
         Assert.Equal(1362.49m, route.GuideDailyPrice);
     }
 }

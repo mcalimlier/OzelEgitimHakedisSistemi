@@ -50,6 +50,62 @@ public sealed class ProgressPaymentValidationTests
     }
 
     [Fact]
+    public void SameRouteMonth_ShouldRejectDifferentProgressPaymentNumber()
+    {
+        var existing = History(1, new DateOnly(2026, 10, 5));
+        var candidate = History(2, new DateOnly(2026, 10, 31));
+
+        var errors = ProgressPaymentValidationService.ValidateCreation(
+            Data(existing),
+            Contract(),
+            Route(),
+            candidate,
+            editingExisting: false);
+
+        Assert.Contains(errors, x => x.Contains("aynı ayda birden fazla", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void SameTenderRouteAndMonth_ShouldAllowSeparateContractParts()
+    {
+        var contract1 = Contract();
+        var contract2 = contract1 with { ContractNumber = "SOZ-02", WorkName = "İkinci Kısım" };
+        var route1 = Route() with { ContractNumber = "SOZ-01" };
+        var route2 = Route() with { ContractNumber = "SOZ-02" };
+        var existing = History(1, new DateOnly(2026, 10, 5)) with { ContractNumber = "SOZ-01" };
+        var candidate = History(1, new DateOnly(2026, 10, 31)) with { ContractNumber = "SOZ-02" };
+        var data = new OehsApplicationData(
+            contract1,
+            new[] { route1, route2 },
+            new[] { new Contractor("Firma", "12345678901") },
+            new[] { existing },
+            new[] { contract1, contract2 });
+
+        var errors = ProgressPaymentValidationService.ValidateCreation(
+            data, contract2, route2, candidate, editingExisting: false);
+
+        Assert.DoesNotContain(errors, x => x.Contains("aynı ayda birden fazla", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(errors, x => x.Contains("önceki", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(errors, x => x.Contains("hat kaydı", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void SameRouteMonth_ShouldAllowEditingOnlyExistingMonthlyClaim()
+    {
+        var existing = History(1, new DateOnly(2026, 10, 31));
+        var candidate = existing with { };
+
+        var errors = ProgressPaymentValidationService.ValidateCreation(
+            Data(existing),
+            Contract(),
+            Route(),
+            candidate,
+            editingExisting: true);
+
+        Assert.DoesNotContain(errors, x => x.Contains("aynı ayda birden fazla", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public void MissingContractSource_ShouldBeRejected()
     {
         var data = new OehsApplicationData(

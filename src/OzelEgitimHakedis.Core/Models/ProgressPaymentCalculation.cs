@@ -20,7 +20,8 @@ public sealed record ProgressPaymentCalculation(
     decimal TransportVat = 0m,
     decimal GuideVat = 0m,
     decimal TransportWithholding = 0m,
-    decimal GuideWithholding = 0m)
+    decimal GuideWithholding = 0m,
+    ProgressPaymentCalculationConstants? AppliedConstants = null)
 {
     public decimal CombinedServiceAmount =>
         ServiceAmount + GuideServiceAmount;
